@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <estd/iterators.hpp>
 #include "global.hpp"
 #include "memory.hpp"
 
@@ -31,17 +32,16 @@ public:
 	typedef const value_type& const_reference;
 	typedef value_type* pointer;
 	typedef const value_type* const_pointer;
-	//typedef ??? iterator
-	//typedef ??? const_iterator;
-	//typedef ??? reverse_iterator;
-	//typedef ??? const_reverse_iterator;
+
+	typedef estd::RandomAccessIterator< array<T> > iterator;
+	typedef const estd::RandomAccessIterator< const array<T> > const_iterator;
 
 private:
 	size_type n;
 	unique_ptr<T[]> deviceMemory; // video card memory
 
 public:
-	array( const size_type n=0, const_reference value = T() ) : n(n) {
+	__host__ array( const size_type n=0, const_reference value = T() ) : n(n) {
 		if( n ) {
 			T* ptr = NULL;
 			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
@@ -50,7 +50,7 @@ public:
 			deviceMemory = unique_ptr<T[]>( ptr );
 		}
 	}
-	array( const array<T>& src ) : n(src.n) {
+	__host__ array( const array<T>& src ) : n(src.n) {
 		if( n ) {
 			T* ptr = NULL;
 			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
@@ -58,7 +58,7 @@ public:
 			deviceMemory = unique_ptr<T[]>( ptr );
 		}
 	}
-	array( const T* sourcePtr, const size_type n=0 ) : n(n) {
+	__host__ array( const T* sourcePtr, const size_type n=0 ) : n(n) {
 		if( n ) {
 			T* ptr = NULL;
 			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
@@ -67,19 +67,24 @@ public:
 		}
 	}
 
-	virtual ~array() {}
+	__host__ virtual ~array() {}
 
-	inline reference at( size_type index ) { return deviceMemory[index]; }
-	inline reference operator[]( size_type index ) { return deviceMemory[index]; }
-	inline const_reference at( size_type index ) const { return deviceMemory[index]; }
-	inline const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
+	__device__ reference at( size_type index ) { return deviceMemory[index]; }
+	__device__ reference operator[]( size_type index ) { return deviceMemory[index]; }
+	__device__ const_reference at( size_type index ) const { return deviceMemory[index]; }
+	__device__ const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
 
-	inline reference front() { return *deviceMemory; }
-	inline reference back() { return operator[]( size()-1 ); }
-	inline const_reference front() const { return *deviceMemory; }
-	inline const_reference back() const { return operator[]( size()-1 ); }
+	__device__ reference front() { return *deviceMemory; }
+	__device__ reference back() { return operator[]( size()-1 ); }
+	__device__ const_reference front() const { return *deviceMemory; }
+	__device__ const_reference back() const { return operator[]( size()-1 ); }
 
-	inline size_type size() const { return n; }
+	__host__ __device__ size_type size() const { return n; }
+
+	__device__ iterator begin() { return iterator(*this); }
+	__device__ iterator end() { return iterator(*this,size()); }
+	__device__ const_iterator begin() const { return const_iterator(*this); }
+	__device__ const_iterator end() const { return const_iterator(*this,size()); }
 
 };
 
