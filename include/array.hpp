@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <vector>
 #include "global.hpp"
+#include "memory.hpp"
 
 namespace ecuda {
 
@@ -37,18 +38,36 @@ public:
 
 private:
 	size_type n;
-	T* deviceMemory; // video card memory
+	unique_ptr<T[]> deviceMemory; // video card memory
 
 public:
-	array( const size_type n, const_reference value = T() ) : n(n) {
-		CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory), n*sizeof(T) ) );
-		std::vector<T> v( n, value );
-		CUDA_CALL( cudaMemcpy( deviceMemory, &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+	array( const size_type n=0, const_reference value = T() ) : n(n) {
+		if( n ) {
+			T* ptr = NULL;
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
+			std::vector<T> v( n, value );
+			CUDA_CALL( cudaMemcpy( ptr, &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+			deviceMemory = unique_ptr<T[]>( ptr );
+		}
+	}
+	array( const array<T>& src ) : n(src.n) {
+		if( n ) {
+			T* ptr = NULL;
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( ptr, src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
+			deviceMemory = unique_ptr<T[]>( ptr );
+		}
+	}
+	array( const T* sourcePtr, const size_type n=0 ) : n(n) {
+		if( n ) {
+			T* ptr = NULL;
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( ptr, sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
+			deviceMemory = unique_ptr<T[]>( ptr );
+		}
 	}
 
-	virtual ~array() {
-		if( deviceMemory ) CUDA_CALL( cudaFree(deviceMemory) );
-	}
+	virtual ~array() {}
 
 	inline reference at( size_type index ) { return deviceMemory[index]; }
 	inline reference operator[]( size_type index ) { return deviceMemory[index]; }
@@ -59,6 +78,8 @@ public:
 	inline reference back() { return operator[]( size()-1 ); }
 	inline const_reference front() const { return *deviceMemory; }
 	inline const_reference back() const { return operator[]( size()-1 ); }
+
+	inline size_type size() const { return n; }
 
 };
 
