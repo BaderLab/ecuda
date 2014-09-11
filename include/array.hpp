@@ -14,6 +14,7 @@
 #define ECUDA_ARRAY_HPP
 
 #include <cstddef>
+#include <limits>
 #include <vector>
 #include <estd/iterators.hpp>
 #include "global.hpp"
@@ -87,7 +88,6 @@ public:
 	__device__ const_iterator end() const { return const_iterator(*this,size()); }
 
 };
-
 
 } // namespace ecuda
 
