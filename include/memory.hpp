@@ -34,7 +34,7 @@ public:
 	device_ptr() : ptr(NULL) {}
 	~device_ptr() { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
 
-	__host__ __device__ pointer get() const { ptr; }
+	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
 	__device__ reference operator*() const { return *ptr; }
 	__device__ pointer   operator->() const { return ptr; }

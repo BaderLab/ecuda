@@ -43,13 +43,14 @@ public:
 	typedef const_row_type const_subscript_type;
 
 private:
+public:
 	size_type numberRows;
 	size_type numberColumns;
 	size_type pitch;
 	device_ptr<T> deviceMemory; // video card memory
 
 public:
-	matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() ) : numberRows(numberRows), numberColumns(numberColumns), pitch(pitch) {
+	matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
 		if( numberRows and numberColumns ) {
 			//T* ptr = NULL;
 			CUDA_CALL( cudaMallocPitch( deviceMemory.addressof(), &pitch, numberColumns*sizeof(T), numberRows ) );

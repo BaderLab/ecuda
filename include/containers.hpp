@@ -41,6 +41,7 @@ public:
 	typedef typename ContainerType::size_type size_type;
 
 private:
+public:
 	ContainerType* pContainer;
 	const IndexType extent;
 	const IndexType offset;
