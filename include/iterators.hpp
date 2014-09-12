@@ -14,6 +14,10 @@
 #include <iterator>
 #include "global.hpp"
 
+//#ifdef __CUDA_ARCH__
+#define nullptr NULL
+//#endif
+
 namespace ecuda {
 
 template<class ContainerType,class Category>

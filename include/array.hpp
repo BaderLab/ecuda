@@ -16,7 +16,8 @@
 #include <cstddef>
 #include <limits>
 #include <vector>
-#include <estd/iterators.hpp>
+#include "iterators.hpp"
+//#include <estd/iterators.hpp>
 #include "global.hpp"
 #include "memory.hpp"
 
@@ -34,8 +35,8 @@ public:
 	typedef value_type* pointer;
 	typedef const value_type* const_pointer;
 
-	typedef estd::RandomAccessIterator< array<T> > iterator;
-	typedef const estd::RandomAccessIterator< const array<T> > const_iterator;
+	typedef ecuda::RandomAccessIterator< array<T> > iterator;
+	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator;
 
 private:
 	size_type n;
