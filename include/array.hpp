@@ -44,20 +44,20 @@ private:
 public:
 	__host__ array( const size_type n=0, const_reference value = T() ) : n(n) {
 		if( n ) {
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
 			std::vector<T> v( n, value );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
 	__host__ array( const array<T>& src ) : n(src.n) {
 		if( n ) {
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
 		}
 	}
 	__host__ array( const T* sourcePtr, const size_type n=0 ) : n(n) {
 		if( n ) {
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
@@ -80,6 +80,12 @@ public:
 	__device__ iterator end() { return iterator(*this,size()); }
 	__device__ const_iterator begin() const { return const_iterator(*this); }
 	__device__ const_iterator end() const { return const_iterator(*this,size()); }
+
+	__host__ const array<T>& operator>>( std::vector<T>& vector ) const {
+		vector.resize( n );
+		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
 
 };
 
