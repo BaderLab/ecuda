@@ -38,6 +38,12 @@ public:
 	typedef ecuda::RandomAccessIterator< array<T> > iterator;
 	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator;
 
+public:
+	struct DevicePayload {
+		size_type n;
+		device_ptr<T> deviceMemory;
+	};
+
 private:
 	size_type n;
 	device_ptr<T> deviceMemory; // video card memory
@@ -62,6 +68,7 @@ public:
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
+	__device__ array( DevicePayload& devicePayload ) : n(devicePayload.n), deviceMemory(devicePayload.deviceMemory) {}
 
 	__host__ virtual ~array() {}
 
@@ -86,6 +93,13 @@ public:
 		vector.resize( n );
 		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
 		return *this;
+	}
+
+	DevicePayload passToDevice() {
+		DevicePayload payload;
+		payload.n = n;
+		payload.deviceMemory = deviceMemory;
+		return payload;
 	}
 
 };

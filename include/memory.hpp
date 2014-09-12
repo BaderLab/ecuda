@@ -29,10 +29,18 @@ public:
 
 private:
 	pointer ptr;
+	size_type* shared_count;
 
 public:
-	device_ptr() : ptr(NULL) {}
-	~device_ptr() { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
+	device_ptr() : ptr(NULL), shared_count(new size_type) { *shared_count = 0; }
+	device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), reference_count(src.shared_count) { ++(*shared_count); }
+	~device_ptr() {
+		--(*shared_count);
+		if( !(*shared_count) and ptr ) {
+			CUDA_CALL( cudaFree(ptr) );
+			delete shared_count;
+		}
+	}
 
 	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
@@ -48,6 +56,14 @@ public:
 	__host__ __device__ bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
 	__host__ __device__ bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
 	__host__ __device__ bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
+
+	__host__ __device__ device_ptr<T>& operator=( const device_ptr<T>& other ) {
+		~device_ptr();
+		ptr = other.ptr;
+		shared_count = other.shared_count;
+		++(*shared_count);
+		return *this;
+	}
 
 };
 
