@@ -39,32 +39,26 @@ public:
 
 private:
 	size_type n;
-	unique_ptr<T[]> deviceMemory; // video card memory
+	device_ptr<T> deviceMemory; // video card memory
 
 public:
 	__host__ array( const size_type n=0, const_reference value = T() ) : n(n) {
 		if( n ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
 			std::vector<T> v( n, value );
-			CUDA_CALL( cudaMemcpy( ptr, &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
 	__host__ array( const array<T>& src ) : n(src.n) {
 		if( n ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy( ptr, src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
 		}
 	}
 	__host__ array( const T* sourcePtr, const size_type n=0 ) : n(n) {
 		if( n ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy( ptr, sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&deviceMemory.get()), n*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( deviceMemory.get(), sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
 

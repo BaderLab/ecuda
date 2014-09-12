@@ -19,6 +19,40 @@
 namespace ecuda {
 
 template<typename T>
+class device_ptr {
+public:
+	typedef T element_type;
+	typedef T* pointer;
+	typedef void** doublepointer;
+	typedef T& reference;
+	typedef std::size_t size_type;
+
+private:
+	pointer ptr;
+
+public:
+	device_ptr() : ptr(NULL) {}
+	~device_ptr() { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
+
+	__host__ __device__ pointer get() const { ptr; }
+	__host__ __device__ operator bool() const { return get() != NULL; }
+	__device__ reference operator*() const { return *ptr; }
+	__device__ pointer   operator->() const { return ptr; }
+	__device__ reference operator[]( size_type index ) const { return *(ptr+index); }
+
+	__host__ doublepointer addressof() { return reinterpret_cast<void**>(&ptr); }
+
+	__host__ __device__ bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
+	__host__ __device__ bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
+	__host__ __device__ bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
+	__host__ __device__ bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
+	__host__ __device__ bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
+	__host__ __device__ bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
+
+};
+
+/*
+template<typename T>
 class unique_ptr {
 
 public:
@@ -50,7 +84,7 @@ public:
 	inline bool operator>=( const unique_ptr<T>& other ) const { return ptr >= other.ptr; }
 
 };
-/*
+
 template<typename T>
 class unique_ptr<T[]> {
 
