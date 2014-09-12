@@ -35,7 +35,7 @@ public:
 
 	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
-	__device__ reference operator*() const { return *ptr; }
+	__host__ __device__ reference operator*() const { return *ptr; }
 	__host__ __device__ pointer operator->() const { return ptr; }
 
 	inline bool operator==( const unique_ptr<T>& other ) const { return ptr == other.ptr; }
@@ -65,7 +65,7 @@ public:
 
 	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
-	__device__ reference operator[]( const size_type index ) const { return *(ptr+index); }
+	__host__ __device__ reference operator[]( const size_type index ) const { return *(ptr+index); }
 
 	inline bool operator==( const unique_ptr<T[]>& other ) const { return ptr == other.ptr; }
 	inline bool operator!=( const unique_ptr<T[]>& other ) const { return ptr != other.ptr; }

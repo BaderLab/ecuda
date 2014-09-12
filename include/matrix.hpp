@@ -15,9 +15,9 @@
 
 #include <cstddef>
 #include <vector>
-#include <estd/containers.hpp>
 #include <estd/matrix.hpp>
 #include "global.hpp"
+#include "containers.hpp"
 #include "memory.hpp"
 
 namespace ecuda {
@@ -34,10 +34,10 @@ public:
 	typedef value_type* pointer;
 	typedef const value_type* const_pointer;
 
-	typedef estd::OffsettingContainer< matrix<T> > row_type;
-	typedef estd::OffsettingContainer< matrix<T> > column_type;
-	typedef const estd::OffsettingContainer< const matrix<T> > const_row_type;
-	typedef const estd::OffsettingContainer< const matrix<T> > const_column_type;
+	typedef ecuda::OffsettingContainer< matrix<T> > row_type;
+	typedef ecuda::OffsettingContainer< matrix<T> > column_type;
+	typedef const ecuda::OffsettingContainer< const matrix<T> > const_row_type;
+	typedef const ecuda::OffsettingContainer< const matrix<T> > const_column_type;
 
 	typedef row_type subscript_type;
 	typedef const_row_type const_subscript_type;
@@ -86,11 +86,11 @@ public:
 
 	virtual ~matrix() {}
 
-	__device__ reference at( size_type rowIndex, size_type columnIndex ) { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
-	__device__ reference at( size_type index ) { return at( index/numberColumns, index % numberColumns ); }
+	__host__ __device__ reference at( size_type rowIndex, size_type columnIndex ) { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
+	__host__ __device__ reference at( size_type index ) { return at( index/numberColumns, index % numberColumns ); }
 
-	__device__ const_reference at( size_type rowIndex, size_type columnIndex ) const { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
-	__device__ const_reference at( size_type index ) const { return at( index/numberColumns, index % numberColumns ); }
+	__host__ __device__ const_reference at( size_type rowIndex, size_type columnIndex ) const { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
+	__host__ __device__ const_reference at( size_type index ) const { return at( index/numberColumns, index % numberColumns ); }
 
 	__host__ __device__ size_type size() const { return numberRows*numberColumns; }
 	__host__ __device__ size_type row_size() const { return numberRows; }
