@@ -37,40 +37,51 @@ public:
 
 	typedef ecuda::RandomAccessIterator< array<T> > iterator;
 	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator;
-
+/*
 public:
 	struct DevicePayload {
 		size_type n;
 		device_ptr<T> deviceMemory;
 	};
-
+*/
 private:
 	size_type n;
 	device_ptr<T> deviceMemory; // video card memory
 
 public:
-	__host__ array( const size_type n=0, const_reference value = T() ) : n(n) {
+	__host__ __device__ array( const size_type n=0, const_reference value = T() ) : n(n) {
+		#ifndef __CUDA_ARCH__
 		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			std::vector<T> v( n, value );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
+		#endif
 	}
 	__host__ array( const array<T>& src ) : n(src.n) {
 		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
 		}
 	}
+	__host__ array( const std::vector<T>& src ) : n(src.size()) {
+		if( n ) {
+			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+		}
+	}
+	/*
 	__host__ array( const T* sourcePtr, const size_type n=0 ) : n(n) {
 		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.addressof(), n*sizeof(T) ) );
+			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
-	__device__ array( DevicePayload& devicePayload ) : n(devicePayload.n), deviceMemory(devicePayload.deviceMemory) {}
+	*/
 
-	__host__ virtual ~array() {}
+	//__device__ array( const DevicePayload& devicePayload ) : n(devicePayload.n), deviceMemory(devicePayload.deviceMemory) {}
+
+	__host__ __device__ virtual ~array() {}
 
 	__device__ reference at( size_type index ) { return deviceMemory[index]; }
 	__device__ reference operator[]( size_type index ) { return deviceMemory[index]; }
@@ -95,12 +106,20 @@ public:
 		return *this;
 	}
 
+	__device__ array<T>& operator=( const array<T>& other ) {
+		n = other.n;
+		deviceMemory = other.deviceMemory;
+		return *this;
+	}
+
+	/*
 	DevicePayload passToDevice() {
 		DevicePayload payload;
 		payload.n = n;
 		payload.deviceMemory = deviceMemory;
 		return payload;
 	}
+	*/
 
 };
 

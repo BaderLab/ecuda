@@ -2,12 +2,12 @@
 #include <cstdio>
 #include "../include/array.hpp"
 
-//__global__ void testKernel( const ecuda::array<float>& input, ecuda::array<float>& output )
-__global__ void testKernel( const ecuda::array<float>::DevicePayload in, ecuda::array<float>::DevicePayload out )
+__global__ void testKernel( const ecuda::array<float> input, ecuda::array<float> output )
+//__global__ void testKernel( const ecuda::array<float>::DevicePayload in, ecuda::array<float>::DevicePayload out )
 {
 	const int index = threadIdx.x;
-	const ecuda::array<float> input( in );
-	ecuda::array<float> output( out );
+	//const ecuda::array<float> input( in );
+	//ecuda::array<float> output( out );
 	printf( "index=%i\n", index );
 	output[index] = input[index]*index;
 }
@@ -17,11 +17,13 @@ int main( int argc, char* argv[] ) {
 
 	std::vector<float> hostVectorInput( 100 );
 	for( size_t i = 0; i < 100; ++i ) hostVectorInput[i] = i+1;
-	ecuda::array<float> deviceVectorInput( &hostVectorInput.front(), hostVectorInput.size() );
+	//ecuda::array<float> deviceVectorInput( &hostVectorInput.front(), hostVectorInput.size() );
+	ecuda::array<float> deviceVectorInput( hostVectorInput );
 	ecuda::array<float> deviceVectorOutput( hostVectorInput.size() );
 
 	dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
-	testKernel<<<dimGrid,dimBlock>>>( deviceVectorInput.passToDevice(), deviceVectorOutput.passToDevice() );
+	//testKernel<<<dimGrid,dimBlock>>>( deviceVectorInput.passToDevice(), deviceVectorOutput.passToDevice() );
+	testKernel<<<dimGrid,dimBlock>>>( deviceVectorInput, deviceVectorOutput );
 	CUDA_CHECK_ERRORS
 
 	std::vector<float> hostVectorOutput;

@@ -23,7 +23,7 @@ class device_ptr {
 public:
 	typedef T element_type;
 	typedef T* pointer;
-	typedef void** doublepointer;
+	typedef void** allocation_pointer;
 	typedef T& reference;
 	typedef std::size_t size_type;
 
@@ -32,24 +32,40 @@ private:
 	size_type* shared_count;
 
 public:
-	device_ptr() : ptr(NULL), shared_count(new size_type) { *shared_count = 0; }
-	device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), reference_count(src.shared_count) { ++(*shared_count); }
-	~device_ptr() {
+	__host__ __device__ device_ptr() : ptr(NULL) {
+		#ifndef __CUDA_ARCH__
+		shared_count = new size_type;
+		*shared_count = 0;
+		#endif
+	}
+	__host__ __device__ device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
+		#ifndef __CUDA_ARCH__
+		++(*shared_count);
+		#endif
+	}
+	__host__ __device__ ~device_ptr() {
+		#ifndef __CUDA_ARCH__
+		std::cerr << "deallocating host device_ptr" << std::endl;
 		--(*shared_count);
 		if( !(*shared_count) and ptr ) {
 			CUDA_CALL( cudaFree(ptr) );
 			delete shared_count;
 		}
+		#endif
 	}
 
+	// both host and device can get the pointer itself
 	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
+
+	// only device can dereference the pointer
 	__device__ reference operator*() const { return *ptr; }
 	__device__ pointer   operator->() const { return ptr; }
 	__device__ reference operator[]( size_type index ) const { return *(ptr+index); }
 
-	__host__ doublepointer addressof() { return reinterpret_cast<void**>(&ptr); }
+	__host__ allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
 
+	// both host and device can do comparisons on the pointer
 	__host__ __device__ bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
 	__host__ __device__ bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
 	__host__ __device__ bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
@@ -58,10 +74,14 @@ public:
 	__host__ __device__ bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
 
 	__host__ __device__ device_ptr<T>& operator=( const device_ptr<T>& other ) {
+		#ifndef __CUDA_ARCH__
 		~device_ptr();
+		#endif
 		ptr = other.ptr;
+		#ifndef __CUDA_ARCH__
 		shared_count = other.shared_count;
 		++(*shared_count);
+		#endif
 		return *this;
 	}
 
