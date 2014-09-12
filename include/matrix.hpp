@@ -46,50 +46,61 @@ private:
 	size_type numberRows;
 	size_type numberColumns;
 	size_type pitch;
-	unique_ptr<T[]> deviceMemory; // video card memory
+	T* deviceMemory; // video card memory
+	//unique_ptr<T> deviceMemory; // video card memory
 
 public:
-	matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() ) : numberRows(numberRows), numberColumns(numberColumns), pitch(pitch) {
+	matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() ) : numberRows(numberRows), numberColumns(numberColumns), pitch(pitch), deviceMemory(NULL) {
+std::cerr << "numberRows=" << numberRows << " numberColumns=" << numberColumns << std::endl;
 		if( numberRows and numberColumns ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, numberColumns*sizeof(T), numberRows*sizeof(T) ) );
+			//T* ptr = NULL;
+std::cerr << "matrix.constructor1" << std::endl;
+			CUDA_CALL( cudaMallocPitch( (void**)(&deviceMemory), &pitch, numberColumns*sizeof(T), numberRows ) );
+std::cerr << "matrix.constructor2" << std::endl;
 			std::vector<T> v( numberRows*numberColumns, value );
-			CUDA_CALL( cudaMemcpy2D( ptr, pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows*sizeof(T), cudaMemcpyHostToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+std::cerr << "matrix.constructor3" << std::endl;
+std::cerr << "deviceMemory=" << deviceMemory << std::endl;
+			CUDA_CALL( cudaMemcpy2D( deviceMemory, pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+std::cerr << "matrix.constructor4" << std::endl;
+//			deviceMemory = unique_ptr<T>( ptr );
 		}
 	}
+/*
 	matrix( const matrix<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(0) {
 		if( numberRows and numberColumns ) {
 			T* ptr = NULL;
-			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, numberColumns*sizeof(T), numberRows*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy2D( ptr, pitch, src.deviceMemory.get(), src.pitch, numberRows*sizeof(T), cudaMemcpyDeviceToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, numberColumns*sizeof(T), numberRows ) );
+			CUDA_CALL( cudaMemcpy2D( ptr, pitch, src.deviceMemory.get(), src.pitch, numberRows, cudaMemcpyDeviceToDevice ) );
+			deviceMemory = unique_ptr<T>( ptr );
 		}
 	}
+*/
 	matrix( const T* sourcePtr, const size_type numberRows, const size_type numberColumns ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
 		if( numberRows and numberColumns ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, numberColumns*sizeof(T), numberRows*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy2D( ptr, pitch, sourcePtr, numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows*sizeof(T), cudaMemcpyHostToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			//T* ptr = NULL;
+			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&deviceMemory), &pitch, numberColumns*sizeof(T), numberRows ) );
+			CUDA_CALL( cudaMemcpy2D( deviceMemory, pitch, sourcePtr, numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+			//deviceMemory = unique_ptr<T>( ptr );
 		}
 	}
+
+/*
 	template<typename X,typename Y>
-	matrix( const estd::matrix<T,X,Y>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), pitch(0) {
+	matrix( const estd::matrix<T,X,Y>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), pitch(0), deviceMemory(NULL) {
 		if( numberRows and numberColumns ) {
-			T* ptr = NULL;
-			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, numberColumns*sizeof(T), numberRows*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy2D( ptr, pitch, &src[0][0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows*sizeof(T), cudaMemcpyHostToDevice ) );
-			deviceMemory = unique_ptr<T[]>( ptr );
+			//T* ptr = NULL;
+			CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&deviceMemory), &pitch, numberColumns*sizeof(T), numberRows ) );
+			CUDA_CALL( cudaMemcpy2D( deviceMemory, pitch, &src[0][0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+			//deviceMemory = unique_ptr<T>( ptr );
 		}
 	}
+*/
+	virtual ~matrix() { if( deviceMemory ) CUDA_CALL( cudaFree( deviceMemory ) ); }
 
-	virtual ~matrix() {}
-
-	__host__ __device__ reference at( size_type rowIndex, size_type columnIndex ) { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
+	__host__ __device__ reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory+(rowIndex*pitch/sizeof(T)+columnIndex)); }
 	__host__ __device__ reference at( size_type index ) { return at( index/numberColumns, index % numberColumns ); }
 
-	__host__ __device__ const_reference at( size_type rowIndex, size_type columnIndex ) const { return deviceMemory[rowIndex*pitch/sizeof(T)+columnIndex]; }
+	__host__ __device__ const_reference at( size_type rowIndex, size_type columnIndex ) const { return *(deviceMemory+(rowIndex*pitch/sizeof(T)+columnIndex)); }
 	__host__ __device__ const_reference at( size_type index ) const { return at( index/numberColumns, index % numberColumns ); }
 
 	__host__ __device__ size_type size() const { return numberRows*numberColumns; }

@@ -30,7 +30,11 @@ private:
 	T* ptr;
 
 public:
-	unique_ptr( T* ptr=NULL ) : ptr(ptr) {}
+	unique_ptr( T* ptr=NULL ) : ptr(ptr) {
+		std::cerr << "assigning smart pointer" << std::endl;
+		std::cerr << "ptr=" << &ptr << std::endl;
+		std::cerr << "complete" << std::endl;
+	}
 	~unique_ptr() {	if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
 
 	__host__ __device__ pointer get() const { return ptr; }
@@ -46,7 +50,7 @@ public:
 	inline bool operator>=( const unique_ptr<T>& other ) const { return ptr >= other.ptr; }
 
 };
-
+/*
 template<typename T>
 class unique_ptr<T[]> {
 
@@ -57,11 +61,15 @@ public:
 	typedef std::size_t size_type;
 
 private:
-	T* ptr;
+	T ptr;
 
 public:
-	unique_ptr<T[]>( T* ptr=NULL ) : ptr(ptr) {}
-	~unique_ptr<T[]>() { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
+	unique_ptr<T[]>( T ptr=NULL ) : ptr(ptr) { 
+		std::cerr << "Assigning smart pointer" << std::endl;
+		std::cerr << "Address=" << ptr << std::endl; 
+		std::cerr << "Complete" << std::endl;
+	}
+	~unique_ptr<T[]>() { if( &ptr ) CUDA_CALL( cudaFree(&ptr) ); }
 
 	__host__ __device__ pointer get() const { return ptr; }
 	__host__ __device__ operator bool() const { return get() != NULL; }
@@ -75,6 +83,7 @@ public:
 	inline bool operator>=( const unique_ptr<T[]>& other ) const { return ptr >= other.ptr; }
 
 };
+*/
 
 } // namespace ecuda
 
