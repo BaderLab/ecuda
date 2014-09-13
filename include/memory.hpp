@@ -18,8 +18,19 @@
 
 namespace ecuda {
 
+///
+/// A smart pointer for device memory.
+///
+/// This class keeps a pointer to allocated device memory and automatically
+/// deallocates it when it goes out of scope.  The workings are similar to
+/// a C++11 shared_ptr.  Since deallocation can only be done from host code
+/// reference counting only occurs within host code.  On the device the pointer
+/// is passed around freely without regards to reference counting and will
+/// never undergo deallocation.
+///
 template<typename T>
 class device_ptr {
+
 public:
 	typedef T element_type;
 	typedef T* pointer;
@@ -45,8 +56,6 @@ public:
 	}
 	__host__ __device__ ~device_ptr() {
 		#ifndef __CUDA_ARCH__
-		std::cerr << "deallocating host device_ptr" << std::endl;
-		std::cerr << "shared_count=" << *shared_count << " ptr=" << ptr << std::endl;
 		--(*shared_count);
 		if( !(*shared_count) and ptr ) {
 			CUDA_CALL( cudaFree(ptr) );

@@ -17,7 +17,6 @@
 #include <limits>
 #include <vector>
 #include "iterators.hpp"
-//#include <estd/iterators.hpp>
 #include "global.hpp"
 #include "memory.hpp"
 
@@ -37,13 +36,7 @@ public:
 
 	typedef ecuda::RandomAccessIterator< array<T> > iterator;
 	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator;
-/*
-public:
-	struct DevicePayload {
-		size_type n;
-		device_ptr<T> deviceMemory;
-	};
-*/
+
 private:
 	size_type n;
 	device_ptr<T> deviceMemory; // video card memory
@@ -58,31 +51,13 @@ public:
 		}
 		#endif
 	}
-	__host__ array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {
-		std::cerr << "performing inplace copy" << std::endl;
-/*
-		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
-		}
-*/
-	}
+	__host__ array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
 	__host__ array( const std::vector<T>& src ) : n(src.size()) {
 		if( n ) {
 			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
-	/*
-	__host__ array( const T* sourcePtr, const size_type n=0 ) : n(n) {
-		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy( deviceMemory.get(), sourcePtr, n*sizeof(T), cudaMemcpyHostToDevice ) );
-		}
-	}
-	*/
-
-	//__device__ array( const DevicePayload& devicePayload ) : n(devicePayload.n), deviceMemory(devicePayload.deviceMemory) {}
 
 	__host__ __device__ virtual ~array() {}
 
@@ -105,10 +80,7 @@ public:
 
 	__host__ const array<T>& operator>>( std::vector<T>& vector ) const {
 		vector.resize( n );
-std::cerr << "copy destination = " << deviceMemory.get() << std::endl;
-std::cerr << "copying device contents of size " << n << " [" << (n*sizeof(T)) << "] to host vector" << std::endl;
 		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
-for( size_t i = 0; i < n; ++i ) std::cerr << "IN SITU [" << i << "]=" << vector[i] << std::endl;
 		return *this;
 	}
 
@@ -117,15 +89,6 @@ for( size_t i = 0; i < n; ++i ) std::cerr << "IN SITU [" << i << "]=" << vector[
 		deviceMemory = other.deviceMemory;
 		return *this;
 	}
-
-	/*
-	DevicePayload passToDevice() {
-		DevicePayload payload;
-		payload.n = n;
-		payload.deviceMemory = deviceMemory;
-		return payload;
-	}
-	*/
 
 };
 

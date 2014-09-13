@@ -76,11 +76,11 @@ public:
 	__host__ __device__ bool empty() const __NOEXCEPT__ { return !size() ? true : false; }
 
 	// element access:
-	__host__ __device__ reference operator[]( size_type index ) { return pContainer->at( offset+index*increment ); }
+	__device__ reference operator[]( size_type index ) { return pContainer->at( offset+index*increment ); }
 	__host__ __device__ reference at( size_type index ) { return operator[]( index ); }
 	__host__ __device__ reference front() { return operator[](0); }
 	__host__ __device__ reference back() { return operator[](size()-1); }
-	__host__ __device__ const_reference operator[]( size_type index ) const { return pContainer->at( offset+index*increment ); }
+	__device__ const_reference operator[]( size_type index ) const { return pContainer->at( offset+index*increment ); }
 	__host__ __device__ const_reference at( size_type index ) const { return operator[]( index ); }
 	__host__ __device__ const_reference front() const { return operator[](0); }
 	__host__ __device__ const_reference back() const { return operator[](size()-1); }

@@ -28,16 +28,5 @@
 ///
 #define CUDA_CHECK_ERRORS do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw std::runtime_error(std::string(cudaGetErrorString(error))); } while(0);
 
-/*
-#define CUDA_CHECK_ERRORS
-do {
-	std::ostringstream oss;
-	while(1) {
-		cudaError_t error = cudaGetLastError();
-		if( error != cudaSuccess ) oss << std::string(cudaGetErrorString(error)); else break;
-	}
-} while(0);
-*/
-
 #endif
 
