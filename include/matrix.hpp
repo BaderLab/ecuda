@@ -99,9 +99,16 @@ public:
 	}
 
 	template<typename U,typename V>
-	HOST matrix<T>& operator>>( estd::matrix<T,U,V>& other ) {
-		other.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns) );
-		CUDA_CALL( cudaMemcpy2D( other.data(), numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
+	HOST matrix<T>& operator>>( estd::matrix<T,U,V>& dest ) {
+		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns) );
+		CUDA_CALL( cudaMemcpy2D( dest.data(), numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+
+	template<typename Alloc>
+	HOST matrix<T>& operator>>( std::vector<T,Alloc>& other ) {
+		other.resize( size() );
+		CUDA_CALL( cudaMemcpy2D( &other[0], numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
