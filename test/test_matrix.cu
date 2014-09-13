@@ -4,6 +4,7 @@
 #include "../include/matrix.hpp"
 
 __global__ void testKernel( const ecuda::matrix<float> input, ecuda::matrix<float> output )
+//__global__ void testKernel( const float* inputMemory, const size_t pitch, ecuda::matrix<float> output )
 {
 	const int index = threadIdx.x;
 	//const ecuda::array<float> input( in );
@@ -12,7 +13,8 @@ __global__ void testKernel( const ecuda::matrix<float> input, ecuda::matrix<floa
 	const int rowIndex = index/input.column_size();
 	const int columnIndex = index % input.column_size();
 	output[rowIndex][columnIndex] = input[rowIndex][columnIndex] / static_cast<float>(10.0);
-	//	printf( "index=%i value_before=%.2f value_after=%.2f\n", index, input[index], output[index] );
+	const float tmp = *(input.data()+(rowIndex*input.get_pitch()/sizeof(float)+columnIndex));
+	printf( "index=%i row=%i col=%i tmp=%.2f value_before=%.2f value_after=%.2f\n", index, rowIndex, columnIndex, tmp, input[rowIndex][columnIndex], output[rowIndex][columnIndex] );
 	//printf( "value_after=%.2f\n", output[index] );
 }
 
@@ -23,11 +25,17 @@ std::cerr << "step1" << std::endl;
 std::cerr << "step2" << std::endl;
 	for( size_t i = 0; i < 10; ++i ) {
 		for( size_t j = 0; j < 10; ++j ) {
-			hostMatrixInput[i][j] = i*j;
+			hostMatrixInput[i][j] = static_cast<float>((i+1)*(j+1));
 		}
 	}
 std::cerr << "step3" << std::endl;
 	ecuda::matrix<float> deviceMatrixInput( hostMatrixInput );
+	for( size_t i = 0; i < 10; ++i ) {
+		for( size_t j = 0; j < 10; ++j ) {
+			std::cerr << " " << hostMatrixInput[i][j];
+		}
+		std::cerr << std::endl;
+	}
 std::cerr << "step4" << std::endl;
 	ecuda::matrix<float> deviceMatrixOutput( 10, 10 );
 std::cerr << "step5" << std::endl;

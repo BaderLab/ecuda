@@ -66,29 +66,34 @@ public:
 	//}
 	template<typename U,typename V>
 	__host__ matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0) {
+std::cerr << "copying host matrix to device" << std::endl;
 		if( numberRows and numberColumns ) {
+std::cerr << " copy dimensions = [" << numberRows << " " << numberColumns << "]" << std::endl;
 			CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
-			CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, &src[0][0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+			CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+std::cerr << " pitch=" << pitch << std::endl;
 		}
 	}
 
 	__host__ __device__ virtual ~matrix() {}
 
 	__device__ reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
-	__device__ reference at( size_type index ) { return at( index/numberColumns, index % numberColumns ); }
+	__device__ reference at( size_type index ) { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
 	__device__ const_reference at( size_type rowIndex, size_type columnIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
-	__device__ const_reference at( size_type index ) const { return at( index/numberColumns, index % numberColumns ); }
+	__device__ const_reference at( size_type index ) const { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
 	__host__ __device__ size_type size() const { return numberRows*numberColumns; }
 	__host__ __device__ size_type row_size() const { return numberRows; }
 	__host__ __device__ size_type column_size() const { return numberColumns; }
 	__host__ __device__ size_type get_pitch() const { return pitch; }
+	__device__ T* data() { return deviceMemory.get(); }
+	__device__ const T* data() const { return deviceMemory.get(); }
 
-	__device__ row_type get_row( const size_type rowIndex ) { return row_type( *this, row_size(), rowIndex*pitch/sizeof(T) ); }
-	__device__ column_type get_column( const size_type columnIndex ) { return column_type( *this, column_size(), columnIndex, pitch/sizeof(T) ); }
-	__device__ const_row_type get_row( const size_type rowIndex ) const { return const_row_type( *this, row_size(), rowIndex*pitch/sizeof(T) ); }
-	__device__ const_column_type get_column( const size_type columnIndex ) const { return const_column_type( *this, column_size(), columnIndex, pitch/sizeof(T) ); }
+	__device__ row_type get_row( const size_type rowIndex ) { return row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
+	__device__ column_type get_column( const size_type columnIndex ) { return column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
+	__device__ const_row_type get_row( const size_type rowIndex ) const { return const_row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
+	__device__ const_column_type get_column( const size_type columnIndex ) const { return const_column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
 
 	__device__ subscript_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	__device__ const_subscript_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
