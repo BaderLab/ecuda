@@ -58,11 +58,14 @@ public:
 		}
 		#endif
 	}
-	__host__ array( const array<T>& src ) : n(src.n) {
+	__host__ array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {
+		std::cerr << "performing inplace copy" << std::endl;
+/*
 		if( n ) {
 			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
 		}
+*/
 	}
 	__host__ array( const std::vector<T>& src ) : n(src.size()) {
 		if( n ) {
