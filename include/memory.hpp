@@ -16,6 +16,10 @@
 #include <cstddef>
 #include "global.hpp"
 
+#if __cplusplus >= 201103L
+#include <memory>
+#endif
+
 namespace ecuda {
 
 ///
@@ -43,18 +47,18 @@ private:
 	size_type* shared_count; //!< pointer to reference count
 
 public:
-	__host__ __device__ device_ptr() : ptr(NULL) {
+	HOST DEVICE device_ptr() : ptr(NULL) {
 		#ifndef __CUDA_ARCH__
 		shared_count = new size_type;
 		*shared_count = 1;
 		#endif
 	}
-	__host__ __device__ device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
+	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
 		#ifndef __CUDA_ARCH__
 		++(*shared_count);
 		#endif
 	}
-	__host__ __device__ ~device_ptr() {
+	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
 		--(*shared_count);
 		if( !(*shared_count) and ptr ) {
@@ -65,25 +69,25 @@ public:
 	}
 
 	// both host and device can get the pointer itself
-	__host__ __device__ pointer get() const { return ptr; }
-	__host__ __device__ operator bool() const { return get() != NULL; }
+	HOST DEVICE inline pointer get() const { return ptr; }
+	HOST DEVICE inline operator bool() const { return get() != NULL; }
 
 	// only device can dereference the pointer
-	__device__ reference operator*() const { return *ptr; }
-	__device__ pointer   operator->() const { return ptr; }
-	__device__ reference operator[]( size_type index ) const { return *(ptr+index); }
+	DEVICE inline reference operator*() const { return *ptr; }
+	DEVICE inline pointer   operator->() const { return ptr; }
+	DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 
-	__host__ allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
+	HOST inline allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
 
 	// both host and device can do comparisons on the pointer
-	__host__ __device__ bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
-	__host__ __device__ bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
-	__host__ __device__ bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
-	__host__ __device__ bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
-	__host__ __device__ bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
-	__host__ __device__ bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
+	HOST DEVICE inline bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
+	HOST DEVICE inline bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
+	HOST DEVICE inline bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
+	HOST DEVICE inline bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
+	HOST DEVICE inline bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
+	HOST DEVICE inline bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
 
-	__host__ __device__ device_ptr<T>& operator=( const device_ptr<T>& other ) {
+	HOST DEVICE device_ptr<T>& operator=( const device_ptr<T>& other ) {
 		#ifndef __CUDA_ARCH__
 		~device_ptr();
 		#endif
@@ -97,7 +101,13 @@ public:
 
 };
 
-/*
+#if __cplusplus >= 201103L
+// some future proofing for the glorious day when
+// nvcc will support C++11 and we can just use the
+// prepackaged implementations
+template<typename T> typedef std::unique_ptr<T> unique_ptr<T>
+template<typename T> typedef std::unique_ptr<T[]> unique_ptr<T[]>
+#else
 template<typename T>
 class unique_ptr {
 
@@ -110,17 +120,13 @@ private:
 	T* ptr;
 
 public:
-	unique_ptr( T* ptr=NULL ) : ptr(ptr) {
-		std::cerr << "assigning smart pointer" << std::endl;
-		std::cerr << "ptr=" << &ptr << std::endl;
-		std::cerr << "complete" << std::endl;
-	}
-	~unique_ptr() {	if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
+	unique_ptr( T* ptr=NULL ) : ptr(ptr) {}
+	~unique_ptr() {	if( ptr ) delete ptr; }
 
-	__host__ __device__ pointer get() const { return ptr; }
-	__host__ __device__ operator bool() const { return get() != NULL; }
-	__host__ __device__ reference operator*() const { return *ptr; }
-	__host__ __device__ pointer operator->() const { return ptr; }
+	inline pointer get() const { return ptr; }
+	inline operator bool() const { return get() != NULL; }
+	inline reference operator*() const { return *ptr; }
+	inline pointer operator->() const { return ptr; }
 
 	inline bool operator==( const unique_ptr<T>& other ) const { return ptr == other.ptr; }
 	inline bool operator!=( const unique_ptr<T>& other ) const { return ptr != other.ptr; }
@@ -144,16 +150,12 @@ private:
 	T ptr;
 
 public:
-	unique_ptr<T[]>( T ptr=NULL ) : ptr(ptr) { 
-		std::cerr << "Assigning smart pointer" << std::endl;
-		std::cerr << "Address=" << ptr << std::endl; 
-		std::cerr << "Complete" << std::endl;
-	}
-	~unique_ptr<T[]>() { if( &ptr ) CUDA_CALL( cudaFree(&ptr) ); }
+	unique_ptr<T[]>( T ptr=NULL ) : ptr(ptr) {}
+	~unique_ptr<T[]>() { if( &ptr ) delete [] ptr; }
 
-	__host__ __device__ pointer get() const { return ptr; }
-	__host__ __device__ operator bool() const { return get() != NULL; }
-	__host__ __device__ reference operator[]( const size_type index ) const { return *(ptr+index); }
+	inline pointer get() const { return ptr; }
+	inline operator bool() const { return get() != NULL; }
+	inline reference operator[]( const size_type index ) const { return *(ptr+index); }
 
 	inline bool operator==( const unique_ptr<T[]>& other ) const { return ptr == other.ptr; }
 	inline bool operator!=( const unique_ptr<T[]>& other ) const { return ptr != other.ptr; }
@@ -163,7 +165,7 @@ public:
 	inline bool operator>=( const unique_ptr<T[]>& other ) const { return ptr >= other.ptr; }
 
 };
-*/
+#endif
 
 } // namespace ecuda
 

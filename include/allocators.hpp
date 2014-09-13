@@ -10,8 +10,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#ifndef ECUDA_ARRAY_HPP
-#define ECUDA_ARRAY_HPP
+#ifndef ECUDA_ALLOCATORS_HPP
+#define ECUDA_ALLOCATORS_HPP
 
 #include <stdexcept>
 
@@ -19,6 +19,9 @@ namespace ecuda {
 
 ///
 /// An STL allocator that utilizes page-locked host memory.
+///
+/// e.g. std::vector<int>( HostAllocator<int>() ) would instantiate a vector
+///      whose underlying contents would be stored in page-locked host memory.
 ///
 template<typename T>
 class HostAllocator {
