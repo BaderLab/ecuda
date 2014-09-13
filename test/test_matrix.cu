@@ -18,6 +18,15 @@ __global__ void testKernel( const ecuda::matrix<float> input, ecuda::matrix<floa
 	//printf( "value_after=%.2f\n", output[index] );
 }
 
+__global__ void testKernel2( const ecuda::matrix<float>::row_type row, ecuda::matrix<float> output )
+{
+	const int index = threadIdx.x;
+	const int rowIndex = index/row.size();
+	const int columnIndex = index % row.size();
+	output[rowIndex][columnIndex] = row[rowIndex] / static_cast<float>(10.0);
+	//const float tmp = *(input.data()+(rowIndex*input.get_pitch()/sizeof(float)+columnIndex));
+	//printf( "index=%i row=%i col=%i tmp=%.2f value_before=%.2f value_after=%.2f\n", index, rowIndex, columnIndex, tmp, input[rowIndex][columnIndex], output[rowIndex][columnIndex] );
+}
 
 int main( int argc, char* argv[] ) {
 std::cerr << "step1" << std::endl;
@@ -43,7 +52,8 @@ std::cerr << "step5" << std::endl;
 	dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
 	//testKernel<<<dimGrid,dimBlock>>>( deviceVectorInput.passToDevice(), deviceVectorOutput.passToDevice() );
 std::cerr << "step6" << std::endl;
-	testKernel<<<dimGrid,dimBlock>>>( deviceMatrixInput, deviceMatrixOutput );
+	//testKernel<<<dimGrid,dimBlock>>>( deviceMatrixInput, deviceMatrixOutput );
+	testKernel2<<<dimGrid,dimBlock>>>( deviceMatrixInput[0], deviceMatrixOutput );
 std::cerr << "step7" << std::endl;
 	CUDA_CHECK_ERRORS
 std::cerr << "step8" << std::endl;

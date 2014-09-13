@@ -42,7 +42,7 @@ public:
 
 private:
 public:
-	ContainerType* pContainer;
+	ContainerType container;
 	const IndexType extent;
 	const IndexType offset;
 	const IndexType increment;
@@ -57,8 +57,8 @@ public:
 	/// e.g. Let a std::vector v have elements [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ... ].
 	///      Then OffsettingContainer( v, 3, 4, 2 ) will reflect elements [ 4, 6, 8 ].
 	///
-	HOST DEVICE OffsettingContainer( ContainerType& container, const IndexType extent, const IndexType offset=0, const IndexType increment=1 ) : pContainer(&container), extent(extent), offset(offset), increment(increment) {}
-	HOST DEVICE OffsettingContainer( const OffsettingContainer& src ) : pContainer(src.pContainer), extent(src.extent), offset(src.offset), increment(src.increment) {}
+	HOST DEVICE OffsettingContainer( ContainerType& container, const IndexType extent, const IndexType offset=0, const IndexType increment=1 ) : container(container), extent(extent), offset(offset), increment(increment) {}
+	HOST DEVICE OffsettingContainer( const OffsettingContainer& src ) : container(src.container), extent(src.extent), offset(src.offset), increment(src.increment) {}
 	HOST DEVICE virtual ~OffsettingContainer() {}
 
 	// iterators:
@@ -76,11 +76,11 @@ public:
 	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size() ? true : false; }
 
 	// element access:
-	DEVICE inline reference operator[]( size_type index ) { return pContainer->at( offset+index*increment ); }
+	DEVICE inline reference operator[]( size_type index ) { return container.at( offset+index*increment ); }
 	DEVICE inline reference at( size_type index ) { return operator[]( index ); }
 	DEVICE inline reference front() { return operator[](0); }
 	DEVICE inline reference back() { return operator[](size()-1); }
-	DEVICE inline const_reference operator[]( size_type index ) const { return pContainer->at( offset+index*increment ); }
+	DEVICE inline const_reference operator[]( size_type index ) const { return container.at( offset+index*increment ); }
 	DEVICE inline const_reference at( size_type index ) const { return operator[]( index ); }
 	DEVICE inline const_reference front() const { return operator[](0); }
 	DEVICE inline const_reference back() const { return operator[](size()-1); }
