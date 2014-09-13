@@ -35,7 +35,7 @@ public:
 	__host__ __device__ device_ptr() : ptr(NULL) {
 		#ifndef __CUDA_ARCH__
 		shared_count = new size_type;
-		*shared_count = 0;
+		*shared_count = 1;
 		#endif
 	}
 	__host__ __device__ device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
@@ -46,6 +46,7 @@ public:
 	__host__ __device__ ~device_ptr() {
 		#ifndef __CUDA_ARCH__
 		std::cerr << "deallocating host device_ptr" << std::endl;
+		std::cerr << "shared_count=" << *shared_count << " ptr=" << ptr << std::endl;
 		--(*shared_count);
 		if( !(*shared_count) and ptr ) {
 			CUDA_CALL( cudaFree(ptr) );

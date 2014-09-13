@@ -102,7 +102,10 @@ public:
 
 	__host__ const array<T>& operator>>( std::vector<T>& vector ) const {
 		vector.resize( n );
+std::cerr << "copy destination = " << deviceMemory.get() << std::endl;
+std::cerr << "copying device contents of size " << n << " [" << (n*sizeof(T)) << "] to host vector" << std::endl;
 		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
+for( size_t i = 0; i < n; ++i ) std::cerr << "IN SITU [" << i << "]=" << vector[i] << std::endl;
 		return *this;
 	}
 
