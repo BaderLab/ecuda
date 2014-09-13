@@ -32,15 +32,15 @@ template<typename T>
 class device_ptr {
 
 public:
-	typedef T element_type;
-	typedef T* pointer;
-	typedef void** allocation_pointer;
-	typedef T& reference;
-	typedef std::size_t size_type;
+	typedef T element_type; //!< data type represented in allocated memory
+	typedef T* pointer; //!< data type pointer
+	typedef T& reference; //!< data type reference
+	typedef void** allocation_pointer; //!< pointer to pointer used by CUDA API to allocate device memory
+	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
 
 private:
-	pointer ptr;
-	size_type* shared_count;
+	pointer ptr; //!< pointer to device memory
+	size_type* shared_count; //!< pointer to reference count
 
 public:
 	__host__ __device__ device_ptr() : ptr(NULL) {

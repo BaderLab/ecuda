@@ -22,27 +22,30 @@
 
 namespace ecuda {
 
+///
+/// A video memory-bound array structure.
+///
 template<typename T>
 class array {
 
 public:
-	typedef T value_type;
-	typedef std::size_t size_type;
-	typedef std::ptrdiff_t difference_type;
-	typedef value_type& reference;
-	typedef const value_type& const_reference;
-	typedef value_type* pointer;
-	typedef const value_type* const_pointer;
+	typedef T value_type; //!< cell data type
+	typedef std::size_t size_type; //!< index data type
+	typedef std::ptrdiff_t difference_type; //!<
+	typedef value_type& reference; //!< cell reference type
+	typedef const value_type& const_reference; //!< cell const reference type
+	typedef value_type* pointer; //!< cell pointer type
+	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef ecuda::RandomAccessIterator< array<T> > iterator;
-	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator;
+	typedef ecuda::RandomAccessIterator< array<T> > iterator; //!< iterator type
+	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator; //!< const iterator type
 
 private:
-	size_type n;
-	device_ptr<T> deviceMemory; // video card memory
+	size_type n; //!< size of array
+	device_ptr<T> deviceMemory; //!< smart point to video card memory
 
 public:
-	__host__ __device__ array( const size_type n=0, const_reference value = T() ) : n(n) {
+	HOST DEVICE array( const size_type n=0, const_reference value = T() ) : n(n) {
 		#ifndef __CUDA_ARCH__
 		if( n ) {
 			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
@@ -51,40 +54,40 @@ public:
 		}
 		#endif
 	}
-	__host__ array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
-	__host__ array( const std::vector<T>& src ) : n(src.size()) {
+	HOST array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
+	HOST array( const std::vector<T>& src ) : n(src.size()) {
 		if( n ) {
 			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 		}
 	}
 
-	__host__ __device__ virtual ~array() {}
+	HOST DEVICE virtual ~array() {}
 
-	__device__ reference at( size_type index ) { return deviceMemory[index]; }
-	__device__ reference operator[]( size_type index ) { return deviceMemory[index]; }
-	__device__ const_reference at( size_type index ) const { return deviceMemory[index]; }
-	__device__ const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
+	DEVICE inline reference at( size_type index ) { return deviceMemory[index]; }
+	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
+	DEVICE inline const_reference at( size_type index ) const { return deviceMemory[index]; }
+	DEVICE inline const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
 
-	__device__ reference front() { return *deviceMemory; }
-	__device__ reference back() { return operator[]( size()-1 ); }
-	__device__ const_reference front() const { return *deviceMemory; }
-	__device__ const_reference back() const { return operator[]( size()-1 ); }
+	DEVICE inline reference front() { return *deviceMemory; }
+	DEVICE inline reference back() { return operator[]( size()-1 ); }
+	DEVICE inline const_reference front() const { return *deviceMemory; }
+	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
 
-	__host__ __device__ size_type size() const { return n; }
+	HOST DEVICE inline size_type size() const { return n; }
 
-	__device__ iterator begin() { return iterator(*this); }
-	__device__ iterator end() { return iterator(*this,size()); }
-	__device__ const_iterator begin() const { return const_iterator(*this); }
-	__device__ const_iterator end() const { return const_iterator(*this,size()); }
+	DEVICE inline iterator begin() { return iterator(*this); }
+	DEVICE inline iterator end() { return iterator(*this,size()); }
+	DEVICE inline const_iterator begin() const { return const_iterator(*this); }
+	DEVICE inline const_iterator end() const { return const_iterator(*this,size()); }
 
-	__host__ const array<T>& operator>>( std::vector<T>& vector ) const {
+	HOST const array<T>& operator>>( std::vector<T>& vector ) const {
 		vector.resize( n );
 		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
-	__device__ array<T>& operator=( const array<T>& other ) {
+	DEVICE array<T>& operator=( const array<T>& other ) {
 		n = other.n;
 		deviceMemory = other.deviceMemory;
 		return *this;

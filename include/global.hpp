@@ -28,5 +28,8 @@
 ///
 #define CUDA_CHECK_ERRORS do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw std::runtime_error(std::string(cudaGetErrorString(error))); } while(0);
 
+#define DEVICE __device__
+#define HOST __host__
+
 #endif
 

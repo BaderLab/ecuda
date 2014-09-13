@@ -17,6 +17,9 @@
 
 namespace ecuda {
 
+///
+/// An STL allocator that utilizes page-locked host memory.
+///
 template<typename T>
 class HostAllocator {
 public:
@@ -49,14 +52,6 @@ public:
 	void construct( pointer ptr, const_reference val ) { new ((void*)ptr) value_type (val);	}
 	void destroy( pointer ptr ) { ptr->~value_type(); }
 };
-
-//template<typename T>
-//class host_vector : public std::vector<T> {
-//public:
-//	host_array() : std::vector<T>( HostAllocator() ) {}
-//	host_array( std::vector<T>::size_type n, const std::vector<T>::value_type& val = std::vector<T>::value_type() ) : std::vector<T>( n, val, HostAllocator() ) {}
-//
-//}
 
 } // namespace ecuda
 
