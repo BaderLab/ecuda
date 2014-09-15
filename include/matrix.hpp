@@ -112,6 +112,17 @@ public:
 		return *this;
 	}
 
+	template<typename U,typename V>
+	HOST matrix<T>& operator<<( const estd::matrix<T,U,V>& src ) {
+		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+	}
+
+	template<typename Alloc>
+	HOST matrix<T>& operator<<( std::vector<T,Alloc>& other ) {
+		CUDA_CALL( cudaMemcpy2D( data(), pitch, &other[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+		return *this;
+	}
+
 };
 
 
