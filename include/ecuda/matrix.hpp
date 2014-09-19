@@ -90,7 +90,7 @@ public:
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
-	DEVICE matrix<T>& operator=( const matrix<T>& other ) {
+	HOST DEVICE matrix<T>& operator=( const matrix<T>& other ) {
 		numberRows = other.numberRows;
 		numberColumns = other.numberColumns;
 		pitch = other.pitch;

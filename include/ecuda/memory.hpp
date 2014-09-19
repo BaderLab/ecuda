@@ -58,6 +58,9 @@ public:
 		++(*shared_count);
 		#endif
 	}
+	// destroys the smart pointer, if instantiated from the host this will decrement the share count,
+	// if instantiated from the device nothing happens, iff. the share count is zero and the smart
+	// pointer resides on the host, the underlying device memory will be deallocated.
 	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
 		--(*shared_count);
@@ -72,11 +75,12 @@ public:
 	HOST DEVICE inline pointer get() const { return ptr; }
 	HOST DEVICE inline operator bool() const { return get() != NULL; }
 
-	// only device can dereference the pointer
+	// only device can dereference the pointer or call for the pointer in the context of acting upon the object
 	DEVICE inline reference operator*() const { return *ptr; }
 	DEVICE inline pointer   operator->() const { return ptr; }
 	DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 
+	// get a pointer to the pointer to the device memory suitable for use with cudaMalloc...()-style calls
 	HOST inline allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
 
 	// both host and device can do comparisons on the pointer
@@ -147,11 +151,12 @@ public:
 	typedef std::size_t size_type;
 
 private:
-	T ptr;
+	T* ptr;
 
 public:
-	unique_ptr<T[]>( T ptr=NULL ) : ptr(ptr) {}
-	~unique_ptr<T[]>() { if( &ptr ) delete [] ptr; }
+	unique_ptr<T[]>( T* ptr=NULL ) : ptr(ptr) {}
+	//unique_ptr<T[]>( const unique_ptr<T[]>& src ) : ptr(src.ptr) {}
+	~unique_ptr<T[]>() { if( ptr ) delete [] ptr; }
 
 	inline pointer get() const { return ptr; }
 	inline operator bool() const { return get() != NULL; }

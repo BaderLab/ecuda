@@ -50,27 +50,21 @@ private:
 	size_type numberRows;
 	size_type numberColumns;
 	size_type numberDepths;
-	//size_type pitch;
-	//device_ptr<T> deviceMemory;
 	unique_ptr< matrix<T>[] > matrices;
 
 public:
-	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const T& value = T() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), pitch(0) {
+	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const T& value = T() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths) {
 		if( numberRows and numberColumns and numberDepths ) {
 			matrices = new matrix<T>[numberRows];
-			for( size_t i = 0; i < numberRows; ++i ) *matrices[i] = matrix<T>( numberColumns, numberDepths, value );
-			//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*numberDepths*sizeof(T), numberRows ) );
-			//std::vector<T> v( numberColumns*numberDepths, value );
-			//for( size_t i = 0; i < numberRows; ++i )
-			//	CUDA_CALL( cudaMemcpy2D( deviceMemory.ptr()+(pitch*i), pitch, &v[0], v.size()*sizeof(T), numberColumns*numberDepths*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+			for( size_t i = 0; i < numberRows; ++i ) matrices.get()[i] = matrix<T>( numberColumns, numberDepths, value );
 		}
 	}
 	//TODO: is host/device difference in how underlying allocation correct here?
 	HOST DEVICE cube( const cube<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), matrices(src.matrices) {}
 	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()), pitch(0) {
+	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
-			for( size_t i = 0; i < numberRows; ++i ) (*matrices[i]) = matrix<T>( src[i] );
+			for( size_t i = 0; i < numberRows; ++i ) matrices.get()[i] = matrix<T>( src[i] );
 			//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*numberDepths*sizeof(T), numberRows ) );
 			//for( size_t i = 0; i < numberRows; ++i )
 			//	CUDA_CALL( cudaMemcpy2D( deviceMemory.ptr()+(pitch*i), pitch, &src[i][0][0], numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths*sizeof(T), numberRows ) );
@@ -86,13 +80,9 @@ public:
 
 	// element access:
 	DEVICE inline reference at( const size_type index ) { return matrices[index/(numberColumns*numberDepths)].at( index % (numberColumns*numberDepths) ); }
-		//return *(deviceMemory.get()+( index/(numberColumns*numberDepths)*(pitch/sizeof(value_type)) + (index % (numberColumns*numberDepths))/numberDepths + (index % (numberColumns*numberDepths)) % numberDepths )); }
 	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return matrices[rowIndex][columnIndex][depthIndex]; }
-		//return at( rowIndex*numberColumns*numberDepths + columnIndex*numberDepths + depthIndex ); }
 	DEVICE inline const_reference at( const size_type index ) const { return matrices[index/(numberColumns*numberDepths)].at( index % (numberColumns*numberDepths) ); }
-		//return *(deviceMemory.get()+( index/(numberColumns*numberDepths)*(pitch/sizeof(value_type)) + (index % (numberColumns*numberDepths))/numberDepths + (index % (numberColumns*numberDepths)) % numberDepths )); }
 	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return matrices[rowIndex][columnIndex][depthIndex]; }
-		//return at( rowIndex*numberColumns*numberDepths + columnIndex*numberDepths + depthIndex ); }
 	//HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 	//HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
