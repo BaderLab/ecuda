@@ -13,6 +13,7 @@
 #ifndef ECUDA_ALLOCATORS_HPP
 #define ECUDA_ALLOCATORS_HPP
 
+#include <limits>
 #include <stdexcept>
 
 namespace ecuda {

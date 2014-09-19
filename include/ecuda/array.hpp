@@ -81,9 +81,16 @@ public:
 	DEVICE inline const_iterator begin() const { return const_iterator(*this); }
 	DEVICE inline const_iterator end() const { return const_iterator(*this,size()); }
 
-	HOST const array<T>& operator>>( std::vector<T>& vector ) const {
+	template<class Alloc>
+	HOST const array<T>& operator>>( std::vector<T,Alloc>& vector ) const {
 		vector.resize( n );
 		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+
+	HOST array<T>& operator<<( std::vector<T>& vector ) {
+		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
+		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &vector[0], vector.size()*sizeof(T), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
