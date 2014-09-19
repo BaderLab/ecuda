@@ -47,19 +47,19 @@ public:
 	inline const cudaDeviceProp& get_properties() const { return deviceProperties; }
 
 	std::string get_driver_version_string() const {
-		std::istringstream iss;
-		iss << (driverVersion/1000);
-		iss << ".";
-		iss << ((driverVersion%100)/10);
-		return iss.str();
+		std::ostringstream oss;
+		oss << (driverVersion/1000);
+		oss << ".";
+		oss << ((driverVersion%100)/10);
+		return oss.str();
 	}
 
 	std::string get_runtime_version_string() const {
-		std::istringstream iss;
-		iss << (runtimeVersion/1000);
-		iss << ".";
-		iss << ((runtimeVersion%100)/10);
-		return iss.str();
+		std::ostringstream oss;
+		oss << (runtimeVersion/1000);
+		oss << ".";
+		oss << ((runtimeVersion%100)/10);
+		return oss.str();
 	}
 
 };
