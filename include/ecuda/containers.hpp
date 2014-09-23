@@ -24,19 +24,24 @@ namespace ecuda {
 ///
 /// Helper container that encloses another container and skips elements at a defined offset and interval.
 ///
-template<class ContainerType,class IndexType=typename ContainerType::size_type>
+template<class ContainerType,class IndexType=typename ContainerType::size_type,typename PointerType=typename ContainerType::pointer>
 class OffsettingContainer
 {
 public:
 	typedef typename ContainerType::value_type value_type;
-	typedef typename ContainerType::reference reference;
-	typedef typename ContainerType::const_reference const_reference;
-	typedef typename ContainerType::pointer pointer;
-	typedef typename ContainerType::const_pointer const_pointer;
-	typedef RandomAccessIterator< OffsettingContainer<ContainerType,IndexType>, pointer > iterator;
-	typedef RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType>, const_pointer > const_iterator;
-	typedef ReverseIterator< RandomAccessIterator< OffsettingContainer<ContainerType,IndexType>, pointer > > reverse_iterator;
-	typedef ReverseIterator< RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType>, const_pointer > > const_reverse_iterator;
+	typedef PointerType pointer_type;
+	typedef pointer_type pointer;
+	typedef typename dereference<pointer>::type reference;
+	typedef const pointer const_pointer;
+	typedef typename dereference<const_pointer>::type const_reference;
+	//typedef typename ContainerType::reference reference;
+	//typedef typename ContainerType::const_reference const_reference;
+	//typedef typename ContainerType::pointer pointer;
+	//typedef typename ContainerType::const_pointer const_pointer;
+	typedef RandomAccessIterator< OffsettingContainer<ContainerType,IndexType,PointerType>, pointer > iterator;
+	typedef RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType,PointerType>, const_pointer > const_iterator;
+	typedef ReverseIterator< RandomAccessIterator< OffsettingContainer<ContainerType,IndexType,PointerType>, pointer > > reverse_iterator;
+	typedef ReverseIterator< RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType,PointerType>, const_pointer > > const_reverse_iterator;
 	typedef typename ContainerType::difference_type difference_type;
 	typedef typename ContainerType::size_type size_type;
 

@@ -32,10 +32,6 @@
 
 namespace ecuda {
 
-template<typename T> struct dereference;
-template<typename T> struct dereference<T*> { typedef T& type; };
-template<typename T> struct dereference<T* const> { typedef const T& type; };
-
 ///
 /// Base iterator.
 ///
