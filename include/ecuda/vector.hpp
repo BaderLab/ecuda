@@ -50,7 +50,7 @@ private:
 	HOST void growMemory( size_type minimum );
 
 public:
-	HOST DEVICE vector( size_type n=0, const_reference value = T() );
+	HOST vector( size_type n=0, const_reference value = T() );
 	HOST DEVICE vector( const vector<T>& src );
 	//HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory) {}
 	HOST vector( const std::vector<T>& src );
@@ -134,7 +134,7 @@ HOST void vector<T>::growMemory( size_type minimum ) {
 }
 
 template<typename T>
-HOST DEVICE vector<T>::vector( size_type n, const_reference value ) : n(n) {
+HOST vector<T>::vector( size_type n, const_reference value ) : n(n) {
 	m = 1; while( m < n ) m <<= 1;
 	#ifndef __CUDA_ARCH__
 	if( n ) {
