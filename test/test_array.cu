@@ -40,7 +40,7 @@ int main( int argc, char* argv[] ) {
 
 	// copy array to host
 	deviceArray4 >> hostVector;
-	// print contents
+	// print contents (should be 1^2,2^2,3^2,...)
 	for( size_t i = 0; i < n; ++i ) std::cout << "test1.hostVector[" << i << "]=" << hostVector[i] << std::endl;
 
 	sumVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
@@ -49,7 +49,7 @@ int main( int argc, char* argv[] ) {
 
 	// copy array to host
 	deviceArray4 >> hostVector;
-	// print contents
+	// print contents (should be sum(1:1000)=5050)
 	for( size_t i = 0; i < n; ++i ) std::cout << "test2.hostVector[" << i << "]=" << hostVector[i] << std::endl;
 
 	return EXIT_SUCCESS;

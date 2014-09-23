@@ -57,15 +57,15 @@ protected:
 	typename ContainerType::size_type index; //!< index of underlying container element
 
 protected:
-	DEVICE virtual Iterator copy() const { return Iterator(*this); }
+	HOST DEVICE virtual Iterator copy() const { return Iterator(*this); }
 
 public:
-	DEVICE Iterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : pContainer(pContainer), index(index) {}
-	DEVICE Iterator( const Iterator<ContainerType,PointerType,Category>& src ) : pContainer(src.pContainer), index(src.index) {}
-	DEVICE virtual ~Iterator() {}
+	HOST DEVICE Iterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : pContainer(pContainer), index(index) {}
+	HOST DEVICE Iterator( const Iterator<ContainerType,PointerType,Category>& src ) : pContainer(src.pContainer), index(src.index) {}
+	HOST DEVICE virtual ~Iterator() {}
 
-	DEVICE inline Iterator& operator++() {	if( index < pContainer->size() ) ++index; return *this; }
-	DEVICE inline Iterator operator++( int ) const { return ++(this->copy()); }
+	HOST DEVICE inline Iterator& operator++() {	if( index < pContainer->size() ) ++index; return *this; }
+	HOST DEVICE inline Iterator operator++( int ) const { return ++(this->copy()); }
 
 };
 
@@ -88,15 +88,15 @@ public:
 	typedef typename dereference<const_pointer>::type const_reference;
 
 protected:
-	DEVICE virtual base_iterator_type copy() const { return InputIterator(*this); }
+	HOST DEVICE virtual base_iterator_type copy() const { return InputIterator(*this); }
 
 public:
-	DEVICE InputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	DEVICE InputIterator( const InputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
-	DEVICE virtual ~InputIterator() {}
+	HOST DEVICE InputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
+	HOST DEVICE InputIterator( const InputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
+	HOST DEVICE virtual ~InputIterator() {}
 
-	DEVICE virtual bool operator==( const InputIterator& other ) const { return base_iterator_type::index == other.index; }
-	DEVICE virtual bool operator!=( const InputIterator& other ) const { return !operator==(other); }
+	HOST DEVICE virtual bool operator==( const InputIterator& other ) const { return base_iterator_type::index == other.index; }
+	HOST DEVICE virtual bool operator!=( const InputIterator& other ) const { return !operator==(other); }
 	DEVICE virtual const_reference operator*() const { return base_iterator_type::pContainer->operator[]( base_iterator_type::index ); }
 	DEVICE virtual const_pointer operator->() const { return &(base_iterator_type::pContainer->operator[]( base_iterator_type::index )); }
 };
@@ -118,12 +118,12 @@ public:
 	typedef typename dereference<pointer>::type reference;
 
 protected:
-	DEVICE virtual base_iterator_type copy() const { return OutputIterator(*this); }
+	HOST DEVICE virtual base_iterator_type copy() const { return OutputIterator(*this); }
 
 public:
-	DEVICE OutputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	DEVICE OutputIterator( const OutputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
-	DEVICE virtual ~OutputIterator() {}
+	HOST DEVICE OutputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
+	HOST DEVICE OutputIterator( const OutputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
+	HOST DEVICE virtual ~OutputIterator() {}
 
 	DEVICE virtual reference operator*() {	return base_iterator_type::pContainer->operator[]( base_iterator_type::index ); }
 	DEVICE virtual pointer operator->() { return &(base_iterator_type::pContainer->operator[]( base_iterator_type::index )); }
@@ -150,13 +150,13 @@ public:
 	typedef typename super_input_iterator_type::const_reference const_reference;
 
 protected:
-	DEVICE virtual base_iterator_type copy() const { return ForwardIterator(*this); }
+	HOST DEVICE virtual base_iterator_type copy() const { return ForwardIterator(*this); }
 
 public:
-	DEVICE ForwardIterator() : Iterator<ContainerType,PointerType,Category>(), InputIterator<ContainerType,PointerType,Category>( nullptr, 0 ), OutputIterator<ContainerType,PointerType,Category>( nullptr, 0 ) {}
-	DEVICE ForwardIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), InputIterator<ContainerType,PointerType,Category>( pContainer, index ), OutputIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	DEVICE ForwardIterator( const ForwardIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), InputIterator<ContainerType,PointerType,Category>( src ), OutputIterator<ContainerType,PointerType,Category>( src ) {}
-	DEVICE virtual ~ForwardIterator() {}
+	HOST DEVICE ForwardIterator() : Iterator<ContainerType,PointerType,Category>(), InputIterator<ContainerType,PointerType,Category>( nullptr, 0 ), OutputIterator<ContainerType,PointerType,Category>( nullptr, 0 ) {}
+	HOST DEVICE ForwardIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), InputIterator<ContainerType,PointerType,Category>( pContainer, index ), OutputIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
+	HOST DEVICE ForwardIterator( const ForwardIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), InputIterator<ContainerType,PointerType,Category>( src ), OutputIterator<ContainerType,PointerType,Category>( src ) {}
+	HOST DEVICE virtual ~ForwardIterator() {}
 
 	DEVICE virtual const_reference operator*() const { return super_input_iterator_type::operator*(); }
 	DEVICE virtual const_pointer operator->() const { return super_input_iterator_type::operator->(); }
@@ -184,16 +184,16 @@ public:
 	typedef typename super_iterator_type::const_reference const_reference;
 
 protected:
-	DEVICE virtual base_iterator_type copy() const { return BidirectionalIterator(*this); }
+	HOST DEVICE virtual base_iterator_type copy() const { return BidirectionalIterator(*this); }
 
 public:
-	DEVICE BidirectionalIterator() : Iterator<ContainerType,PointerType,Category>(), ForwardIterator<ContainerType,PointerType,Category>() {}
-	DEVICE BidirectionalIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), ForwardIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	DEVICE BidirectionalIterator( const BidirectionalIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), ForwardIterator<ContainerType,PointerType,Category>( src ) {}
-	DEVICE virtual ~BidirectionalIterator() {}
+	HOST DEVICE BidirectionalIterator() : Iterator<ContainerType,PointerType,Category>(), ForwardIterator<ContainerType,PointerType,Category>() {}
+	HOST DEVICE BidirectionalIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), ForwardIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
+	HOST DEVICE BidirectionalIterator( const BidirectionalIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), ForwardIterator<ContainerType,PointerType,Category>( src ) {}
+	HOST DEVICE virtual ~BidirectionalIterator() {}
 
-	DEVICE inline BidirectionalIterator& operator--() { if( base_iterator_type::index ) --base_iterator_type::index; return *this; }
-	DEVICE inline BidirectionalIterator operator--( int ) const { return BidirectionalIterator<ContainerType,PointerType,Category>( base_iterator_type::pContainer, base_iterator_type::index-1 ); }
+	HOST DEVICE inline BidirectionalIterator& operator--() { if( base_iterator_type::index ) --base_iterator_type::index; return *this; }
+	HOST DEVICE inline BidirectionalIterator operator--( int ) const { return BidirectionalIterator<ContainerType,PointerType,Category>( base_iterator_type::pContainer, base_iterator_type::index-1 ); }
 };
 
 ///
@@ -223,26 +223,26 @@ public:
 	typedef typename base_iterator_type::difference_type difference_type;
 
 protected:
-	DEVICE virtual base_iterator_type copy() const { return RandomAccessIterator(*this); }
+	HOST DEVICE virtual base_iterator_type copy() const { return RandomAccessIterator(*this); }
 
 public:
-	DEVICE RandomAccessIterator() : Iterator<ContainerType,PointerType,Category>(), BidirectionalIterator<ContainerType,PointerType,Category>() {}
-	DEVICE RandomAccessIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), BidirectionalIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	DEVICE RandomAccessIterator( const RandomAccessIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), BidirectionalIterator<ContainerType,PointerType,Category>( src ) {}
-	DEVICE virtual ~RandomAccessIterator() {}
+	HOST DEVICE RandomAccessIterator() : Iterator<ContainerType,PointerType,Category>(), BidirectionalIterator<ContainerType,PointerType,Category>() {}
+	HOST DEVICE RandomAccessIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), BidirectionalIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
+	HOST DEVICE RandomAccessIterator( const RandomAccessIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), BidirectionalIterator<ContainerType,PointerType,Category>( src ) {}
+	HOST DEVICE virtual ~RandomAccessIterator() {}
 
-	DEVICE virtual difference_type operator-( const RandomAccessIterator& other ) { return base_iterator_type::index - other.index; }
+	HOST DEVICE virtual difference_type operator-( const RandomAccessIterator& other ) { return base_iterator_type::index - other.index; }
 
-	DEVICE inline RandomAccessIterator operator+( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index+x ); }
-	DEVICE inline RandomAccessIterator operator-( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index-x ); }
+	HOST DEVICE inline RandomAccessIterator operator+( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index+x ); }
+	HOST DEVICE inline RandomAccessIterator operator-( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index-x ); }
 
-	DEVICE virtual bool operator<( const RandomAccessIterator& other ) const { return base_iterator_type::index < other.index; }
-	DEVICE virtual bool operator>( const RandomAccessIterator& other ) const { return base_iterator_type::index > other.index; }
-	DEVICE virtual bool operator<=( const RandomAccessIterator& other ) const { return operator<(other) or super_input_iterator_type::operator==(other); }
-	DEVICE virtual bool operator>=( const RandomAccessIterator& other ) const { return operator>(other) or super_input_iterator_type::operator==(other); }
+	HOST DEVICE virtual bool operator<( const RandomAccessIterator& other ) const { return base_iterator_type::index < other.index; }
+	HOST DEVICE virtual bool operator>( const RandomAccessIterator& other ) const { return base_iterator_type::index > other.index; }
+	HOST DEVICE virtual bool operator<=( const RandomAccessIterator& other ) const { return operator<(other) or super_input_iterator_type::operator==(other); }
+	HOST DEVICE virtual bool operator>=( const RandomAccessIterator& other ) const { return operator>(other) or super_input_iterator_type::operator==(other); }
 
-	DEVICE inline RandomAccessIterator& operator+=( int x ) { base_iterator_type::index += x; return *this; }
-	DEVICE inline RandomAccessIterator& operator-=( int x ) { base_iterator_type::index -= x; return *this; }
+	HOST DEVICE inline RandomAccessIterator& operator+=( int x ) { base_iterator_type::index += x; return *this; }
+	HOST DEVICE inline RandomAccessIterator& operator-=( int x ) { base_iterator_type::index -= x; return *this; }
 
 	DEVICE virtual reference operator[]( int x ) { return base_iterator_type::pContainer->at( base_iterator_type::index+x ); }
 	DEVICE virtual const_reference operator[]( int x ) const { return base_iterator_type::pContainer->at( base_iterator_type::index+x ); }
@@ -274,35 +274,35 @@ private:
 	ParentIterator parentIterator;
 
 public:
-	DEVICE ReverseIterator() : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr){}
-	DEVICE ReverseIterator( ParentIterator parentIterator ) : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), parentIterator(parentIterator) {}
+	HOST DEVICE ReverseIterator() : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr){}
+	HOST DEVICE ReverseIterator( ParentIterator parentIterator ) : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), parentIterator(parentIterator) {}
 
-	DEVICE ParentIterator base() const { return parentIterator; }
+	HOST DEVICE ParentIterator base() const { return parentIterator; }
 
-	DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
-	DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator!=( other.parentIterator ); }
+	HOST DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
+	HOST DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator!=( other.parentIterator ); }
 	DEVICE virtual const_reference operator*() const { return parentIterator.operator--(0).operator*(); }
 	DEVICE virtual const_pointer operator->() const { return parentIterator.operator--(0).operator->(); }
 
-	DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator==( other.parentIterator ); }
-	DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator!=( other.parentIterator ); }
+	HOST DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator==( other.parentIterator ); }
+	HOST DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator!=( other.parentIterator ); }
 	DEVICE virtual reference operator*() { return parentIterator.operator--(0).operator*(); }
 	DEVICE virtual pointer operator->() { return parentIterator.operator--(0).operator->(); }
 
-	DEVICE ReverseIterator<ParentIterator>& operator++() { --parentIterator; return *this; }
-	DEVICE ReverseIterator<ParentIterator> operator++( int x ) const { return ReverseIterator<ParentIterator>(*this).operator--(x); } // ReverseIterator<ParentIterator>(parentIterator.operator--(x)); }
+	HOST DEVICE ReverseIterator<ParentIterator>& operator++() { --parentIterator; return *this; }
+	HOST DEVICE ReverseIterator<ParentIterator> operator++( int x ) const { return ReverseIterator<ParentIterator>(*this).operator--(x); } // ReverseIterator<ParentIterator>(parentIterator.operator--(x)); }
 
-	DEVICE ReverseIterator<ParentIterator>& operator--() { ++parentIterator; return *this; }
-	DEVICE ReverseIterator<ParentIterator> operator--( int x ) const { return ReverseIterator<ParentIterator>(*this).operator++(x); } // ReverseIterator<ParentIterator>(parentIterator.operator++(x)); }
+	HOST DEVICE ReverseIterator<ParentIterator>& operator--() { ++parentIterator; return *this; }
+	HOST DEVICE ReverseIterator<ParentIterator> operator--( int x ) const { return ReverseIterator<ParentIterator>(*this).operator++(x); } // ReverseIterator<ParentIterator>(parentIterator.operator++(x)); }
 
-	DEVICE ReverseIterator<ParentIterator> operator+( int x ) { return ReverseIterator<ParentIterator>(*this).operator-(x); }
-	DEVICE ReverseIterator<ParentIterator> operator-( int x ) { return ReverseIterator<ParentIterator>(*this).operator+(x); }
-	DEVICE bool operator<( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator>=(other); }
-	DEVICE bool operator>( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator<=(other); }
-	DEVICE bool operator<=( const ReverseIterator<ParentIterator>& other ) const { return operator<(other) or operator==(other); }
-	DEVICE bool operator>=( const ReverseIterator<ParentIterator>& other ) const { return operator>(other) or operator==(other); }
-	DEVICE ReverseIterator<ParentIterator>& operator+=( int x ) { parentIterator.operator-=(x); return *this; }
-	DEVICE ReverseIterator<ParentIterator>& operator-=( int x ) { parentIterator.operator+=(x); return *this; }
+	HOST DEVICE ReverseIterator<ParentIterator> operator+( int x ) { return ReverseIterator<ParentIterator>(*this).operator-(x); }
+	HOST DEVICE ReverseIterator<ParentIterator> operator-( int x ) { return ReverseIterator<ParentIterator>(*this).operator+(x); }
+	HOST DEVICE bool operator<( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator>=(other); }
+	HOST DEVICE bool operator>( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator<=(other); }
+	HOST DEVICE bool operator<=( const ReverseIterator<ParentIterator>& other ) const { return operator<(other) or operator==(other); }
+	HOST DEVICE bool operator>=( const ReverseIterator<ParentIterator>& other ) const { return operator>(other) or operator==(other); }
+	HOST DEVICE ReverseIterator<ParentIterator>& operator+=( int x ) { parentIterator.operator-=(x); return *this; }
+	HOST DEVICE ReverseIterator<ParentIterator>& operator-=( int x ) { parentIterator.operator+=(x); return *this; }
 
 	DEVICE inline reference operator[]( int x ) { return parentIterator.operator[]( -x ); }
 	DEVICE inline const_reference operator[]( int x ) const { return parentIterator.operator[]( -x ); }
