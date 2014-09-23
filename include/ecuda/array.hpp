@@ -45,23 +45,9 @@ private:
 	device_ptr<T> deviceMemory; //!< smart point to video card memory
 
 public:
-	HOST DEVICE array( const size_type n=0, const_reference value = T() ) : n(n) {
-		#ifndef __CUDA_ARCH__
-		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-			std::vector<T> v( n, value );
-			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
-		}
-		#endif
-	}
+	HOST DEVICE array( const size_type n=0, const_reference value = T() );
 	HOST array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
-	HOST array( const std::vector<T>& src ) : n(src.size()) {
-		if( n ) {
-			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-			CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
-		}
-	}
-
+	HOST array( const std::vector<T>& src );
 	HOST DEVICE virtual ~array() {}
 
 	DEVICE inline reference at( size_type index ) { return deviceMemory[index]; }
@@ -76,10 +62,10 @@ public:
 
 	HOST DEVICE inline size_type size() const { return n; }
 
-	DEVICE inline iterator begin() { return iterator(this); }
-	DEVICE inline iterator end() { return iterator(this,size()); }
-	DEVICE inline const_iterator begin() const { return const_iterator(this); }
-	DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
+	HOST DEVICE inline iterator begin() { return iterator(this); }
+	HOST DEVICE inline iterator end() { return iterator(this,size()); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator(this); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
 
 	template<class Alloc>
 	HOST const array<T>& operator>>( std::vector<T,Alloc>& vector ) const {
@@ -94,6 +80,7 @@ public:
 		return *this;
 	}
 
+	// critical function used to bridge host->device code
 	DEVICE array<T>& operator=( const array<T>& other ) {
 		n = other.n;
 		deviceMemory = other.deviceMemory;
@@ -101,6 +88,27 @@ public:
 	}
 
 };
+
+
+template<typename T>
+HOST DEVICE array<T>::array( const size_type n, const_reference value ) : n(n) {
+	#ifndef __CUDA_ARCH__
+	if( n ) {
+		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
+		std::vector<T> v( n, value );
+		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+	}
+	#endif
+}
+
+template<typename T>
+HOST array<T>::array( const std::vector<T>& src ) : n(src.size()) {
+	if( n ) {
+		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
+		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+	}
+}
+
 
 } // namespace ecuda
 

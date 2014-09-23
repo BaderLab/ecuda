@@ -49,24 +49,10 @@ private:
 	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
 
 public:
-	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
-		if( numberRows and numberColumns ) {
-			CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
-			// cudaMemset2D method not general since sizeof(T) > int
-			//CUDA_CALL( cudaMemset2D( deviceMemory.get(), pitch, static_cast<int>(value), numberColumns*sizeof(T), numberRows ) );
-			std::vector<T> v( numberRows*numberColumns, value );
-			CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
-		}
-	}
-	HOST DEVICE matrix( const matrix<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(src.deviceMemory) {}
+	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() );
+	HOST DEVICE matrix( const matrix<T>& src );
 	template<typename U,typename V>
-	HOST matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0) {
-		if( numberRows and numberColumns ) {
-			CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
-			CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
-		}
-	}
-
+	HOST matrix( const estd::matrix<T,U,V>& src );
 	HOST DEVICE virtual ~matrix() {}
 
 	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
@@ -90,6 +76,7 @@ public:
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
+	// critical function used to bridge host->device code
 	HOST DEVICE matrix<T>& operator=( const matrix<T>& other ) {
 		numberRows = other.numberRows;
 		numberColumns = other.numberColumns;
@@ -125,6 +112,29 @@ public:
 	}
 
 };
+
+template<typename T>
+HOST matrix<T>::matrix( const size_type numberRows, const size_type numberColumns, const_reference value ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
+	if( numberRows and numberColumns ) {
+		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+		// cudaMemset2D method not general since sizeof(T) > int
+		//CUDA_CALL( cudaMemset2D( deviceMemory.get(), pitch, static_cast<int>(value), numberColumns*sizeof(T), numberRows ) );
+		std::vector<T> v( numberRows*numberColumns, value );
+		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+	}
+}
+
+template<typename T>
+HOST DEVICE matrix<T>::matrix( const matrix<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(src.deviceMemory) {}
+
+template<typename T>
+template<typename U,typename V>
+HOST matrix<T>::matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0) {
+	if( numberRows and numberColumns ) {
+		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+	}
+}
 
 
 } // namespace ecuda

@@ -109,6 +109,7 @@ public:
 		return *this;
 	}
 
+	// critical function used to bridge host->device code
 	DEVICE vector<T>& operator=( const vector<T>& other ) {
 		n = other.n;
 		deviceMemory = other.deviceMemory;
