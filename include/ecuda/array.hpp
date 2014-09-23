@@ -37,8 +37,8 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef ecuda::RandomAccessIterator< array<T> > iterator; //!< iterator type
-	typedef const ecuda::RandomAccessIterator< const array<T> > const_iterator; //!< const iterator type
+	typedef ecuda::RandomAccessIterator< array<value_type>, pointer > iterator; //!< iterator type
+	typedef ecuda::RandomAccessIterator< const array<value_type>, const_pointer > const_iterator; //!< const iterator type
 
 private:
 	size_type n; //!< size of array

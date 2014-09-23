@@ -31,5 +31,9 @@
 #define DEVICE __device__
 #define HOST __host__
 
-#endif
+/** Replace nullptr with NULL iff compiler doesn't support C++11. */
+//#if __cplusplus < 201103L
+#define nullptr NULL
+//#endif
 
+#endif

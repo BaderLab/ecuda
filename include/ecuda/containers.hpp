@@ -33,10 +33,10 @@ public:
 	typedef typename ContainerType::const_reference const_reference;
 	typedef typename ContainerType::pointer pointer;
 	typedef typename ContainerType::const_pointer const_pointer;
-	typedef RandomAccessIterator< OffsettingContainer<ContainerType,IndexType> > iterator;
-	typedef const RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType> > const_iterator;
-	typedef ReverseIterator< RandomAccessIterator< OffsettingContainer<ContainerType,IndexType> > > reverse_iterator;
-	typedef const ReverseIterator< RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType> > > const_reverse_iterator;
+	typedef RandomAccessIterator< OffsettingContainer<ContainerType,IndexType>, pointer > iterator;
+	typedef RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType>, const_pointer > const_iterator;
+	typedef ReverseIterator< RandomAccessIterator< OffsettingContainer<ContainerType,IndexType>, pointer > > reverse_iterator;
+	typedef ReverseIterator< RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType>, const_pointer > > const_reverse_iterator;
 	typedef typename ContainerType::difference_type difference_type;
 	typedef typename ContainerType::size_type size_type;
 

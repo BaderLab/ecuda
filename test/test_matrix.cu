@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <estd/matrix.hpp>
-#include "../include/matrix.hpp"
+#include "../include/ecuda/matrix.hpp"
 
 __global__ void testKernel( const ecuda::matrix<float> input, ecuda::matrix<float> output )
 //__global__ void testKernel( const float* inputMemory, const size_t pitch, ecuda::matrix<float> output )

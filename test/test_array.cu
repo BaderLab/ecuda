@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdio>
-#include "../include/array.hpp"
+#include "../include/ecuda/array.hpp"
 
 __global__ void testKernel( const ecuda::array<float> input, ecuda::array<float> output )
 //__global__ void testKernel( const ecuda::array<float>::DevicePayload in, ecuda::array<float>::DevicePayload out )

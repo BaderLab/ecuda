@@ -115,6 +115,7 @@ public:
 	template<typename U,typename V>
 	HOST matrix<T>& operator<<( const estd::matrix<T,U,V>& src ) {
 		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+		return *this;
 	}
 
 	template<typename Alloc>
