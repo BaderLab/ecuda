@@ -76,10 +76,10 @@ public:
 
 	HOST DEVICE inline size_type size() const { return n; }
 
-	DEVICE inline iterator begin() { return iterator(*this); }
-	DEVICE inline iterator end() { return iterator(*this,size()); }
-	DEVICE inline const_iterator begin() const { return const_iterator(*this); }
-	DEVICE inline const_iterator end() const { return const_iterator(*this,size()); }
+	DEVICE inline iterator begin() { return iterator(this); }
+	DEVICE inline iterator end() { return iterator(this,size()); }
+	DEVICE inline const_iterator begin() const { return const_iterator(this); }
+	DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
 
 	template<class Alloc>
 	HOST const array<T>& operator>>( std::vector<T,Alloc>& vector ) const {
