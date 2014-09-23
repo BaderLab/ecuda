@@ -39,8 +39,8 @@ public:
 
 	typedef ecuda::OffsettingContainer< matrix<T> > row_type; //!< matrix row container type
 	typedef ecuda::OffsettingContainer< matrix<T> > column_type; //!< matrix column container type
-	typedef const ecuda::OffsettingContainer< const matrix<T> > const_row_type; //!< matrix const row container type
-	typedef const ecuda::OffsettingContainer< const matrix<T> > const_column_type; //!< matrix const column container type
+	typedef const ecuda::OffsettingContainer< const matrix<T>, size_type, const_pointer > const_row_type; //!< matrix const row container type
+	typedef const ecuda::OffsettingContainer< const matrix<T>, size_type, const_pointer > const_column_type; //!< matrix const column container type
 
 private:
 	size_type numberRows; //!< number of matrix rows

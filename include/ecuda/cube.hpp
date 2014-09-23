@@ -38,9 +38,9 @@ public:
 	typedef ecuda::OffsettingContainer< cube<T> > xy_type;
 	typedef ecuda::OffsettingContainer< cube<T> > xz_type;
 	typedef ecuda::OffsettingContainer< cube<T> > yz_type;
-	typedef const ecuda::OffsettingContainer< const cube<T> > const_xy_type;
-	typedef const ecuda::OffsettingContainer< const cube<T> > const_xz_type;
-	typedef const ecuda::OffsettingContainer< const cube<T> > const_yz_type;
+	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_xy_type;
+	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_xz_type;
+	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_yz_type;
 
 	typedef matrix<T> subscript_type;
 	typedef subscript_type& subscript_reference;
@@ -98,6 +98,13 @@ public:
 
 	HOST DEVICE inline subscript_reference operator[]( const size_t rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_subscript_reference operator[]( const size_t rowIndex ) const { return get_row(rowIndex); }
+
+	template<typename U,typename V,typename W>
+	HOST cube<T>& operator>>( estd::cube<T,U,V,W>& dest ) {
+		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
+		for( size_type i = 0; i < numberRows; ++i ) matrices[i] >> dest[i];
+		return *this;
+	}
 
 };
 

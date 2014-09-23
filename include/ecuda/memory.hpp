@@ -124,20 +124,20 @@ private:
 	T* ptr;
 
 public:
-	unique_ptr( T* ptr=NULL ) : ptr(ptr) {}
-	~unique_ptr() {	if( ptr ) delete ptr; }
+	HOST DEVICE unique_ptr( T* ptr=NULL ) : ptr(ptr) {}
+	HOST DEVICE ~unique_ptr() {	if( ptr ) delete ptr; }
 
-	inline pointer get() const { return ptr; }
-	inline operator bool() const { return get() != NULL; }
-	inline reference operator*() const { return *ptr; }
-	inline pointer operator->() const { return ptr; }
+	HOST DEVICE inline pointer get() const { return ptr; }
+	HOST DEVICE inline operator bool() const { return get() != NULL; }
+	HOST DEVICE inline reference operator*() const { return *ptr; }
+	HOST DEVICE inline pointer operator->() const { return ptr; }
 
-	inline bool operator==( const unique_ptr<T>& other ) const { return ptr == other.ptr; }
-	inline bool operator!=( const unique_ptr<T>& other ) const { return ptr != other.ptr; }
-	inline bool operator<( const unique_ptr<T>& other ) const { return ptr < other.ptr; }
-	inline bool operator>( const unique_ptr<T>& other ) const { return ptr > other.ptr; }
-	inline bool operator<=( const unique_ptr<T>& other ) const { return ptr <= other.ptr; }
-	inline bool operator>=( const unique_ptr<T>& other ) const { return ptr >= other.ptr; }
+	HOST DEVICE inline bool operator==( const unique_ptr<T>& other ) const { return ptr == other.ptr; }
+	HOST DEVICE inline bool operator!=( const unique_ptr<T>& other ) const { return ptr != other.ptr; }
+	HOST DEVICE inline bool operator<( const unique_ptr<T>& other ) const { return ptr < other.ptr; }
+	HOST DEVICE inline bool operator>( const unique_ptr<T>& other ) const { return ptr > other.ptr; }
+	HOST DEVICE inline bool operator<=( const unique_ptr<T>& other ) const { return ptr <= other.ptr; }
+	HOST DEVICE inline bool operator>=( const unique_ptr<T>& other ) const { return ptr >= other.ptr; }
 
 };
 
@@ -154,20 +154,20 @@ private:
 	T* ptr;
 
 public:
-	unique_ptr<T[]>( T* ptr=NULL ) : ptr(ptr) {}
+	HOST DEVICE unique_ptr<T[]>( T* ptr=NULL ) : ptr(ptr) {}
 	//unique_ptr<T[]>( const unique_ptr<T[]>& src ) : ptr(src.ptr) {}
-	~unique_ptr<T[]>() { if( ptr ) delete [] ptr; }
+	HOST DEVICE ~unique_ptr<T[]>() { if( ptr ) delete [] ptr; }
 
-	inline pointer get() const { return ptr; }
-	inline operator bool() const { return get() != NULL; }
-	inline reference operator[]( const size_type index ) const { return *(ptr+index); }
+	HOST DEVICE inline pointer get() const { return ptr; }
+	HOST DEVICE inline operator bool() const { return get() != NULL; }
+	HOST DEVICE inline reference operator[]( const size_type index ) const { return *(ptr+index); }
 
-	inline bool operator==( const unique_ptr<T[]>& other ) const { return ptr == other.ptr; }
-	inline bool operator!=( const unique_ptr<T[]>& other ) const { return ptr != other.ptr; }
-	inline bool operator<( const unique_ptr<T[]>& other ) const { return ptr < other.ptr; }
-	inline bool operator>( const unique_ptr<T[]>& other ) const { return ptr > other.ptr; }
-	inline bool operator<=( const unique_ptr<T[]>& other ) const { return ptr <= other.ptr; }
-	inline bool operator>=( const unique_ptr<T[]>& other ) const { return ptr >= other.ptr; }
+	HOST DEVICE inline bool operator==( const unique_ptr<T[]>& other ) const { return ptr == other.ptr; }
+	HOST DEVICE inline bool operator!=( const unique_ptr<T[]>& other ) const { return ptr != other.ptr; }
+	HOST DEVICE inline bool operator<( const unique_ptr<T[]>& other ) const { return ptr < other.ptr; }
+	HOST DEVICE inline bool operator>( const unique_ptr<T[]>& other ) const { return ptr > other.ptr; }
+	HOST DEVICE inline bool operator<=( const unique_ptr<T[]>& other ) const { return ptr <= other.ptr; }
+	HOST DEVICE inline bool operator>=( const unique_ptr<T[]>& other ) const { return ptr >= other.ptr; }
 
 };
 #endif
