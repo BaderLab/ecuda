@@ -64,6 +64,7 @@ public:
 	template<typename U,typename V,typename W>
 	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
+			matrices = new matrix<T>[numberRows];
 			for( size_t i = 0; i < numberRows; ++i ) matrices.get()[i] = matrix<T>( src[i] );
 			//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*numberDepths*sizeof(T), numberRows ) );
 			//for( size_t i = 0; i < numberRows; ++i )
