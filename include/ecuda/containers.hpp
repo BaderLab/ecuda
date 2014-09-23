@@ -46,7 +46,6 @@ public:
 	typedef typename ContainerType::size_type size_type;
 
 private:
-public:
 	ContainerType container;
 	const IndexType extent;
 	const IndexType offset;
@@ -91,6 +90,64 @@ public:
 	DEVICE inline const_reference back() const { return operator[](size()-1); }
 
 };
+
+///
+/// Helper container that encloses a cube and makes a particular slice accessible as a matrix.
+///
+template<class CubeType,class IndexType=typename CubeType::size_type,typename PointerType=typename CubeType::pointer>
+class CubeSliceContainer
+{
+public:
+	typedef typename CubeType::value_type value_type;
+	typedef PointerType pointer_type;
+	typedef pointer_type pointer;
+	typedef typename dereference<pointer>::type reference;
+	typedef const pointer const_pointer;
+	typedef typename dereference<const_pointer>::type const_reference;
+	typedef typename CubeType::difference_type difference_type;
+	typedef typename CubeType::size_type size_type;
+	typedef OffsettingContainer< CubeSliceContainer<CubeType,IndexType,PointerType>, size_type, pointer > row_type;
+	typedef OffsettingContainer< CubeSliceContainer<CubeType,IndexType,PointerType>, size_type, pointer > column_type;
+	typedef const OffsettingContainer< const CubeSliceContainer<CubeType,IndexType,PointerType>, size_type, const_pointer > const_row_type;
+	typedef const OffsettingContainer< const CubeSliceContainer<CubeType,IndexType,PointerType>, size_type, const_pointer > const_column_type;
+
+private:
+	CubeType cube;
+	const IndexType row;
+
+public:
+	HOST DEVICE CubeSliceContainer( CubeType& cube, const IndexType row ) : cube(cube), row(row) {}
+	HOST DEVICE CubeSliceContainer( const CubeSliceContainer& src ) : cube(src.cube), row(src.row) {}
+	HOST DEVICE virtual ~CubeSliceContainer() {}
+
+	// iterators:
+	DEVICE inline row_type get_row( size_type index ) { return row_type( *this, cube.column_size(), index*cube.depth_size() ); }
+	DEVICE inline const_row_type get_row( size_type index ) const { return const_row_type( *this, cube.column_size(), index*cube.depth_size() ); }
+	DEVICE inline column_type get_column( size_type index ) { return column_type( *this, cube.depth_size(), index, cube.column_size() ); }
+	DEVICE inline const_column_type get_column( size_type index ) const { return const_column_type( *this, cube.depth_size(), index, cube.column_size() ); }
+
+	// capacity:
+	HOST DEVICE inline size_type row_size() const __NOEXCEPT__ { return cube.column_size(); }
+	HOST DEVICE inline size_type column_size() const __NOEXCEPT__ { return cube.depth_size(); }
+
+	// element access:
+	DEVICE inline reference at( size_type index ) { return cube.at( row*cube.column_size()*cube.depth_size()+index ); }
+	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return cube.at( row, rowIndex, columnIndex ); }
+	DEVICE inline const_reference at( size_type index ) const { return cube.at( row*cube.column_size()*cube.depth_size()+index ); }
+	DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return cube.at( row, rowIndex, columnIndex ); }
+
+	DEVICE inline row_type operator[]( size_type index ) { return get_row(index); }
+	DEVICE inline const_row_type operator[]( size_type index ) const { return get_row(index); }
+
+	template<typename U,typename V>
+	HOST CubeSliceContainer& operator>>( estd::matrix<value_type,U,V>& dest ) {
+		dest.resize( static_cast<U>(row_size()), static_cast<V>(column_size()) );
+		CUDA_CALL( cudaMemcpy( dest.data(), cube.data()+(row*cube.get_pitch()/sizeof(value_type)), row_size()*column_size()*sizeof(value_type), cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+
+};
+
 
 } // namespace estd
 

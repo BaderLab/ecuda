@@ -7,15 +7,15 @@ __global__ void scale( const ecuda::cube<float> inputCube, ecuda::cube<float> ou
 
 	const size_t index = threadIdx.x;
 printf( "entering thread=%i\n", index );
-	ecuda::cube<float>::const_subscript_reference inputSlice = inputCube[index];
-	ecuda::cube<float>::subscript_reference outputSlice = outputCube[index];
+	ecuda::cube<float>::const_matrix_type inputSlice = inputCube[index];
+	ecuda::cube<float>::matrix_type outputSlice = outputCube[index];
 
-	const ecuda::cube<float>::subscript_type::size_type nr = inputSlice.row_size();
-	for( ecuda::cube<float>::subscript_type::size_type i = 0; i < nr; ++i ) {
-		ecuda::cube<float>::subscript_type::const_row_type inputRow = inputSlice[i];
-		ecuda::cube<float>::subscript_type::row_type outputRow = outputSlice[i];
-		ecuda::cube<float>::subscript_type::row_type::iterator outputIterator = outputRow.begin();
-		for( ecuda::cube<float>::subscript_type::const_row_type::const_iterator iter = inputRow.begin(); iter != inputRow.end(); ++iter, ++outputIterator ) {
+	const ecuda::cube<float>::const_matrix_type::size_type nr = inputSlice.row_size();
+	for( ecuda::cube<float>::const_matrix_type::size_type i = 0; i < nr; ++i ) {
+		ecuda::cube<float>::const_matrix_type::const_row_type inputRow = inputSlice[i];
+		ecuda::cube<float>::matrix_type::row_type outputRow = outputSlice[i];
+		ecuda::cube<float>::matrix_type::row_type::iterator outputIterator = outputRow.begin();
+		for( ecuda::cube<float>::const_matrix_type::const_row_type::const_iterator iter = inputRow.begin(); iter != inputRow.end(); ++iter, ++outputIterator ) {
 			*outputIterator = *iter * factor;
 printf( "index=%i i=%i input=%0.2f output=%0.2f\n", index, i, *iter, *outputIterator );
 		}
@@ -71,3 +71,4 @@ std::cerr << "cp5" << std::endl;
 	return EXIT_SUCCESS;
 
 }
+
