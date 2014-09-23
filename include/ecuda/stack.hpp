@@ -37,7 +37,7 @@ public:
 	typedef const value_type& const_reference; //!< cell const reference type
 
 private:
-	container_type<T> container; //!< underlying container
+	container_type container; //!< underlying container
 
 public:
 	HOST DEVICE stack( const container_type& ctnr = container_type() ) : container(ctnr) {}

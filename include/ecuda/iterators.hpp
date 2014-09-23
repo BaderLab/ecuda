@@ -94,7 +94,7 @@ public:
 	DEVICE OutputIterator( const OutputIterator<ContainerType,Category>& src ) : Iterator<ContainerType,Category>( src ) {}
 	DEVICE virtual ~OutputIterator() {}
 
-	DEVICE virtual reference operator*() {	return Iterator<ContainerType,Category>::pContainer->operator[]( Iterator<ContainerType,Category>::index ); }
+	DEVICE virtual reference operator*() { return Iterator<ContainerType,Category>::pContainer->operator[]( Iterator<ContainerType,Category>::index ); }
 	DEVICE virtual pointer operator->() { return &(Iterator<ContainerType,Category>::pContainer->operator[]( Iterator<ContainerType,Category>::index )); }
 };
 
@@ -112,7 +112,7 @@ public:
 	typedef typename ContainerType::const_reference const_reference;
 
 protected:
-	virtual Iterator<ContainerType,Category> copy() const { return ForwardIterator<ContainerType,Category>(*this); }
+	DEVICE virtual Iterator<ContainerType,Category> copy() const { return ForwardIterator<ContainerType,Category>(*this); }
 
 public:
 	DEVICE ForwardIterator() : Iterator<ContainerType,Category>(), InputIterator<ContainerType,Category>( nullptr, 0 ), OutputIterator<ContainerType,Category>( nullptr, 0 ) {}

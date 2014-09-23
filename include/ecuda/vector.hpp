@@ -38,7 +38,7 @@ public:
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
 	typedef ecuda::RandomAccessIterator< vector<T> > iterator; //!< iterator type
-	typedef const ecuda::RandomAccessIterator< const vector<T> > const_iterator; //!< const iterator type
+	typedef /*const*/ ecuda::RandomAccessIterator< const vector<T> > const_iterator; //!< const iterator type
 
 private:
 	size_type n; //!< size of array
@@ -47,7 +47,7 @@ private:
 
 private:
 	HOST void growMemory() {
-		deviceMemory newMemory;
+		device_ptr<T> newMemory;
 		// allocate larger chunk
 		CUDA_CALL( cudaMalloc( newMemory.alloc_ptr(), m*2*sizeof(T) ) );
 		// copy old data to new chunk
@@ -67,7 +67,19 @@ public:
 		}
 		#endif
 	}
-	HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory) {}
+	HOST DEVICE vector( const vector<T>& src ) : n(src.n), m(src.m) {
+		#ifndef __CUDA_ARCH__
+		// if on host allocate new memory and copy contents
+		if( n ) {
+			CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), m*sizeof(T) ) );
+			CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
+		}
+		#else
+		// if on device just copy pointer
+		deviceMemory = src.deviceMemory;
+		#endif
+	}
+	//HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory) {}
 	HOST vector( const std::vector<T>& src ) : n(src.size()) {
 		m = 1; while( m < n ) m <<= 1;
 		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), m*sizeof(T) ) );
@@ -97,10 +109,10 @@ public:
 	}
 	HOST DEVICE void pop_back() { if( n ) --n; }
 
-	DEVICE inline iterator begin() { return iterator(*this); }
-	DEVICE inline iterator end() { return iterator(*this,size()); }
-	DEVICE inline const_iterator begin() const { return const_iterator(*this); }
-	DEVICE inline const_iterator end() const { return const_iterator(*this,size()); }
+	DEVICE inline iterator begin() { return iterator(this); }
+	DEVICE inline iterator end() { return iterator(this,size()); }
+	DEVICE inline const_iterator begin() const { return const_iterator(this); }
+	DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
 
 	template<class Alloc>
 	HOST const vector<T>& operator>>( std::vector<T,Alloc>& vector ) const {
