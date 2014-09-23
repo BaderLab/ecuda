@@ -5,6 +5,7 @@
 __global__ void squareVector( const ecuda::vector<float> input, ecuda::vector<float> output ) {
 	const int index = threadIdx.x;
 	output[index] = input[index]*input[index];
+	printf( "[%i] %0.2f %0.2f\n", index, input[index], output[index] );
 }
 
 __global__ void sumVector( const ecuda::vector<float> input, ecuda::vector<float> output ) {
@@ -26,11 +27,17 @@ int main( int argc, char* argv[] ) {
 	const size_t n = 100;
 	std::vector<float> hostVector( n );
 	for( size_t i = 0; i < n; ++i ) hostVector[i] = i+1;
+	for( size_t i = 0; i < n; ++i ) std::cout << "init.hostVector[" << i << "]=" << hostVector[i] << std::endl;
 
 	// allocate some device arrays
 	ecuda::vector<float> deviceArray1( n, 3 ); // should have all 3
 	ecuda::vector<float> deviceArray2( deviceArray1 ); // should be a copy of deviceArray1
 	const ecuda::vector<float> deviceArray3( hostVector ); // should be a copy of the host vector
+
+	{
+		deviceArray3 >> hostVector;
+		for( size_t i = 0; i < n; ++i ) std::cout << "sanity.hostVector[" << i << "]=" << hostVector[i] << std::endl;
+	}
 
 	ecuda::vector<float> deviceArray4( n );
 	dim3 dimBlock( n, 1 ), dimGrid( 1, 1 );

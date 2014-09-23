@@ -51,8 +51,7 @@ private:
 
 public:
 	HOST vector( size_type n=0, const_reference value = T() );
-	HOST DEVICE vector( const vector<T>& src );
-	//HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory) {}
+	HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory) {};
 	HOST vector( const std::vector<T>& src );
 	HOST DEVICE virtual ~vector() {}
 
@@ -146,23 +145,9 @@ HOST vector<T>::vector( size_type n, const_reference value ) : n(n) {
 }
 
 template<typename T>
-HOST DEVICE vector<T>::vector( const vector<T>& src ) : n(src.n), m(src.m) {
-	#ifndef __CUDA_ARCH__
-	// if on host allocate new memory and copy contents
-	if( n ) {
-		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), m*sizeof(T) ) );
-		CUDA_CALL( cudaMemcpy( deviceMemory.get(), src.deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToDevice ) );
-	}
-	#else
-	// if on device just copy pointer
-	deviceMemory = src.deviceMemory;
-	#endif
-}
-
-template<typename T>
 HOST vector<T>::vector( const std::vector<T>& src ) : n(src.size()) {
 	m = 1; while( m < n ) m <<= 1;
-	CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), m*sizeof(T) ) );
+	CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), m*sizeof(T) ) )
 	if( n ) CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 }
 
