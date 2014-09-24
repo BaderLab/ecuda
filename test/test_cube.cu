@@ -15,10 +15,12 @@ printf( "entering thread=%i\n", index );
 		ecuda::cube<float>::const_matrix_type::const_row_type inputRow = inputSlice[i];
 		ecuda::cube<float>::matrix_type::row_type outputRow = outputSlice[i];
 		ecuda::cube<float>::matrix_type::row_type::iterator outputIterator = outputRow.begin();
-		for( ecuda::cube<float>::const_matrix_type::const_row_type::const_iterator iter = inputRow.begin(); iter != inputRow.end(); ++iter, ++outputIterator ) {
-			*outputIterator = *iter * factor;
-printf( "index=%i i=%i input=%0.2f output=%0.2f\n", index, i, *iter, *outputIterator );
-		}
+		// change 3rd column only
+		*(outputIterator+3) = *(inputRow.begin()+3) * factor;
+//		for( ecuda::cube<float>::const_matrix_type::const_row_type::const_iterator iter = inputRow.begin(); iter != inputRow.end(); ++iter, ++outputIterator ) {
+//			*outputIterator = *iter * factor;
+//printf( "index=%i i=%i input=%0.2f output=%0.2f\n", index, i, *iter, *outputIterator );
+//		}
 	}
 
 }
