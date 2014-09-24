@@ -21,8 +21,19 @@ namespace ecuda {
 ///
 /// An STL allocator that utilizes page-locked host memory.
 ///
-/// e.g. std::vector<int>( HostAllocator<int>() ) would instantiate a vector
-///      whose underlying contents would be stored in page-locked host memory.
+/// Page-locked or "pinned" memory makes copying memory from the GPU (device)
+/// to the CPU (host) faster.  Using STL containers with this allocator makes
+/// them better at acting as "staging" points when moving data from the
+/// device memory to the host memory.
+///
+/// e.g. std::vector< int, HostAllocator<int> >( HostAllocator<int>() ) would
+///      instantiate a vector whose underlying contents would be stored in
+///      page-locked host memory.  Then a call to, for example:
+///        ecuda::vector<int> deviceVector(1000);
+///        // do work on device vector using the GPU...
+///        std::vector< int, ecuda::HostAllocator<int> > hostVector( 1000, HostAllocator<int>() );
+///        deviceVector >> hostVector; // copy results from device to host
+///        // do work on the host vector...
 ///
 template<typename T>
 class HostAllocator {

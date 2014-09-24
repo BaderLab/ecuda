@@ -25,6 +25,13 @@ namespace ecuda {
 ///
 /// A video memory-bound array structure.
 ///
+/// Creates a fixed size array in GPU memory.  Redeclares most of the
+/// STL methods on the equivalent std::array.  Methods are prefaced with
+/// appropriate keywords to declare them as host and/or device capable.
+/// In general: operations requiring memory allocation/deallocation/copying
+/// are host only, operations to access the values of specific elements
+/// are device only, and general information can be accessed by both.
+///
 template<typename T>
 class array {
 
@@ -41,14 +48,17 @@ public:
 	typedef ecuda::RandomAccessIterator< const array<value_type>, const_pointer > const_iterator; //!< const iterator type
 
 private:
+	// REMEMBER: n altered on device memory won't be reflected on the host object.
+	//           Don't allow the device to perform any operations that changes its
+	//           value.
 	size_type n; //!< size of array
 	device_ptr<T> deviceMemory; //!< smart point to video card memory
 
 public:
-	HOST DEVICE array( const size_type n=0, const_reference value = T() );
+	HOST array( const size_type n=0, const_reference value = T() );
 	HOST array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
 	HOST array( const std::vector<T>& src );
-	HOST DEVICE virtual ~array() {}
+	HOST DEVICE ~array() {}
 
 	DEVICE inline reference at( size_type index ) { return deviceMemory[index]; }
 	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
@@ -91,14 +101,12 @@ public:
 
 
 template<typename T>
-HOST DEVICE array<T>::array( const size_type n, const_reference value ) : n(n) {
-	#ifndef __CUDA_ARCH__
+HOST array<T>::array( const size_type n, const_reference value ) : n(n) {
 	if( n ) {
 		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 		std::vector<T> v( n, value );
 		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 	}
-	#endif
 }
 
 template<typename T>

@@ -15,6 +15,11 @@
 #include <stdexcept>
 #include <sstream>
 
+/** Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag */
+#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#define __CPP11_SUPPORTED__
+#endif
+
 ///
 /// Function wrapper that capture and throw an exception on error.  All calls
 /// to functions in the CUDA API that return an error code should use this.
@@ -31,17 +36,24 @@
 #define DEVICE __device__
 #define HOST __host__
 
-/** Replace nullptr with NULL iff compiler doesn't support C++11. */
-//#if __cplusplus < 201103L
+/** Replace nullptr with NULL if nvcc still doesn't support C++11. */
+#ifndef __CPP11_SUPPORTED__
 #define nullptr NULL
-//#endif
+#endif
 
+///
+/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
+/// for implementing the strategy required to make const/non-const iterators.
+/// C++11 type_traits would allow this to be done inline, but nvcc currently
+/// lacks C++11 support. Example:
+///
+///   typedef int* pointer;
+///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
+///
 namespace ecuda {
-
-template<typename T> struct dereference;
-template<typename T> struct dereference<T*> { typedef T& type; };
-template<typename T> struct dereference<T* const> { typedef const T& type; };
-
+	template<typename T> struct dereference;
+	template<typename T> struct dereference<T*> { typedef T& type; };
+	template<typename T> struct dereference<T* const> { typedef const T& type; };
 } // namespace ecuda
 
 #endif

@@ -46,6 +46,9 @@ public:
 	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_matrix_type;
 
 private:
+	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
+	//           reflected on the host object. Don't allow the device to perform any operations that
+	//           change their value.
 	size_type numberRows;
 	size_type numberColumns;
 	size_type numberDepths;

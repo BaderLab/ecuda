@@ -43,6 +43,9 @@ public:
 	typedef const ecuda::OffsettingContainer< const matrix<T>, size_type, const_pointer > const_column_type; //!< matrix const column container type
 
 private:
+	// REMEMBER: numberRows, numberColumns, and pitch altered on device memory won't be
+	//           reflected on the host object. Don't allow the device to perform any operations that
+	//           change their value.
 	size_type numberRows; //!< number of matrix rows
 	size_type numberColumns; //!< number of matrix columns
 	size_type pitch; //!< the padded width of the 2D memory allocation in bytes

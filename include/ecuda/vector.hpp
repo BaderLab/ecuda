@@ -42,6 +42,8 @@ public:
 	typedef ecuda::RandomAccessIterator< const vector<value_type>, const_pointer > const_iterator; //!< const iterator type
 
 private:
+	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
+	//           the device to perform any operations that change their value.
 	size_type n; //!< size of array
 	size_type m; //!< size of memory allocated
 	device_ptr<T> deviceMemory; //!< smart point to video card memory
@@ -67,7 +69,7 @@ public:
 	HOST void resize( size_type newSize, value_type& value = value_type() );
 	HOST DEVICE inline size_type capacity() const { return m; }
 	HOST DEVICE inline bool empty() const { return !n; }
-	HOST DEVICE inline void reserve( size_type newSize ) { growMemory(newSize); }
+	HOST inline void reserve( size_type newSize ) { growMemory(newSize); }
 
 	// Element access:
 	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
@@ -84,7 +86,7 @@ public:
 	template<class InputIterator>
 	HOST void assign( InputIterator first, InputIterator last );
 	HOST void push_back( const value_type& v );
-	HOST DEVICE inline void pop_back() { if( n ) --n; }
+	HOST inline void pop_back() { if( n ) --n; }
 
 	HOST iterator insert( iterator position, const value_type& val );
 	HOST iterator insert( iterator position, const size_type span, const value_type& val );
@@ -199,6 +201,7 @@ HOST void vector<T>::insert( vector<T>::iterator position, InputIterator first, 
 
 template<typename T>
 HOST vector<T>::iterator vector<T>::erase( vector<T>::iterator position ) {
+	#ifndef __CUDA_ARCH__
 	const size_type index = position-begin();
 	std::vector< T,HostAllocator<T> > v( n-index-1, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-erasure region to host
 	CUDA_CALL( cudaMemcpy( &v[0], deviceMemory.get()+(index+1), v.size()*sizeof(T), cudaMemcpyDeviceToHost ) );

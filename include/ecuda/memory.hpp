@@ -4,7 +4,9 @@
 // any purpose.
 //
 // memory.hpp
-// Smart pointers to device memory.
+//
+// Smart pointers to device memory and simple homespun unique_ptr in absense
+// of C++11 memory library.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -16,7 +18,7 @@
 #include <cstddef>
 #include "global.hpp"
 
-#if __cplusplus >= 201103L
+#ifdef __CPP11_SUPPORTED__
 #include <memory>
 #endif
 
@@ -105,12 +107,12 @@ public:
 
 };
 
-#if __cplusplus >= 201103L
+#ifdef __CPP11_SUPPORTED__
 // some future proofing for the glorious day when
 // nvcc will support C++11 and we can just use the
 // prepackaged implementations
-template<typename T> typedef std::unique_ptr<T> unique_ptr<T>
-template<typename T> typedef std::unique_ptr<T[]> unique_ptr<T[]>
+template<typename T> typedef std::unique_ptr<T> unique_ptr<T>;
+template<typename T> typedef std::unique_ptr<T[]> unique_ptr<T[]>;
 #else
 template<typename T>
 class unique_ptr {

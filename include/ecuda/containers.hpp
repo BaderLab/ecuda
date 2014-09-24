@@ -28,28 +28,27 @@ template<class ContainerType,class IndexType=typename ContainerType::size_type,t
 class OffsettingContainer
 {
 public:
+	typedef ContainerType container_type;
 	typedef typename ContainerType::value_type value_type;
-	typedef PointerType pointer_type;
-	typedef pointer_type pointer;
+	typedef PointerType pointer;
+	//typedef PointerType pointer_type;
+	//typedef pointer_type pointer;
 	typedef typename dereference<pointer>::type reference;
 	typedef const pointer const_pointer;
 	typedef typename dereference<const_pointer>::type const_reference;
-	//typedef typename ContainerType::reference reference;
-	//typedef typename ContainerType::const_reference const_reference;
-	//typedef typename ContainerType::pointer pointer;
-	//typedef typename ContainerType::const_pointer const_pointer;
 	typedef RandomAccessIterator< OffsettingContainer<ContainerType,IndexType,PointerType>, pointer > iterator;
 	typedef RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType,PointerType>, const_pointer > const_iterator;
 	typedef ReverseIterator< RandomAccessIterator< OffsettingContainer<ContainerType,IndexType,PointerType>, pointer > > reverse_iterator;
 	typedef ReverseIterator< RandomAccessIterator< const OffsettingContainer<ContainerType,IndexType,PointerType>, const_pointer > > const_reverse_iterator;
 	typedef typename ContainerType::difference_type difference_type;
-	typedef typename ContainerType::size_type size_type;
+	typedef IndexType size_type;
+	//typedef typename ContainerType::size_type size_type;
 
 private:
-	ContainerType container;
-	const IndexType extent;
-	const IndexType offset;
-	const IndexType increment;
+	container_type container;
+	const size_type extent;
+	const size_type offset;
+	const size_type increment;
 
 public:
 	///
