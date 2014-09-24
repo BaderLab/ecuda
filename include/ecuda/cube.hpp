@@ -43,7 +43,7 @@ public:
 	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_yz_type;
 
 	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > matrix_type;
-	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, pointer > const_matrix_type;
+	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_matrix_type;
 
 private:
 	size_type numberRows;
