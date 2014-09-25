@@ -1,0 +1,16 @@
+include/ecuda/iterators.hpp
+include/ecuda/global.hpp
+include/ecuda/stack.hpp
+include/ecuda/cube.hpp
+include/ecuda/memory.hpp
+include/ecuda/array.hpp
+include/ecuda/containers.hpp
+include/ecuda/allocators.hpp
+include/ecuda/matrix.hpp
+include/ecuda/device.hpp
+include/ecuda/vector.hpp
+test/test_stack.cu
+test/test_array.cu
+test/test_cube.cu
+test/test_vector.cu
+test/test_matrix.cu
