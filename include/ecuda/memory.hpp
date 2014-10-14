@@ -152,7 +152,11 @@ private:
 
 public:
 	HOST DEVICE unique_ptr( T* ptr=NULL ) : ptr(ptr) {}
-	HOST DEVICE ~unique_ptr() {	if( ptr ) delete ptr; }
+	HOST DEVICE ~unique_ptr() {
+		#ifndef __CUDA_ARCH__
+		if( ptr ) delete ptr;
+		#endif
+	}
 
 	HOST DEVICE inline pointer get() const { return ptr; }
 	HOST DEVICE inline operator bool() const { return get() != NULL; }
@@ -165,6 +169,11 @@ public:
 	HOST DEVICE inline bool operator>( const unique_ptr<T>& other ) const { return ptr > other.ptr; }
 	HOST DEVICE inline bool operator<=( const unique_ptr<T>& other ) const { return ptr <= other.ptr; }
 	HOST DEVICE inline bool operator>=( const unique_ptr<T>& other ) const { return ptr >= other.ptr; }
+
+	HOST DEVICE unique_ptr<T>& operator=( T* p ) {
+		ptr = p;
+		return *this;
+	}
 
 };
 
@@ -195,6 +204,11 @@ public:
 	HOST DEVICE inline bool operator>( const unique_ptr<T[]>& other ) const { return ptr > other.ptr; }
 	HOST DEVICE inline bool operator<=( const unique_ptr<T[]>& other ) const { return ptr <= other.ptr; }
 	HOST DEVICE inline bool operator>=( const unique_ptr<T[]>& other ) const { return ptr >= other.ptr; }
+
+	HOST DEVICE unique_ptr<T>& operator=( T* p ) {
+		ptr = p;
+		return *this;
+	}
 
 };
 #endif

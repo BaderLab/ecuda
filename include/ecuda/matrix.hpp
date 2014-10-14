@@ -127,8 +127,18 @@ public:
 		return *this;
 	}
 
+	HOST void resize( const size_type numberRows, const size_type numberColumns ) {
+		if( row_size() == numberRows and column_size() == numberColumns ) return; // no resize needed
+		// allocate memory
+		this->numberRows = numberRows;
+		this->numberColumns = numberColumns;
+		deviceMemory = device_ptr<T>();
+		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+	}
+
 	template<typename U,typename V>
 	HOST matrix<T>& operator<<( const estd::matrix<T,U,V>& src ) {
+		resize( src.row_size(), src.column_size() );
 		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
