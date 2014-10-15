@@ -87,6 +87,60 @@ public:
 		return oss.str();
 	}
 
+	void print_summary( std::ostream& output = std::cout ) {
+		output << "name=" << deviceProperties.name << std::endl;
+		output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
+		output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;
+		output << "regsPerBlock=" << deviceProperties.regsPerBlock << std::endl;
+		output << "warpSize=" << deviceProperties.warpSize << std::endl;
+		output << "memPitch=" << deviceProperties.memPitch << std::endl;
+		output << "maxThreadsPerBlock=" << deviceProperties.maxThreadsPerBlock << std::endl;
+		output << "maxThreadsDim=" << deviceProperties.maxThreadsDim[0] << "," << deviceProperties.maxThreadsDim[1] << "," << deviceProperties.maxThreadsDim[2] << std::endl;
+		output << "maxGridSize=" << deviceProperties.maxGridSize[0] << "," << deviceProperties.maxGridSize[1] << "," << deviceProperties.maxGridSize[2] << std::endl;
+		output << "clockRate=" << deviceProperties.clockRate << std::endl;
+		output << "totalConstMem=" << deviceProperties.totalConstMem << std::endl;
+		output << "major=" << deviceProperties.major << std::endl;
+		output << "minor=" << deviceProperties.minor << std::endl;
+		output << "textureAlignment=" << deviceProperties.textureAlignment << std::endl;
+		output << "texturePitchAlignment=" << deviceProperties.texturePitchAlignment << std::endl;
+		output << "deviceOverlap=" << deviceProperties.deviceOverlap << std::endl;
+		output << "multiProcessorCount=" << deviceProperties.multiProcessorCount << std::endl;
+		output << "kernelExecTimeoutEnabled=" << deviceProperties.kernelExecTimeoutEnabled << std::endl;
+		output << "integrated=" << deviceProperties.integrated << std::endl;
+		output << "canMapHostMemory=" << deviceProperties.canMapHostMemory << std::endl;
+		output << "computeMode=" << deviceProperties.computeMode << std::endl;
+		output << "maxTexture1D=" << deviceProperties.maxTexture1D << std::endl;
+		output << "maxTexture1DLinear=" << deviceProperties.maxTexture1DLinear << std::endl;
+		output << "maxTexture2D=" << deviceProperties.maxTexture2D[0] << "," << deviceProperties.maxTexture2D[1] << std::endl;
+		output << "maxTexture2DLinear=" << deviceProperties.maxTexture2DLinear[0] << "," << deviceProperties.maxTexture2DLinear[1] << "," << deviceProperties.maxTexture2DLinear[2] << std::endl;
+		output << "maxTexture2DGather=" << deviceProperties.maxTexture2DGather[0] << "," << deviceProperties.maxTexture2DGather[1] << std::endl;
+		output << "maxTexture3D=" << deviceProperties.maxTexture3D[0] << "," << deviceProperties.maxTexture3D[1] << "," << deviceProperties.maxTexture3D[2] << std::endl;
+		output << "maxTextureCubemap=" << deviceProperties.maxTextureCubemap << std::endl;
+		output << "maxTexture1DLayered=" << deviceProperties.maxTexture1DLayered[0] << "," << deviceProperties.maxTexture1DLayered[1] << std::endl;
+		output << "maxTexture2DLayered=" << deviceProperties.maxTexture2DLayered[0] << "," << deviceProperties.maxTexture2DLayered[1] << "," << deviceProperties.maxTexture2DLayered[2] << std::endl;
+		output << "maxTextureCubemapLayered=" << deviceProperties.maxTextureCubemapLayered[0] << "," << deviceProperties.maxTextureCubemapLayered[1] << std::endl;
+		output << "maxSurface1D=" << deviceProperties.maxSurface1D << std::endl;
+		output << "maxSurface2D=" << deviceProperties.maxSurface2D[0] << "," << deviceProperties.maxSurface2D[1] << std::endl;
+		output << "maxSurface3D=" << deviceProperties.maxSurface3D[0] << "," << deviceProperties.maxSurface3D[1] << "," << deviceProperties.maxSurface3D[2] << std::endl;
+		output << "maxSurface1DLayered=" << deviceProperties.maxSurface1DLayered[0] << "," << deviceProperties.maxSurface1DLayered[1] << std::endl;
+		output << "maxSurface2DLayered=" << deviceProperties.maxSurface2DLayered[0] << "," << deviceProperties.maxSurface2DLayered[1] << "," << deviceProperties.maxSurface2DLayered[2] << std::endl;
+		output << "maxSurfaceCubemap=" << deviceProperties.maxSurfaceCubemap << std::endl;
+		output << "maxSurfaceCubemapLayered=" << deviceProperties.maxSurfaceCubemapLayered[0] << "," << deviceProperties.maxSurfaceCubemapLayered[1] << std::endl;
+		output << "surfaceAlignment=" << deviceProperties.surfaceAlignment << std::endl;
+		output << "concurrentKernels=" << deviceProperties.concurrentKernels << std::endl;
+		output << "ECCEnabled=" << deviceProperties.ECCEnabled << std::endl;
+		output << "pciBusID=" << deviceProperties.pciBusID << std::endl;
+		output << "pciDeviceID=" << deviceProperties.pciDeviceID << std::endl;
+		output << "pciDomainID=" << deviceProperties.pciDomainID << std::endl;
+		output << "tccDriver=" << deviceProperties.tccDriver << std::endl;
+		output << "asyncEngineCount=" << deviceProperties.asyncEngineCount << std::endl;
+		output << "unifiedAddressing=" << deviceProperties.unifiedAddressing << std::endl;
+		output << "memoryClockRate=" << deviceProperties.memoryClockRate << std::endl;
+		output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
+		output << "l2CacheSize=" << deviceProperties.l2CacheSize << std::endl;
+		output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
+	}
+
 };
 
 } // namespace ecuda
