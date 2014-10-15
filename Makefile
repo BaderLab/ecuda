@@ -42,7 +42,7 @@ NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -Xcompiler -fopenmp
 LDLIBS = -lcudart
 
-include local-config.cfg
+-include local-config.cfg
 
 ifeq ($(mode),debug)
 	CXXFLAGS += -g
