@@ -97,6 +97,8 @@ public:
 	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
 
 	HOST DEVICE inline size_type size() const { return n; }
+	HOST DEVICE inline T* data() { return deviceMemory.get(); }
+	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
 
 	HOST DEVICE inline iterator begin() { return iterator(this); }
 	HOST DEVICE inline iterator end() { return iterator(this,size()); }
