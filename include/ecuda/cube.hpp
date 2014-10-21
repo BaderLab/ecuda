@@ -135,6 +135,7 @@ public:
 
 	template<typename U,typename V,typename W>
 	HOST cube<T>& operator>>( estd::cube<T,U,V,W>& dest ) {
+		//TODO: this needs to be re-implemented, it won't work as currently written
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
 		for( size_type i = 0; i < numberRows; ++i ) operator[](i) >> dest[i];
 		return *this;
