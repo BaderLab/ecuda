@@ -83,6 +83,9 @@ public:
 	HOST matrix( const estd::matrix<T,U,V>& src );
 	HOST DEVICE virtual ~matrix() {}
 
+	template<class RandomAccessIterator>
+	HOST assign( RandomAccessIterator begin, RandomAccessIterator end );
+
 	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
 	DEVICE inline reference at( size_type index ) { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
@@ -174,7 +177,18 @@ HOST matrix<T>::matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cas
 	}
 }
 
-
+template<typename T>
+template<class RandomAccessIterator>
+HOST matrix<T>::assign( RandomAccessIterator begin, RandomAccessIterator end ) {
+	std::size_t n = end-begin;
+	if( n > size() ) n = size();
+	RandomAccessIterator current = begin;
+	for( std::size_t i = 0; i < n; i += row_size(), begin += row_size() ) {
+		std::size_t len = row_size();
+		if( i+len > size() ) len = size()-i;
+		std::vector<T> row( current, current+len );
+		CUDA_CALL( cudaMemcpy( deviceMemory.get()+(i*pitch/sizeof(T)), &row[0], len*sizeof(T), cudaMemcpyHostToDevice ) );
+	}
 } // namespace ecuda
 
 #endif
