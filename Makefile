@@ -59,6 +59,12 @@ test/% :: test/%.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
+benchmarks/% :: benchmarks/%.cu
+	@mkdir -p bin/benchmarks
+	@mkdir -p obj/benchmarks
+	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
+	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
+
 dist:
 	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp
 

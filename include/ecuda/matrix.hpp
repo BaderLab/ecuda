@@ -42,6 +42,8 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 #include <estd/matrix.hpp>
 #include "global.hpp"
+#include "allocators.hpp"
+#include "apiwrappers.hpp"
 #include "containers.hpp"
 #include "memory.hpp"
 
@@ -50,11 +52,12 @@ namespace ecuda {
 ///
 /// A video memory-bound matrix structure.
 ///
-template<typename T>
+template< typename T, class Alloc=DevicePitchAllocator<T> >
 class matrix {
 
 public:
 	typedef T value_type; //!< cell data type
+	typedef Alloc allocator_type; //!< allocator type
 	typedef std::size_t size_type; //!< index data type
 	typedef std::ptrdiff_t difference_type; //!<
 	typedef value_type& reference; //!< cell reference type
@@ -75,6 +78,7 @@ private:
 	size_type numberColumns; //!< number of matrix columns
 	size_type pitch; //!< the padded width of the 2D memory allocation in bytes
 	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
+	allocator_type allocator;
 
 public:
 	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T() );
@@ -86,10 +90,12 @@ public:
 	template<class RandomAccessIterator>
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end );
 
-	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
+	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *allocator.address( data(), columnIndex, rowIndex, pitch ); }
+	//DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
 	DEVICE inline reference at( size_type index ) { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
-	DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
+	DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *allocator.address( data(), columnIndex, rowIndex, pitch ); }
+	//DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
 	DEVICE inline const_reference at( size_type index ) const { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
 	HOST DEVICE inline size_type size() const { return numberRows*numberColumns; }
@@ -107,6 +113,8 @@ public:
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
+	HOST inline allocator_type get_allocator() const { return allocator; }
+
 	// critical function used to bridge host->device code
 	HOST DEVICE matrix<T>& operator=( const matrix<T>& other ) {
 		numberRows = other.numberRows;
@@ -117,16 +125,18 @@ public:
 	}
 
 	template<typename U,typename V>
-	HOST matrix<T>& operator>>( estd::matrix<T,U,V>& dest ) {
+	HOST matrix<T,Alloc>& operator>>( estd::matrix<T,U,V>& dest ) {
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns) );
-		CUDA_CALL( cudaMemcpy2D( dest.data(), numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy2D<T>( dest.data(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		//CUDA_CALL( cudaMemcpy2D( dest.data(), numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
-	template<typename Alloc>
-	HOST matrix<T>& operator>>( std::vector<T,Alloc>& other ) {
+	template<typename OtherAlloc>
+	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
 		other.resize( size() );
-		CUDA_CALL( cudaMemcpy2D( &other[0], numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy2D<T>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		//CUDA_CALL( cudaMemcpy2D( &other[0], numberColumns*sizeof(T), deviceMemory.get(), pitch, numberColumns*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
@@ -135,51 +145,58 @@ public:
 		// allocate memory
 		this->numberRows = numberRows;
 		this->numberColumns = numberColumns;
-		deviceMemory = device_ptr<T>();
-		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+		deviceMemory = device_ptr<T>( DevicePitchAllocator<T>().allocate( numberColumns, numberRows, pitch ) );
+		//deviceMemory = device_ptr<T>();
+		//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
 	}
 
 	template<typename U,typename V>
-	HOST matrix<T>& operator<<( const estd::matrix<T,U,V>& src ) {
+	HOST matrix<T,Alloc>& operator<<( const estd::matrix<T,U,V>& src ) {
 		resize( src.row_size(), src.column_size() );
-		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
-	template<typename Alloc>
-	HOST matrix<T>& operator<<( std::vector<T,Alloc>& other ) {
-		CUDA_CALL( cudaMemcpy2D( data(), pitch, &other[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+	template<typename OtherAlloc>
+	HOST matrix<T,Alloc>& operator<<( std::vector<T,OtherAlloc>& other ) {
+		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy2D( data(), pitch, &other[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
 };
 
-template<typename T>
-HOST matrix<T>::matrix( const size_type numberRows, const size_type numberColumns, const_reference value ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
+template<typename T,class Alloc>
+HOST matrix<T,Alloc>::matrix( const size_type numberRows, const size_type numberColumns, const_reference value ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0) {
 	if( numberRows and numberColumns ) {
-		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+		deviceMemory = device_ptr<T>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
 		// cudaMemset2D method not general since sizeof(T) > int
 		//CUDA_CALL( cudaMemset2D( deviceMemory.get(), pitch, static_cast<int>(value), numberColumns*sizeof(T), numberRows ) );
 		std::vector<T> v( numberRows*numberColumns, value );
-		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, &v[0], numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, &v[0], numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
 	}
 }
 
-template<typename T>
-HOST DEVICE matrix<T>::matrix( const matrix<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(src.deviceMemory) {}
+template<typename T,class Alloc>
+HOST DEVICE matrix<T,Alloc>::matrix( const matrix<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(src.deviceMemory) {}
 
-template<typename T>
+template<typename T,class Alloc>
 template<typename U,typename V>
-HOST matrix<T>::matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0) {
+HOST matrix<T,Alloc>::matrix( const estd::matrix<T,U,V>& src ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0) {
 	if( numberRows and numberColumns ) {
-		CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
-		CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
+		deviceMemory = device_ptr<T>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*sizeof(T), numberRows ) );
+		CUDA_CALL( cudaMemcpy2D<T>( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy2D( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns*sizeof(T), numberRows, cudaMemcpyHostToDevice ) );
 	}
 }
 
-template<typename T>
+template<typename T,class Alloc>
 template<class RandomAccessIterator>
-HOST void matrix<T>::assign( RandomAccessIterator begin, RandomAccessIterator end ) {
+HOST void matrix<T,Alloc>::assign( RandomAccessIterator begin, RandomAccessIterator end ) {
 	std::size_t n = end-begin;
 	if( n > size() ) n = size();
 	RandomAccessIterator current = begin;
@@ -187,7 +204,8 @@ HOST void matrix<T>::assign( RandomAccessIterator begin, RandomAccessIterator en
 		std::size_t len = row_size();
 		if( i+len > size() ) len = size()-i;
 		std::vector<T> row( current, current+len );
-		CUDA_CALL( cudaMemcpy( deviceMemory.get()+(i*pitch/sizeof(T)), &row[0], len*sizeof(T), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy( allocator.address( deviceMemory.get(), len, i, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy( deviceMemory.get()+(i*pitch/sizeof(T)), &row[0], len*sizeof(T), cudaMemcpyHostToDevice ) );
 	}
 }
 

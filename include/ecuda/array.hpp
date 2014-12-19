@@ -45,6 +45,8 @@ either expressed or implied, of the FreeBSD Project.
 #include "iterators.hpp"
 #include "global.hpp"
 #include "memory.hpp"
+#include "allocators.hpp"
+#include "apiwrappers.hpp"
 
 namespace ecuda {
 
@@ -58,11 +60,12 @@ namespace ecuda {
 /// are host only, operations to access the values of specific elements
 /// are device only, and general information can be accessed by both.
 ///
-template<typename T>
+template< typename T, class Alloc=DeviceAllocator<T> >
 class array {
 
 public:
 	typedef T value_type; //!< cell data type
+	typedef Alloc allocator_type; //!< allocator type
 	typedef std::size_t size_type; //!< index data type
 	typedef std::ptrdiff_t difference_type; //!<
 	typedef value_type& reference; //!< cell reference type
@@ -75,15 +78,31 @@ public:
 
 private:
 	// REMEMBER: n altered on device memory won't be reflected on the host object.
-	//           Don't allow the device to perform any operations that changes its
+	//           Don't allow the device to perform any operations that change its
 	//           value.
 	size_type n; //!< size of array
-	device_ptr<T> deviceMemory; //!< smart point to video card memory
+	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
 
 public:
+	///
+	/// \brief Constructs an array with n elements. Each element is a copy of value.
+	/// \param n Initial container size (i.e. the number of elements in the container at construction).
+	/// \param value Value to fill the container with.
+	///
 	HOST array( const size_type n=0, const_reference value = T() );
+	///
+	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
+	/// \param src Another array object of the same type (with the same class tempalte argument T and Alloc), whose contents are copied.
+	///
 	HOST array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
+	///
+	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
+	/// \param src An STL vectory object of the same type (with the same class tempalte argument T and Alloc), whose contents are copied.
+	///
 	HOST array( const std::vector<T>& src );
+	///
+	/// \brief Destructs the array object.
+	///
 	HOST DEVICE ~array() {}
 
 	DEVICE inline reference at( size_type index ) { return deviceMemory[index]; }
@@ -105,21 +124,25 @@ public:
 	HOST DEVICE inline const_iterator begin() const { return const_iterator(this); }
 	HOST DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
 
-	template<class Alloc>
-	HOST const array<T>& operator>>( std::vector<T,Alloc>& vector ) const {
+	HOST inline allocator_type get_allocator() const { return allocator_type(); }
+
+	template<class OtherAlloc>
+	HOST const array<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& vector ) const {
 		vector.resize( n );
-		CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy<T>( &vector.front(), deviceMemory.get(), n, cudaMemcpyDeviceToHost ) );
+		//CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
-	HOST array<T>& operator<<( std::vector<T>& vector ) {
+	HOST array<T,Alloc>& operator<<( std::vector<T>& vector ) {
 		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
-		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &vector[0], vector.size()*sizeof(T), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &vector[0], vector.size()*sizeof(T), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
 	// critical function used to bridge host->device code
-	DEVICE array<T>& operator=( const array<T>& other ) {
+	DEVICE array<T,Alloc>& operator=( const array<T,Alloc>& other ) {
 		n = other.n;
 		deviceMemory = other.deviceMemory;
 		return *this;
@@ -128,20 +151,24 @@ public:
 };
 
 
-template<typename T>
-HOST array<T>::array( const size_type n, const_reference value ) : n(n) {
+template<typename T,class Alloc>
+HOST array<T,Alloc>::array( const size_type n, const_reference value ) : n(n) {
 	if( n ) {
-		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
+		deviceMemory = device_ptr<T>( Alloc().allocate(n) );
+		//CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
 		std::vector<T> v( n, value );
-		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 	}
 }
 
-template<typename T>
-HOST array<T>::array( const std::vector<T>& src ) : n(src.size()) {
+template<typename T,class Alloc>
+HOST array<T,Alloc>::array( const std::vector<T>& src ) : n(src.size()) {
 	if( n ) {
-		CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-		CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+		deviceMemory = device_ptr<T>( Alloc().allocate(n) );
+		//CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &src.front(), n, cudaMemcpyHostToDevice ) );
+		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
 	}
 }
 

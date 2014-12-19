@@ -49,6 +49,19 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+template<typename T>
+class deleter {
+public:
+	typedef T element_type;
+	typedef T* pointer;
+public:
+	HOST DEVICE deleter() {}
+	HOST DEVICE deleter( const deleter& other ) {}
+	HOST DEVICE ~deleter() {}
+	HOST inline void operator()( pointer ptr ) { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
+};
+
+
 ///
 /// A smart pointer for device memory.
 ///
@@ -66,7 +79,7 @@ public:
 	typedef T element_type; //!< data type represented in allocated memory
 	typedef T* pointer; //!< data type pointer
 	typedef T& reference; //!< data type reference
-	typedef void** allocation_pointer; //!< pointer to pointer used by CUDA API to allocate device memory
+	//typedef void** allocation_pointer; //!< pointer to pointer used by CUDA API to allocate device memory
 	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
 
 private:
@@ -80,6 +93,13 @@ public:
 		*shared_count = 1;
 		#endif
 	}
+	HOST DEVICE device_ptr( pointer ptr ) : ptr(ptr) {
+		#ifndef __CUDA_ARCH__
+		shared_count = new size_type;
+		*shared_count = 1;
+		#endif
+	}
+
 	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
 		#ifndef __CUDA_ARCH__
 		++(*shared_count);
@@ -91,8 +111,8 @@ public:
 	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
 		--(*shared_count);
-		if( !(*shared_count) and ptr ) {
-			CUDA_CALL( cudaFree(ptr) );
+		if( !(*shared_count) ) {
+			deleter<T>()(ptr);
 			delete shared_count;
 		}
 		#endif
@@ -108,7 +128,7 @@ public:
 	DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 
 	// get a pointer to the pointer to the device memory suitable for use with cudaMalloc...()-style calls
-	HOST inline allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
+	//HOST inline allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
 
 	// both host and device can do comparisons on the pointer
 	HOST DEVICE inline bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
