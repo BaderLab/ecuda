@@ -71,7 +71,7 @@ public:
 	//typedef typename ContainerType::size_type size_type;
 
 private:
-	container_type container;
+	container_type& container;
 	const size_type extent;
 	const size_type offset;
 	const size_type increment;
@@ -137,7 +137,7 @@ public:
 	typedef const OffsettingContainer< const CubeSliceContainer<CubeType,IndexType,PointerType>, size_type, const_pointer > const_column_type;
 
 private:
-	CubeType cube;
+	CubeType& cube;
 	const IndexType row;
 
 public:

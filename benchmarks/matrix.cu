@@ -21,15 +21,16 @@ coord_t<T> doSomething( const coord_t<T>& value ) {
 }
 */
 
-template<typename T>
+//template<typename T>
 __device__
-void doSomethingToRow( ecuda::matrix< coord_t<T> >::row_type row ) {
-	ecuda::matrix< coord_t<T> >::row_type::iterator current = row.begin();
+void doSomethingToRow( ecuda::matrix< coord_t<double> >::row_type row ) {
+	ecuda::matrix< coord_t<double> >::row_type::iterator current = row.begin();
 	while( current != row.end() ) {
 		for( std::size_t i = 0; i < 10000; ++i ) { current->x += 0.0001; current->y += 0.0001; }
 		++current;
 	}
 }
+
 
 template<typename T>
 __device__
@@ -44,7 +45,7 @@ __global__
 void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
 	if( row < input.row_size() ) {
-		doSomethingToRow<T>( input[i] );
+		doSomethingToRow( input[row] );
 	}
 	//const int x = blockIdx.x*blockDim.x+threadIdx.x / input.column_size();
 	//const int y = blockIdx.x*blockDim.x+threadIdx.x % input.column_size();
@@ -58,7 +59,7 @@ __global__
 void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
 	if( row < n ) {
-		doSomethingToRow( input[row*m], m );
+		doSomethingToRow( input+(row*m), m );
 	}
 	//const int x = blockIdx.x*blockDim.x+threadIdx.x / m;
 	//const int y = blockIdx.x*blockDim.x+threadIdx.x % m;
@@ -70,7 +71,7 @@ void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m ) {
 int main( int argc, char* argv[] ) {
 
 	const std::size_t N = 10;
-	const std::size_t THREADS = 800;
+	const std::size_t THREADS = 400;
 
 	estd::matrix< coord_t<double>, std::size_t, std::size_t > hostMatrix( N, N );
 	for( std::size_t i = 0; i < N; ++i ) {
@@ -96,32 +97,37 @@ int main( int argc, char* argv[] ) {
 	CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&rawData), N*N*sizeof(coord_t<double>) ) );
 	CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(rawData), reinterpret_cast<const void*>(hostMatrix.data()), N*N*sizeof(coord_t<double>), cudaMemcpyHostToDevice ) );
 
-	dim3 grid( (N*N+THREADS-1)/THREADS ), threads( 1, THREADS );
+	dim3 grid( (N+THREADS-1)/THREADS ), threads( THREADS );
 
 	{
-//		ecuda::event start, stop;
-//		start.record();
-//		manipulateMatrix<double><<<grid,threads>>>( deviceMatrix );
-//		CUDA_CALL( cudaDeviceSynchronize() );
-//		CUDA_CHECK_ERRORS();
-//		stop.record();
-//		stop.synchronize();
-//		std::cout << "TIME (ecuda): " << std::fixed << (stop-start) << std::endl;
+		struct timespec timeStart, timeEnd;
+		clock_gettime( CLOCK_REALTIME, &timeStart );
+		ecuda::event start, stop;
+		start.record();
+		manipulateMatrix<double><<<grid,threads>>>( deviceMatrix );
+		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
+		stop.record();
+		stop.synchronize();
+		clock_gettime( CLOCK_REALTIME, &timeEnd );
+		std::cout << "TIME (ecuda): " << std::fixed << (stop-start) << std::endl;
+		std::cout << "TIME (ecuda): " << std::fixed << ((timeEnd.tv_sec-timeStart.tv_sec)+(timeEnd.tv_nsec-timeStart.tv_nsec)/1e9) << std::endl;
 		estd::matrix< coord_t<double> > results( N, N );
 		deviceMatrix >> results;
 
-for( std::size_t i = 0; i < N*N; ++i ) {
-	std::cout << "[" << i << "]=" << std::fixed << (results.data()+i)->x << " " << (results.data()+i)->y << std::endl;
-}
-
-for( std::size_t i = 0; i < N; ++i ) {
-	std::cout << "[" << i << "]"; for( std::size_t j = 0; j < N; ++j ) std::cout << " " << std::fixed << results[i][j].x << "," << results[i][j].y; std::cout << std::endl;
-}
-//		std::cout << "[0,0]=" << std::fixed << results[0][0].x << "," << results[0][0].y << std::endl;
-//		std::cout << "[" << (N-1) << "," << (N-1) << "]=" << std::fixed << results[N-1][N-1].x << "," << results[N-1][N-1].y << std::endl;
+//for( std::size_t i = 0; i < N*N; ++i ) {
+//	std::cout << "[" << i << "]=" << std::fixed << (results.data()+i)->x << " " << (results.data()+i)->y << std::endl;
+//}
+//for( std::size_t i = 0; i < N; ++i ) {
+//	std::cout << "[" << i << "]"; for( std::size_t j = 0; j < N; ++j ) std::cout << " " << std::fixed << results[i][j].x << "," << results[i][j].y; std::cout << std::endl;
+//}
+		std::cout << "[0,0]=" << std::fixed << results[0][0].x << "," << results[0][0].y << std::endl;
+		std::cout << "[" << (N-1) << "," << (N-1) << "]=" << std::fixed << results[N-1][N-1].x << "," << results[N-1][N-1].y << std::endl;
 	}
-/*
+
 	{
+		struct timespec timeStart, timeEnd;
+		clock_gettime( CLOCK_REALTIME, &timeStart );
 		ecuda::event start, stop;
 		start.record();
 		manipulateMatrix<double><<<grid,threads>>>( rawData, N, N );
@@ -129,13 +135,15 @@ for( std::size_t i = 0; i < N; ++i ) {
 		CUDA_CHECK_ERRORS();
 		stop.record();
 		stop.synchronize();
+		clock_gettime( CLOCK_REALTIME, &timeEnd );
 		std::cout << "TIME (raw):  " << std::fixed << (stop-start) << std::endl;
+		std::cout << "TIME (raw): " << std::fixed << ((timeEnd.tv_sec-timeStart.tv_sec)+(timeEnd.tv_nsec-timeStart.tv_nsec)/1e9) << std::endl;
 		std::vector< coord_t<double> > results( N*N );
 		CUDA_CALL( cudaMemcpy( &results.front(), rawData, N*N*sizeof(coord_t<double>), cudaMemcpyDeviceToHost ) );
 		std::cout << "[0,0]=" << std::fixed << results[0].x << "," << results[0].y << std::endl;
 		std::cout << "[" << (N-1) << "," << (N-1) << "]=" << std::fixed << results.back().x << "," << results.back().y << std::endl;
 	}
-*/
+
 	return EXIT_SUCCESS;
 
 }

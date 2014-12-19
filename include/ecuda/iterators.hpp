@@ -86,7 +86,7 @@ public:
 	HOST DEVICE Iterator( const Iterator<ContainerType,PointerType,Category>& src ) : pContainer(src.pContainer), index(src.index) {}
 	HOST DEVICE virtual ~Iterator() {}
 
-	HOST DEVICE inline Iterator& operator++() {	if( index < pContainer->size() ) ++index; return *this; }
+	HOST DEVICE inline Iterator& operator++() { ++index; return *this; } //if( index < pContainer->size() ) ++index; return *this; }
 	HOST DEVICE inline Iterator operator++( int ) const { return ++(this->copy()); }
 
 };
