@@ -423,11 +423,11 @@ public:
 	/// \brief Returns the address of a given coordinate.
 	///
 	/// Since pitched memory has padding at each row, the location of (x,y) is not
-	/// necessarily offset by w*y+x.
+	/// necessarily offset by width*x+y.
 	///
 	/// \param ptr
-	/// \param w
-	/// \param h
+	/// \param x
+	/// \param y
 	/// \param pitch
 	/// \return A pointer to the location.
 	///

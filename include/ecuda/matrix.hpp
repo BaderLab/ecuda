@@ -164,7 +164,7 @@ HOST matrix<T,Alloc>::matrix( const size_type numberRows, const size_type number
 	if( numberRows and numberColumns ) {
 		deviceMemory = device_ptr<T>( allocator.allocate( numberColumns, numberRows, pitch ) );
 		std::vector<T> v( numberRows*numberColumns, value );
-		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, &v[0], numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy2D<T>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 	}
 }
 
