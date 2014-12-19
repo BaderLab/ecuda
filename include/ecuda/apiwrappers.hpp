@@ -53,7 +53,7 @@ inline cudaError_t cudaMemcpy( T* dst, const T* src, const std::size_t count, cu
 
 template<typename T>
 inline cudaError_t cudaMemcpy2D( T* dst, const std::size_t dpitch, const T* src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind ) {
-	return cudaMemcpy2D( reinterpret_cast<void*>(dst), dpitch, reinterpret_cast<const void*>(src), spitch, width, height, kind );
+	return cudaMemcpy2D( reinterpret_cast<void*>(dst), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
 }
 
 } // namespace ecuda

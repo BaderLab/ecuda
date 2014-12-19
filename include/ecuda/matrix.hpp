@@ -90,13 +90,15 @@ public:
 	template<class RandomAccessIterator>
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end );
 
-	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *allocator.address( data(), columnIndex, rowIndex, pitch ); }
+	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *allocator.address( data(), rowIndex, columnIndex, pitch ); }
 	//DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
-	DEVICE inline reference at( size_type index ) { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
+	DEVICE inline reference at( size_type index ) { return at( index / numberColumns, index % numberColumns ); }
+	//DEVICE inline reference at( size_type index ) { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
-	DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *allocator.address( data(), columnIndex, rowIndex, pitch ); }
+	DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *allocator.address( data(), rowIndex, columnIndex, pitch ); }
 	//DEVICE inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex)); }
-	DEVICE inline const_reference at( size_type index ) const { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
+	DEVICE inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
+	//DEVICE inline const_reference at( size_type index ) const { return at( index/(pitch/sizeof(T)), index % (pitch/sizeof(T)) ); }
 
 	HOST DEVICE inline size_type size() const { return numberRows*numberColumns; }
 	HOST DEVICE inline size_type row_size() const { return numberRows; }
@@ -105,10 +107,14 @@ public:
 	HOST DEVICE inline T* data() { return deviceMemory.get(); }
 	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
 
-	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
+	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( *this, column_size(), rowIndex ); }
+	//HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( *this, row_size(), columnIndex, row_size() ); }
+	//HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
+	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( *this, column_size(), rowIndex ); }
+	//HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( *this, column_size(), rowIndex*pitch/sizeof(T) ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( *this, row_size(), columnIndex, row_size() ); }
+	//HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( *this, row_size(), columnIndex, pitch/sizeof(T) ); }
 
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
