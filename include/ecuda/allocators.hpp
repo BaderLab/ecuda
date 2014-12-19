@@ -431,8 +431,8 @@ public:
 	/// \param pitch
 	/// \return A pointer to the location.
 	///
-	HOST DEVICE inline const_pointer address( const_pointer ptr, size_type w, size_type h, size_type pitch ) const { return ptr + h*pitch/sizeof(T) + w; }
-	HOST DEVICE inline pointer address( pointer ptr, size_type w, size_type h, size_type pitch ) { return ptr + h*pitch/sizeof(T) + w; }
+	HOST DEVICE inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const { return ptr + x*pitch/sizeof(T) + y; }
+	HOST DEVICE inline pointer address( pointer ptr, size_type x, size_type y, size_type pitch ) { return ptr + x*pitch/sizeof(T) + y; }
 };
 
 

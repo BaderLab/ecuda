@@ -45,6 +45,10 @@ __global__
 void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
 	if( row < input.row_size() ) {
+//printf( "row[%02i]=%0.05f %0.05f %02i\n", row, input[row].front().x, input[row].front().y, input.column_size() );
+//coord_t<T>* ptr = &input[row].front();
+//printf( "row[%02i]=%0.05f %0.05f %02i\n", row, ptr[input.column_size()-1].x, ptr[input.column_size()-1].y, input.column_size() );
+//		doSomethingToRow( &input.at(row,0), input.column_size() ); //[row].front(), input.column_size() );
 		doSomethingToRow( input[row] );
 	}
 	//const int x = blockIdx.x*blockDim.x+threadIdx.x / input.column_size();
@@ -59,6 +63,8 @@ __global__
 void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m, std::size_t pitch ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
 	if( row < n ) {
+//coord_t<T>* ptr = input+(row*pitch/sizeof(coord_t<T>));
+//printf( "row[%02i]=%0.05f %0.05f %02i\n", row, ptr[m-1].x, ptr[m-1].y, m );
 		doSomethingToRow( input+(row*pitch/sizeof(coord_t<T>)), m );
 	}
 	//const int x = blockIdx.x*blockDim.x+threadIdx.x / m;
