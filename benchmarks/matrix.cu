@@ -9,6 +9,7 @@
 template<typename T>
 struct coord_t { T x, y; };
 
+/*
 template<typename T>
 __device__
 coord_t<T> doSomething( const coord_t<T>& value ) {
@@ -18,25 +19,52 @@ coord_t<T> doSomething( const coord_t<T>& value ) {
 	for( std::size_t i = 0; i < 10000; ++i ) { result.x += 0.0001; result.y += 0.0001; }
 	return result;
 }
+*/
 
 template<typename T>
-__global__
-void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
-	const int x = blockIdx.x*blockDim.x+threadIdx.x / input.column_size();
-	const int y = blockIdx.x*blockDim.x+threadIdx.x % input.column_size();
-	if( x < input.row_size() and y < input.column_size() ) {
-		input[x][y] = doSomething<T>( input[x][y] );
+__device__
+void doSomethingToRow( ecuda::matrix< coord_t<T> >::row_type row ) {
+	ecuda::matrix< coord_t<T> >::row_type::iterator current = row.begin();
+	while( current != row.end() ) {
+		for( std::size_t i = 0; i < 10000; ++i ) { current->x += 0.0001; current->y += 0.0001; }
+		++current;
+	}
+}
+
+template<typename T>
+__device__
+void doSomethingToRow( coord_t<T>* row, const std::size_t n ) {
+	for( std::size_t i = 0; i < n; ++i ) {
+		for( std::size_t j = 0; j < 10000; ++j ) { row[i].x += 0.0001; row[i].y += 0.0001; }
 	}
 }
 
 template<typename T>
 __global__
-void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m ) {
-	const int x = blockIdx.x*blockDim.x+threadIdx.x / m;
-	const int y = blockIdx.x*blockDim.x+threadIdx.x % m;
-	if( x < n and y < m ) {
-		input[x*m+y] = doSomething<T>( input[x*m+y] );
+void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
+	const int row = blockIdx.x*blockDim.x+threadIdx.x;
+	if( row < input.row_size() ) {
+		doSomethingToRow<T>( input[i] );
 	}
+	//const int x = blockIdx.x*blockDim.x+threadIdx.x / input.column_size();
+	//const int y = blockIdx.x*blockDim.x+threadIdx.x % input.column_size();
+	//if( x < input.row_size() and y < input.column_size() ) {
+	//	input[x][y] = doSomething<T>( input[x][y] );
+	//}
+}
+
+template<typename T>
+__global__
+void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m ) {
+	const int row = blockIdx.x*blockDim.x+threadIdx.x;
+	if( row < n ) {
+		doSomethingToRow( input[row*m], m );
+	}
+	//const int x = blockIdx.x*blockDim.x+threadIdx.x / m;
+	//const int y = blockIdx.x*blockDim.x+threadIdx.x % m;
+	//if( x < n and y < m ) {
+	//	input[x*m+y] = doSomething<T>( input[x*m+y] );
+	//}
 }
 
 int main( int argc, char* argv[] ) {
