@@ -56,10 +56,10 @@ void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
 
 template<typename T>
 __global__
-void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m ) {
+void manipulateMatrix( coord_t<T>* input, std::size_t n, std::size_t m, std::size_t pitch ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
 	if( row < n ) {
-		doSomethingToRow( input+(row*m), m );
+		doSomethingToRow( input+(row*pitch/sizeof(coord_t<T>)), m );
 	}
 	//const int x = blockIdx.x*blockDim.x+threadIdx.x / m;
 	//const int y = blockIdx.x*blockDim.x+threadIdx.x % m;
@@ -94,8 +94,9 @@ int main( int argc, char* argv[] ) {
 	deviceMatrix << hostMatrix;
 
 	coord_t<double>* rawData = NULL;
-	CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&rawData), N*N*sizeof(coord_t<double>) ) );
-	CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(rawData), reinterpret_cast<const void*>(hostMatrix.data()), N*N*sizeof(coord_t<double>), cudaMemcpyHostToDevice ) );
+	std::size_t pitch = 0;
+	CUDA_CALL( cudaMallocPitch( reinterpret_cast<void**>(&rawData), &pitch, N*sizeof(coord_t<double>), N ) );
+	CUDA_CALL( cudaMemcpy2D( reinterpret_cast<void*>(rawData), pitch, reinterpret_cast<const void*>(hostMatrix.data()), N*sizeof(coord_t<double>), N*sizeof(coord_t<double>), N, cudaMemcpyHostToDevice ) );
 
 	dim3 grid( (N+THREADS-1)/THREADS ), threads( THREADS );
 
@@ -130,7 +131,7 @@ int main( int argc, char* argv[] ) {
 		clock_gettime( CLOCK_REALTIME, &timeStart );
 		ecuda::event start, stop;
 		start.record();
-		manipulateMatrix<double><<<grid,threads>>>( rawData, N, N );
+		manipulateMatrix<double><<<grid,threads>>>( rawData, N, N, pitch );
 		CUDA_CALL( cudaDeviceSynchronize() );
 		CUDA_CHECK_ERRORS();
 		stop.record();
@@ -139,7 +140,7 @@ int main( int argc, char* argv[] ) {
 		std::cout << "TIME (raw):  " << std::fixed << (stop-start) << std::endl;
 		std::cout << "TIME (raw): " << std::fixed << ((timeEnd.tv_sec-timeStart.tv_sec)+(timeEnd.tv_nsec-timeStart.tv_nsec)/1e9) << std::endl;
 		std::vector< coord_t<double> > results( N*N );
-		CUDA_CALL( cudaMemcpy( &results.front(), rawData, N*N*sizeof(coord_t<double>), cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy2D( &results.front(), N*sizeof(coord_t<double>), rawData, pitch, N*sizeof(coord_t<double>), N, cudaMemcpyDeviceToHost ) );
 		std::cout << "[0,0]=" << std::fixed << results[0].x << "," << results[0].y << std::endl;
 		std::cout << "[" << (N-1) << "," << (N-1) << "]=" << std::fixed << results.back().x << "," << results.back().y << std::endl;
 	}
