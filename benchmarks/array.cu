@@ -1,4 +1,6 @@
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 #include <vector>
 #include "../include/ecuda/array.hpp"
 
@@ -24,9 +26,6 @@ void squareArray( T* input, std::size_t n ) {
 
 int main( int argc, char* argv[] ) {
 
-	std::time_t start, end;
-	std::time(&start);
-
 	const std::size_t N = 100000;
 	const std::size_t THREADS = 800;
 
@@ -40,13 +39,26 @@ int main( int argc, char* argv[] ) {
 	CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(rawData), reinterpret_cast<const void*>(&hostData.front()), N*sizeof(int), cudaMemcpyHostToDevice ) );
 
 	dim3 grid( (N+THREADS-1)/THREADS ), threads( THREADS );
-	squareArray<int><<<grid,threads>>>( deviceData );
-	CUDA_CALL( cudaDeviceSynchronize() );
-	CUDA_CHECK_ERRORS();
 
-	squareArray<int><<<grid,threads>>>( rawData, N );
-	CUDA_CALL( cudaDeviceSynchronize() );
-	CUDA_CHECK_ERRORS();
+	{
+		std::time_t start, end;
+		std::time(&start);
+		squareArray<int><<<grid,threads>>>( deviceData );
+		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
+		std::time(&end);
+		std::cout << "TIME (ecuda): " << std::setprecision(2) << difftime( end, start ) << std::endl;
+	}
+
+	{
+		std::time_t start, end;
+		std::time(&start);
+		squareArray<int><<<grid,threads>>>( rawData, N );
+		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
+		std::time(&end);
+		std::cout << "TIME (raw): " << std::setprecision(2) << difftime( end, start ) << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 
