@@ -8,7 +8,10 @@
 #include "../include/ecuda/cube.hpp"
 
 template<typename T>
-struct coord_t { T x, y, z; };
+struct coord_t {
+	T x, y, z;
+	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y and z == other.z; }
+};
 
 typedef coord_t<double> Coordinate;
 
@@ -20,7 +23,7 @@ void testAt( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
 	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
-		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 0;
+		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 1;
 	}
 }
 
@@ -160,8 +163,10 @@ int main( int argc, char* argv[] ) {
 		assert( hostResultCube.depth_size() == o );
 		for( std::size_t i = 0; i < n; ++i )
 			for( std::size_t j = 0; j < m; ++j )
-				for( std::size_t k = 0; k < o; ++k )
+				for( std::size_t k = 0; k < o; ++k ) {
+					if( !hostResultCube[i][j][k] ) std::cerr << "FAILED AT [" << i << "," << j << "," << k << "]" << std::endl;
 					assert( hostResultCube[i][j][k] );
+				}
 	}
 
 	{
