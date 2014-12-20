@@ -129,7 +129,7 @@ public:
 		return *this;
 	}
 
-	template<typename OtherAlloc>
+	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
 		other.resize( size() );
 		CUDA_CALL( cudaMemcpy2D<T>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
@@ -151,7 +151,7 @@ public:
 		return *this;
 	}
 
-	template<typename OtherAlloc>
+	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator<<( std::vector<T,OtherAlloc>& other ) {
 		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;

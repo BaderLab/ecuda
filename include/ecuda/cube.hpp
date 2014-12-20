@@ -155,7 +155,7 @@ public:
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
 	template<typename U,typename V,typename W>
-	HOST cube<T>& operator>>( estd::cube<T,U,V,W>& dest ) {
+	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
 		//TODO: this needs to be re-implemented, it won't work as currently written
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
 		CUDA_CALL( cudaMemcpy2D<T>(
@@ -171,6 +171,23 @@ public:
 		//for( size_type i = 0; i < numberRows; ++i ) operator[](i) >> dest[i];
 		return *this;
 	}
+
+	HOST void resize( const size_type numberRows, const size_type numberColumns, const size_type numberDepths ) {
+		if( row_size() == numberRows and column_size() == numberColumns and depth_size() == numberDepths ) return; // no resize needed
+		// allocate memory
+		this->numberRows = numberRows;
+		this->numberColumns = numberColumns;
+		this->numberDepths = numberDepths;
+		deviceMemory = device_ptr<T>( DevicePitchAllocator<T>().allocate( numberColumns*numberDepths, numberRows, pitch ) );
+	}
+
+	template<typename U,typename V,typename W>
+	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
+		resize( src.row_size(), src.column_size(), src.depth_size() );
+		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths, numberRows, cudaMemcpyHostToDevice ) );
+		return *this;
+	}
+
 
 };
 
