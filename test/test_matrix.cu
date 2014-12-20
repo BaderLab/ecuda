@@ -1,4 +1,4 @@
-#define NDEBUG
+//#define NDEBUG
 #include <cassert>
 
 #include <iostream>
@@ -8,7 +8,11 @@
 #include "../include/ecuda/matrix.hpp"
 
 template<typename T>
-struct coord_t { T x, y; };
+struct coord_t {
+	T x, y;
+	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y; }
+	bool operator!=( const coord_t& other ) const { return !operator==(other); }
+};
 
 typedef coord_t<double> Coordinate;
 
@@ -68,7 +72,10 @@ void testGetColumn( ecuda::matrix<Coordinate> matrix, ecuda::matrix<uint8_t> res
 		ecuda::matrix<Coordinate>::column_type column = matrix.get_column(y);
 		ecuda::matrix<Coordinate>::column_type::iterator iter = column.begin();
 		std::size_t x = 0;
-		for( ; iter != column.end(); ++iter, ++x )	if( iter->x == x and iter->y == y ) result[x][y] = 1;
+		for( ; iter != column.end(); ++iter, ++x ) {
+			printf( "%02i %02i %0.5f %0.5f\n", x, y, iter->x, iter->y );
+			if( iter->x == x and iter->y == y ) result[x][y] = 1;
+		}
 	}
 }
 
@@ -121,7 +128,7 @@ int main( int argc, char* argv[] ) {
 
 	{
 		std::cerr << "Testing assign()..." << std::endl;
-		ecuda::matrix<Coordinate> deviceMatrix;
+		ecuda::matrix<Coordinate> deviceMatrix( n, m );
 		deviceMatrix.assign( hostMatrix.begin(), hostMatrix.end() );
 		estd::matrix<Coordinate> hostMatrix2( n, m );
 		deviceMatrix >> hostMatrix2;
@@ -228,7 +235,7 @@ int main( int argc, char* argv[] ) {
 
 	{
 		std::cerr << "Testing get_column(index)..." << std::endl;
-		dim3 grid( (n+THREADS-1)/THREADS ), threads( THREADS );
+		dim3 grid( (m+THREADS-1)/THREADS ), threads( THREADS );
 		ecuda::matrix<Coordinate> deviceMatrix( n, m );
 		deviceMatrix << hostMatrix;
 		ecuda::matrix<uint8_t> resultMatrix( n, m );
@@ -240,8 +247,10 @@ int main( int argc, char* argv[] ) {
 		assert( hostResultMatrix.row_size() == n );
 		assert( hostResultMatrix.column_size() == m );
 		for( std::size_t i = 0; i < n; ++i )
-			for( std::size_t j = 0; j < m; ++j )
+			for( std::size_t j = 0; j < m; ++j ) {
+				if( !hostResultMatrix[i][j] ) std::cerr << "FAILURE AT: " << i << "," << j << std::endl;
 				assert( hostResultMatrix[i][j] );
+			}
 	}
 
 	return EXIT_SUCCESS;

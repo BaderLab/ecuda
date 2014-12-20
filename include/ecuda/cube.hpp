@@ -92,7 +92,7 @@ public:
 			std::vector<T> v( numberColumns*numberDepths, value );
 			for( size_t i = 0; i < numberRows; ++i )
 				CUDA_CALL( cudaMemcpy<T>(
-					allocator.address( deviceMemory.get(), numberColumns*numberDepths, numberRows, pitch ), // dst
+					allocator.address( deviceMemory.get(), i, 0, pitch ), // dst
 					&v[0], // src
 					numberColumns*numberDepths, // count
 					cudaMemcpyHostToDevice // kind
@@ -112,7 +112,7 @@ public:
 					for( size_t k = 0; k < numberDepths; ++k )
 						v.push_back( src[i][j][k] );
 				CUDA_CALL( cudaMemcpy<T>(
-					allocator.address( deviceMemory.get(), numberColumns*numberDepths, numberRows, pitch ), // dst
+					allocator.address( deviceMemory.get(), i, 0, pitch ), // dst
 					&v[0], // src
 					numberColumns*numberDepths, // count
 					cudaMemcpyHostToDevice // kind
@@ -131,10 +131,10 @@ public:
 	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
 
 	// element access:
-	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), columnIndex*numberDepths+depthIndex, rowIndex, pitch ); }
+	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex*numberDepths+depthIndex, pitch ); }
 	//DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex*numberDepths+depthIndex)); }
 	DEVICE inline reference at( const size_type index ) { return at( index/(numberColumns*numberDepths), (index % (numberColumns*numberDepths))/numberDepths, (index % (numberColumns*numberDepths)) % numberDepths ); }
-	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), columnIndex*numberDepths+depthIndex, rowIndex, pitch ); }
+	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex*numberDepths+depthIndex, pitch ); }
 	//DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex*numberDepths+depthIndex)); }
 	DEVICE inline const_reference at( const size_type index ) const { return at( index/(numberColumns*numberDepths), (index % (numberColumns*numberDepths))/numberDepths, (index % (numberColumns*numberDepths)) % numberDepths ); }
 	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }

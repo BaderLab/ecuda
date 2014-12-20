@@ -1,4 +1,4 @@
-#define NDEBUG
+//#define NDEBUG
 #include <cassert>
 
 #include <iostream>
@@ -20,7 +20,7 @@ void testAt( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
 	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
-		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 1;
+		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 0;
 	}
 }
 

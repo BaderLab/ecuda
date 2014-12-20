@@ -186,11 +186,11 @@ HOST void matrix<T,Alloc>::assign( RandomAccessIterator begin, RandomAccessItera
 	std::size_t n = end-begin;
 	if( n > size() ) n = size();
 	RandomAccessIterator current = begin;
-	for( std::size_t i = 0; i < n; i += row_size(), begin += row_size() ) {
-		std::size_t len = row_size();
+	for( std::size_t i = 0; i < n; i += column_size(), current += column_size() ) {
+		std::size_t len = column_size();
 		if( i+len > size() ) len = size()-i;
 		std::vector<T> row( current, current+len );
-		CUDA_CALL( cudaMemcpy<T>( allocator.address( deviceMemory.get(), len, i, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<T>( allocator.address( deviceMemory.get(), i/column_size(), 0, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
 	}
 }
 
