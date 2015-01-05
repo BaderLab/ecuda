@@ -145,6 +145,8 @@ public:
 	HOST DEVICE inline matrix_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_matrix_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
+	HOST DEVICE inline matrix_type get_yz( const size_type rowIndex ) { return matrix_type( *this, rowIndex ); }
+	HOST DEVICE inline matrix_type get_xz( const size_type columnIndex ) { return matrix_type( *this, 
 	//xy_type get_xy( const RowIndexType x, const ColumnIndexType y ) { return contents[x].get_row(y); }
 	//xz_type get_xz( const RowIndexType x, const DepthIndexType z ) { return contents[x].get_column(z); }
 	//yz_type get_yz( const ColumnIndexType y, const DepthIndexType z ) {	return OffsettingContainer< cube<CellType,RowIndexType,ColumnIndexType,DepthIndexType> >( *this, row_size(), y*depth_size()+z, column_size()*depth_size() ); }

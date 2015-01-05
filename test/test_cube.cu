@@ -19,9 +19,9 @@ typedef unsigned char uint8_t;
 
 __global__
 void testAt( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
-	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x / (cube.column_size()*cube.depth_size());
-	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
-	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
+	const std::size_t x = ( blockIdx.x*blockDim.x+threadIdx.x ) / (cube.column_size()*cube.depth_size());
+	const std::size_t y = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
+	const std::size_t z = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
 		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 1;
 	}
@@ -29,9 +29,9 @@ void testAt( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 
 __global__
 void testAtConst( const ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
-	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x / (cube.column_size()*cube.depth_size());
-	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
-	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
+	const std::size_t x = ( blockIdx.x*blockDim.x+threadIdx.x ) / (cube.column_size()*cube.depth_size());
+	const std::size_t y = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
+	const std::size_t z = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
 		if( cube.at(x,y,z).x == x and cube.at(x,y,z).y == y and cube.at(x,y,z).z == z ) result[x][y][z] = 1;
 	}
@@ -39,9 +39,9 @@ void testAtConst( const ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> resul
 
 __global__
 void testAtIndex( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
-	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x / (cube.column_size()*cube.depth_size());
-	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
-	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
+	const std::size_t x = ( blockIdx.x*blockDim.x+threadIdx.x ) / (cube.column_size()*cube.depth_size());
+	const std::size_t y = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
+	const std::size_t z = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
 		const std::size_t index = x*cube.column_size()*cube.depth_size() + y*cube.depth_size() + z;
 		if( cube.at(index).x == x and cube.at(index).y == y and cube.at(index).z == z ) result[x][y][z] = 1;
@@ -50,9 +50,9 @@ void testAtIndex( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 
 __global__
 void testAtIndexConst( const ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
-	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x / (cube.column_size()*cube.depth_size());
-	const std::size_t y = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
-	const std::size_t z = ( blockIdx.x*blockDim.x+threadIdx.x % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
+	const std::size_t x = ( blockIdx.x*blockDim.x+threadIdx.x ) / (cube.column_size()*cube.depth_size());
+	const std::size_t y = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) / cube.depth_size();
+	const std::size_t z = ( ( blockIdx.x*blockDim.x+threadIdx.x ) % (cube.column_size()*cube.depth_size()) ) % cube.depth_size();
 	if( x < cube.row_size() and y < cube.column_size() and z < cube.depth_size() ) {
 		const std::size_t index = x*cube.column_size()*cube.depth_size() + y*cube.depth_size() + z;
 		if( cube.at(index).x == x and cube.at(index).y == y and cube.at(index).z == z ) result[x][y][z] = 1;
@@ -72,18 +72,20 @@ void testGetRow( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	}
 }
 
-/*
+
 __global__
-void testGetColumn( ecuda::matrix<Coordinate> matrix, ecuda::matrix<uint8_t> result ) {
+void testGetColumn( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = blockIdx.x*blockDim.x+threadIdx.x;
-	if( y < matrix.column_size() ) {
-		ecuda::matrix<Coordinate>::column_type column = matrix.get_column(y);
-		ecuda::matrix<Coordinate>::column_type::iterator iter = column.begin();
-		std::size_t x = 0;
-		for( ; iter != column.end(); ++iter, ++x )	if( iter->x == x and iter->y == y ) result[x][y] = 1;
+	if( y < cube.column_size() ) {
+		ecuda::cube<Coordinate>::matrix_type slice = cube.get_column(x);
+		for( std::size_t i = 0; i < cube.row_size(); ++i ) {
+			for( std::size_t j = 0; j < cube.depth_size(); ++j ) {
+				if( slice[i][j].x == i and slice[i][j].y == y and slice[i][j].z == j ) result[i][y][j] = 1;
+			}
+		}
 	}
 }
-*/
+
 
 
 int main( int argc, char* argv[] ) {
@@ -161,6 +163,13 @@ int main( int argc, char* argv[] ) {
 		assert( hostResultCube.row_size() == n );
 		assert( hostResultCube.column_size() == m );
 		assert( hostResultCube.depth_size() == o );
+//		for( std::size_t i = 0; i < n; ++i ) {
+//			for( std::size_t j = 0; j < m; ++j ) {
+//				for( std::size_t k = 0; k < o; ++k ) std::cout << static_cast<int>(hostResultCube[i][j][k]);
+//				std::cout << std::endl;
+//			}
+//			std::cout << std::endl;
+//		}
 		for( std::size_t i = 0; i < n; ++i )
 			for( std::size_t j = 0; j < m; ++j )
 				for( std::size_t k = 0; k < o; ++k ) {
@@ -230,7 +239,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::cerr << "Testing attributes..." << std::endl;
 		const ecuda::cube<Coordinate> deviceCube( hostCube );
-		assert( deviceCube.size() == n*m );
+		assert( deviceCube.size() == n*m*o );
 		assert( deviceCube.row_size() == n );
 		assert( deviceCube.column_size() == m );
 		assert( deviceCube.depth_size() == o );
@@ -258,25 +267,25 @@ int main( int argc, char* argv[] ) {
 					assert( hostResultCube[i][j][k] );
 	}
 
-	/*
 	{
 		std::cerr << "Testing get_column(index)..." << std::endl;
 		dim3 grid( (n+THREADS-1)/THREADS ), threads( THREADS );
-		ecuda::matrix<Coordinate> deviceMatrix( n, m );
-		deviceMatrix << hostMatrix;
-		ecuda::matrix<uint8_t> resultMatrix( n, m );
-		testGetColumn<<<grid,threads>>>( deviceMatrix, resultMatrix );
+		ecuda::cube<Coordinate> devuceCube( n, m, o );
+		deviceCube << hostCube;
+		ecuda::cube<uint8_t> resultCube( n, m, o );
+		testGetColumn<<<grid,threads>>>( deviceCube, resultCube );
 		CUDA_CALL( cudaThreadSynchronize() );
 		CUDA_CHECK_ERRORS();
-		estd::matrix<uint8_t> hostResultMatrix( n, m );
-		resultMatrix >> hostResultMatrix;
-		assert( hostResultMatrix.row_size() == n );
-		assert( hostResultMatrix.column_size() == m );
+		estd::cube<uint8_t> hostResultCube( n, m, o );
+		resultCube >> hostResultCube;
+		assert( hostResultCube.row_size() == n );
+		assert( hostResultCube.column_size() == m );
+		assert( hostResultCube.depth_size() == o );
 		for( std::size_t i = 0; i < n; ++i )
 			for( std::size_t j = 0; j < m; ++j )
-				assert( hostResultMatrix[i][j] );
+				for( std::size_t k = 0; k < o; ++k )
+					assert( hostResultCube[i][j][k] );
 	}
-	*/
 
 	return EXIT_SUCCESS;
 
