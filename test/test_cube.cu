@@ -77,7 +77,7 @@ __global__
 void testGetColumn( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = blockIdx.x*blockDim.x+threadIdx.x;
 	if( y < cube.column_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_column(x);
+		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xz(y);
 		for( std::size_t i = 0; i < cube.row_size(); ++i ) {
 			for( std::size_t j = 0; j < cube.depth_size(); ++j ) {
 				if( slice[i][j].x == i and slice[i][j].y == y and slice[i][j].z == j ) result[i][y][j] = 1;
@@ -270,7 +270,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::cerr << "Testing get_column(index)..." << std::endl;
 		dim3 grid( (n+THREADS-1)/THREADS ), threads( THREADS );
-		ecuda::cube<Coordinate> devuceCube( n, m, o );
+		ecuda::cube<Coordinate> deviceCube( n, m, o );
 		deviceCube << hostCube;
 		ecuda::cube<uint8_t> resultCube( n, m, o );
 		testGetColumn<<<grid,threads>>>( deviceCube, resultCube );

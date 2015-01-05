@@ -145,12 +145,12 @@ public:
 	HOST DEVICE inline matrix_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_matrix_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
-	xy_type get_xy( const size_type z ) { return xy_type( *this, ORIENTATION_XY, z ); }
-	xz_type get_xz( const size_type y ) { return xz_type( *this, ORIENTATION_XZ, y ); }
-	yz_type get_yz( const size_type x ) { return yz_type( *this, ORIENTATION_YZ, x ); }
-	const_xy_type get_xy( const size_type z ) const { return const_xy_type( *this, ORIENTATION_XY, z ); }
-	const_xz_type get_xz( const size_type y ) const { return const_xz_type( *this, ORIENTATION_XZ, y ); }
-	const_yz_type get_yz( const size_type x ) const { return const_yz_type( *this, ORIENTATION_YZ, x ); }
+	HOST DEVICE xy_type get_xy( const size_type z ) { return xy_type( *this, ORIENTATION_XY, z ); }
+	HOST DEVICE xz_type get_xz( const size_type y ) { return xz_type( *this, ORIENTATION_XZ, y ); }
+	HOST DEVICE yz_type get_yz( const size_type x ) { return yz_type( *this, ORIENTATION_YZ, x ); }
+	HOST DEVICE const_xy_type get_xy( const size_type z ) const { return const_xy_type( *this, ORIENTATION_XY, z ); }
+	HOST DEVICE const_xz_type get_xz( const size_type y ) const { return const_xz_type( *this, ORIENTATION_XZ, y ); }
+	HOST DEVICE const_yz_type get_yz( const size_type x ) const { return const_yz_type( *this, ORIENTATION_YZ, x ); }
 
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
