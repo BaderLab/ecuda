@@ -172,6 +172,22 @@ public:
 			default: return const_row_type( *this, 0, 0 );
 		}
 	}
+	DEVICE inline column_type get_column( size_type columnIndex ) {
+		switch( orientation ) {
+			case ORIENTATION_XY: return column_type( *this, cube.column_size(), columnIndex, cube.column_size() );
+			case ORIENTATION_XZ: return column_type( *this, cube.depth_size(), columnIndex, cube.depth_size() );
+			case ORIENTATION_YZ: return column_type( *this, cube.depth_size(), columnIndex, cube.depth_size() );
+			default: return column_type( *this, 0, 0 );
+		}
+	}
+	DEVICE inline const_column_type get_column( size_type columnIndex ) const {
+		switch( orientation ) {
+			case ORIENTATION_XY: return const_column_type( *this, cube.column_size(), columnIndex, cube.column_size() );
+			case ORIENTATION_XZ: return const_column_type( *this, cube.depth_size(), columnIndex, cube.depth_size() );
+			case ORIENTATION_YZ: return const_column_type( *this, cube.depth_size(), columnIndex, cube.depth_size() );
+			default: return const_column_type( *this, 0, 0 );
+		}
+	}
 	//DEVICE inline row_type get_row( size_type index ) { return row_type( *this, cube.column_size(), index*cube.depth_size() ); }
 	//DEVICE inline const_row_type get_row( size_type index ) const { return const_row_type( *this, cube.column_size(), index*cube.depth_size() ); }
 
