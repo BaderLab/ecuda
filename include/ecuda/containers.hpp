@@ -158,17 +158,17 @@ public:
 	// iterators:
 	DEVICE inline row_type get_row( size_type rowIndex ) {
 		switch( orientation ) {
-			case ORIENTATION_XY: return row_type( *this, cube.row_size(), rowIndex*cube.depth_size()+index, cube.column_size()*cube.depth_size() );
-			case ORIENTATION_XZ: return row_type( *this, cube.row_size(), index*cube.depth_size()+rowIndex, cube.column_size()*cube.depth_size() );
-			case ORIENTATION_YZ: return row_type( *this, cube.column_size(), rowIndex*cube.depth_size(), 1 );
+			case ORIENTATION_XY: return row_type( *this, cube.row_size(), rowIndex*cube.column_size() );
+			case ORIENTATION_XZ: return row_type( *this, cube.row_size(), rowIndex*cube.depth_size() );
+			case ORIENTATION_YZ: return row_type( *this, cube.column_size(), rowIndex*cube.depth_size() );
 			default: return row_type( *this, 0, 0 );
 		}
 	}
 	DEVICE inline const_row_type get_row( size_type rowIndex ) const {
 		switch( orientation ) {
-			case ORIENTATION_XY: return const_row_type( *this, cube.row_size(), rowIndex*cube.depth_size()+index, column_size()*cube.depth_size() );
-			case ORIENTATION_XZ: return const_row_type( *this, cube.row_size(), index*cube.depth_size()+rowIndex, column_size()*cube.depth_size() );
-			case ORIENTATION_YZ: return const_row_type( *this, cube.column_size(), rowIndex*cube.depth_size(), 1 );
+			case ORIENTATION_XY: return const_row_type( *this, cube.row_size(), rowIndex*cube.column_size() );
+			case ORIENTATION_XZ: return const_row_type( *this, cube.row_size(), rowIndex*cube.depth_size() );
+			case ORIENTATION_YZ: return const_row_type( *this, cube.column_size(), rowIndex*cube.depth_size() );
 			default: return const_row_type( *this, 0, 0 );
 		}
 	}
