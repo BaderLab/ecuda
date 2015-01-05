@@ -62,15 +62,15 @@ public:
 	typedef std::ptrdiff_t difference_type;
 	typedef std::size_t size_type;
 
-	typedef ecuda::OffsettingContainer< cube<T> > xy_type;
-	typedef ecuda::OffsettingContainer< cube<T> > xz_type;
-	typedef ecuda::OffsettingContainer< cube<T> > yz_type;
-	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_xy_type;
-	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_xz_type;
-	typedef const ecuda::OffsettingContainer< const cube<T>, size_type, const_pointer > const_yz_type;
+	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xy_type;
+	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xz_type;
+	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > yz_type;
+	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xy_type;
+	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xz_type;
+	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_yz_type;
 
-	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > matrix_type;
-	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_matrix_type;
+	typedef yz_type matrix_type;
+	typedef const_yz_type const_matrix_type;
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
@@ -140,17 +140,17 @@ public:
 	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
-	HOST DEVICE inline matrix_type get_row( const size_type rowIndex ) { return matrix_type( *this, rowIndex ); }
-	HOST DEVICE inline const_matrix_type get_row( const size_type rowIndex ) const { return const_matrix_type( *this, rowIndex ); }
+	HOST DEVICE inline matrix_type get_row( const size_type rowIndex ) { return matrix_type( *this, ORIENTATION_YZ, rowIndex ); }
+	HOST DEVICE inline const_matrix_type get_row( const size_type rowIndex ) const { return const_matrix_type( *this, ORIENTATION_YZ, rowIndex ); }
 	HOST DEVICE inline matrix_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_matrix_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
-	//xy_type get_xy( const RowIndexType x, const ColumnIndexType y ) { return contents[x].get_row(y); }
-	//xz_type get_xz( const RowIndexType x, const DepthIndexType z ) { return contents[x].get_column(z); }
-	//yz_type get_yz( const ColumnIndexType y, const DepthIndexType z ) {	return OffsettingContainer< cube<CellType,RowIndexType,ColumnIndexType,DepthIndexType> >( *this, row_size(), y*depth_size()+z, column_size()*depth_size() ); }
-	//const_xy_type get_xy( const RowIndexType x, const ColumnIndexType y ) const { return contents[x].get_row(y); }
-	//const_xz_type get_xz( const RowIndexType x, const DepthIndexType z ) const { return contents[x].get_column(z); }
-	//const_yz_type get_yz( const ColumnIndexType y, const DepthIndexType z ) const { return OffsettingContainer< const cube<CellType,RowIndexType,ColumnIndexType,DepthIndexType> >( *this, row_size(), y*depth_size()+z, column_size()*depth_size() ); }
+	xy_type get_xy( const size_type z ) { return xy_type( *this, ORIENTATION_XY, z ); }
+	xz_type get_xz( const size_type y ) { return xz_type( *this, ORIENTATION_XZ, y ); }
+	yz_type get_yz( const size_type x ) { return yz_type( *this, ORIENTATION_YZ, x ); }
+	const_xy_type get_xy( const size_type z ) const { return const_xy_type( *this, ORIENTATION_XY, z ); }
+	const_xz_type get_xz( const size_type y ) const { return const_xz_type( *this, ORIENTATION_XZ, y ); }
+	const_yz_type get_yz( const size_type x ) const { return const_yz_type( *this, ORIENTATION_YZ, x ); }
 
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
