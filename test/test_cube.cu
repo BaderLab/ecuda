@@ -113,6 +113,34 @@ void testYZ_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) 
 	}
 }
 
+__global__
+void testXY_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
+	const std::size_t z = blockIdx.x*blockDim.x+threadIdx.x;
+	if( z < cube.depth_size() ) {
+		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xy(z);
+		for( std::size_t i = 0; i < cube.column_size(); ++i ) {
+			ecuda::cube<Coordinate>::matrix_type::column_type column = slice.get_column(i);
+			for( std::size_t j = 0; j < cube.row_size(); ++j ) {
+				if( column[j].x == j and column[j].y == i and column[j].z == z ) result[j][i][z] = 1;
+			}
+		}
+	}
+}
+
+__global__
+void testXZ_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
+	const std::size_t y = blockIdx.x*blockDim.x+threadIdx.x;
+	if( y < cube.column_size() ) {
+		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xz(y);
+		for( std::size_t i = 0; i < cube.depth_size(); ++i ) {
+			ecuda::cube<Coordinate>::matrix_type::column_type column = slice.get_column(i);
+			for( std::size_t j = 0; j < cube.row_size(); ++j ) {
+				if( column[j].x == j and column[j].y == y and column[j].z == i ) result[j][y][i] = 1;
+			}
+		}
+	}
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -341,6 +369,46 @@ int main( int argc, char* argv[] ) {
 		deviceCube << hostCube;
 		ecuda::cube<uint8_t> resultCube( n, m, o );
 		testYZ_Column<<<grid,threads>>>( deviceCube, resultCube );
+		CUDA_CALL( cudaThreadSynchronize() );
+		CUDA_CHECK_ERRORS();
+		estd::cube<uint8_t> hostResultCube( n, m, o );
+		resultCube >> hostResultCube;
+		assert( hostResultCube.row_size() == n );
+		assert( hostResultCube.column_size() == m );
+		assert( hostResultCube.depth_size() == o );
+		for( std::size_t i = 0; i < n; ++i )
+			for( std::size_t j = 0; j < m; ++j )
+				for( std::size_t k = 0; k < o; ++k )
+					assert( hostResultCube[i][j][k] );
+	}
+
+	{
+		std::cerr << "Testing get_xy(index).getColumn()..." << std::endl;
+		dim3 grid( (n+THREADS-1)/THREADS ), threads( THREADS );
+		ecuda::cube<Coordinate> deviceCube( n, m, o );
+		deviceCube << hostCube;
+		ecuda::cube<uint8_t> resultCube( n, m, o );
+		testXY_Column<<<grid,threads>>>( deviceCube, resultCube );
+		CUDA_CALL( cudaThreadSynchronize() );
+		CUDA_CHECK_ERRORS();
+		estd::cube<uint8_t> hostResultCube( n, m, o );
+		resultCube >> hostResultCube;
+		assert( hostResultCube.row_size() == n );
+		assert( hostResultCube.column_size() == m );
+		assert( hostResultCube.depth_size() == o );
+		for( std::size_t i = 0; i < n; ++i )
+			for( std::size_t j = 0; j < m; ++j )
+				for( std::size_t k = 0; k < o; ++k )
+					assert( hostResultCube[i][j][k] );
+	}
+
+	{
+		std::cerr << "Testing get_xz(index).getColumn()..." << std::endl;
+		dim3 grid( (n+THREADS-1)/THREADS ), threads( THREADS );
+		ecuda::cube<Coordinate> deviceCube( n, m, o );
+		deviceCube << hostCube;
+		ecuda::cube<uint8_t> resultCube( n, m, o );
+		testXZ_Column<<<grid,threads>>>( deviceCube, resultCube );
 		CUDA_CALL( cudaThreadSynchronize() );
 		CUDA_CHECK_ERRORS();
 		estd::cube<uint8_t> hostResultCube( n, m, o );
