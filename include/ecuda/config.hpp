@@ -1,0 +1,1 @@
+#define HAVE_ESTD_LIBRARY 1

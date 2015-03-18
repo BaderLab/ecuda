@@ -42,6 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 
 #include <cstddef>
 #include "global.hpp"
+#include "iterators.hpp"
 
 #ifdef __CPP11_SUPPORTED__
 #include <memory>
@@ -147,6 +148,242 @@ public:
 		shared_count = other.shared_count;
 		++(*shared_count);
 		#endif
+		return *this;
+	}
+
+};
+
+///
+/// A pointer class that implements all pointer-compatible operators for strided memory.
+///
+/// Strided memory is a block of contiguous memory where elements are separated by
+/// fixed-length padding.  Thus, one has to "stride" over the padding to reach the
+/// next element.  The term was borrowed from the GNU Scientific Library.
+///
+/// An optional second template parameter StrideBytes can be specified when the stride
+/// is not a multiple of the byte size of the first template parameter T. By default
+/// StrideBytes=sizeof(T).
+///
+template<typename T,std::size_t StrideBytes=sizeof(T)>
+class strided_ptr {
+public:
+	typedef T element_type;
+	typedef T* pointer;
+	typedef T& reference;
+	typedef std::size_t size_type;
+	typedef std::ptrdiff_t difference_type;
+
+private:
+	char* ptr;
+	//pointer ptr;
+	size_type stride;
+
+public:
+	HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(reinterpret_cast<char*>(p)), stride(stride*StrideBytes) {}
+	HOST DEVICE strided_ptr( const strided_ptr<T,StrideBytes>& src ) : ptr(src.ptr), stride(src.stride) {}
+	//template<typename U,std::size_t StrideBytes2>
+	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
+	HOST DEVICE ~strided_ptr() {}
+
+	HOST DEVICE inline size_type get_stride() const { return stride/StrideBytes; }
+	HOST DEVICE inline __CONSTEXPR__ size_type get_stride_bytes() const { return StrideBytes; }
+
+	HOST DEVICE inline pointer get() const { return reinterpret_cast<pointer>(ptr); }
+	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+
+	HOST DEVICE inline strided_ptr& operator++() { ptr += stride; return *this; }
+	HOST DEVICE inline strided_ptr operator++( int ) {
+		strided_ptr tmp(*this);
+		ptr += stride;
+		return tmp;
+	}
+
+	HOST DEVICE inline strided_ptr& operator--() { ptr -= stride; return *this; }
+	HOST DEVICE inline strided_ptr operator--( int ) {
+		strided_ptr tmp(*this);
+		ptr -= stride;
+		return tmp;
+	}
+
+	HOST DEVICE inline strided_ptr& operator+=( const int strides ) { ptr += strides*stride; return *this; }
+	HOST DEVICE inline strided_ptr& operator-=( const int strides ) { ptr -= strides*stride; return *this; }
+
+	HOST DEVICE inline strided_ptr operator+( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr+(strides*stride)), stride/StrideBytes ); }
+	HOST DEVICE inline strided_ptr operator-( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr-(strides*stride)), stride/StrideBytes ); }
+
+	HOST DEVICE inline difference_type operator-( const strided_ptr& other ) const { return ptr-other.ptr; } // strided_ptr<T>( ptr-other.ptr, stride ); }
+
+	DEVICE inline reference operator*() const { return *get(); }
+	DEVICE inline pointer operator->() const { return get(); }
+
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator==( const strided_ptr<T,StrideBytes2>& other ) const { return ptr == other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator!=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr != other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator< ( const strided_ptr<T,StrideBytes2>& other ) const { return ptr < other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator> ( const strided_ptr<T,StrideBytes2>& other ) const { return ptr > other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator<=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr <= other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator>=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr >= other.ptr; }
+
+};
+
+///
+/// A proxy to a pre-allocated block of contiguous memory.
+///
+/// The class merely holds the pointer and the length of the block
+/// and provides the means to manipulate the sequence.  No
+/// allocation/deallocation is done.
+///
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
+class contiguous_memory_proxy
+{
+public:
+	typedef T value_type; //!< The first template parameter (T)
+	typedef PointerType pointer;
+	//typedef value_type* pointer; //!< value_type*
+	typedef value_type& reference; //!< value_type&
+	typedef const T* const_pointer;
+	// nvcc V6.0.1 produced a warning "type qualifiers are meaningless here", but above replacement line is fine
+	//typedef const pointer const_pointer; //!< const value_type*
+	typedef const T& const_reference;
+	// nvcc V6.0.1 produced a warning "type qualifiers are meaningless here", but above replacement line is fine
+	//typedef const reference const_reference; //!< const value_type&
+	typedef std::ptrdiff_t difference_type;
+	typedef std::size_t size_type;
+
+	typedef pointer_iterator<value_type,pointer> iterator;
+	typedef pointer_iterator<const value_type,pointer> const_iterator;
+	typedef pointer_reverse_iterator<iterator> reverse_iterator;
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator;
+
+protected:
+	pointer ptr;
+	size_type length;
+
+public:
+	HOST DEVICE contiguous_memory_proxy() : ptr(nullptr), length(0) {}
+	template<typename T2,typename PointerType2>
+	HOST DEVICE contiguous_memory_proxy( const contiguous_memory_proxy<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
+	HOST DEVICE contiguous_memory_proxy( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
+	/*
+	template<class Container>
+	HOST DEVICE contiguous_memory_proxy(
+		Container& container,
+		typename Container::size_type length, // = typename Container::size_type(),
+		typename Container::size_type offset = typename Container::size_type()
+	) : ptr(container.data()+offset), length(length) {}
+	*/
+	HOST DEVICE virtual ~contiguous_memory_proxy() {}
+
+	HOST DEVICE pointer data() const { return ptr; }
+
+	// iterators:
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(ptr); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(ptr+static_cast<int>(length)); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(ptr); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(ptr+static_cast<int>(length)); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(iterator(ptr+static_cast<int>(length))); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(iterator(ptr)); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(ptr+static_cast<int>(length))); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(ptr)); }
+
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator(ptr); }
+	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return const_iterator(ptr+static_cast<int>(length)); }
+	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return const_reverse_iterator(const_iterator(ptr+static_cast<int>(length))); }
+	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return const_reverse_iterator(const_iterator(ptr)); }
+	#endif
+
+	// capacity:
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
+	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return length == 0; }
+
+	// element access:
+	DEVICE inline reference operator[]( size_type index ) { return *(ptr+static_cast<int>(index)); }
+	DEVICE inline reference at( size_type index ) { return operator[]( index ); }
+	DEVICE inline reference front() { return operator[](0); }
+	DEVICE inline reference back() { return operator[](size()-1); }
+	DEVICE inline const_reference operator[]( size_type index ) const {	return *(ptr+static_cast<int>(index)); }
+	DEVICE inline const_reference at( size_type index ) const { return operator[]( index ); }
+	DEVICE inline const_reference front() const { return operator[](0); }
+	DEVICE inline const_reference back() const { return operator[](size()-1); }
+
+	HOST DEVICE contiguous_memory_proxy& operator=( const contiguous_memory_proxy& other ) {
+		ptr = other.ptr;
+		length = other.length;
+		return *this;
+	}
+
+};
+
+///
+///
+///
+template<typename T>
+class contiguous_2d_memory_proxy : public contiguous_memory_proxy<T>
+{
+protected:
+	typedef contiguous_memory_proxy<T> base_type;
+
+public:
+	typedef typename base_type::value_type value_type;
+	typedef typename base_type::pointer pointer;
+	typedef typename base_type::reference reference;
+	typedef typename base_type::const_pointer const_pointer;
+	typedef typename base_type::const_reference const_reference;
+	typedef typename base_type::iterator iterator;
+	typedef typename base_type::const_iterator const_iterator;
+	typedef typename base_type::reverse_iterator reverse_iterator;
+	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+	typedef typename base_type::difference_type difference_type;
+	typedef typename base_type::size_type size_type;
+
+	typedef contiguous_memory_proxy<T> row_type;
+	typedef contiguous_memory_proxy<const T> const_row_type;
+	//typedef strided_memory_proxy<T> column_type;
+
+protected:
+	size_type numberBlocks;
+	size_type pitch;
+
+public:
+	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), numberBlocks(0) {}
+	template<typename U>
+	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T>(src), numberBlocks(src.numberBlocks), pitch(src.pitch) {}
+	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks, size_type pitch = 0 ) : contiguous_memory_proxy<T>(ptr,length), numberBlocks(numberBlocks), pitch(pitch) {}
+	/*
+	template<class Container>
+	HOST DEVICE contiguous_2d_memory_proxy(
+		Container& container,
+		typename Container::size_type numberBlocks,
+		typename Container::size_type blockSize,
+		//typename Container::size_type width,
+		//typename Container::size_type height,
+		typename Container::size_type offset = typename Container::size_type()
+	) :	contiguous_memory_proxy<T>( container, numberBlocks*blockSize, offset ), numberBlocks(numberBlocks) {
+		//std::cerr << "contiguous_2d_memory_proxy( width=" << width << ", height=" << height << ", offset=" << offset << " )" << std::endl;
+	}
+	*/
+	HOST DEVICE virtual ~contiguous_2d_memory_proxy() {}
+
+	// capacity:
+	HOST DEVICE inline size_type get_number_blocks() const { return numberBlocks; }
+	HOST DEVICE inline size_type get_block_size() const { return contiguous_memory_proxy<T>::size()/numberBlocks; }
+	HOST DEVICE inline size_type get_pitch() const { return pitch; }
+
+	// element access:
+	HOST DEVICE inline row_type operator[]( size_type index ) {
+		char* ptr = reinterpret_cast<char*>(base_type::data());
+		ptr += get_pitch();
+		return row_type( reinterpret_cast<pointer>(ptr), get_block_size() );
+	}
+	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
+		const char* ptr = reinterpret_cast<const char*>(base_type::data());
+		ptr += get_pitch();
+		return row_type( reinterpret_cast<const_pointer>(ptr), get_block_size() );
+	}	
+
+	HOST DEVICE contiguous_2d_memory_proxy& operator=( const contiguous_2d_memory_proxy& other ) {
+		base_type::operator=( other );
+		numberBlocks = other.numberBlocks;
 		return *this;
 	}
 

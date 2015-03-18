@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,7 @@ namespace ecuda {
 ///
 template<typename T>
 class HostAllocator {
+
 public:
 	typedef T value_type; //!< element type
 	typedef T* pointer; //!< pointer to element
@@ -77,6 +78,7 @@ public:
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
 	template<typename U> struct rebind { typedef HostAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+
 public:
 	///
 	/// \brief Constructs a host allocator object.
@@ -188,6 +190,7 @@ public:
 ///
 template<typename T>
 class DeviceAllocator {
+
 public:
 	typedef T value_type; //!< element type
 	typedef T* pointer; //!< pointer to element
@@ -197,24 +200,25 @@ public:
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
 	template<typename U> struct rebind { typedef DeviceAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+
 public:
 	///
-	/// \brief Constructs a host allocator object.
+	/// \brief Constructs a device allocator object.
 	///
 	HOST DEVICE DeviceAllocator() throw() {}
 	///
-	/// \brief Constructs a host allocator object from another host allocator object.
+	/// \brief Constructs a device allocator object from another device allocator object.
 	/// \param alloc Allocator object.
 	///
 	HOST DEVICE DeviceAllocator( const DeviceAllocator& alloc ) throw() {}
 	///
-	/// \brief Constructs a host allocator object from another host allocator object with a different element type.
+	/// \brief Constructs a device allocator object from another device allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
 	HOST DEVICE DeviceAllocator( const DeviceAllocator<U>& alloc ) throw() {}
 	///
-	/// \brief Destructs the host allocator object.
+	/// \brief Destructs the device allocator object.
 	///
 	HOST DEVICE ~DeviceAllocator() throw() {}
 	///
@@ -251,7 +255,7 @@ public:
 	///             yet freed with deallocate.  For standard memory allocation, a non-zero value may
 	///             used as a hint to improve performance by allocating the new block near the one
 	///             specified. The address of an adjacent element is often a good choice.
-	///             In this case, hint is always ignored since the CUDA host memory allocator
+	///             In this case, hint is always ignored since the CUDA device memory allocator
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
@@ -270,7 +274,7 @@ public:
 	/// during the function call, or later).
 	///
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
-	///            (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            (defined as an alias of T* in ecuda::DeviceAllocator<T>).
 	///
 	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
 	///
@@ -285,9 +289,9 @@ public:
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
 	/// \param ptr Pointer to a location with enough storage space to contain an element of type value_type.
-	///            pointer is a member type (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            pointer is a member type (defined as an alias of T* in ecuda::DeviceAllocator<T>).
 	/// \param val Value to initialize the constructed element to.
-	///            const_reference is a member type (defined as an alias of T& in ecuda::HostAllocator<T>).
+	///            const_reference is a member type (defined as an alias of T& in ecuda::DeviceAllocator<T>).
 	///
 	HOST inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
@@ -308,6 +312,7 @@ public:
 ///
 template<typename T>
 class DevicePitchAllocator {
+
 public:
 	typedef T value_type; //!< element type
 	typedef T* pointer; //!< pointer to element
@@ -317,24 +322,25 @@ public:
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
 	template<typename U> struct rebind { typedef DeviceAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+
 public:
 	///
-	/// \brief Constructs a host allocator object.
+	/// \brief Constructs a device pitched memory allocator object.
 	///
 	HOST DEVICE DevicePitchAllocator() throw() {}
 	///
-	/// \brief Constructs a host allocator object from another host allocator object.
+	/// \brief Constructs a device pitched memory allocator object from another host allocator object.
 	/// \param alloc Allocator object.
 	///
 	HOST DEVICE DevicePitchAllocator( const DevicePitchAllocator& alloc ) throw() {}
 	///
-	/// \brief Constructs a host allocator object from another host allocator object with a different element type.
+	/// \brief Constructs a device pitched memory allocator object from another device pitched memory allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
 	HOST DEVICE DevicePitchAllocator( const DevicePitchAllocator<U>& alloc ) throw() {}
 	///
-	/// \brief Destructs the host allocator object.
+	/// \brief Destructs the device pitched memory allocator object.
 	///
 	HOST DEVICE ~DevicePitchAllocator() throw() {}
 	///
@@ -371,7 +377,7 @@ public:
 	///             yet freed with deallocate.  For standard memory allocation, a non-zero value may
 	///             used as a hint to improve performance by allocating the new block near the one
 	///             specified. The address of an adjacent element is often a good choice.
-	///             In this case, hint is always ignored since the CUDA host memory allocator
+	///             In this case, hint is always ignored since the CUDA device pitched memory memory allocator
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
@@ -390,7 +396,7 @@ public:
 	/// during the function call, or later).
 	///
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
-	///            (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            (defined as an alias of T* in ecuda::DevicePitchAllocator<T>).
 	///
 	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
 	///
@@ -405,9 +411,9 @@ public:
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
 	/// \param ptr Pointer to a location with enough storage space to contain an element of type value_type.
-	///            pointer is a member type (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            pointer is a member type (defined as an alias of T* in ecuda::DevicePitchAllocator<T>).
 	/// \param val Value to initialize the constructed element to.
-	///            const_reference is a member type (defined as an alias of T& in ecuda::HostAllocator<T>).
+	///            const_reference is a member type (defined as an alias of T& in ecuda::DevicePitchAllocator<T>).
 	///
 	HOST inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
@@ -439,3 +445,4 @@ public:
 } // namespace ecuda
 
 #endif
+

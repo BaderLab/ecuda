@@ -42,7 +42,7 @@ int main( int argc, char* argv[] ) {
 	ecuda::vector<float> deviceArray4( n );
 	dim3 dimBlock( n, 1 ), dimGrid( 1, 1 );
 	squareVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS
+	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 
 	// copy array to host
@@ -51,7 +51,7 @@ int main( int argc, char* argv[] ) {
 	for( size_t i = 0; i < n; ++i ) std::cout << "test1.hostVector[" << i << "]=" << hostVector[i] << std::endl;
 
 	sumVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS
+	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 
 	// copy array to host

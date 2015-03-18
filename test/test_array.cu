@@ -2,21 +2,22 @@
 #include <cstdio>
 #include "../include/ecuda/array.hpp"
 
-__global__ void squareVector( const ecuda::array<float> input, ecuda::array<float> output ) {
+__global__ void squareVector( const ecuda::array<float,100> input, ecuda::array<float,100> output ) {
 	const int index = threadIdx.x;
 	output[index] = input[index]*input[index];
 }
 
-__global__ void sumVector( const ecuda::array<float> input, ecuda::array<float> output ) {
+__global__ void sumVector( const ecuda::array<float,100> input, ecuda::array<float,100> output ) {
 	const int index = threadIdx.x;
 	float sum = 0.0;
-	ecuda::array<float>::const_iterator current = input.begin();
-	const ecuda::array<float>::const_iterator end = input.end();
+	ecuda::array<float,100>::const_iterator current = input.begin();
+	const ecuda::array<float,100>::const_iterator end = input.end();
 	while( current != end ) {
 		sum += *current;
 		++current;
 	}
 //	for( ecuda::array<float>::const_iterator iter = input.begin(); iter != input.end(); ++iter ) sum += *iter;
+	output[index] = input.at(0);
 	output[index] = sum;
 }
 
@@ -28,14 +29,14 @@ int main( int argc, char* argv[] ) {
 	for( size_t i = 0; i < n; ++i ) hostVector[i] = i+1;
 
 	// allocate some device arrays
-	ecuda::array<float> deviceArray1( n, 3 ); // should have all 3
-	ecuda::array<float> deviceArray2( deviceArray1 ); // should be a copy of deviceArray1
-	const ecuda::array<float> deviceArray3( hostVector ); // should be a copy of the host vector
+	ecuda::array<float,100> deviceArray1( 3 ); // should have all 3
+	ecuda::array<float,100> deviceArray2( deviceArray1 ); // should be a copy of deviceArray1
+	const ecuda::array<float,100> deviceArray3( hostVector.begin(), hostVector.end() ); // should be a copy of the host vector
 
-	ecuda::array<float> deviceArray4( n );
+	ecuda::array<float,100> deviceArray4( n );
 	dim3 dimBlock( n, 1 ), dimGrid( 1, 1 );
 	squareVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS
+	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 
 	// copy array to host
@@ -44,7 +45,7 @@ int main( int argc, char* argv[] ) {
 	for( size_t i = 0; i < n; ++i ) std::cout << "test1.hostVector[" << i << "]=" << hostVector[i] << std::endl;
 
 	sumVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS
+	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 
 	// copy array to host

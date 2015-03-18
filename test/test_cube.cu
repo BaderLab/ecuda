@@ -63,7 +63,7 @@ __global__
 void testGetRow( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x;
 	if( x < cube.row_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_row(x);
+		ecuda::cube<Coordinate>::slice_type slice = cube.get_row(x);
 		for( std::size_t i = 0; i < cube.column_size(); ++i ) {
 			for( std::size_t j = 0; j < cube.depth_size(); ++j ) {
 				if( slice[i][j].x == x and slice[i][j].y == i and slice[i][j].z == j ) result[x][i][j] = 1;
@@ -77,7 +77,7 @@ __global__
 void testGetXZ( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = blockIdx.x*blockDim.x+threadIdx.x;
 	if( y < cube.column_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xz(y);
+		ecuda::cube<Coordinate>::xz_type slice = cube.get_xz(y);
 		for( std::size_t i = 0; i < cube.row_size(); ++i ) {
 			for( std::size_t j = 0; j < cube.depth_size(); ++j ) {
 				if( slice[i][j].x == i and slice[i][j].y == y and slice[i][j].z == j ) result[i][y][j] = 1;
@@ -90,7 +90,7 @@ __global__
 void testGetXY( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t z = blockIdx.x*blockDim.x+threadIdx.x;
 	if( z < cube.depth_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xy(z);
+		ecuda::cube<Coordinate>::xy_type slice = cube.get_xy(z);
 		for( std::size_t i = 0; i < cube.row_size(); ++i ) {
 			for( std::size_t j = 0; j < cube.column_size(); ++j ) {
 				if( slice[i][j].x == i and slice[i][j].y == j and slice[i][j].z == z ) result[i][j][z] = 1;
@@ -103,9 +103,9 @@ __global__
 void testYZ_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x;
 	if( x < cube.row_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_row(x);
+		ecuda::cube<Coordinate>::slice_type slice = cube.get_row(x);
 		for( std::size_t i = 0; i < cube.depth_size(); ++i ) {
-			ecuda::cube<Coordinate>::matrix_type::column_type column = slice.get_column(i);
+			ecuda::cube<Coordinate>::slice_type::column_type column = slice.get_column(i);
 			for( std::size_t j = 0; j < cube.column_size(); ++j ) {
 				if( column[j].x == x and column[j].y == j and column[j].z == i ) result[x][j][i] = 1;
 			}
@@ -117,9 +117,9 @@ __global__
 void testXY_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t z = blockIdx.x*blockDim.x+threadIdx.x;
 	if( z < cube.depth_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xy(z);
+		ecuda::cube<Coordinate>::xy_type slice = cube.get_xy(z);
 		for( std::size_t i = 0; i < cube.column_size(); ++i ) {
-			ecuda::cube<Coordinate>::matrix_type::column_type column = slice.get_column(i);
+			ecuda::cube<Coordinate>::slice_type::column_type column = slice.get_column(i);
 			for( std::size_t j = 0; j < cube.row_size(); ++j ) {
 				if( column[j].x == j and column[j].y == i and column[j].z == z ) result[j][i][z] = 1;
 			}
@@ -131,9 +131,9 @@ __global__
 void testXZ_Column( ecuda::cube<Coordinate> cube, ecuda::cube<uint8_t> result ) {
 	const std::size_t y = blockIdx.x*blockDim.x+threadIdx.x;
 	if( y < cube.column_size() ) {
-		ecuda::cube<Coordinate>::matrix_type slice = cube.get_xz(y);
+		ecuda::cube<Coordinate>::xz_type slice = cube.get_xz(y);
 		for( std::size_t i = 0; i < cube.depth_size(); ++i ) {
-			ecuda::cube<Coordinate>::matrix_type::column_type column = slice.get_column(i);
+			ecuda::cube<Coordinate>::slice_type::column_type column = slice.get_column(i);
 			for( std::size_t j = 0; j < cube.row_size(); ++j ) {
 				if( column[j].x == j and column[j].y == y and column[j].z == i ) result[j][y][i] = 1;
 			}

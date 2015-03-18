@@ -67,6 +67,15 @@ either expressed or implied, of the FreeBSD Project.
 #define nullptr NULL
 #endif
 
+/** Allow noexcept and constexpr if C++11 supported. */
+#ifdef __CPP11_SUPPORTED__
+#define __NOEXCEPT__ noexcept
+#define __CONSTEXPR__ constexpr
+#else
+#define __NOEXCEPT__
+#define __CONSTEXPR__
+#endif
+
 ///
 /// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
 /// for implementing the strategy required to make const/non-const iterators.
@@ -80,6 +89,11 @@ namespace ecuda {
 	template<typename T> struct dereference;
 	template<typename T> struct dereference<T*> { typedef T& type; };
 	template<typename T> struct dereference<T* const> { typedef const T& type; };
+	template<typename T> struct reference {
+		typedef T* pointer_type;
+		typedef T& reference_type;
+		typedef T element_type;
+	};
 } // namespace ecuda
 
 #endif

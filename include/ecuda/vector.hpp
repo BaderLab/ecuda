@@ -65,8 +65,10 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef ecuda::RandomAccessIterator< vector<value_type>, pointer > iterator; //!< iterator type
-	typedef ecuda::RandomAccessIterator< const vector<value_type>, const_pointer > const_iterator; //!< const iterator type
+	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
+	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
+	//typedef ecuda::RandomAccessIterator< vector<value_type>, pointer > iterator; //!< iterator type
+	//typedef ecuda::RandomAccessIterator< const vector<value_type>, const_pointer > const_iterator; //!< const iterator type
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -86,10 +88,10 @@ public:
 	HOST DEVICE virtual ~vector() {}
 
 	// Iterators:
-	HOST DEVICE inline iterator begin() { return iterator(this); }
-	HOST DEVICE inline iterator end() { return iterator(this,size()); }
-	HOST DEVICE inline const_iterator begin() const { return const_iterator(this); }
-	HOST DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
+	HOST DEVICE inline iterator begin() { return iterator(deviceMemory.get()); }
+	HOST DEVICE inline iterator end() { return iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
 
 	// Capacity:
 	HOST DEVICE inline size_type size() const { return n; }

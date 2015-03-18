@@ -34,6 +34,11 @@ either expressed or implied, of the FreeBSD Project.
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
+//
+// THESE CONTAINERS ARE SCHEDULED TO BE RETIRED.
+//
+
+
 #pragma once
 #ifndef ECUDA_CONTAINERS_HPP
 #define ECUDA_CONTAINERS_HPP

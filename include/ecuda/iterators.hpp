@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,169 @@ either expressed or implied, of the FreeBSD Project.
 #define ECUDA_ITERATORS_HPP
 
 #include <iterator>
+
 #include "global.hpp"
+
+//
+// Iterators are fashioned after STL iterators.  Pointers to an element are used
+// to denote the location of an iterator, and then pointer arithmetic can be used
+// to traverse container contents.  Traversing certain containers in a particular
+// way (e.g. column-wise for a matrix) where consecutive elements are not side-by-side
+// in memory can be achieved using a PointerType specialized for this purpose 
+// (e.g. strided_ptr).
+//
+// A PointerType is a required parameter to deal with const/non-const iterators.
+// For example, the container may be const, and accessing elements within that
+// container in some contexts may need the elements themselves to be const.
+// However, this cannot be determined easily at compile-time (prior to C++11).
+// Therefore, passing a const PointerType will achieve this effect.
+//
+// These are essentially the iterator definitions from estd:: with __device__
+// added to the appropriate function definitions.
+//
+
+namespace ecuda {
+
+template<typename T,typename PointerType,class Category=std::random_access_iterator_tag>
+class pointer_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
+{
+protected:
+	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_iterator_type;
+	typedef PointerType pointer_type;
+public:
+	typedef typename base_iterator_type::iterator_category iterator_category;
+	typedef typename base_iterator_type::value_type value_type;
+	typedef typename base_iterator_type::difference_type difference_type;
+	typedef typename base_iterator_type::pointer pointer;
+	typedef typename base_iterator_type::reference reference;
+	typedef const pointer_type const_pointer;
+	//typedef const pointer const_pointer;
+	typedef const reference const_reference;
+private:
+	pointer_type ptr;
+public:
+	HOST DEVICE pointer_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
+	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
+	HOST DEVICE virtual ~pointer_iterator() {}
+
+	HOST DEVICE inline pointer_iterator& operator++() { ++ptr; return *this; }
+	HOST DEVICE inline pointer_iterator operator++( int ) {
+		pointer_iterator tmp(*this);
+		++(*this);
+		// operator++(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	HOST DEVICE inline pointer_iterator& operator--() { --ptr; return *this; }
+	HOST DEVICE inline pointer_iterator& operator--( int ) const {
+		pointer_iterator tmp(*this);
+		--(*this);
+		// operator--(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	HOST DEVICE virtual bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
+	HOST DEVICE virtual bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
+
+	DEVICE virtual const_reference operator*() const { return *ptr; }
+	DEVICE virtual const_pointer operator->() const { return ptr; }
+	DEVICE virtual reference operator*() { return *ptr; }
+	DEVICE virtual pointer operator->() { return ptr; }
+
+	HOST DEVICE virtual difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
+
+	HOST DEVICE inline pointer_iterator operator+( int x ) const { return pointer_iterator( ptr + x ); }
+	HOST DEVICE inline pointer_iterator operator-( int x ) const { return pointer_iterator( ptr - x ); }
+
+	HOST DEVICE virtual bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
+	HOST DEVICE virtual bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
+	HOST DEVICE virtual bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
+	HOST DEVICE virtual bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
+
+	HOST DEVICE inline pointer_iterator& operator+=( int x ) { ptr += x; return *this; }
+	HOST DEVICE inline pointer_iterator& operator-=( int x ) { ptr -= x; return *this; }
+
+	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
+	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
+
+};
+
+///
+/// Reverse iterator.
+///
+/// Takes any class of the above container and traverses the elements in reverse order.
+///
+
+template<class ParentIterator>
+class pointer_reverse_iterator : public std::reverse_iterator<ParentIterator>
+{
+//protected:
+//	typedef PointerForwardIterator<typename ParentIterator::value_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category> super_iterator_type;
+//	typedef typename super_iterator_type::base_iterator_type base_iterator_type;
+
+public:
+	typedef ParentIterator iterator_type;
+	typedef typename ParentIterator::iterator_category iterator_category;
+	typedef typename ParentIterator::value_type value_type;
+	typedef typename ParentIterator::difference_type difference_type;
+	typedef typename ParentIterator::pointer pointer;
+	typedef typename ParentIterator::reference reference;
+	//typedef typename ParentIterator::const_pointer const_pointer;
+	//typedef typename ParentIterator::const_reference const_reference;
+
+//private:
+//	ParentIterator parentIterator;
+
+public:
+	HOST DEVICE pointer_reverse_iterator() : std::reverse_iterator<ParentIterator>() {}
+	HOST DEVICE pointer_reverse_iterator( ParentIterator parentIterator ) : std::reverse_iterator<ParentIterator>( parentIterator ) {}
+	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : std::reverse_iterator<ParentIterator>( src ) {}
+	HOST DEVICE virtual ~pointer_reverse_iterator() {}
+
+//	ParentIterator base() const { return parentIterator; }
+
+/*
+	virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
+	virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator!=( other.parentIterator ); }
+	virtual const_reference operator*() const { return parentIterator.operator--(0).operator*(); }
+	virtual const_pointer operator->() const { return parentIterator.operator--(0).operator->(); }
+
+	virtual bool operator==( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator==( other.parentIterator ); }
+	virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator!=( other.parentIterator ); }
+	virtual reference operator*() { return parentIterator.operator--(0).operator*(); }
+	virtual pointer operator->() { return parentIterator.operator--(0).operator->(); }
+
+	inline ReverseIterator<ParentIterator>& operator++() { --parentIterator; return *this; }
+	inline ReverseIterator<ParentIterator> operator++( int x ) const {
+		ReverseIterator<ParentIterator> tmp(*this);
+		operator++();
+		return tmp;
+	}
+	//return ReverseIterator<ParentIterator>(*this).operator++(); }
+
+	inline ReverseIterator<ParentIterator>& operator--() { ++parentIterator; return *this; }
+	inline ReverseIterator<ParentIterator> operator--( int x ) const {
+		ReverseIterator<ParentIterator> tmp(*this);
+		operator--();
+		return tmp;
+	}
+	//return ReverseIterator<ParentIterator>(*this).operator--(); }
+
+	inline ReverseIterator<ParentIterator> operator+( int x ) { return ReverseIterator<ParentIterator>(*this).operator-(x); }
+	inline ReverseIterator<ParentIterator> operator-( int x ) { return ReverseIterator<ParentIterator>(*this).operator+(x); }
+	inline bool operator<( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator>=(other); }
+	inline bool operator>( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator<=(other); }
+	inline bool operator<=( const ReverseIterator<ParentIterator>& other ) const { return operator<(other) or operator==(other); }
+	inline bool operator>=( const ReverseIterator<ParentIterator>& other ) const { return operator>(other) or operator==(other); }
+	inline ReverseIterator<ParentIterator>& operator+=( int x ) { parentIterator.operator-=(x); return *this; }
+	inline ReverseIterator<ParentIterator>& operator-=( int x ) { parentIterator.operator+=(x); return *this; }
+
+	inline reference operator[]( int x ) { return parentIterator.at( -x ); }
+	inline const_reference operator[]( int x ) const { return parentIterator.at( -x ); }
+*/
+
+};
+
 
 //
 // Iterators are fashioned after STL iterators.  In this case, however, the logic
@@ -56,7 +218,9 @@ either expressed or implied, of the FreeBSD Project.
 // added to the appropriate function definitions.
 //
 
-namespace ecuda {
+// INDEX BASED ITERATORS ARE SCHEDULED TO BE RETIRED
+// - all containers can use iterators based on pointers alone which are must faster
+// - this was insanely over-engineered, there was no need to define each iterator type
 
 ///
 /// Base iterator.

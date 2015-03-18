@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,33 +39,39 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_ARRAY_HPP
 #define ECUDA_ARRAY_HPP
 
-#include <cstddef>
+#include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <vector>
-#include "iterators.hpp"
+
 #include "global.hpp"
-#include "memory.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
+#include "iterators.hpp"
+#include "memory.hpp"
+
+#ifdef __CPP11_SUPPORTED__
+#include <initializer_list>
+#endif
 
 namespace ecuda {
 
 ///
-/// A video memory-bound array structure.
+/// A video memory-bound fixed-size array structure.
 ///
 /// Creates a fixed size array in GPU memory.  Redeclares most of the
-/// STL methods on the equivalent std::array.  Methods are prefaced with
+/// STL methods on the equivalent C++11 std::array (although this implementation
+/// works with C98 compilers).  Methods are prefaced with
 /// appropriate keywords to declare them as host and/or device capable.
 /// In general: operations requiring memory allocation/deallocation/copying
 /// are host only, operations to access the values of specific elements
 /// are device only, and general information can be accessed by both.
 ///
-template< typename T, class Alloc=DeviceAllocator<T> >
+template<typename T,std::size_t N>
 class array {
 
 public:
 	typedef T value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
 	typedef std::size_t size_type; //!< index data type
 	typedef std::ptrdiff_t difference_type; //!<
 	typedef value_type& reference; //!< cell reference type
@@ -73,105 +79,277 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef ecuda::RandomAccessIterator< array<value_type>, pointer > iterator; //!< iterator type
-	typedef ecuda::RandomAccessIterator< const array<value_type>, const_pointer > const_iterator; //!< const iterator type
+	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
+	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
+	typedef std::reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef std::reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
-	// REMEMBER: n altered on device memory won't be reflected on the host object.
-	//           Don't allow the device to perform any operations that change its
-	//           value.
-	size_type n; //!< size of array
 	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
 
 public:
 	///
-	/// \brief Constructs an array with n elements. Each element is a copy of value.
-	/// \param n Initial container size (i.e. the number of elements in the container at construction).
+	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
 	/// \param value Value to fill the container with.
 	///
-	HOST array( const size_type n=0, const_reference value = T() );
+	HOST array( const value_type& value = value_type() );
+
+	///
+	/// \brief Constructs a fixed-sized array with N elements taken from the sequence [begin,end).
+	///
+	/// If the length of the sequence is greater than N that only the first N elements are taken. If
+	/// the length of the sequence is less than N, the sequence is repeated from the start until all
+	/// N elements are assigned a value.
+	///
+	/// \param begin, end Input iterators to the initial and final positions in a range.  The range
+	///                   used is [begin,end).
+	///
+	template<class InputIterator>
+	HOST array( InputIterator begin, InputIterator end );
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Constructs a fixed-sized array with N elements taken an initializer list.
+	///
+	/// If the length of the initializer list is greater than N that only the first N elements are taken. If
+	/// the length of the initializer list is less than N, the initializer list is repeated from the start until all
+	/// N elements are assigned a value.
+	///
+	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
+	////          declarators.
+	///
+	HOST array( std::initializer_list<T> il );
+	#endif
+
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
-	/// \param src Another array object of the same type (with the same class tempalte argument T and Alloc), whose contents are copied.
 	///
-	HOST array( const array<T>& src ) : n(src.n), deviceMemory(src.deviceMemory) {}
+	/// Note that the size template argument N2 in the source array can be different from the size template
+	/// argument N in the constructed array.  If N2>N then only the first N elements are copied.  If N2<N then
+	/// only the first N2 elements are copied while the remained are undefined (NB: this is in contrast to the
+	/// behaviour of other constructors).
 	///
-	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
-	/// \param src An STL vectory object of the same type (with the same class tempalte argument T and Alloc), whose contents are copied.
+	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
 	///
-	HOST array( const std::vector<T>& src );
+	template<std::size_t N2>
+	HOST array( const array<T,N2>& src );
+
 	///
 	/// \brief Destructs the array object.
 	///
 	HOST DEVICE ~array() {}
 
-	DEVICE inline reference at( size_type index ) { return deviceMemory[index]; }
+	///
+	/// \brief Returns a reference to the element at specified location index, with bounds checking.
+	///
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
+	// Below is untrue because device code doesn't allow exceptions to be thrown.
+	// If index not within the range of the container, an exception of type std::out_of_range is thrown.
+	DEVICE inline reference at( size_type index ) {
+		//if( index >= N ) throw std::out_of_range( "ecuda::array<T,N>::at() index parameter is out of range" );
+		return deviceMemory[index]; 
+	}
+
+	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
 	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
+
+	///
+	/// \brief Returns a reference to the element at specified location index, with bounds checking.
+	///
+	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
 	DEVICE inline const_reference at( size_type index ) const { return deviceMemory[index]; }
+
+	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
 	DEVICE inline const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
 
+	///
+	/// \brief Returns a reference to the first element in the container.
+	///
+	/// Calling front on an empty container is undefined.
+	///
+	/// \returns Reference to the first element.
+	///
 	DEVICE inline reference front() { return *deviceMemory; }
+
+	///
+	/// \brief Returns a reference to the last element in the container.
+	///
+	/// Calling back on an empty container is undefined.
+	///
+	/// \returns Reference to the last element.
+	///
 	DEVICE inline reference back() { return operator[]( size()-1 ); }
+	///
+	/// \brief Returns a reference to the first element in the container.
+	///
+	/// Calling front on an empty container is undefined.
+	///
+	/// \returns Reference to the first element.
+	///
 	DEVICE inline const_reference front() const { return *deviceMemory; }
+
+	///
+	/// \brief Returns a reference to the last element in the container.
+	///
+	/// Calling back on an empty container is undefined.
+	///
+	/// \returns Reference to the last element.
+	///
 	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
 
-	HOST DEVICE inline size_type size() const { return n; }
+	///
+	/// \brief Checks if the container has no elements.
+	///
+	/// \returns true if the container is empty, false otherwise.
+	///
+	HOST DEVICE __CONSTEXPR__ inline bool empty() const { return N == 0; }
+
+	///
+	/// \brief Returns the number of elements in the container.
+	///
+	/// \returns The number of elements in the container.
+	///
+	HOST DEVICE __CONSTEXPR__ inline size_type size() const { return N; }
+
+	///
+	/// \brief Returns the maximum number of elements the container is able to hold due to system
+	/// or library implementation limitations.
+	///
+	/// \returns Maximum number of elements.
+	///
+	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+
+	///
+	/// \brief Returns pointer to the underlying array serving as element storage.
+	///
+	/// The pointer is such that range [data(); data()+size()) is always a valid range, even
+	/// if the container is empty.
+	///
+	/// \returns Pointer to the underlying element storage.
+	///
 	HOST DEVICE inline T* data() { return deviceMemory.get(); }
+
+	///
+	/// \brief Returns pointer to the underlying array serving as element storage.
+	///
+	/// The pointer is such that range [data(); data()+size()) is always a valid range, even
+	/// if the container is empty.
+	///
+	/// \returns Pointer to the underlying element storage.
+	///
 	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
 
-	HOST DEVICE inline iterator begin() { return iterator(this); }
-	HOST DEVICE inline iterator end() { return iterator(this,size()); }
-	HOST DEVICE inline const_iterator begin() const { return const_iterator(this); }
-	HOST DEVICE inline const_iterator end() const { return const_iterator(this,size()); }
+	///
+	/// \brief Returns an iterator to the first element of the container.
+	///
+	/// If the container is empty, the returned iterator will be equal to end().
+	///
+	/// \returns Iterator to the first element.
+	///
+	HOST DEVICE inline iterator begin() { return iterator(deviceMemory.get()); }
 
-	HOST inline allocator_type get_allocator() const { return allocator_type(); }
+	///
+	/// \brief Returns an iterator to the element following the last element of the container.
+	///
+	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
+	///
+	/// \returns Iterator to the element following the last element.
+	///
+	HOST DEVICE inline iterator end() { return iterator(deviceMemory.get()+size()); }
 
-	template<class OtherAlloc>
-	HOST const array<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& vector ) const {
-		vector.resize( n );
-		CUDA_CALL( cudaMemcpy<T>( &vector.front(), deviceMemory.get(), n, cudaMemcpyDeviceToHost ) );
-		//CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
+	///
+	/// \brief Returns an iterator to the first element of the container.
+	///
+	/// If the container is empty, the returned iterator will be equal to end().
+	///
+	/// \returns Iterator to the first element.
+	HOST DEVICE inline const_iterator begin() const { return const_iterator(deviceMemory.get()); }
+
+	///
+	/// \brief Returns an iterator to the element following the last element of the container.
+	///
+	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
+	///
+	/// \returns Iterator to the element following the last element.
+	///
+	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
+
+	HOST const array<T,N>& operator>>( std::vector<T>& vector ) const {
+		vector.resize( N );
+		CUDA_CALL( cudaMemcpy<T>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
-	HOST array<T,Alloc>& operator<<( std::vector<T>& vector ) {
+	HOST array<T,N>& operator<<( std::vector<T>& vector ) {
 		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
-		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &vector[0], vector.size()*sizeof(T), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
 	// critical function used to bridge host->device code
-	DEVICE array<T,Alloc>& operator=( const array<T,Alloc>& other ) {
-		n = other.n;
+	DEVICE array<T,N>& operator=( const array<T,N>& other ) {
+		//n = other.n;
 		deviceMemory = other.deviceMemory;
 		return *this;
 	}
 
 };
 
-
-template<typename T,class Alloc>
-HOST array<T,Alloc>::array( const size_type n, const_reference value ) : n(n) {
-	if( n ) {
-		deviceMemory = device_ptr<T>( Alloc().allocate(n) );
-		//CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-		std::vector<T> v( n, value );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
-		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
-	}
+template<typename T,std::size_t N>
+HOST array<T,N>::array( const value_type& value ) {
+	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+	std::vector<T> v( N, value );
+	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 }
 
-template<typename T,class Alloc>
-HOST array<T,Alloc>::array( const std::vector<T>& src ) : n(src.size()) {
-	if( n ) {
-		deviceMemory = device_ptr<T>( Alloc().allocate(n) );
-		//CUDA_CALL( cudaMalloc( deviceMemory.alloc_ptr(), n*sizeof(T) ) );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &src.front(), n, cudaMemcpyHostToDevice ) );
-		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &src[0], n*sizeof(T), cudaMemcpyHostToDevice ) );
+template<typename T,std::size_t N>
+template<class InputIterator>
+HOST array<T,N>::array( InputIterator begin, InputIterator end ) {
+	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+	std::vector<T> v( N );
+	typename std::vector<T>::size_type index = 0;
+	while( index < N ) {
+		for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
 	}
+	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 }
 
+#ifdef __CPP11_SUPPORTED__
+template<typename T,std::size_t N>
+HOST array<T,N>::array( std::initializer_list<T> il ) {
+	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+	std::vector<T> v( il );
+	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+}
+#endif
+
+template<typename T,std::size_t N>
+template<std::size_t N2>
+HOST array<T,N>::array( const array<T,N2>& src ) {
+	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.deviceMemory.get(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
+}
 
 } // namespace ecuda
 

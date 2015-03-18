@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,11 @@ either expressed or implied, of the FreeBSD Project.
 
 #include <limits>
 #include <vector>
+
+#include "config.hpp"
+#if HAVE_ESTD_LIBRARY > 0
 #include <estd/cube.hpp>
+#endif
 #include "global.hpp"
 #include "allocators.hpp"
 #include "containers.hpp"
@@ -62,15 +66,26 @@ public:
 	typedef std::ptrdiff_t difference_type;
 	typedef std::size_t size_type;
 
-	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xy_type;
-	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xz_type;
-	typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > yz_type;
-	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xy_type;
-	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xz_type;
-	typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_yz_type;
+	typedef contiguous_memory_proxy<value_type> xy_type;
+	typedef contiguous_memory_proxy<const value_type> const_xy_type;
+	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > xz_type;
+	typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_xz_type;
+	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > yz_type;
+	typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_yz_type;
+	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
+	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
+	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
+	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xy_type;
+	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xz_type;
+	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > yz_type;
+	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xy_type;
+	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xz_type;
+	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_yz_type;
 
-	typedef yz_type matrix_type;
-	typedef const_yz_type const_matrix_type;
+	typedef contiguous_2d_memory_proxy<value_type> slice_type;
+	typedef contiguous_2d_memory_proxy<const value_type> const_slice_type;
+	//typedef yz_type matrix_type;
+	//typedef const_yz_type const_matrix_type;
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
@@ -85,42 +100,69 @@ private:
 	//unique_ptr< matrix<T>[] > matrices;
 
 public:
-	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const T& value = T() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths) {
+	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), allocator(allocator) {
 		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<T>( allocator.allocate( numberColumns*numberDepths, numberRows, pitch ) );
-			//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*numberDepths*sizeof(T), numberRows ) );
+			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
+			std::vector<value_type> v( numberDepths, value );
+			for( size_type i = 0; i < numberRows; ++i ) {
+				for( size_type j = 0; j < numberColumns; ++j ) {
+					CUDA_CALL( cudaMemcpy<value_type>(
+						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
+						&v.front(), // src
+						numberDepths, // count
+						cudaMemcpyHostToDevice
+					) );
+				}
+			}
+			/*
 			std::vector<T> v( numberColumns*numberDepths, value );
 			for( size_t i = 0; i < numberRows; ++i )
 				CUDA_CALL( cudaMemcpy<T>(
-					allocator.address( deviceMemory.get(), i, 0, pitch ), // dst
+					get_allocator().address( deviceMemory.get(), i, 0, pitch ), // dst
 					&v[0], // src
 					numberColumns*numberDepths, // count
 					cudaMemcpyHostToDevice // kind
 				) );
-				//CUDA_CALL( cudaMemcpy2D( deviceMemory.get()+(i*pitch/sizeof(T)), numberColumns*numberDepths*sizeof(T), &v[0], numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths*sizeof(T), 1, cudaMemcpyHostToDevice ) );
+			*/
 		}
 	}
-	HOST DEVICE cube( const cube<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(src.deviceMemory) {}
+
+	HOST DEVICE cube( const cube<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(src.deviceMemory), allocator(src.allocator) {}
+
+	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<T>( allocator.allocate( numberColumns*numberDepths, numberRows, pitch ) );
-			//CUDA_CALL( cudaMallocPitch( deviceMemory.alloc_ptr(), &pitch, numberColumns*numberDepths*sizeof(T), numberRows ) );
+			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
+			std::vector<value_type> v( numberDepths );
+			for( size_type i = 0; i < numberRows; ++i ) {
+				for( size_type j = 0; j < numberColumns; ++j ) {
+					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
+					CUDA_CALL( cudaMemcpy<value_type>(
+						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
+						&v.front(), // src
+						numberDepths, // count
+						cudaMemcpyHostToDevice
+					) );
+				}
+			}
+			/*
 			for( size_t i = 0; i < numberRows; ++i ) {
 				std::vector<T> v; v.reserve( numberColumns*numberDepths );
 				for( size_t j = 0; j < numberColumns; ++j )
 					for( size_t k = 0; k < numberDepths; ++k )
 						v.push_back( src[i][j][k] );
 				CUDA_CALL( cudaMemcpy<T>(
-					allocator.address( deviceMemory.get(), i, 0, pitch ), // dst
+					get_allocator().address( deviceMemory.get(), i, 0, pitch ), // dst
 					&v[0], // src
 					numberColumns*numberDepths, // count
 					cudaMemcpyHostToDevice // kind
 				) );
-				//CUDA_CALL( cudaMemcpy2D( deviceMemory.get()+(i*pitch/sizeof(T)), numberColumns*numberDepths*sizeof(T), &v[0], numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths*sizeof(T), 1, cudaMemcpyHostToDevice ) );
 			}
+			*/
 		}
 	}
+	#endif
 
 	// capacity:
 	HOST DEVICE inline size_type row_size() const __NOEXCEPT__ { return numberRows; }
@@ -131,29 +173,45 @@ public:
 	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
 
 	// element access:
-	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex*numberDepths+depthIndex, pitch ); }
+	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, depthIndex, pitch ); }
 	//DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex*numberDepths+depthIndex)); }
 	DEVICE inline reference at( const size_type index ) { return at( index/(numberColumns*numberDepths), (index % (numberColumns*numberDepths))/numberDepths, (index % (numberColumns*numberDepths)) % numberDepths ); }
-	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex*numberDepths+depthIndex, pitch ); }
+	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, depthIndex, pitch ); }
 	//DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *(deviceMemory.get()+(rowIndex*pitch/sizeof(T)+columnIndex*numberDepths+depthIndex)); }
 	DEVICE inline const_reference at( const size_type index ) const { return at( index/(numberColumns*numberDepths), (index % (numberColumns*numberDepths))/numberDepths, (index % (numberColumns*numberDepths)) % numberDepths ); }
 	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
-	HOST DEVICE inline matrix_type get_row( const size_type rowIndex ) { return matrix_type( *this, ORIENTATION_YZ, rowIndex ); }
-	HOST DEVICE inline const_matrix_type get_row( const size_type rowIndex ) const { return const_matrix_type( *this, ORIENTATION_YZ, rowIndex ); }
-	HOST DEVICE inline matrix_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
-	HOST DEVICE inline const_matrix_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
+	HOST DEVICE inline slice_type get_row( const size_type rowIndex ) { return slice_type( allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch ), column_size(), depth_size(), get_pitch() ); }
+	HOST DEVICE inline const_slice_type get_row( const size_type rowIndex ) const { return const_slice_type( allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch ), column_size(), depth_size(), get_pitch() ); }
+	HOST DEVICE inline slice_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
+	HOST DEVICE inline const_slice_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
-	HOST DEVICE xy_type get_xy( const size_type z ) { return xy_type( *this, ORIENTATION_XY, z ); }
-	HOST DEVICE xz_type get_xz( const size_type y ) { return xz_type( *this, ORIENTATION_XZ, y ); }
-	HOST DEVICE yz_type get_yz( const size_type x ) { return yz_type( *this, ORIENTATION_YZ, x ); }
-	HOST DEVICE const_xy_type get_xy( const size_type z ) const { return const_xy_type( *this, ORIENTATION_XY, z ); }
-	HOST DEVICE const_xz_type get_xz( const size_type y ) const { return const_xz_type( *this, ORIENTATION_XZ, y ); }
-	HOST DEVICE const_yz_type get_yz( const size_type x ) const { return const_yz_type( *this, ORIENTATION_YZ, x ); }
+/*
+change to:
+       d
+  +--------+--+
+  |        |  |
+rc|        |  |
+  |        |  |
+  +--------+--+
+  \__________/
+      pitch
+
+xz_type stride=c*pitch
+yz_type stride=0
+xy_type stride=pitch
+*/
+	HOST DEVICE inline xy_type get_xy( const size_type x, const size_type y ) { return xy_type( allocator.address( deviceMemory.get(), x*column_size()+y, 0, pitch ), depth_size() ); }
+	HOST DEVICE inline xz_type get_xz( const size_type x, const size_type z ) { return xz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), x*column_size(), z, pitch ), pitch ), column_size() ); }
+	HOST DEVICE inline yz_type get_yz( const size_type y, const size_type z ) { return yz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), y, z, pitch ), column_size()*pitch ), row_size() ); }
+	HOST DEVICE inline const_xy_type get_xy( const size_type x, const size_type y ) const { return const_xy_type( allocator.address( deviceMemory.get(), x*column_size()+y, 0, pitch ), depth_size() ); }
+	HOST DEVICE inline const_xz_type get_xz( const size_type x, const size_type z ) const { return const_xz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), x*column_size(), z, pitch ), pitch ), column_size() ); }
+	HOST DEVICE inline const_yz_type get_yz( const size_type y, const size_type z ) const { return const_yz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), y, z, pitch ), column_size()*pitch ), row_size() ); }
 
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
+	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
 		//TODO: this needs to be re-implemented, it won't work as currently written
@@ -171,6 +229,7 @@ public:
 		//for( size_type i = 0; i < numberRows; ++i ) operator[](i) >> dest[i];
 		return *this;
 	}
+	#endif
 
 	HOST void resize( const size_type numberRows, const size_type numberColumns, const size_type numberDepths ) {
 		if( row_size() == numberRows and column_size() == numberColumns and depth_size() == numberDepths ) return; // no resize needed
@@ -181,13 +240,14 @@ public:
 		deviceMemory = device_ptr<T>( DevicePitchAllocator<T>().allocate( numberColumns*numberDepths, numberRows, pitch ) );
 	}
 
+	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
 		resize( src.row_size(), src.column_size(), src.depth_size() );
 		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
-
+	#endif
 
 };
 

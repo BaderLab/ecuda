@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -47,13 +47,13 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 template<typename T>
-inline cudaError_t cudaMemcpy( T* dst, const T* src, const std::size_t count, cudaMemcpyKind kind ) {
-	return cudaMemcpy( reinterpret_cast<void*>(dst), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
+inline cudaError_t cudaMemcpy( T* dest, const T* src, const std::size_t count, cudaMemcpyKind kind ) {
+	return cudaMemcpy( reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
 }
 
 template<typename T>
-inline cudaError_t cudaMemcpy2D( T* dst, const std::size_t dpitch, const T* src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind ) {
-	return cudaMemcpy2D( reinterpret_cast<void*>(dst), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
+inline cudaError_t cudaMemcpy2D( T* dest, const std::size_t dpitch, const T* src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind ) {
+	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
 }
 
 } // namespace ecuda
