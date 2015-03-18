@@ -106,6 +106,14 @@ public:
 		++(*shared_count);
 		#endif
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), shared_count(src.shared_count) {
+		src.ptr = NULL;
+		src.shared_count = NULL;
+	}
+	#endif
+
 	// destroys the smart pointer, if instantiated from the host this will decrement the share count,
 	// if instantiated from the device nothing happens, iff. the share count is zero and the smart
 	// pointer resides on the host, the underlying device memory will be deallocated.

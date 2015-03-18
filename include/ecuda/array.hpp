@@ -140,6 +140,11 @@ public:
 	///
 	HOST DEVICE ~array() {}
 
+	/*
+	 * Deprecating this function since the STL standard seems to specify that the at() accessor
+	 * must implement range checking that throws an exception on failure.  Since exceptions are
+	 * not supported within a CUDA kernel, this cannot be satisfied.
+	 *
 	///
 	/// \brief Returns a reference to the element at specified location index, with bounds checking.
 	///
@@ -153,6 +158,7 @@ public:
 		//if( index >= N ) throw std::out_of_range( "ecuda::array<T,N>::at() index parameter is out of range" );
 		return deviceMemory[index]; 
 	}
+	*/
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -296,11 +302,49 @@ public:
 	///
 	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
 
+	///
+	/// \brief Returns a reverse iterator to the first element of the reversed container.
+	///
+	/// It corresponds to the last element of the non-reversed container.
+	///
+	/// \returns Reverse iterator to the first element.
+	///
 	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+
+	///
+	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
+	///
+	/// It corresponds to the element preceding the first element of the non-reversed container. This element
+	/// acts as a placeholder, attempting to access it results in undefined behaviour.
+	///
+	/// \returns Reverse iterator to the element following the last element.
+	///
 	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+
+	///
+	/// \brief Returns a reverse iterator to the first element of the reversed container.
+	///
+	/// It corresponds to the last element of the non-reversed container.
+	///
+	/// \returns Reverse iterator to the first element.
+	///
 	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+
+	///
+	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
+	///
+	/// It corresponds to the element preceding the first element of the non-reversed container. This element
+	/// acts as a placeholder, attempting to access it results in undefined behaviour.
+	///
+	/// \returns Reverse iterator to the element following the last element.
+	///
 	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
+	///
+	/// \brief Assigns a given value to all elements in the container.
+	///
+	/// \param value the value to assign to the elements
+	///
 	HOST DEVICE void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
@@ -310,6 +354,13 @@ public:
 		#endif
 	}
 
+	///
+	/// \brief Exchanges the contents of the container with those of the other.
+	///
+	/// Does not cause iterators and references to associate with the other container.
+	///
+	/// \param other container to exchange the contents with
+	///
 	HOST DEVICE void swap( array<T,N>& other ) {
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
@@ -323,6 +374,15 @@ public:
 		#endif
 	}
 
+	///
+	/// \brief Checks if the contents of two arrays are equal.
+	///
+	/// That is, whether each element in the this array compares equal with the element in
+	/// another array at the same position.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents are equal, false otherwise
+	///
 	DEVICE bool operator==( const array<T,N>& other ) const {
 		const_iterator iter1 = begin();
 		const_iterator iter2 = other.begin();
@@ -330,28 +390,76 @@ public:
 		return true;
 	}
 
+	///
+	/// \brief Checks if the contents of two arrays are not equal.
+	///
+	/// That is, whether any element in the this array does not compare equal with the element in
+	/// another array at the same position.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents are not equal, false otherwise
+	///
 	DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
 
+	///
+	/// \brief Compares the contents of two arrays lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this array are lexicographically less than the other array, false otherwise
+	///
 	DEVICE inline bool operator<( const array<T,N>& other ) const {	return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
+
+	///
+	/// \brief Compares the contents of two arrays lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this array are lexicographically greater than the other array, false otherwise
+	///
 	DEVICE inline bool operator>( const array<T,N>& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
+
+	///
+	/// \brief Compares the contents of two arrays lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this array are lexicographically less than or equal to the other array, false otherwise
+	///
 	DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
+
+	///
+	/// \brief Compares the contents of two arrays lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this array are lexicographically greater than or equal to the other array, false otherwise
+	///
 	DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
+	///
+	/// \brief Copies the contents of this device array to a host STL vector.
+	///
 	HOST const array<T,N>& operator>>( std::vector<value_type>& vector ) const {
 		vector.resize( N );
 		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
+	///
+	/// \brief Copies the contents of a host STL vector to this device array.
+	///
 	HOST array<T,N>& operator<<( std::vector<value_type>& vector ) {
 		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
-	// critical function used to bridge host->device code
+	///
+	/// \brief Critical method to bridge host-device code.
+	///
+	/// This method is called during the entry to a kernel functions to generate
+	/// device-bound copies of host-bound objects passed as arguments.
+	/// In this case, we simply need the pointer to the start of the array.
+	///
+	///
 	DEVICE array<T,N>& operator=( const array<T,N>& other ) {
-		//n = other.n;
 		deviceMemory = other.deviceMemory;
 		return *this;
 	}
@@ -362,8 +470,6 @@ template<typename T,std::size_t N>
 HOST array<T,N>::array( const value_type& value ) {
 	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
 	fill( value );
-	//std::vector<T> v( N, value );
-	//CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 }
 
 template<typename T,std::size_t N>
