@@ -94,11 +94,19 @@ int main( int argc, char* argv[] ) {
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
+		// generate answer key
+		std::vector<int> answerVector( 100, 0 );
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) {
+			for( std::vector<int>::size_type j = i; j < hostVector.size(); ++j ) {
+				answerVector[i] += hostVector[j];
+			}
+		}
+
 		hostVector.clear();
 		deviceArray2 >> hostVector;
 		std::cout << "Multiple value device array used to generate running sum and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
 		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != (i*(hostVector.size()-i-1)) ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != answerVector[i] ) passed = false;
 		std::cout << "Multiple value device array used to generate running sum and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
 	}
 
