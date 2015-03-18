@@ -2,56 +2,105 @@
 #include <cstdio>
 #include "../include/ecuda/array.hpp"
 
-__global__ void squareVector( const ecuda::array<float,100> input, ecuda::array<float,100> output ) {
+template<typename T,std::size_t U>
+__global__ void multiplyVectors( ecuda::array<T,U> array1, const ecuda::array<T,U> array2 ) {
 	const int index = threadIdx.x;
-	output[index] = input[index]*input[index];
+	array1[index] *= array2[index];
 }
 
-__global__ void sumVector( const ecuda::array<float,100> input, ecuda::array<float,100> output ) {
+template<typename T,std::size_t U>
+__global__ void testIterators( const ecuda::array<T,U> src, ecuda::array<T,U> dest ) {
 	const int index = threadIdx.x;
-	float sum = 0.0;
-	ecuda::array<float,100>::const_iterator current = input.begin();
-	const ecuda::array<float,100>::const_iterator end = input.end();
-	while( current != end ) {
-		sum += *current;
-		++current;
-	}
-//	for( ecuda::array<float>::const_iterator iter = input.begin(); iter != input.end(); ++iter ) sum += *iter;
-	output[index] = input.at(0);
-	output[index] = sum;
+	typename ecuda::array<T,U>::const_iterator srcIterator = src.begin();
+	srcIterator += index;
+	typename ecuda::array<T,U>::iterator destIterator = dest.begin();
+	destIterator += index;
+	for( ; srcIterator != src.end(); ++srcIterator ) *destIterator += *srcIterator;
 }
 
 int main( int argc, char* argv[] ) {
 
-	// prepare host vector
-	const size_t n = 100;
-	std::vector<float> hostVector( n );
-	for( size_t i = 0; i < n; ++i ) hostVector[i] = i+1;
+	std::cout << "Testing ecuda::array..." << std::endl;
 
-	// allocate some device arrays
-	ecuda::array<float,100> deviceArray1( 3 ); // should have all 3
-	ecuda::array<float,100> deviceArray2( deviceArray1 ); // should be a copy of deviceArray1
-	const ecuda::array<float,100> deviceArray3( hostVector.begin(), hostVector.end() ); // should be a copy of the host vector
+	// fixed sized array with single value, simple copy device->host
+	{
+		ecuda::array<int,100> deviceArray( 3 ); // array filled with number 3
+		std::vector<int> hostVector;
+		deviceArray >> hostVector;
+		std::cout << "Single value device array copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
+		std::cout << "Single value device array copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
 
-	ecuda::array<float,100> deviceArray4( n );
-	dim3 dimBlock( n, 1 ), dimGrid( 1, 1 );
-	squareVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
+	// fixed sized array with many values, host->device, then device->host
+	{
+		std::vector<int> hostVector( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+		ecuda::array<int,100> deviceArray( hostVector.begin(), hostVector.end() );
+		hostVector.clear();
+		deviceArray >> hostVector;
+		std::cout << "Multiple value device array copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != i ) passed = false;
+		std::cout << "Multiple value device array copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
 
-	// copy array to host
-	deviceArray4 >> hostVector;
-	// print contents (should be 1^2,2^2,3^2,...)
-	for( size_t i = 0; i < n; ++i ) std::cout << "test1.hostVector[" << i << "]=" << hostVector[i] << std::endl;
+	//
+	{
+		std::vector<int> hostVector( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
+		ecuda::array<int,100> deviceArray2( deviceArray1 );
+		hostVector.clear();
+		deviceArray2 >> hostVector;
+		std::cout << "Multiple value device array mirrored on device and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != i ) passed = false;
+		std::cout << "Multiple value device array mirrored on device and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
 
-	sumVector<<<dimGrid,dimBlock>>>( deviceArray3, deviceArray4 );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
+	//
+	{
+		std::vector<int> hostVector( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
+		ecuda::array<int,100> deviceArray2( hostVector.rbegin(), hostVector.rend() );
 
-	// copy array to host
-	deviceArray4 >> hostVector;
-	// print contents (should be sum(1:1000)=5050)
-	for( size_t i = 0; i < n; ++i ) std::cout << "test2.hostVector[" << i << "]=" << hostVector[i] << std::endl;
+		// multiply arrays on GPU
+		dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
+		multiplyVectors<int,100><<<dimGrid,dimBlock>>>( deviceArray1, deviceArray2 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		hostVector.clear();
+		deviceArray1 >> hostVector;
+		std::cout << "Two multiple value device arrays multiplied on device and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != (i*(hostVector.size()-i-1)) ) passed = false;
+		std::cout << "Two multiple value device arrays multiplied on device and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
+
+	//
+	{
+		std::vector<int> hostVector( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
+		ecuda::array<int,100> deviceArray2( 0 );
+
+		// take moving sum of vectors using only iterators
+		dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
+		testIterators<int,100><<<dimGrid,dimBlock>>>( deviceArray1, deviceArray2 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		hostVector.clear();
+		deviceArray2 >> hostVector;
+		std::cout << "Multiple value device array used to generate running sum and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != (i*(hostVector.size()-i-1)) ) passed = false;
+		std::cout << "Multiple value device array used to generate running sum and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 
