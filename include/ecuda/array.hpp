@@ -45,6 +45,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "global.hpp"
+#include "algorithm.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "iterators.hpp"
@@ -295,15 +296,56 @@ public:
 	///
 	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
 
-	HOST const array<T,N>& operator>>( std::vector<T>& vector ) const {
+	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector<value_type> v( size(), value );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), size(), cudaMemcpyHostToDevice ) );
+		#endif
+	}
+
+	HOST DEVICE void swap( array<T,N>& other ) {
+		#ifdef __CUDA_ARCH__
+		iterator iter1 = begin();
+		iterator iter2 = other.begin();
+		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
+		#else
+		std::vector<value_type> host1; operator>>( host1 );
+		std::vector<value_type> host2; other.operator>>( host2 );
+		operator<<( host2 );
+		other.operator<<( host1 );
+		#endif
+	}
+
+	DEVICE bool operator==( const array<T,N>& other ) const {
+		const_iterator iter1 = begin();
+		const_iterator iter2 = other.begin();
+		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
+		return true;
+	}
+
+	DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
+
+	DEVICE inline bool operator<( const array<T,N>& other ) const {	return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
+	DEVICE inline bool operator>( const array<T,N>& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
+	DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
+	DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
+
+	HOST const array<T,N>& operator>>( std::vector<value_type>& vector ) const {
 		vector.resize( N );
-		CUDA_CALL( cudaMemcpy<T>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
-	HOST array<T,N>& operator<<( std::vector<T>& vector ) {
+	HOST array<T,N>& operator<<( std::vector<value_type>& vector ) {
 		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
@@ -319,8 +361,9 @@ public:
 template<typename T,std::size_t N>
 HOST array<T,N>::array( const value_type& value ) {
 	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	std::vector<T> v( N, value );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+	fill( value );
+	//std::vector<T> v( N, value );
+	//CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 }
 
 template<typename T,std::size_t N>

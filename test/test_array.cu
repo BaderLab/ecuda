@@ -18,6 +18,21 @@ __global__ void testIterators( const ecuda::array<T,U> src, ecuda::array<T,U> de
 	for( ; srcIterator != src.end(); ++srcIterator ) *destIterator += *srcIterator;
 }
 
+template<typename T,std::size_t U> __global__ void testFill( ecuda::array<T,U> array ) { array.fill( 5 ); }
+template<typename T,std::size_t U> __global__ void testSwap( ecuda::array<T,U> array1, ecuda::array<T,U> array2 ) { array1.swap(array2); }
+template<typename T,std::size_t U> __global__ void testEquality( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 == array2 ? 1 : 0; }
+template<typename T,std::size_t U> __global__ void testGreaterThan( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 > array2 ? 1 : 0; }
+template<typename T,std::size_t U> __global__ void testLessThan( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 < array2 ? 1 : 0; }
+
+template<class Container1,class Container2>
+bool compare_containers( const Container1& c1, const Container2& c2 ) {
+	if( c1.size() != c2.size() ) return false;
+	typename Container1::const_iterator iter1 = c1.begin();
+	typename Container2::const_iterator iter2 = c2.begin();
+	for( ; iter1 != c1.end(); ++iter1, ++iter2 ) if( *iter1 != *iter2 ) return false;
+	return true;
+}
+
 int main( int argc, char* argv[] ) {
 
 	std::cout << "Testing ecuda::array..." << std::endl;
@@ -108,6 +123,93 @@ int main( int argc, char* argv[] ) {
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != answerVector[i] ) passed = false;
 		std::cout << "Multiple value device array used to generate running sum and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+	}
+
+	{
+		ecuda::array<int,100> deviceArray;
+		deviceArray.fill( 3 );
+		std::vector<int> hostVector( 100 );
+		deviceArray >> hostVector;
+		{
+			bool passed = true;
+			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
+			std::cout << "Device array fill operation performed on host  " << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		}
+		dim3 dimBlock( 1, 1 ), dimGrid( 1, 1 );
+		testFill<int,100><<<dimGrid,dimBlock>>>( deviceArray );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		deviceArray >> hostVector;
+		{
+			bool passed = true;
+			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 5 ) passed = false;
+			std::cout << "Device array fill operation performed on device" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		}
+	}
+
+	{
+		std::vector<int> hostVector1( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
+		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
+		{
+			ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
+			ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
+			deviceArray1.swap( deviceArray2 );
+			std::vector<int> resultHostVector1, resultHostVector2;
+			deviceArray1 >> resultHostVector1;
+			deviceArray2 >> resultHostVector2;
+			std::cout << "Device array swap operation performed on host  " << "\t" << ( compare_containers(hostVector1,resultHostVector2) and compare_containers(hostVector2,resultHostVector1) ? "PASSED" : "FAILED" ) << std::endl;
+		}
+		{
+			ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
+			ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
+			testSwap<int,100><<<1,1>>>( deviceArray1, deviceArray2 );
+			CUDA_CHECK_ERRORS();
+			CUDA_CALL( cudaDeviceSynchronize() );
+			std::vector<int> resultHostVector1, resultHostVector2;
+			deviceArray1 >> resultHostVector1;
+			deviceArray2 >> resultHostVector2;
+			std::cout << "Device array swap operation performed on device" << "\t" << ( compare_containers(hostVector1,resultHostVector2) and compare_containers(hostVector2,resultHostVector1) ? "PASSED" : "FAILED" ) << std::endl;
+		}
+	}
+
+	{
+		std::vector<int> hostVector1( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
+		std::vector<int> hostVector2( hostVector1.begin(), hostVector1.end() );
+		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
+		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
+		ecuda::array<int,1> deviceResultArray( 0 );
+		testEquality<int,100><<<1,1>>>( deviceArray1, deviceArray2, deviceResultArray );
+		std::vector<int> hostResultArray;
+		deviceResultArray >> hostResultArray;
+		std::cout << "operator==\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
+	}
+
+	{
+		std::vector<int> hostVector1( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
+		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
+		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
+		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
+		ecuda::array<int,1> deviceResultArray( 0 );
+		testLessThan<int,100><<<1,1>>>( deviceArray1, deviceArray2, deviceResultArray );
+		std::vector<int> hostResultArray;
+		deviceResultArray >> hostResultArray;
+		std::cout << "operator<\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
+	}
+
+	{
+		std::vector<int> hostVector1( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
+		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
+		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
+		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
+		ecuda::array<int,1> deviceResultArray( 0 );
+		testGreaterThan<int,100><<<1,1>>>( deviceArray2, deviceArray1, deviceResultArray );
+		std::vector<int> hostResultArray;
+		deviceResultArray >> hostResultArray;
+		std::cout << "operator>\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
 	}
 
 	return EXIT_SUCCESS;
