@@ -52,6 +52,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "memory.hpp"
 
 #ifdef __CPP11_SUPPORTED__
+#include <array>
 #include <initializer_list>
 #endif
 
@@ -82,8 +83,8 @@ public:
 
 	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
 	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
-	typedef std::reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
@@ -257,7 +258,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline T* data() { return deviceMemory.get(); }
+	HOST DEVICE inline pointer data() { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -267,7 +268,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
+	HOST DEVICE inline const_pointer data() const { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -385,11 +386,22 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	DEVICE bool operator==( const array<T,N>& other ) const {
+	HOST DEVICE bool operator==( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
 		const_iterator iter1 = begin();
 		const_iterator iter2 = other.begin();
 		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
 		return true;
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector<T> arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 == arr2;
+		#endif
 	}
 
 	///
@@ -401,7 +413,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are not equal, false otherwise
 	///
-	DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
+	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -409,7 +421,20 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than the other array, false otherwise
 	///
-	DEVICE inline bool operator<( const array<T,N>& other ) const {	return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
+	HOST DEVICE inline bool operator<( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector<T> arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 < arr2;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -417,7 +442,20 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than the other array, false otherwise
 	///
-	DEVICE inline bool operator>( const array<T,N>& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
+	HOST DEVICE inline bool operator>( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector<T> arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 > arr2;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -425,7 +463,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than or equal to the other array, false otherwise
 	///
-	DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
+	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -433,7 +471,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than or equal to the other array, false otherwise
 	///
-	DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
+	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
 	///
 	/// \brief Copies the contents of this device array to a host STL vector.
@@ -452,6 +490,26 @@ public:
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Copies the contents of this device array to a host STL array.
+	///
+	HOST const array<T,N>& operator>>( std::array<value_type,N>& arr ) const {
+		CUDA_CALL( cudaMemcpy<value_type>( &arr.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+	#endif
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Copies the contents of a host STL array to this device array.
+	///
+	HOST array<T,N>& operator<<( std::array<value_type,N>& arr ) {
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &arr.front(), N, cudaMemcpyHostToDevice ) );
+		return *this;
+	}
+	#endif
 
 	///
 	/// \brief Critical method to bridge host-device code.
@@ -499,7 +557,7 @@ template<typename T,std::size_t N>
 template<std::size_t N2>
 HOST array<T,N>::array( const array<T,N2>& src ) {
 	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.deviceMemory.get(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
+	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 }
 
 } // namespace ecuda

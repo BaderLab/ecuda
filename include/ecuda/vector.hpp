@@ -110,7 +110,13 @@ public:
 	/// \param value the value to initialize elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() );
+	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : n(n), m(0), allocator(allocator) {
+		growMemory( n );
+		if( n ) {
+			std::vector<T> v( n, value );
+			CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
+		}
+	}
 
 	///
 	/// \brief Constructs the container with n default-inserted instances of T. No copies are made.
@@ -290,7 +296,14 @@ public:
 	/// \param newSize new size of the container
 	/// \param value the value to initialize the new elements with
 	///
-	HOST void resize( size_type newSize, value_type& value = value_type() );
+	HOST void resize( size_type newSize, value_type& value = value_type() ) {
+		if( size() == newSize ) return;
+		if( size() > newSize ) { n = newSize; return; }
+		growMemory( newSize ); // make sure enough device memory is allocated
+		std::vector<T> v( newSize-n, value );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+n, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = newSize;
+	}
 
 	///
 	/// \brief Returns the number of elements that the container has currently allocated space for.
@@ -384,29 +397,47 @@ public:
 	/// \param newSize the new size of the container
 	/// \param value the value to initialize elements of the container with
 	///
-	HOST void assign( size_type newSize, value_type& value = value_type() );
+	HOST void assign( size_type newSize, value_type& value = value_type() ) {
+		growMemory(newSize); // make sure enough device memory is allocated
+		std::vector<T> v( newSize, value );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = newSize;
+	}
 
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
 	/// \param begin,end the range to copy the elements from
 	///
 	template<class InputIterator>
-	HOST void assign( InputIterator first, InputIterator last );
+	HOST void assign( InputIterator first, InputIterator last ) {
+		std::vector<T> v( first, last );
+		growMemory( v.size() ); // make sure enough device memory is allocated
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = v.size();
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Replaces the contents with the elements from the initializer list il.
 	/// \param il initializer list to copy the values from
 	///
-	HOST void assign( std::initializer_list<value_type> il );
+	HOST void assign( std::initializer_list<value_type> il ) {
+		std::vector<T> v( il );
+		growMemory( v.size() ); // make sure enough device memory is allocated
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = v.size();
+	}
 	#endif
-
 
 	///
 	/// \brief Appends the given element value to the end of the container.
 	/// \param value the value of the element to append
 	///
-	HOST void push_back( const value_type& value );
+	HOST void push_back( const value_type& value ) {
+		growMemory(n+1);
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+n, &value, 1, cudaMemcpyHostToDevice ) );
+		++n;
+	}
 
 	/*
 	 * Not implementing this function since a move operation isn't possible because the item
@@ -444,7 +475,16 @@ public:
 	/// \param value element value to insert
 	/// \return iterator pointing to the inserted value
 	///
-	HOST iterator insert( const_iterator position, const value_type& value );
+	HOST iterator insert( const_iterator position, const value_type& value ) {
+		growMemory(n+1); // make sure enough device memory is allocated
+		const size_type index = position-begin();
+		std::vector<T,Alloc> v( n-index+1, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
+		if( v.size() > 1 ) CUDA_CALL( cudaMemcpy<T>( &v[1], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +1 in host vector
+		v.front() = value; // add new value to position 0
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +1 inserted data back onto device
+		++n;
+		return position; // since iterators are index based, the return iterator is the same as the one provided
+	}
 
 	///
 	/// \brief Inserts count copies of the value before position.
@@ -459,7 +499,16 @@ public:
 	/// \param value element value to insert
 	/// \return iterator pointing to the inserted value
 	///
-	HOST iterator insert( const_iterator position, const size_type count, const value_type& value );
+	HOST iterator insert( const_iterator position, const size_type count, const value_type& value ) {
+		growMemory(n+count); // make sure enough device memory is allocated
+		const size_type index = position-begin();
+		std::vector< T, HostAllocator<T> > v( n-index+count, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
+		if( v.size() > count ) CUDA_CALL( cudaMemcpy<T>( &v[count], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
+		for( size_type i = 0; i < count; ++i ) v[i] = value; // fill in start region with new value
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +span inserted data back onto device
+		n += count;
+		return position; // since iterators are index based, the return iterator is the same as the one provided
+	}
 
 	/*
 	 * Not implementing this function since a move operation isn't possible because the item
@@ -494,7 +543,16 @@ public:
 	/// \param first,last the range of elements to insert, can't be iterators into container for which insert is called
 	///
 	template<class InputIterator>
-	HOST void insert( const_iterator position, InputIterator first, InputIterator last );
+	HOST void insert( const_iterator position, InputIterator first, InputIterator last ) {
+		const std::vector<T> x( first, last );
+		growMemory(n+x.size());
+		const size_type index = position-begin();
+		std::vector< T,HostAllocator<T> > v( n-index+x.size(), T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
+		if( v.size() > x.size() ) CUDA_CALL( cudaMemcpy<T>( &v[x.size()], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
+		for( size_type i = 0; i < x.size(); ++i ) v[i] = x[i]; // fill in start region with new values
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +x.size() inserted data back onto device
+		n += x.size();
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -523,7 +581,14 @@ public:
 	/// \returns Iterator following the last removed element. If the iterator position refers
 	///          to the last element, the end() iterator is returned.
 	///
-	HOST iterator erase( const_iterator position );
+	HOST iterator erase( const_iterator position ) {
+		const size_type index = position-begin();
+		std::vector< T,HostAllocator<T> > v( n-index-1, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-erasure region to host
+		CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+(index+1), v.size(), cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		--n;
+		return iterator(begin()+index);
+	}
 
 	///
 	/// \brief Removes the elements in the range [first,last).
@@ -538,7 +603,16 @@ public:
 	/// \returns Iterator following the last removed element. If the iterator position refers
 	///          to the last element, the end() iterator is returned.
 	///
-	HOST iterator erase( const_iterator first, const_iterator last );
+	HOST iterator erase( const_iterator first, const_iterator last ) {
+		const size_type index1 = first-begin();
+		const size_type index2 = last-begin();
+		std::vector< T,HostAllocator<T> > v( n-index2, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-erasure region to host
+		CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index1, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n -= index2-index1;
+		return iterator(begin()+index1);
+	}
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -551,7 +625,18 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE void swap( vector& other );
+	HOST DEVICE void swap( vector& other ) {
+		// just swap all members
+		#ifdef __CUDA_ARCH__
+		ecuda::swap( n, other.n );
+		ecuda::swap( m, other.m );
+		ecuda::swap( deviceMemory, other.deviceMemory );
+		#else
+		std::swap( n, other.n );
+		std::swap( m, other.m );
+		std::swap( deviceMemory, other.deviceMemory );
+		#endif
+	}
 
 	///
 	/// \brief Removes all elements from the container.
@@ -570,19 +655,124 @@ public:
 	///
 	HOST inline allocator_type get_allocator() const { return allocator_type(); }
 
-	// Conversions from other container types:
+	///
+	/// \brief Requests the removal of unused capacity.
+	///
+	/// The STL specification describes this as a non-binding request to reduce capacity()
+	/// to size() and it depends on the implementation if the request is fulfilled. In this
+	/// implementation, the request is always fulfilled. All iterators, including the past
+	/// the end iterator, are potentially invalidated.
+	///
+	HOST void shrink_to_fit() {
+		if( m == n ) return;
+		device_ptr<value_type> newMemory( allocator.allocate( n ) );
+		CUDA_CALL( cudaMemcpy<T>( newMemory.get(), deviceMemory.get(), n, cudaMemcpyDeviceToDevice ) );
+		deviceMemory = newMemory;
+		m = n;
+	}
+
+	///
+	/// \brief Checks if the contents of two vectors are equal.
+	///
+	/// That is, whether size() == other.size() and each element in the this vector compares equal
+	/// with the element in the other vector at the same position.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents are equal, false otherwise
+	///
+	HOST DEVICE bool operator==( const vector& other ) const {
+		#ifdef __CUDA_ARCH__
+		if( size() != other.size() ) return false;
+		const_iterator iter1 = begin();
+		const_iterator iter2 = other.begin();
+		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
+		return true;
+		#else
+		std::vector<value_type> v1, v2;
+		operator>>( v1 );
+		other.operator>>( v2 );
+		return v1 == v2;
+		#endif
+	}
+
+	///
+	/// \brief Checks if the contents of two arrays are not equal.
+	///
+	/// That is, whether size() != other.size() or whether any element in the this vector does not
+	/// compare equal to the element in the other vector at the same position.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents are not equal, false otherwise
+	///
+	HOST DEVICE inline bool operator!=( const vector& other ) const { return !operator==(other); }
+
+	///
+	/// \brief Compares the contents of two vectors lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this vector are lexicographically less than the other vector, false otherwise
+	///
+	HOST DEVICE inline bool operator<( const vector& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
+		#else
+		std::vector<value_type> v1, v2;
+		operator>>( v1 );
+		other.operator>>( v2 );
+		return v1 < v2;
+		#endif
+	}
+
+	///
+	/// \brief Compares the contents of two vectors lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this vector are lexicographically greater than the other vector, false otherwise
+	///
+	HOST DEVICE inline bool operator>( const vector& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
+		#else
+		std::vector<value_type> v1, v2;
+		operator>>( v1 );
+		other.operator>>( v2 );
+		return v1 > v2;
+		#endif
+	}
+
+	///
+	/// \brief Compares the contents of two vectors lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this vector are lexicographically less than or equal to the other vector, false otherwise
+	///
+	HOST DEVICE inline bool operator<=( const vector& other ) const { return !operator>(other); }
+
+	///
+	/// \brief Compares the contents of two vectors lexicographically.
+	///
+	/// \param other container to compare contents with
+	/// \returns true if the contents of this vector are lexicographically greater than or equal to the other vector, false otherwise
+	///
+	HOST DEVICE inline bool operator>=( const vector& other ) const { return !operator<(other); }
+
+	///
+	/// \brief Copies the contents of this device vector to a host STL vector.
+	///
 	template<class OtherAlloc>
 	HOST const vector<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& vector ) const {
 		vector.resize( n );
 		CUDA_CALL( cudaMemcpy<T>( &vector.front(), deviceMemory.get(), n, cudaMemcpyDeviceToHost ) );
-		//CUDA_CALL( cudaMemcpy( &vector[0], deviceMemory.get(), n*sizeof(T), cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
+	///
+	/// \brief Copies the contents of a host STL vector to this device vector.
+	///
 	HOST vector<T,Alloc>& operator<<( std::vector<T>& vector ) {
-		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
+		growMemory( vector.size() );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
-		//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &vector[0], vector.size()*sizeof(T), cudaMemcpyHostToDevice ) );
+		n = vector.size();
 		return *this;
 	}
 
@@ -594,7 +784,6 @@ public:
 	}
 
 };
-
 
 template<typename T,class Alloc>
 HOST void vector<T,Alloc>::growMemory( size_type minimum ) {
@@ -608,144 +797,6 @@ HOST void vector<T,Alloc>::growMemory( size_type minimum ) {
 	if( deviceMemory ) CUDA_CALL( cudaMemcpy<T>( newMemory.get(), deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
 	deviceMemory = newMemory;
 	m = m2;
-}
-
-template<typename T,class Alloc>
-HOST vector<T,Alloc>::vector( size_type n, const value_type& value, const allocator_type& allocator ) : n(n), allocator(allocator) {
-	m = 1; while( m < n ) m <<= 1;
-	#ifndef __CUDA_ARCH__
-	if( n ) {
-		deviceMemory = device_ptr<T>( this->allocator.allocate( m ) );
-		std::vector<T> v( n, value );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
-	}
-	#endif
-}
-
-//template<typename T,class Alloc>
-//HOST vector<T,Alloc>::vector( const std::vector<T>& src, const allocator_type& allocator ) : n(src.size()), allocator(allocator) {
-//	m = 1; while( m < n ) m <<= 1;
-//	deviceMemory = device_ptr<T>( this->allocator.allocate( m ) );
-//	if( n ) CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &src.front(), n, cudaMemcpyHostToDevice ) );
-//}
-
-template<typename T,class Alloc>
-HOST void vector<T,Alloc>::resize( size_type newSize, value_type& value ) {
-	growMemory(newSize); // make sure enough device memory is allocated
-	std::vector<T> v( newSize-n, value );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+n, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	n = newSize;
-}
-
-template<typename T,class Alloc>
-HOST vector<T,Alloc>::iterator vector<T,Alloc>::insert( vector<T,Alloc>::const_iterator position, const value_type& val ) {
-	growMemory(n+1); // make sure enough device memory is allocated
-	const size_type index = position-begin();
-	std::vector<T,Alloc> v( n-index+1, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
-	if( v.size() > 1 ) CUDA_CALL( cudaMemcpy<T>( &v[1], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +1 in host vector
-	v.front() = val; // add new value to position 0
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +1 inserted data back onto device
-	++n;
-	return position; // since iterators are index based, the return iterator is the same as the one provided
-}
-
-template<typename T,class Alloc>
-HOST vector<T,Alloc>::iterator vector<T,Alloc>::insert( vector<T,Alloc>::const_iterator position, const size_type span, const value_type& val ) {
-	growMemory(n+span); // make sure enough device memory is allocated
-	const size_type index = position-begin();
-	std::vector< T, HostAllocator<T> > v( n-index+span, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
-	if( v.size() > span ) CUDA_CALL( cudaMemcpy<T>( &v[span], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
-	for( size_type i = 0; i < span; ++i ) v[i] = val; // fill in start region with new value
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +span inserted data back onto device
-	n += span;
-	return position; // since iterators are index based, the return iterator is the same as the one provided
-}
-
-template<typename T,class Alloc>
-template<class InputIterator>
-HOST void vector<T,Alloc>::insert( vector<T,Alloc>::const_iterator position, InputIterator first, InputIterator last ) {
-	const std::vector<T> x( first, last );
-	growMemory(n+x.size());
-	const size_type index = position-begin();
-	std::vector< T,HostAllocator<T> > v( n-index+x.size(), T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-insertion region to host
-	if( v.size() > x.size() ) CUDA_CALL( cudaMemcpy<T>( &v[x.size()], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
-	for( size_type i = 0; i < x.size(); ++i ) v[i] = x[i]; // fill in start region with new values
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +x.size() inserted data back onto device
-	n += x.size();
-}
-
-template<typename T,class Alloc>
-HOST vector<T,Alloc>::iterator vector<T,Alloc>::erase( vector<T,Alloc>::const_iterator position ) {
-	const size_type index = position-begin();
-	std::vector< T,HostAllocator<T> > v( n-index-1, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-erasure region to host
-	CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+(index+1), v.size(), cudaMemcpyDeviceToHost ) );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	--n;
-	return iterator(begin()+index);
-}
-
-template<typename T,class Alloc>
-HOST vector<T,Alloc>::iterator vector<T,Alloc>::erase( vector<T,Alloc>::const_iterator first, vector<T,Alloc>::const_iterator last ) {
-	const size_type index1 = first-begin();
-	const size_type index2 = last-begin();
-	std::vector< T,HostAllocator<T> > v( n-index2, T(), HostAllocator<T>() ); // allocate pinned memory to transfer post-erasure region to host
-	CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
-	CUDA_CALL( cudaMemcpy<T>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+index1, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	n -= index2-index1;
-	return iterator(begin()+index1);
-}
-
-template<typename T,class Alloc>
-HOST DEVICE void vector<T,Alloc>::swap( vector<T,Alloc>& other ) {
-	// just swap all members
-	#ifdef __CUDA_ARCH__
-	ecuda::swap( n, other.n );
-	ecuda::swap( m, other.m );
-	ecuda::swap( deviceMemory, other.deviceMemory );
-	#else
-	std::swap( n, other.n );
-	std::swap( m, other.m );
-	std::swap( deviceMemory, other.deviceMemory );
-	#endif
-}
-
-template<typename T,class Alloc>
-HOST void vector<T,Alloc>::assign( size_type newSize, value_type& value ) {
-	growMemory(newSize); // make sure enough device memory is allocated
-	std::vector<T> v( newSize, value );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], v.size()*sizeof(T), cudaMemcpyHostToDevice ) );
-	n = newSize;
-}
-
-template<typename T,class Alloc>
-template<class InputIterator>
-HOST void vector<T,Alloc>::assign( InputIterator first, InputIterator last ) {
-	std::vector<T> v( first, last );
-	growMemory( v.size() ); // make sure enough device memory is allocated
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	//CUDA_CALL( cudaMemcpy( deviceMemory.get(), &v[0], v.size()*sizeof(T), cudaMemcpyHostToDevice ) );
-	n = v.size();
-}
-
-#ifdef __CPP11_SUPPORTED__
-template<typename T,class Alloc>
-HOST void vector<T,Alloc>::assign( std::initializer_list<value_type> il ) {
-	std::vector<T> v( il );
-	growMemory( v.size() ); // make sure enough device memory is allocated
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	n = v.size();
-}
-#endif
-
-
-template<typename T,class Alloc>
-HOST void vector<T,Alloc>::push_back( const value_type& v ) {
-	growMemory(n+1);
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get()+(n*sizeof(T)), &v, 1, cudaMemcpyHostToDevice ) );
-	//CUDA_CALL( cudaMemcpy( deviceMemory.get()+(n*sizeof(T)), &v, sizeof(v), cudaMemcpyHostToDevice ) );
-	++n;
 }
 
 } // namespace ecuda

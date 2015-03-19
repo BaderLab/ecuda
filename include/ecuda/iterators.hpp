@@ -132,7 +132,7 @@ public:
 ///
 
 template<class ParentIterator>
-class pointer_reverse_iterator : public std::reverse_iterator<ParentIterator>
+class pointer_reverse_iterator // : public std::reverse_iterator<ParentIterator>
 {
 //protected:
 //	typedef PointerForwardIterator<typename ParentIterator::value_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category> super_iterator_type;
@@ -145,19 +145,75 @@ public:
 	typedef typename ParentIterator::difference_type difference_type;
 	typedef typename ParentIterator::pointer pointer;
 	typedef typename ParentIterator::reference reference;
-	//typedef typename ParentIterator::const_pointer const_pointer;
-	//typedef typename ParentIterator::const_reference const_reference;
+	typedef typename ParentIterator::const_pointer const_pointer;
+	typedef typename ParentIterator::const_reference const_reference;
 
-//private:
-//	ParentIterator parentIterator;
+private:
+	ParentIterator parentIterator;
 
 public:
-	HOST DEVICE pointer_reverse_iterator() : std::reverse_iterator<ParentIterator>() {}
-	HOST DEVICE pointer_reverse_iterator( ParentIterator parentIterator ) : std::reverse_iterator<ParentIterator>( parentIterator ) {}
-	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : std::reverse_iterator<ParentIterator>( src ) {}
+	HOST DEVICE pointer_reverse_iterator() {} //: std::reverse_iterator<ParentIterator>() {}
+	HOST DEVICE pointer_reverse_iterator( ParentIterator parentIterator ) : parentIterator(parentIterator) {} // std::reverse_iterator<ParentIterator>( parentIterator ) {}
+	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : parentIterator(src.parentIterator) {} //std::reverse_iterator<ParentIterator>( src ) {}
 	HOST DEVICE virtual ~pointer_reverse_iterator() {}
 
-//	ParentIterator base() const { return parentIterator; }
+	ParentIterator base() const { return parentIterator; }
+
+	HOST DEVICE inline pointer_reverse_iterator& operator++() { --parentIterator; return *this; }
+	HOST DEVICE inline pointer_reverse_iterator operator++( int ) {
+		pointer_reverse_iterator tmp(*this);
+		++(*this);
+		// operator++(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	HOST DEVICE inline pointer_reverse_iterator& operator--() { ++parentIterator; return *this; }
+	HOST DEVICE inline pointer_reverse_iterator& operator--( int ) const {
+		pointer_reverse_iterator tmp(*this);
+		--(*this);
+		// operator--(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	HOST DEVICE inline bool operator==( const pointer_reverse_iterator& other ) const { return parentIterator == other.parentIterator; }
+	HOST DEVICE inline bool operator!=( const pointer_reverse_iterator& other ) const { return !operator==(other); }
+
+	DEVICE inline const_reference operator*() const {
+		ParentIterator tmp(parentIterator);
+		--tmp;
+		return tmp.operator*();
+	}
+	DEVICE inline const_pointer operator->() const {
+		ParentIterator tmp(parentIterator);
+		--tmp;
+		return tmp.operator->();
+	}
+	DEVICE inline reference operator*() {
+		ParentIterator tmp(parentIterator);
+		--tmp;
+		return tmp.operator*();
+	}
+	DEVICE inline pointer operator->() {
+		ParentIterator tmp(parentIterator);
+		--tmp;
+		return tmp.operator->();
+	}
+
+	HOST DEVICE inline difference_type operator-( const pointer_reverse_iterator& other ) { return parentIterator - other.parentIterator; }
+
+	HOST DEVICE inline pointer_reverse_iterator operator+( int x ) const { return pointer_reverse_iterator( parentIterator-x ); }
+	HOST DEVICE inline pointer_reverse_iterator operator-( int x ) const { return pointer_reverse_iterator( parentIterator+x ); }
+
+	HOST DEVICE inline bool operator<( const pointer_reverse_iterator& other ) const { return parentIterator < other.parentIterator; }
+	HOST DEVICE inline bool operator>( const pointer_reverse_iterator& other ) const { return parentIterator > other.parentIterator; }
+	HOST DEVICE inline bool operator<=( const pointer_reverse_iterator& other ) const { return operator<(other) or operator==(other); }
+	HOST DEVICE inline bool operator>=( const pointer_reverse_iterator& other ) const { return operator>(other) or operator==(other); }
+
+	HOST DEVICE inline pointer_reverse_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
+	HOST DEVICE inline pointer_reverse_iterator& operator-=( int x ) { parentIterator += x; return *this; }
+
+//	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
+//	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
 
 /*
 	virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
