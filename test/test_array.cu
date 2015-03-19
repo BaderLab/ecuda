@@ -194,12 +194,11 @@ int main( int argc, char* argv[] ) {
 
 		// generate answer key
 		std::vector<int> answerVector( 100, 0 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) {
-			for( std::vector<int>::size_type j = i; j < hostVector.size(); ++j ) {
+		for( std::vector<int>::size_type i = hostVector.size()-1; i >= 0; ++i ) {
+			for( std::vector<int>::size_type j = i; j >= 0; ++j ) {
 				answerVector[i] += hostVector[j];
 			}
 		}
-		std::reverse( answerVector.begin(), answerVector.end() );
 
 		hostVector.clear();
 		deviceArray2 >> hostVector;
