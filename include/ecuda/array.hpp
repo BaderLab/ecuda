@@ -163,13 +163,16 @@ public:
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
 	///
-	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
-	///
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
 	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
 
+	/*
+	 * Deprecating this function since the STL standard seems to specify that the at() accessor
+	 * must implement range checking that throws an exception on failure.  Since exceptions are
+	 * not supported within a CUDA kernel, this cannot be satisfied.
+	 *
 	///
 	/// \brief Returns a reference to the element at specified location index, with bounds checking.
 	///
@@ -179,11 +182,10 @@ public:
 	/// \returns Reference to the requested element.
 	///
 	DEVICE inline const_reference at( size_type index ) const { return deviceMemory[index]; }
+	*/
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
-	///
-	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
 	///
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.

@@ -32,7 +32,7 @@ int main( int argc, char* argv[] ) {
 	// allocate some device arrays
 	ecuda::vector<float> deviceArray1( n, 3 ); // should have all 3
 	ecuda::vector<float> deviceArray2( deviceArray1 ); // should be a copy of deviceArray1
-	const ecuda::vector<float> deviceArray3( hostVector ); // should be a copy of the host vector
+	const ecuda::vector<float> deviceArray3( hostVector.begin(), hostVector.end() ); // should be a copy of the host vector
 
 	{
 		deviceArray3 >> hostVector;
