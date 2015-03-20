@@ -122,11 +122,11 @@ public:
 	/// \brief Constructs the container with n default-inserted instances of T. No copies are made.
 	/// \param n the size of the container
 	///
-	HOST explicit vector( size_type n ) : n(n), m(m) {
+	HOST explicit vector( size_type n ) : n(n), m(0) {
 		if( n ) {
 			growMemory( n );
 			std::vector<T> v( n );
-			CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
+			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
 		}
 	}
 
@@ -136,10 +136,11 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	template<class InputIterator>
-	HOST vector( InputIterator begin, InputIterator end, const allocator_type& allocator = allocator_type() ) : allocator(allocator) {
+	HOST vector( InputIterator begin, InputIterator end, const allocator_type& allocator = allocator_type() ) : m(0), allocator(allocator) {
 		std::vector<value_type> v( begin, end );
 		growMemory( v.size() );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = v.size();
 	}
 
 	///
