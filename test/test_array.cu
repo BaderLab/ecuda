@@ -200,10 +200,16 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 		std::vector<int> hostEmpties( 100, -1 );
 		std::vector<ecuda::array<int,100>::size_type> hostSizes( 100 );
 		std::vector<ecuda::array<int,100>::const_pointer> hostPointers( 100 );
+		deviceEmpties >> hostEmpties;
+		deviceSizes >> hostSizes;
+		devicePointers >> hostPointers;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
+std::cerr << "passed=" << ( passed ? "true" : "false" );
 		for( std::vector<ecuda::array<int,100>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
+std::cerr << "passed=" << ( passed ? "true" : "false" );
 		for( std::vector<ecuda::array<int,100>::const_pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceArray.data() ) passed = false;
+std::cerr << "passed=" << ( passed ? "true" : "false" );
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
@@ -294,6 +300,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	std::cerr << "Test 6" << std::endl;
 	{
+/*
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
@@ -306,6 +313,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
+*/ testResults.push_back( 0 );
 	}
 
 	//
@@ -474,7 +482,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | |X| | |X|X|X|X|X|X| | 
 ........................................................|";
 
 	std::cout << outputText;
-	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : "F" ) << "|";
+	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
 	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
