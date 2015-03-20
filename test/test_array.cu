@@ -167,6 +167,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 1: default constructor, copy to host, and general info
 	//
+	std::cerr << "Test 1" << std::endl;
 	{
 		ecuda::array<int,100> deviceArray( 3 ); // array filled with number 3
 		std::vector<int> hostVector;
@@ -185,6 +186,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 2: information is correct on device
 	//
+	std::cerr << "Test 2" << std::endl;
 	{
 		std::vector<int> hostVector( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
@@ -209,6 +211,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	// Test 3: construction using a C++11 intializer list
 	//
 	#ifdef __CPP11_SUPPORTED__
+	std::cerr << "Test 3" << std::endl;
 	{
 		ecuda::array<int,10> deviceArray( { 0,1,2,3,4,5,6,7,8,9 } );
 		std::array<int,10> hostArray;
@@ -223,12 +226,14 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 		testResults.push_back( passed ? 1 : 0 );
 	}
 	#else
+	std::cerr << "Test 3 (skipped)" << std::endl;
 	testResults.push_back( -1 );
 	#endif
 
 	//
 	// Test 4: index accessors, front(), and back()
 	//
+	std::cerr << "Test 4" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
@@ -268,12 +273,15 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 5: device iterators
 	//
+	std::cerr << "Test 5" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkDeviceIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 		std::fill( hostArray.begin(), hostArray.end(), -1 );
 		destDeviceArray >> hostArray;
 		bool passed = true;
@@ -284,12 +292,15 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 6: host iterators
 	//
+	std::cerr << "Test 6" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkHostIterators<int,100><<<1,1>>>( srcDeviceArray.begin(), srcDeviceArray.end(), destDeviceArray.begin(), destDeviceArray.end() );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 		std::fill( hostArray.begin(), hostArray.end(), -1 );
 		destDeviceArray >> hostArray;
 		bool passed = true;
@@ -300,12 +311,15 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 7: device reverse iterators
 	//
+	std::cerr << "Test 7" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkDeviceReverseIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 		std::fill( hostArray.begin(), hostArray.end(), -1 );
 		destDeviceArray >> hostArray;
 		bool passed = true;
@@ -316,12 +330,15 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 8: host reverse iterators
 	//
+	std::cerr << "Test 8" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkHostReverseIterators<int,100><<<1,1>>>( srcDeviceArray.rbegin(), srcDeviceArray.rend(), destDeviceArray.rbegin(), destDeviceArray.rend() );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 		std::fill( hostArray.begin(), hostArray.end(), -1 );
 		destDeviceArray >> hostArray;
 		bool passed = true;
@@ -332,6 +349,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test 9: host fill and swap
 	//
+	std::cerr << "Test 9" << std::endl;
 	{
 		ecuda::array<int,100> deviceArray1;
 		ecuda::array<int,100> deviceArray2;
@@ -347,6 +365,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test A: device fill and swap
 	//
+	std::cerr << "Test A" << std::endl;
 	{
 		ecuda::array<int,100> deviceArray1;
 		ecuda::array<int,100> deviceArray2;
@@ -363,6 +382,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test B: host comparison operators
 	//
+	std::cerr << "Test B" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
@@ -387,6 +407,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 	//
 	// Test C: device comparison operators
 	//
+	std::cerr << "Test C" << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
@@ -453,7 +474,7 @@ array<T,N>& operator=( const array<T,N>& )     D        | |X| | |X|X|X|X|X|X| | 
 ........................................................|";
 
 	std::cout << outputText;
-	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] ? "P" : "F" ) << "|";
+	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : "F" ) << "|";
 	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
