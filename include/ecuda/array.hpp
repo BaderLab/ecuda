@@ -94,7 +94,10 @@ public:
 	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
 	/// \param value Value to fill the container with.
 	///
-	HOST array( const value_type& value = value_type() );
+	HOST array( const value_type& value = value_type() ) {
+		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		fill( value );
+	}
 
 	///
 	/// \brief Constructs a fixed-sized array with N elements taken from the sequence [begin,end).
@@ -107,7 +110,15 @@ public:
 	///                   used is [begin,end).
 	///
 	template<class InputIterator>
-	HOST array( InputIterator begin, InputIterator end );
+	HOST array( InputIterator begin, InputIterator end ) {
+		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		std::vector<T> v( N );
+		typename std::vector<T>::size_type index = 0;
+		while( index < N ) {
+			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
+		}
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -120,9 +131,18 @@ public:
 	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
 	////          declarators.
 	///
-	HOST array( std::initializer_list<T> il );
+	HOST array( std::initializer_list<T> il ) {
+		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		std::vector<T> v( il );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+	}
 	#endif
 
+	///
+	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
+	///
+	/// \param src Another array object of the same type and size, whose contents are copied.
+	///
 	HOST array( const array& src ) {
 		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
@@ -139,7 +159,10 @@ public:
 	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
 	///
 	template<std::size_t N2>
-	HOST array( const array<T,N2>& src );
+	HOST array( const array<T,N2>& src ) {
+		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -538,40 +561,6 @@ public:
 	}
 
 };
-
-template<typename T,std::size_t N>
-HOST array<T,N>::array( const value_type& value ) {
-	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	fill( value );
-}
-
-template<typename T,std::size_t N>
-template<class InputIterator>
-HOST array<T,N>::array( InputIterator begin, InputIterator end ) {
-	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	std::vector<T> v( N );
-	typename std::vector<T>::size_type index = 0;
-	while( index < N ) {
-		for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
-	}
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
-}
-
-#ifdef __CPP11_SUPPORTED__
-template<typename T,std::size_t N>
-HOST array<T,N>::array( std::initializer_list<T> il ) {
-	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	std::vector<T> v( il );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
-}
-#endif
-
-template<typename T,std::size_t N>
-template<std::size_t N2>
-HOST array<T,N>::array( const array<T,N2>& src ) {
-	deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
-	CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
-}
 
 } // namespace ecuda
 

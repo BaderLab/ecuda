@@ -354,31 +354,13 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> deviceArray1( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> deviceArray2( deviceArray1 );
-{
-	std::vector<int> tmpArray1;
-	deviceArray1 >> tmpArray1;
-	for( unsigned i = 0; i < tmpArray1.size(); ++i ) std::cout << " " << tmpArray1[i]; std::cout << std::endl;
-}
+
 		bool passed = true;
 		if( !deviceArray1.operator==(deviceArray2) ) passed = false;
 		if( deviceArray1.operator!=(deviceArray2) ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i+10;
 		deviceArray2 << hostArray;
-{
-        std::vector<int> tmpArray1;
-        deviceArray1 >> tmpArray1;
-        for( unsigned i = 0; i < tmpArray1.size(); ++i ) std::cout << " " << tmpArray1[i]; std::cout << std::endl;
-}
 
-std::cerr << "deviceArray1 < deviceArray2 = " << ( deviceArray1 < deviceArray2 ? "yes" : "no" ) << std::endl;
-{
-	std::vector<int> tmpArray1, tmpArray2;
-	deviceArray1 >> tmpArray1;
-	deviceArray2 >> tmpArray2;
-	for( unsigned i = 0; i < tmpArray1.size(); ++i ) std::cout << " " << tmpArray1[i]; std::cout << std::endl;
-	for( unsigned i = 0; i < tmpArray2.size(); ++i ) std::cout << " " << tmpArray2[i]; std::cout << std::endl;
-	std::cerr << "tmpArray1 < tmpArray2 = " << ( tmpArray1 < tmpArray2 ? "yes" : "no" ) << std::endl;
-}
 		if( !(deviceArray1.operator< (deviceArray2)) ) passed = false;
 std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray1.operator> (deviceArray2) ) passed = false;
