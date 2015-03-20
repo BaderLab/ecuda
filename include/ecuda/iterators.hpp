@@ -84,7 +84,7 @@ public:
 	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
 	template<typename T2>
 	HOST DEVICE pointer_iterator( const pointer_iterator<T2,PointerType,Category>& src ) : ptr(src.ptr) {}
-	HOST DEVICE virtual ~pointer_iterator() {}
+	HOST DEVICE /*virtual*/ ~pointer_iterator() {}
 
 	HOST DEVICE inline pointer_iterator& operator++() { ++ptr; return *this; }
 	HOST DEVICE inline pointer_iterator operator++( int ) {
@@ -105,26 +105,26 @@ public:
 	HOST DEVICE /*virtual*/ bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
 	HOST DEVICE /*virtual*/ bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
 
-	DEVICE virtual const_reference operator*() const { return *ptr; }
-	DEVICE virtual const_pointer operator->() const { return ptr; }
-	DEVICE virtual reference operator*() { return *ptr; }
-	DEVICE virtual pointer operator->() { return ptr; }
+	DEVICE /*virtual*/ const_reference operator*() const { return *ptr; }
+	DEVICE /*virtual*/ const_pointer operator->() const { return ptr; }
+	DEVICE /*virtual*/ reference operator*() { return *ptr; }
+	DEVICE /*virtual*/ pointer operator->() { return ptr; }
 
-	HOST DEVICE virtual difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
+	HOST DEVICE /*virtual*/ difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
 
 	HOST DEVICE inline pointer_iterator operator+( int x ) const { return pointer_iterator( ptr + x ); }
 	HOST DEVICE inline pointer_iterator operator-( int x ) const { return pointer_iterator( ptr - x ); }
 
-	HOST DEVICE virtual bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
-	HOST DEVICE virtual bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
-	HOST DEVICE virtual bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
-	HOST DEVICE virtual bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
+	HOST DEVICE /*virtual*/ bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
+	HOST DEVICE /*virtual*/ bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
+	HOST DEVICE /*virtual*/ bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
+	HOST DEVICE /*virtual*/ bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
 
 	HOST DEVICE inline pointer_iterator& operator+=( int x ) { ptr += x; return *this; }
 	HOST DEVICE inline pointer_iterator& operator-=( int x ) { ptr -= x; return *this; }
 
-	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
-	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
+	DEVICE /*virtual*/ reference operator[]( int x ) { return *(ptr+x); }
+	DEVICE /*virtual*/ const_reference operator[]( int x ) const { return *(ptr+x); }
 
 //	template<typename T2>
 	DEVICE pointer_iterator& operator=( const pointer_iterator<T,PointerType,Category>& src ) {
