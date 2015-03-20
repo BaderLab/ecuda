@@ -143,11 +143,11 @@ public:
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST array( const array& src ) {
-		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
+	HOST array( const array& src ) : deviceMemory(src.deviceMemory) {
+//		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
+//		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
 	}
-
+	
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
 	///
@@ -555,8 +555,13 @@ public:
 	/// In this case, we simply need the pointer to the start of the array.
 	///
 	///
-	DEVICE array<T,N>& operator=( const array<T,N>& other ) {
+	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
+		#ifdef __CUDA_ARCH__
 		deviceMemory = other.deviceMemory;
+		#else
+		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
+		#endif
 		return *this;
 	}
 
