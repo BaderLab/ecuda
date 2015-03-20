@@ -362,21 +362,21 @@ int main( int argc, char* argv[] ) {
 		deviceArray2 << hostArray;
 
 		if( !(deviceArray1.operator< (deviceArray2)) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray1.operator> (deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray1.operator<=(deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray1.operator>=(deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray2.operator< (deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray2.operator> (deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
-		if( !deviceArray2.operator<=(deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
-		if(  deviceArray2.operator>=(deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+		if(  deviceArray2.operator<=(deviceArray1) ) passed = false;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+		if( !deviceArray2.operator>=(deviceArray1) ) passed = false;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
