@@ -61,7 +61,8 @@ void kernel_checkHostIterators(
 	typename ecuda::array<T,U>::iterator destEnd
 )
 {
-	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin ) *destBegin = *srcBegin;
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin )
+		*destBegin = *srcBegin;
 }
 
 template<typename T,std::size_t U> __global__
@@ -84,7 +85,11 @@ void kernel_checkHostReverseIterators(
 	typename ecuda::array<T,U>::reverse_iterator destEnd
 )
 {
-	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin ) *destBegin = *srcBegin;
+//printf( "RPOINTER: %i\n", srcBegin.operator->() );
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin ) {
+//printf( " POINTER: %i\n", srcBegin.operator->() );
+		*destBegin = *srcBegin;
+	}
 }
 
 template<typename T,std::size_t U> __global__
@@ -259,6 +264,8 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
+std::cerr << "HOST BEGIN: " << srcDeviceArray.data() << std::endl;
+std::cerr << "HOST END  : " << (srcDeviceArray.data()+srcDeviceArray.size()) << std::endl;
 		kernel_checkHostIterators<int,100><<<1,1>>>( srcDeviceArray.begin(), srcDeviceArray.end(), destDeviceArray.begin(), destDeviceArray.end() );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
@@ -297,6 +304,7 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> destDeviceArray;
+std::cerr << "HOST RPOINTER: " << srcDeviceArray.data() << std::endl;
 		kernel_checkHostReverseIterators<int,100><<<1,1>>>( srcDeviceArray.rbegin(), srcDeviceArray.rend(), destDeviceArray.rbegin(), destDeviceArray.rend() );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );

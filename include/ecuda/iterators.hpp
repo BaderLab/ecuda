@@ -102,8 +102,8 @@ public:
 		return tmp;
 	}
 
-	HOST DEVICE virtual bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
-	HOST DEVICE virtual bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
+	HOST DEVICE /*virtual*/ bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
+	HOST DEVICE /*virtual*/ bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
 
 	DEVICE virtual const_reference operator*() const { return *ptr; }
 	DEVICE virtual const_pointer operator->() const { return ptr; }
@@ -127,10 +127,10 @@ public:
 	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
 
 //	template<typename T2>
-//	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T2,PointerType,Category>& src ) {
-//		ptr = src.ptr;
-//		return *this;
-//	}
+	DEVICE pointer_iterator& operator=( const pointer_iterator<T,PointerType,Category>& src ) {
+		ptr = src.ptr;
+		return *this;
+	}
 
 };
 
