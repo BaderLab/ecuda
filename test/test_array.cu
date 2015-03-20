@@ -118,48 +118,6 @@ void kernel_testComparisonOperators(
 
 int main( int argc, char* argv[] ) {
 
-/*
-														|1|2|3|4|5|6|7|8|9|A|B|C|D|E|
-														+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-array( const value_type& )                     H        |X| | |X|X| | |X|X|X|X|X| | |eol
-template array( InputIterator, InputIterator ) H        | |X| | | |X|X|X|X| |X|X| | |eol
-array( std::initializer_list<T> il )           H  C++11 | | |X| | | | | | | | | | | |eol
-template array( const array<T,N2>& )           H        | | | |X|X|X| | | | | | | | |eol
-array( array<T,N>&& )                          HD C++11 | | | | | | | | | | | | | | |eol
-~array()                                       HD       |X|X|X|X|X|X|X|X|X|X| | | | |eol
-operator[]( size_type )                        D        | | | | | | |X| | | | | | | |eol
-operator[]( size_type ) const                  D        | | | | | | |X| | | | | | | |eol
-front()                                        D        | | | | | | | | | | | | | | |eol
-back()                                         D        | | | | | | | | | | | | | | |eol
-front() const                                  D        | | | | | | | | | | | | | | |eol
-back() const                                   D        | | | | | | | | | | | | | | |eol
-empty() const                                  HD       | | | | | | | | | | | | | | |eol
-size() const                                   HD       | | | | | | | | | | | | | | |eol
-max_size() const                               HD       | | | | | | | | | | | | | | |eol
-data()                                         HD       | | | | | | | | | | | | | | |eol
-data() const                                   HD       | | | | | | | | | | | | | | |eol
-begin()                                        HD       | | | | | | | |D| | | | | | |eol
-end()                                          HD       | | | | | | | |D| | | | | | |eol
-begin() const                                  HD       | | | | | | | |D| | | | | | |eol
-end() const                                    HD       | | | | | | | |D| | | | | | |eol
-rbegin()                                       HD       | | | | | | | | |D| | | | | |eol
-rend()                                         HD       | | | | | | | | |D| | | | | |eol
-rbegin() const                                 HD       | | | | | | | | |D| | | | | |eol
-rend() const                                   HD       | | | | | | | | |D| | | | | |eol
-fill( const value_type& )                      HD       | | | | | | | | | |X| | | | |eol
-swap( array<T,N>& )                            HD       | | | | | | | | | | |D| | | |eol
-operator==( const array<T,N>& ) const          HD       | | | | | | | | | | | |X| | |eol
-operator!=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
-operator<( const array<T,N>& ) const           HD       | | | | | | | | | | | | |X| |eol
-operator>( const array<T,N>& ) const           HD       | | | | | | | | | | | | | |X|eol
-operator<=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
-operator>=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
-operator>>( std::vector<value_type>& ) const   H        |X|X|X|X|X| |X|X|X|X|X|X|X|X|eol
-operator<<( std::vector<value_type>& )         H        | | | | | | | | | | | | | | |eol
-operator>>( std::array<value_type,N>& ) const  H  C++11 | | | | | | | | | | | | | | |eol
-operator<<( std::array<value_type,N>& )        H  C++11 | | | | | | | | | | | | | | |eol
-array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X|X|X|eol
-*/
 	std::cout << "Testing ecuda::array..." << std::endl;
 
 	std::vector<int> testResults;
@@ -205,11 +163,8 @@ array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X
 		devicePointers >> hostPointers;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
-std::cerr << "passed=" << ( passed ? "true" : "false" );
 		for( std::vector<ecuda::array<int,100>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
-std::cerr << "passed=" << ( passed ? "true" : "false" );
 		for( std::vector<ecuda::array<int,100>::const_pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceArray.data() ) passed = false;
-std::cerr << "passed=" << ( passed ? "true" : "false" );
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
@@ -300,7 +255,6 @@ std::cerr << "passed=" << ( passed ? "true" : "false" );
 	//
 	std::cerr << "Test 6" << std::endl;
 	{
-/*
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
 		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
@@ -313,7 +267,6 @@ std::cerr << "passed=" << ( passed ? "true" : "false" );
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
-*/ testResults.push_back( 0 );
 	}
 
 	//
