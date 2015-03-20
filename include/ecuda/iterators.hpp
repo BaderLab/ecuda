@@ -78,9 +78,12 @@ public:
 	typedef const reference const_reference;
 private:
 	pointer_type ptr;
+	friend class pointer_iterator<const T,PointerType,Category>; // to allow non-const -> const iterator conversion
 public:
 	HOST DEVICE pointer_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
 	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
+	template<typename T2>
+	HOST DEVICE pointer_iterator( const pointer_iterator<T2,PointerType,Category>& src ) : ptr(src.ptr) {}
 	HOST DEVICE virtual ~pointer_iterator() {}
 
 	HOST DEVICE inline pointer_iterator& operator++() { ++ptr; return *this; }
@@ -123,6 +126,12 @@ public:
 	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
 	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
 
+//	template<typename T2>
+//	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T2,PointerType,Category>& src ) {
+//		ptr = src.ptr;
+//		return *this;
+//	}
+
 };
 
 ///
@@ -155,9 +164,11 @@ public:
 	HOST DEVICE pointer_reverse_iterator() {} //: std::reverse_iterator<ParentIterator>() {}
 	HOST DEVICE pointer_reverse_iterator( ParentIterator parentIterator ) : parentIterator(parentIterator) {} // std::reverse_iterator<ParentIterator>( parentIterator ) {}
 	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : parentIterator(src.parentIterator) {} //std::reverse_iterator<ParentIterator>( src ) {}
+	template<class ParentIterator2>
+	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator<ParentIterator2>& src ) : parentIterator(src.base()) {}
 	HOST DEVICE virtual ~pointer_reverse_iterator() {}
 
-	ParentIterator base() const { return parentIterator; }
+	HOST DEVICE ParentIterator base() const { return parentIterator; }
 
 	HOST DEVICE inline pointer_reverse_iterator& operator++() { --parentIterator; return *this; }
 	HOST DEVICE inline pointer_reverse_iterator operator++( int ) {
@@ -215,45 +226,11 @@ public:
 //	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
 //	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
 
-/*
-	virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
-	virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator!=( other.parentIterator ); }
-	virtual const_reference operator*() const { return parentIterator.operator--(0).operator*(); }
-	virtual const_pointer operator->() const { return parentIterator.operator--(0).operator->(); }
-
-	virtual bool operator==( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator==( other.parentIterator ); }
-	virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator!=( other.parentIterator ); }
-	virtual reference operator*() { return parentIterator.operator--(0).operator*(); }
-	virtual pointer operator->() { return parentIterator.operator--(0).operator->(); }
-
-	inline ReverseIterator<ParentIterator>& operator++() { --parentIterator; return *this; }
-	inline ReverseIterator<ParentIterator> operator++( int x ) const {
-		ReverseIterator<ParentIterator> tmp(*this);
-		operator++();
-		return tmp;
-	}
-	//return ReverseIterator<ParentIterator>(*this).operator++(); }
-
-	inline ReverseIterator<ParentIterator>& operator--() { ++parentIterator; return *this; }
-	inline ReverseIterator<ParentIterator> operator--( int x ) const {
-		ReverseIterator<ParentIterator> tmp(*this);
-		operator--();
-		return tmp;
-	}
-	//return ReverseIterator<ParentIterator>(*this).operator--(); }
-
-	inline ReverseIterator<ParentIterator> operator+( int x ) { return ReverseIterator<ParentIterator>(*this).operator-(x); }
-	inline ReverseIterator<ParentIterator> operator-( int x ) { return ReverseIterator<ParentIterator>(*this).operator+(x); }
-	inline bool operator<( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator>=(other); }
-	inline bool operator>( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator<=(other); }
-	inline bool operator<=( const ReverseIterator<ParentIterator>& other ) const { return operator<(other) or operator==(other); }
-	inline bool operator>=( const ReverseIterator<ParentIterator>& other ) const { return operator>(other) or operator==(other); }
-	inline ReverseIterator<ParentIterator>& operator+=( int x ) { parentIterator.operator-=(x); return *this; }
-	inline ReverseIterator<ParentIterator>& operator-=( int x ) { parentIterator.operator+=(x); return *this; }
-
-	inline reference operator[]( int x ) { return parentIterator.at( -x ); }
-	inline const_reference operator[]( int x ) const { return parentIterator.at( -x ); }
-*/
+//	template<class ParentIterator2>
+//	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator<ParentIterator2>& src ) {
+//		parentIterator = src.parentIterator;
+//		return *this;
+//	}
 
 };
 

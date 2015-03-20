@@ -136,6 +136,14 @@ public:
 	template<std::size_t N2>
 	HOST array( const array<T,N2>& src );
 
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	/// \param src another container to be used as source to initialize the elements of the container with
+	///
+	HOST DEVICE array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
+	#endif
+
 	///
 	/// \brief Destructs the array object.
 	///
@@ -248,7 +256,7 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+	HOST __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <string>
 #include <cstdio>
 #include "../include/ecuda/array.hpp"
 
@@ -7,296 +8,453 @@
 #include <array>
 #endif
 
-template<typename T,std::size_t U>
-__global__ void multiplyVectors( ecuda::array<T,U> array1, const ecuda::array<T,U> array2 ) {
-	const int index = threadIdx.x;
-	array1[index] *= array2[index];
+template<typename T,std::size_t U> __global__
+void kernel_checkArrayProperties(
+	const ecuda::array<T,U> array,
+	ecuda::array<int,U> empties,
+	ecuda::array<typename ecuda::array<T,U>::size_type,U> sizes,
+	ecuda::array<typename ecuda::array<T,U>::const_pointer,U> pointers
+)
+{
+	const int threadNumber = threadIdx.x;
+	empties[threadNumber] = array.empty() ? 1 : 0;
+	sizes[threadNumber] = array.size();
+	pointers[threadNumber] = array.data();
 }
 
-template<typename T,std::size_t U>
-__global__ void testIterators( const ecuda::array<T,U> src, ecuda::array<T,U> dest ) {
-	const int index = threadIdx.x;
-	typename ecuda::array<T,U>::const_iterator srcIterator = src.begin();
-	srcIterator += index;
-	typename ecuda::array<T,U>::iterator destIterator = dest.begin();
-	destIterator += index;
-	for( ; srcIterator != src.end(); ++srcIterator ) *destIterator += *srcIterator;
+template<typename T,std::size_t U> __global__
+void kernel_checkArrayAccessors(
+	const ecuda::array<T,U> srcArray,
+	ecuda::array<T,U> srcArrayNonConst,
+	ecuda::array<T,U> destArray,
+	ecuda::array<T,U> srcFronts,
+	ecuda::array<T,U> srcBacks,
+	ecuda::array<T,U> srcFrontsNonConst,
+	ecuda::array<T,U> srcBacksNonConst
+)
+{
+	const int threadNumber = threadIdx.x;
+	destArray[threadNumber] = srcArray[threadNumber];
+	srcFronts[threadNumber] = srcArray.front();
+	srcBacks[threadNumber] = srcArray.back();
+	srcFrontsNonConst[threadNumber] = srcArrayNonConst.front();
+	srcBacksNonConst[threadNumber] = srcArrayNonConst.back();
 }
 
-template<typename T,std::size_t U>
-__global__ void testReverseIterators( const ecuda::array<T,U> src, ecuda::array<T,U> dest ) {
-	const int index = threadIdx.x;
-	typename ecuda::array<T,U>::const_reverse_iterator srcIterator = src.rbegin();
-	srcIterator += index;
-	typename ecuda::array<T,U>::reverse_iterator destIterator = dest.rbegin();
-	destIterator += index;
-	for( ; srcIterator != src.rend(); ++srcIterator ) *destIterator += *srcIterator;
+template<typename T,std::size_t U> __global__
+void kernel_checkDeviceIterators(
+	const ecuda::array<T,U> srcArray,
+	ecuda::array<T,U> destArray
+)
+{
+	typename ecuda::array<T,U>::const_iterator srcIterator = srcArray.begin();
+	typename ecuda::array<T,U>::iterator destIterator = destArray.begin();
+	for( ; srcIterator != srcArray.end() and destIterator != destArray.end(); ++srcIterator, ++destIterator )
+		*destIterator = *srcIterator;
 }
 
-template<typename T,std::size_t U> __global__ void testFill( ecuda::array<T,U> array ) { array.fill( 5 ); }
-template<typename T,std::size_t U> __global__ void testSwap( ecuda::array<T,U> array1, ecuda::array<T,U> array2 ) { array1.swap(array2); }
-template<typename T,std::size_t U> __global__ void testEquality( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 == array2 ? 1 : 0; }
-template<typename T,std::size_t U> __global__ void testGreaterThan( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 > array2 ? 1 : 0; }
-template<typename T,std::size_t U> __global__ void testLessThan( const ecuda::array<T,U> array1, const ecuda::array<T,U> array2, ecuda::array<int,1> result ) { result.front() = array1 < array2 ? 1 : 0; }
+template<typename T,std::size_t U> __global__
+void kernel_checkHostIterators(
+	typename ecuda::array<T,U>::const_iterator srcBegin,
+	typename ecuda::array<T,U>::const_iterator srcEnd,
+	typename ecuda::array<T,U>::iterator destBegin,
+	typename ecuda::array<T,U>::iterator destEnd
+)
+{
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin ) *destBegin = *srcBegin;
+}
 
-template<class Container1,class Container2>
-bool compare_containers( const Container1& c1, const Container2& c2 ) {
-	if( c1.size() != c2.size() ) return false;
-	typename Container1::const_iterator iter1 = c1.begin();
-	typename Container2::const_iterator iter2 = c2.begin();
-	for( ; iter1 != c1.end(); ++iter1, ++iter2 ) if( *iter1 != *iter2 ) return false;
-	return true;
+template<typename T,std::size_t U> __global__
+void kernel_checkDeviceReverseIterators(
+	const ecuda::array<T,U> srcArray,
+	ecuda::array<T,U> destArray
+)
+{
+	typename ecuda::array<T,U>::const_reverse_iterator srcIterator = srcArray.rbegin();
+	typename ecuda::array<T,U>::reverse_iterator destIterator = destArray.rbegin();
+	for( ; srcIterator != srcArray.rend() and destIterator != destArray.rend(); ++srcIterator, ++destIterator )
+		*destIterator = *srcIterator;
+}
+
+template<typename T,std::size_t U> __global__
+void kernel_checkHostReverseIterators(
+	typename ecuda::array<T,U>::const_reverse_iterator srcBegin,
+	typename ecuda::array<T,U>::const_reverse_iterator srcEnd,
+	typename ecuda::array<T,U>::reverse_iterator destBegin,
+	typename ecuda::array<T,U>::reverse_iterator destEnd
+)
+{
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin ) *destBegin = *srcBegin;
+}
+
+template<typename T,std::size_t U> __global__
+void kernel_testFillAndSwap(
+	ecuda::array<T,U> array1,
+	ecuda::array<T,U> array2
+)
+{
+	array1.fill( 3 );
+	array1.swap( array2 );
+}
+
+template<typename T,std::size_t U> __global__
+void kernel_testComparisonOperators(
+	const ecuda::array<T,U> array1,
+	const ecuda::array<T,U> array2,
+	ecuda::array<int,10> results
+)
+{
+	results[0] = array1 == array2 ? 0 : 1;
+	results[1] = array1 != array2 ? 1 : 0;
+	results[2] = array1 < array2 ? 1 : 0;
+	results[3] = array1 > array2 ? 0 : 1;
+	results[4] = array1 <= array2 ? 1 : 0;
+	results[5] = array1 >= array2 ? 0 : 1;
+	results[6] = array2 < array1 ? 0 : 1;
+	results[7] = array2 > array1 ? 1 : 0;
+	results[8] = array2 <= array1 ? 0 : 1;
+	results[9] = array2 >= array1 ? 1 : 0;
 }
 
 int main( int argc, char* argv[] ) {
 
+/*
+														|1|2|3|4|5|6|7|8|9|A|B|C|D|E|
+														+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+array( const value_type& )                     H        |X| | |X|X| | |X|X|X|X|X| | |eol
+template array( InputIterator, InputIterator ) H        | |X| | | |X|X|X|X| |X|X| | |eol
+array( std::initializer_list<T> il )           H  C++11 | | |X| | | | | | | | | | | |eol
+template array( const array<T,N2>& )           H        | | | |X|X|X| | | | | | | | |eol
+array( array<T,N>&& )                          HD C++11 | | | | | | | | | | | | | | |eol
+~array()                                       HD       |X|X|X|X|X|X|X|X|X|X| | | | |eol
+operator[]( size_type )                        D        | | | | | | |X| | | | | | | |eol
+operator[]( size_type ) const                  D        | | | | | | |X| | | | | | | |eol
+front()                                        D        | | | | | | | | | | | | | | |eol
+back()                                         D        | | | | | | | | | | | | | | |eol
+front() const                                  D        | | | | | | | | | | | | | | |eol
+back() const                                   D        | | | | | | | | | | | | | | |eol
+empty() const                                  HD       | | | | | | | | | | | | | | |eol
+size() const                                   HD       | | | | | | | | | | | | | | |eol
+max_size() const                               HD       | | | | | | | | | | | | | | |eol
+data()                                         HD       | | | | | | | | | | | | | | |eol
+data() const                                   HD       | | | | | | | | | | | | | | |eol
+begin()                                        HD       | | | | | | | |D| | | | | | |eol
+end()                                          HD       | | | | | | | |D| | | | | | |eol
+begin() const                                  HD       | | | | | | | |D| | | | | | |eol
+end() const                                    HD       | | | | | | | |D| | | | | | |eol
+rbegin()                                       HD       | | | | | | | | |D| | | | | |eol
+rend()                                         HD       | | | | | | | | |D| | | | | |eol
+rbegin() const                                 HD       | | | | | | | | |D| | | | | |eol
+rend() const                                   HD       | | | | | | | | |D| | | | | |eol
+fill( const value_type& )                      HD       | | | | | | | | | |X| | | | |eol
+swap( array<T,N>& )                            HD       | | | | | | | | | | |D| | | |eol
+operator==( const array<T,N>& ) const          HD       | | | | | | | | | | | |X| | |eol
+operator!=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
+operator<( const array<T,N>& ) const           HD       | | | | | | | | | | | | |X| |eol
+operator>( const array<T,N>& ) const           HD       | | | | | | | | | | | | | |X|eol
+operator<=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
+operator>=( const array<T,N>& ) const          HD       | | | | | | | | | | | | | | |eol
+operator>>( std::vector<value_type>& ) const   H        |X|X|X|X|X| |X|X|X|X|X|X|X|X|eol
+operator<<( std::vector<value_type>& )         H        | | | | | | | | | | | | | | |eol
+operator>>( std::array<value_type,N>& ) const  H  C++11 | | | | | | | | | | | | | | |eol
+operator<<( std::array<value_type,N>& )        H  C++11 | | | | | | | | | | | | | | |eol
+array<T,N>& operator=( const array<T,N>& )     D        | | | | | | | |X|X|X|X|X|X|X|eol
+*/
 	std::cout << "Testing ecuda::array..." << std::endl;
 
-	// fixed sized array with single value, simple copy device->host
+	std::vector<int> testResults;
+
+	//
+	// Test 1: default constructor, copy to host, and general info
+	//
 	{
 		ecuda::array<int,100> deviceArray( 3 ); // array filled with number 3
 		std::vector<int> hostVector;
 		deviceArray >> hostVector;
-		std::cout << "Single value device array copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
 		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
-		std::cout << "Single value device array copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		if( deviceArray.size() == 100 and hostVector.size() == deviceArray.size() ) {
+			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
+		}
+		// make sure device array memory is somewhere
+		if( !deviceArray.data() ) passed = false;
+		if( deviceArray.max_size() < deviceArray.size() ) passed = false;
+		if( deviceArray.empty() ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
-	// fixed sized array with many values, host->device, then device->host
+	//
+	// Test 2: information is correct on device
+	//
 	{
 		std::vector<int> hostVector( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
 		ecuda::array<int,100> deviceArray( hostVector.begin(), hostVector.end() );
-		hostVector.clear();
-		deviceArray >> hostVector;
-		std::cout << "Multiple value device array copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		ecuda::array<int,100> deviceEmpties( -1 );
+		ecuda::array<ecuda::array<int,100>::size_type,100> deviceSizes;
+		ecuda::array<ecuda::array<int,100>::const_pointer,100> devicePointers;
+		kernel_checkArrayProperties<<<1,100>>>( deviceArray, deviceEmpties, deviceSizes, devicePointers );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<int> hostEmpties( 100, -1 );
+		std::vector<ecuda::array<int,100>::size_type> hostSizes( 100 );
+		std::vector<ecuda::array<int,100>::const_pointer> hostPointers( 100 );
 		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != i ) passed = false;
-		std::cout << "Multiple value device array copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
+		for( std::vector<ecuda::array<int,100>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
+		for( std::vector<ecuda::array<int,100>::const_pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceArray.data() ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
-	// fixed sized array constructed with initializer list
+	//
+	// Test 3: construction using a C++11 intializer list
+	//
+	#ifdef __CPP11_SUPPORTED__
 	{
-		#ifdef __CPP11_SUPPORTED__
-		ecuda::array<int,5> deviceArray = { { 0, 1, 2, 3, 4 } };
-		std::array<int,5> hostArray;
+		ecuda::array<int,10> deviceArray( { 0,1,2,3,4,5,6,7,8,9 } );
+		std::array<int,10> hostArray;
 		deviceArray >> hostArray;
-		std::cout << "Multiple value device array constructed with initializer list         " << "\t" << ( deviceArray.size() == 5 ? "PASSED" : "FAILED" ) << std::endl;
 		bool passed = true;
-		for( std::array<int,5>::size_type i = 0; i < 5; ++i ) if( hostArray[i] != i ) passed = false;
-		std::cout << "Multiple value device array constructed with initializer list has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-		#else
-		std::cout << "Multiple value device array constructed with initializer list has correct size    " << "\t" << "NO C++11 SUPPORT" << std::endl;
-		std::cout << "Multiple value device array constructed with initializer list has correct contents" << "\t" << "NO C++11 SUPPORT" << std::endl;
-		#endif
+		for( std::array<int,10>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
+		std::reverse( hostArray.begin(), hostArray.end() );
+		deviceArray << hostArray;
+		std::fill( hostArray.begin(), hostArray.end(), 0 );
+		deviceArray >> hostArray;
+		for( std::array<int,10>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[hostArray.size()-1-i] != i ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
+	#else
+	testResults.push_back( -1 );
+	#endif
 
-	// two fixed sized arrays of different size, copied from smaller to larger
+	//
+	// Test 4: index accessors, front(), and back()
+	//
 	{
-		ecuda::array<int,5> deviceArray1( 3 ); // array filled with number 3
-		ecuda::array<int,10> deviceArray2( deviceArray1 );
-		std::vector<int> hostVector2;
-		deviceArray2 >> hostVector2;
-		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < deviceArray1.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
-		//for( std::vector<int>::size_type i = deviceArray1.size(); i < deviceArray2.size(); ++i ) if( hostVector2[i] != 0 ) passed = false;
-		std::cout << "Single value device arrays of different size copied smaller to larger has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-	}
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> destDeviceArray;
+		ecuda::array<int,100> deviceFronts( -1 ), deviceBacks( -1 ), deviceFrontsNonConst( -1 ), deviceBacksNonConst( -1 );
+		kernel_checkArrayAccessors<<<1,100>>>( srcDeviceArray, srcDeviceArray, destDeviceArray, deviceFronts, deviceBacks, deviceFrontsNonConst, deviceBacksNonConst );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 
-	// two fixed sized arrays of different size, copied from larger to smaller
-	{
-		ecuda::array<int,10> deviceArray1( 3 ); // array filled with number 3
-		ecuda::array<int,5> deviceArray2( deviceArray1 );
-		std::vector<int> hostVector2;
-		deviceArray2 >> hostVector2;
 		bool passed = true;
-		for( ecuda::array<int,5>::size_type i = 0; i < deviceArray2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
-		std::cout << "Single value device arrays of different size copied larger to smaller has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		std::vector<int> hostResults;
+
+		destDeviceArray >> hostResults;
+		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != i ) passed = false;
+		hostResults.clear();
+
+		deviceFronts >> hostResults;
+		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 0 ) passed = false;
+		hostResults.clear();
+
+		deviceBacks >> hostResults;
+		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 99 ) passed = false;
+		hostResults.clear();
+
+		deviceFrontsNonConst >> hostResults;
+		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 0 ) passed = false;
+		hostResults.clear();
+
+		deviceBacksNonConst >> hostResults;
+		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 99 ) passed = false;
+		//hostResults.clear();
+
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
 	//
+	// Test 5: device iterators
+	//
 	{
-		std::vector<int> hostVector( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
-		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> destDeviceArray;
+		kernel_checkDeviceIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
+		std::fill( hostArray.begin(), hostArray.end(), -1 );
+		destDeviceArray >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test 6: host iterators
+	//
+	{
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> destDeviceArray;
+		kernel_checkHostIterators<int,100><<<1,1>>>( srcDeviceArray.begin(), srcDeviceArray.end(), destDeviceArray.begin(), destDeviceArray.end() );
+		std::fill( hostArray.begin(), hostArray.end(), -1 );
+		destDeviceArray >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test 7: device reverse iterators
+	//
+	{
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> destDeviceArray;
+		kernel_checkDeviceReverseIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
+		std::fill( hostArray.begin(), hostArray.end(), -1 );
+		destDeviceArray >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test 8: host reverse iterators
+	//
+	{
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> destDeviceArray;
+		kernel_checkHostReverseIterators<int,100><<<1,1>>>( srcDeviceArray.rbegin(), srcDeviceArray.rend(), destDeviceArray.rbegin(), destDeviceArray.rend() );
+		std::fill( hostArray.begin(), hostArray.end(), -1 );
+		destDeviceArray >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != i ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test 9: host fill and swap
+	//
+	{
+		ecuda::array<int,100> deviceArray1;
+		ecuda::array<int,100> deviceArray2;
+		deviceArray1.fill( 3 );
+		deviceArray1.swap( deviceArray2 );
+		std::vector<int> hostArray;
+		deviceArray2 >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != 3 ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test A: device fill and swap
+	//
+	{
+		ecuda::array<int,100> deviceArray1;
+		ecuda::array<int,100> deviceArray2;
+		kernel_testFillAndSwap<<<1,1>>>( deviceArray1, deviceArray2 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<int> hostArray;
+		deviceArray2 >> hostArray;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != 3 ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test B: host comparison operators
+	//
+	{
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> deviceArray1( hostArray.begin(), hostArray.end() );
 		ecuda::array<int,100> deviceArray2( deviceArray1 );
-		hostVector.clear();
-		deviceArray2 >> hostVector;
-		std::cout << "Multiple value device array mirrored on device and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
 		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != i ) passed = false;
-		std::cout << "Multiple value device array mirrored on device and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		if( !deviceArray1.operator==(deviceArray2) ) passed = false;
+		if( deviceArray1.operator!=(deviceArray2) ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i+10;
+		deviceArray2 << hostArray;
+		if( !deviceArray1.operator< (deviceArray2) ) passed = false;
+		if(  deviceArray1.operator> (deviceArray2) ) passed = false;
+		if( !deviceArray1.operator<=(deviceArray2) ) passed = false;
+		if(  deviceArray1.operator>=(deviceArray2) ) passed = false;
+		if(  deviceArray2.operator< (deviceArray1) ) passed = false;
+		if( !deviceArray2.operator> (deviceArray1) ) passed = false;
+		if( !deviceArray2.operator<=(deviceArray1) ) passed = false;
+		if(  deviceArray2.operator>=(deviceArray1) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
 	//
-	{
-		std::vector<int> hostVector( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
-		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
-		ecuda::array<int,100> deviceArray2( hostVector.rbegin(), hostVector.rend() );
-
-		// multiply arrays on GPU
-		dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
-		multiplyVectors<int,100><<<dimGrid,dimBlock>>>( deviceArray1, deviceArray2 );
-		CUDA_CHECK_ERRORS();
-		CUDA_CALL( cudaDeviceSynchronize() );
-
-		hostVector.clear();
-		deviceArray1 >> hostVector;
-		std::cout << "Two multiple value device arrays multiplied on device and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
-		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != (i*(hostVector.size()-i-1)) ) passed = false;
-		std::cout << "Two multiple value device arrays multiplied on device and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-	}
-
+	// Test C: device comparison operators
 	//
 	{
-		std::vector<int> hostVector( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
-		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
-		ecuda::array<int,100> deviceArray2( 0 );
+		std::vector<int> hostArray( 100 );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
+		ecuda::array<int,100> deviceArray1( hostArray.begin(), hostArray.end() );
+		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i+10;
+		ecuda::array<int,100> deviceArray2( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,10> deviceResults( -1 );
 
-		// take moving sum of vectors using only iterators
-		dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
-		testIterators<int,100><<<dimGrid,dimBlock>>>( deviceArray1, deviceArray2 );
+		kernel_testComparisonOperators<<<1,1>>>( deviceArray1, deviceArray2, deviceResults );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		// generate answer key
-		std::vector<int> answerVector( 100, 0 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) {
-			for( std::vector<int>::size_type j = i; j < hostVector.size(); ++j ) {
-				answerVector[i] += hostVector[j];
-			}
-		}
-
-		hostVector.clear();
-		deviceArray2 >> hostVector;
-		std::cout << "Multiple value device array used to generate running sum using iterators and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
+		std::vector<int> hostResults;
+		deviceResults >> hostResults;
 		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != answerVector[i] ) passed = false;
-		std::cout << "Multiple value device array used to generate running sum using iterators and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
+		for( std::vector<bool>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 1 ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
-	//
-	{
-		std::vector<int> hostVector( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
-		ecuda::array<int,100> deviceArray1( hostVector.begin(), hostVector.end() );
-		ecuda::array<int,100> deviceArray2( 0 );
+	const std::string outputText =
+"\
+........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+........................................................|1|2|3|4|5|6|7|8|9|A|B|C|D|\n\
+........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+array( const value_type& )                     H        |X|X| |X| | | | |X|X| |X| |eol\n\
+template array( InputIterator, InputIterator ) H        | |X| |X|X|X|X|X| | |X|X| |eol\n\
+array( std::initializer_list<T> il )           H  C++11 | | |X| | | | | | | | | | |eol\n\
+template array( const array<T,N2>& )           H        | | | | | | | | | | |X| | |eol\n\
+array( array<T,N>&& )                          HD C++11 | | | | | | | | | | | | |X|eol\n\
+~array()                                       HD       |X|X|X|X|X|X|X|X|X|X| | | |eol\n\
+operator[]( size_type )                        D        | | | |X| | | | | | | |X| |eol\n\
+operator[]( size_type ) const                  D        | | | |X| | | | | | | | | |eol\n\
+front()                                        D        | | | |X| | | | | | | | | |eol\n\
+back()                                         D        | | | |X| | | | | | | | | |eol\n\
+front() const                                  D        | | | |X| | | | | | | | | |eol\n\
+back() const                                   D        | | | |X| | | | | | | | | |eol\n\
+empty() const                                  HD       |H|D| | | | | | | | | | | |eol\n\
+size() const                                   HD       |H|D| | | | | | | | | | | |eol\n\
+max_size() const                               H        |X| | | | | | | | | | | | |eol\n\
+data()                                         HD       |H| | | | | | | | | | | | |eol\n\
+data() const                                   HD       | |D| | | | | | | | | | | |eol\n\
+begin()                                        HD       | | | | |D|H| | | | | | | |eol\n\
+end()                                          HD       | | | | |D|H| | | | | | | |eol\n\
+begin() const                                  HD       | | | | |D|H| | | | | | | |eol\n\
+end() const                                    HD       | | | | |D|H| | | | | | | |eol\n\
+rbegin()                                       HD       | | | | | | |D|H| | | | | |eol\n\
+rend()                                         HD       | | | | | | |D|H| | | | | |eol\n\
+rbegin() const                                 HD       | | | | | | |D|H| | | | | |eol\n\
+rend() const                                   HD       | | | | | | |D|H| | | | | |eol\n\
+fill( const value_type& )                      HD       | | | | | | | | |H|D| | | |eol\n\
+swap( array<T,N>& )                            HD       | | | | | | | | |H|D| | | |eol\n\
+operator==( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator!=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator<( const array<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
+operator>( const array<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
+operator<=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator>=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator>>( std::vector<value_type>& ) const   H        |X|X| |X|X|X|X|X|X|X| |X| |eol\n\
+operator<<( std::vector<value_type>& )         H        | |X| | | | | | | | |X|X| |eol\n\
+operator>>( std::array<value_type,N>& ) const  H  C++11 | | |X| | | | | | | | | | |eol\n\
+operator<<( std::array<value_type,N>& )        H  C++11 | | |X| | | | | | | | | | |eol\n\
+array<T,N>& operator=( const array<T,N>& )     D        | |X| | |X|X|X|X|X|X| | | |eol\n\
+........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+........................................................|";
 
-		// take moving sum of vectors using only iterators
-		dim3 dimBlock( 100, 1 ), dimGrid( 1, 1 );
-		testReverseIterators<int,100><<<dimGrid,dimBlock>>>( deviceArray1, deviceArray2 );
-		CUDA_CHECK_ERRORS();
-		CUDA_CALL( cudaDeviceSynchronize() );
-
-		// generate answer key
-		std::vector<int> answerVector( 100, 0 );
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) {
-			for( std::vector<int>::size_type j = i; j < hostVector.size(); ++j ) {
-				answerVector[answerVector.size()-1-i] += hostVector[answerVector.size()-1-j];
-			}
-		}
-
-		hostVector.clear();
-		deviceArray2 >> hostVector;
-		std::cout << "Multiple value device array used to generate running sum using reverse iterators and copied to host vector has correct size    " << "\t" << ( hostVector.size() == 100 ? "PASSED" : "FAILED" ) << std::endl;
-		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != answerVector[i] ) passed = false;
-		std::cout << "Multiple value device array used to generate running sum using reverse iterators and copied to host vector has correct contents" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-	}
-
-	{
-		ecuda::array<int,100> deviceArray;
-		deviceArray.fill( 3 );
-		std::vector<int> hostVector( 100 );
-		deviceArray >> hostVector;
-		{
-			bool passed = true;
-			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
-			std::cout << "Device array fill operation performed on host  " << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-		}
-		dim3 dimBlock( 1, 1 ), dimGrid( 1, 1 );
-		testFill<int,100><<<dimGrid,dimBlock>>>( deviceArray );
-		CUDA_CHECK_ERRORS();
-		CUDA_CALL( cudaDeviceSynchronize() );
-		deviceArray >> hostVector;
-		{
-			bool passed = true;
-			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 5 ) passed = false;
-			std::cout << "Device array fill operation performed on device" << "\t" << ( passed ? "PASSED" : "FAILED" ) << std::endl;
-		}
-	}
-
-	{
-		std::vector<int> hostVector1( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
-		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
-		{
-			ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
-			ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
-			deviceArray1.swap( deviceArray2 );
-			std::vector<int> resultHostVector1, resultHostVector2;
-			deviceArray1 >> resultHostVector1;
-			deviceArray2 >> resultHostVector2;
-			std::cout << "Device array swap operation performed on host  " << "\t" << ( compare_containers(hostVector1,resultHostVector2) and compare_containers(hostVector2,resultHostVector1) ? "PASSED" : "FAILED" ) << std::endl;
-		}
-		{
-			ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
-			ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
-			testSwap<int,100><<<1,1>>>( deviceArray1, deviceArray2 );
-			CUDA_CHECK_ERRORS();
-			CUDA_CALL( cudaDeviceSynchronize() );
-			std::vector<int> resultHostVector1, resultHostVector2;
-			deviceArray1 >> resultHostVector1;
-			deviceArray2 >> resultHostVector2;
-			std::cout << "Device array swap operation performed on device" << "\t" << ( compare_containers(hostVector1,resultHostVector2) and compare_containers(hostVector2,resultHostVector1) ? "PASSED" : "FAILED" ) << std::endl;
-		}
-	}
-
-	{
-		std::vector<int> hostVector1( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
-		std::vector<int> hostVector2( hostVector1.begin(), hostVector1.end() );
-		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
-		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
-		ecuda::array<int,1> deviceResultArray( 0 );
-		testEquality<int,100><<<1,1>>>( deviceArray1, deviceArray2, deviceResultArray );
-		std::vector<int> hostResultArray;
-		deviceResultArray >> hostResultArray;
-		std::cout << "operator== on device\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
-		std::cout << "operator== on host  \t" << ( deviceArray1 == deviceArray2 ? "PASSED" : "FAILED" ) << std::endl;
-	}
-
-	{
-		std::vector<int> hostVector1( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
-		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
-		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
-		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
-		ecuda::array<int,1> deviceResultArray( 0 );
-		testLessThan<int,100><<<1,1>>>( deviceArray1, deviceArray2, deviceResultArray );
-		std::vector<int> hostResultArray;
-		deviceResultArray >> hostResultArray;
-		std::cout << "operator< on device\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
-		std::cout << "operator< on host  \t" << ( deviceArray1 < deviceArray2 ? "PASSED" : "FAILED" ) << std::endl;
-	}
-
-	{
-		std::vector<int> hostVector1( 100 );
-		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) hostVector1[i] = i;
-		std::vector<int> hostVector2( hostVector1.rbegin(), hostVector1.rend() );
-		ecuda::array<int,100> deviceArray1( hostVector1.begin(), hostVector1.end() );
-		ecuda::array<int,100> deviceArray2( hostVector2.begin(), hostVector2.end() );
-		ecuda::array<int,1> deviceResultArray( 0 );
-		testGreaterThan<int,100><<<1,1>>>( deviceArray2, deviceArray1, deviceResultArray );
-		std::vector<int> hostResultArray;
-		deviceResultArray >> hostResultArray;
-		std::cout << "operator> on device\t" << ( hostResultArray.front() ? "PASSED" : "FAILED" ) << std::endl;
-		std::cout << "operator> on host  \t" << ( deviceArray2 > deviceArray1 ? "PASSED" : "FAILED" ) << std::endl;
-	}
+	std::cout << outputText;
+	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] ? "P" : "F" ) << "|";
+	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 
