@@ -139,14 +139,22 @@ public:
 	#endif
 
 	///
-	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
+	/// \brief Constructs an array with a shallow copy of each of the elements in src.
+	///
+	/// Be careful to note that a shallow copy means that only the pointer to the device memory
+	/// that holds the elements is copied in the newly constructed container.  This allows
+	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
+	/// of the container is required in host code, use the assignment operator. For example:
+	///
+	/// <code>
+	/// ecuda::array<int,10> arr( 3 ); // fill array with 3s
+	/// ecuda::array<int,10> newArr( arr ); // shallow copy
+	/// ecuda::array<int,10> newArr; newArr = arr; // deep copy
+	/// </code>
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST array( const array& src ) : deviceMemory(src.deviceMemory) {
-//		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
-//		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
-	}
+	HOST array( const array& src ) : deviceMemory(src.deviceMemory) {}
 	
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
@@ -557,8 +565,10 @@ public:
 	///
 	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
 		#ifdef __CUDA_ARCH__
+		// shallow copy if called from device
 		deviceMemory = other.deviceMemory;
 		#else
+		// deep copy if called from host
 		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
 		#endif
