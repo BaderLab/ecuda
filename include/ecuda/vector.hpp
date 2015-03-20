@@ -83,8 +83,8 @@ public:
 
 	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
 	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
-	typedef std::reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -143,18 +143,28 @@ public:
 	}
 
 	///
-	/// \brief Copy constructor. Constructs the container with the copy of the contents of the other.
-	/// \param src another container to be used as source to initialize the elements of the container with
+	/// \brief Constructs a vector with a shallow copy of each of the elements in src.
 	///
-	HOST vector( const vector<T>& src ) : n(src.n), m(src.m),
+	/// Be careful to note that a shallow copy means that only the pointer to the device memory
+	/// that holds the elements is copied in the newly constructed container.  This allows
+	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
+	/// of the container is required in host code, use the assignment operator. For example:
+	///
+	/// <code>
+	/// ecuda::vector<int> vec( 10, 3 ); // create a vector of size 10 filled with 3s
+	/// ecuda::vector<int> newVec( vec ); // shallow copy
+	/// ecuda::vector<int> newVec; newVec = vec; // deep copy
+	/// </code>
+	///
+	/// \param src Another vector object of the same type, whose contents are copied.
+	///
+	HOST vector( const vector<T>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory),
 		#ifdef __CPP11_SUPPORTED__
 		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 		#else
 		allocator(src.allocator)
 		#endif
 	{
-		deviceMemory = device_ptr<T>( this->allocator.allocate(m) );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
 	}
 
 	///
@@ -296,7 +306,7 @@ public:
 	/// \param newSize new size of the container
 	/// \param value the value to initialize the new elements with
 	///
-	HOST void resize( size_type newSize, value_type& value = value_type() ) {
+	HOST void resize( size_type newSize, const value_type& value = value_type() ) {
 		if( size() == newSize ) return;
 		if( size() > newSize ) { n = newSize; return; }
 		growMemory( newSize ); // make sure enough device memory is allocated
@@ -393,11 +403,31 @@ public:
 	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
 
 	///
+	/// \brief Returns pointer to the underlying array serving as element storage.
+	///
+	/// The pointer is such that range [data(),data()+size()) is always a valid
+	/// range, even if the container is empty.
+	///
+	/// \returns Pointer to the underlying element storage.
+	///
+	HOST DEVICE pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
+
+	///
+	/// \brief Returns pointer to the underlying array serving as element storage.
+	///
+	/// The pointer is such that range [data(),data()+size()) is always a valid
+	/// range, even if the container is empty.
+	///
+	/// \returns Pointer to the underlying element storage.
+	///
+	HOST DEVICE const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+
+	///
 	/// \brief Replaces the contents of the container.
 	/// \param newSize the new size of the container
 	/// \param value the value to initialize elements of the container with
 	///
-	HOST void assign( size_type newSize, value_type& value = value_type() ) {
+	HOST void assign( size_type newSize, const value_type& value = value_type() ) {
 		growMemory(newSize); // make sure enough device memory is allocated
 		std::vector<T> v( newSize, value );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
@@ -653,7 +683,7 @@ public:
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const { return allocator_type(); }
+	HOST inline allocator_type get_allocator() const { return allocator; }
 
 	///
 	/// \brief Requests the removal of unused capacity.
@@ -777,11 +807,20 @@ public:
 	}
 
 	// critical function used to bridge host->device code
-	DEVICE vector<T,Alloc>& operator=( const vector<T>& other ) {
+	HOST DEVICE vector<T,Alloc>& operator=( const vector<T>& other ) {
+		#ifdef __CUDA_ARCH__
+		// shallow copy if called from device
 		n = other.n;
+		m = other.m;
 		deviceMemory = other.deviceMemory;
+		#else
+		// deep copy if called from host
+		deviceMemory = device_ptr<value_type>( this->allocator.allocate(m) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
+		#endif
 		return *this;
 	}
+
 
 };
 
