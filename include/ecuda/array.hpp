@@ -123,6 +123,11 @@ public:
 	HOST array( std::initializer_list<T> il );
 	#endif
 
+	HOST array( const array& src ) {
+		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
+	}
+
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
 	///
