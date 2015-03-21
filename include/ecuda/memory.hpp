@@ -161,6 +161,22 @@ public:
 
 };
 
+/*
+template<typename T>
+class device_pitched_ptr : public device_ptr {
+
+public:
+	typedef typename device_ptr<T>::element_type element_type; //!< data type represented in allocated memory
+	typedef typename device_ptr<T>::pointer pointer; //!< data type pointer
+	typedef typename device_ptr<T>::pointer reference; //!< data type reference
+	typedef typename device_ptr<T>::pointer size_type; //!< size type for pointer arithmetic and reference counting
+
+private:
+	size_type pitch; //!< padded memory width in bytes
+
+};
+*/
+
 ///
 /// A pointer class that implements all pointer-compatible operators for strided memory.
 ///
