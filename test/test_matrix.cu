@@ -28,8 +28,15 @@ typedef unsigned char uint8_t;
 template<typename T,std::size_t U>
 __global__
 void fetchRow( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
-	typename ecuda::matrix<T>::const_row_type row = matrix[0];
+	typename ecuda::matrix<T>::const_row_type row = matrix[1];
 	for( typename ecuda::matrix<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
+}
+
+template<typename T,std::size_t U>
+__global__
+void fetchColumn( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
+	typename ecuda::matrix<T>::const_column_type column = matrix.get_column(1);
+	for( typename ecuda::matrix<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
 }
 
 int main( int argc, char* argv[] ) {
@@ -73,6 +80,21 @@ int main( int argc, char* argv[] ) {
 	std::cout << "ROW";
 	for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
 	std::cout << std::endl;
+
+	ecuda::array<Coordinate,5> deviceColumn;
+
+	fetchColumn<<<1,1>>>( deviceMatrix, deviceColumn );
+	CUDA_CHECK_ERRORS();
+	CUDA_CALL( cudaDeviceSynchronize() );
+
+	std::vector<Coordinate> hostColumn;
+	deviceColumn >> hostColumn;
+
+	std::cout << "COLUMN";
+	for( std::vector<Coordinate>::size_type i = 0; i < hostColumn.size(); ++i ) std::cout << hostColumn[i];
+	std::cout << std::endl;
+
+
 
 	return EXIT_SUCCESS;
 
