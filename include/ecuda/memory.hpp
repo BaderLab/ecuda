@@ -286,17 +286,17 @@ private:
 	size_type distance_to_pad; // distance of current pointer from the padding, expressed in units of element_type
 
 private:
-	void jump_forward_pad_length() {
+	HOST DEVICE void jump_forward_pad_length() {
 		typename cast_to_char<pointer>::type char_ptr = reinterpret_cast<typename cast_to_char<pointer>::type>(ptr);
 		char_ptr += pad_length;
 		ptr = reinterpret_cast<pointer>(char_ptr);
 	}
-	void jump_backwards_pad_length() {
+	HOST DEVICE void jump_backwards_pad_length() {
 		typename cast_to_char<pointer>::type char_ptr = reinterpret_cast<typename cast_to_char<pointer>::type>(ptr);
 		char_ptr -= pad_length;
 		ptr = reinterpret_cast<pointer>(char_ptr);
 	}
-	inline typename cast_to_char<pointer>::type to_char_ptr() const { return reinterpret_cast<typename cast_to_char<pointer>::type>(ptr); }
+	HOST DEVICE inline typename cast_to_char<pointer>::type to_char_ptr() const { return reinterpret_cast<typename cast_to_char<pointer>::type>(ptr); }
 
 public:
 	HOST DEVICE pitched_ptr( pointer p = pointer(), const size_type data_length = 1, const size_type pitch_in_bytes = sizeof(element_type), const size_type pointer_position = 0 ) :

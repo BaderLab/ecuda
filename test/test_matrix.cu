@@ -102,7 +102,7 @@ int main( int argc, char* argv[] ) {
 	std::cout << std::endl;
 
 	ecuda::array<Coordinate,50> deviceLinearMatrix;
-	fetchColumn<<<1,1>>>( deviceMatrix, deviceLinearMatrix );
+	fetchAll<<<1,1>>>( deviceMatrix, deviceLinearMatrix );
 	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 
