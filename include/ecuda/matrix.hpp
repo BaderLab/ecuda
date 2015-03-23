@@ -75,6 +75,8 @@ public:
 
 	typedef pointer_iterator< value_type, pitched_ptr<value_type> > iterator;
 	typedef pointer_iterator< const value_type, pitched_ptr<const value_type> > const_iterator;
+	typedef pointer_reverse_iterator<iterator> reverse_iterator;
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator;
 
 
 private:
@@ -127,6 +129,11 @@ public:
 	HOST DEVICE inline iterator end() { return iterator( pitched_ptr<value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
 	HOST DEVICE inline const_iterator begin() const { return const_iterator( pitched_ptr<const value_type>( data(), column_size(), pitch, 0 ) ); }
 	HOST DEVICE inline const_iterator end() const { return const_iterator( pitched_ptr<const value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
+
+	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), column_size() ); }
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), row_size() ); }

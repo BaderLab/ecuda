@@ -43,7 +43,7 @@ template<typename T,std::size_t U>
 __global__
 void fetchAll( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
 	unsigned index = 0;
-	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) array[index] = *iter;
+	for( typename ecuda::matrix<T>::const_reverse_iterator iter = matrix.rbegin(); iter != matrix.rend(); ++iter, ++index ) array[index] = *iter;
 }
 
 int main( int argc, char* argv[] ) {
