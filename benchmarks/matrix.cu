@@ -44,7 +44,7 @@ template<typename T>
 __global__
 void manipulateMatrix( ecuda::matrix< coord_t<T> > input ) {
 	const int row = blockIdx.x*blockDim.x+threadIdx.x;
-	if( row < input.row_size() ) {
+	if( row < input.number_rows() ) {
 //printf( "row[%02i]=%0.05f %0.05f %02i\n", row, input[row].front().x, input[row].front().y, input.column_size() );
 //coord_t<T>* ptr = &input[row].front();
 //printf( "row[%02i]=%0.05f %0.05f %02i\n", row, ptr[input.column_size()-1].x, ptr[input.column_size()-1].y, input.column_size() );

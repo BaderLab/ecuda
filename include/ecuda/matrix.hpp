@@ -73,10 +73,10 @@ public:
 	typedef contiguous_memory_proxy< const value_type, const_pointer > const_row_type; //!< matrix const row container type
 	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_column_type; //!< matrix column container type
 
-	typedef pointer_iterator< value_type, pitched_ptr<value_type> > iterator;
-	typedef pointer_iterator< const value_type, pitched_ptr<const value_type> > const_iterator;
-	typedef pointer_reverse_iterator<iterator> reverse_iterator;
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef pointer_iterator< value_type, pitched_ptr<value_type> > iterator; //!< iterator type
+	typedef pointer_iterator< const value_type, pitched_ptr<const value_type> > const_iterator; //!< const iterator type
+	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 
 private:
@@ -101,9 +101,17 @@ public:
 
 	HOST DEVICE virtual ~matrix() {}
 
+	HOST inline allocator_type get_allocator() const { return allocator; }
+	HOST DEVICE inline size_type get_pitch() const { return pitch; }
+
 	template<class RandomAccessIterator>
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end );
 
+	/*
+	 * Deprecating this function since the STL standard seems to specify that the at() accessor
+	 * must implement range checking that throws an exception on failure.  Since exceptions are
+	 * not supported within a CUDA kernel, this cannot be satisfied.
+	 *
 	DEVICE inline reference at( size_type rowIndex, size_type columnIndex ) {
 		//if( rowIndex >= row_size() ) throw std::out_of_range( "ecuda::matrix::at() rowIndex parameter is out of range" );	
 		//if( columnIndex >= column_size() ) throw std::out_of_range( "ecuda::matrix::at() columnIndex parameter is out of range" );	
@@ -117,35 +125,78 @@ public:
 		return *allocator.address( data(), rowIndex, columnIndex, pitch ); 
 	}
 	DEVICE inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
+	*/
 
-	HOST DEVICE inline size_type size() const { return numberRows*numberColumns; }
-	HOST DEVICE inline size_type row_size() const { return numberRows; }
-	HOST DEVICE inline size_type column_size() const { return numberColumns; }
-	HOST DEVICE inline size_type get_pitch() const { return pitch; }
+	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
+	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
+
+	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
+	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
+
+	DEVICE inline reference front() { return *data(); }
+	DEVICE inline reference back() { return *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
+	DEVICE inline const_reference front() const { return *data(); }
+	DEVICE inline const_reference back() const { return *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
 	HOST DEVICE inline T* data() { return deviceMemory.get(); }
 	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
 
-	HOST DEVICE inline iterator begin() { return iterator( pitched_ptr<value_type>( data(), column_size(), pitch, 0 ) ); }
-	HOST DEVICE inline iterator end() { return iterator( pitched_ptr<value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
-	HOST DEVICE inline const_iterator begin() const { return const_iterator( pitched_ptr<const value_type>( data(), column_size(), pitch, 0 ) ); }
-	HOST DEVICE inline const_iterator end() const { return const_iterator( pitched_ptr<const value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
+	HOST DEVICE inline iterator begin() { return iterator( pitched_ptr<value_type>( data(), number_columns(), pitch, 0 ) ); }
+	HOST DEVICE inline iterator end() { return iterator( pitched_ptr<value_type>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch, 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator( pitched_ptr<const value_type>( data(), number_columns(), pitch, 0 ) ); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator( pitched_ptr<const value_type>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch, 0 ) ); }
 
 	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
 	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
 	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
 	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
-	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), column_size() ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), row_size() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), column_size() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), row_size() ); }
-	//HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( deviceMemory.get(), column_size() ); }
-	//HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( strided_ptr<value_type,1>( deviceMemory.get(), get_pitch() ), row_size() ); }
+	HOST DEVICE inline bool empty() const { return !number_rows() or !number_columns(); }
+	HOST DEVICE inline size_type size() const { return number_rows()*number_columns(); }
+	///
+	/// \brief Returns the maximum number of elements the container is able to hold due to system
+	/// or library implementation limitations.
+	///
+	/// \returns Maximum number of elements.
+	///
+	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+	//HOST DEVICE inline size_type number_rows() const { return numberRows; }
+	//HOST DEVICE inline size_type number_columns() const { return numberColumns; }
+	HOST DEVICE inline size_type number_rows() const { return numberRows; }
+	HOST DEVICE inline size_type number_columns() const { return numberColumns; }
 
-	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
-	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
+	///
+	/// \brief Assigns a given value to all elements in the container.
+	///
+	/// \param value the value to assign to the elements
+	///
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector<value_type> v( number_columns(), value );
+		for( size_type i = 0; i < number_rows(); ++i )
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
+		#endif
+	}
 
-	HOST inline allocator_type get_allocator() const { return allocator; }
+	HOST matrix<value_type> excise( const size_type offsetRow, const size_type offsetColumn, const size_type sizeRow, const size_type sizeColumn ) {
+		if( offsetRow >= number_rows() ) throw std::out_of_range( "ecuda::matrix::excise offsetRow argument out of range" );
+		if( offsetColumn >= number_columns() ) throw std::out_of_range( "ecuda::matrix::excise offsetColumn argument out of range" );
+		if( (offsetRow+sizeRow) > number_rows() ) throw std::out_of_range( "ecuda::matrix::excise sizeRow argument out of range" );
+		if( (offsetColumn+sizeColumn) > number_columns() ) throw std::out_of_range( "ecuda::matrix::excise sizeColumn argument out of range" );
+		ecuda::matrix<value_type,allocator_type> matrix( sizeRow, sizeColumn, value_type(), get_allocator() );
+		for( size_type i = 0; i < sizeRow; ++i ) {
+			CUDA_CALL( cudaMemcpy<value_type>(
+						matrix.allocator.address( matrix.data(), i, 0, matrix.pitch ),
+						allocator.address( data(), offsetRow+i, offsetColumn, pitch ),
+						sizeColumn,
+						cudaMemcpyDeviceToDevice
+			) );
+		}
+		return matrix;
+	}
 
 	// critical function used to bridge host->device code
 	HOST DEVICE matrix<T>& operator=( const matrix<T>& other ) {
@@ -173,7 +224,7 @@ public:
 	}
 
 	HOST void resize( const size_type numberRows, const size_type numberColumns ) {
-		if( row_size() == numberRows and column_size() == numberColumns ) return; // no resize needed
+		if( number_rows() == numberRows and number_columns() == numberColumns ) return; // no resize needed
 		// allocate memory
 		this->numberRows = numberRows;
 		this->numberColumns = numberColumns;
@@ -226,11 +277,11 @@ HOST void matrix<T,Alloc>::assign( RandomAccessIterator begin, RandomAccessItera
 	std::size_t n = end-begin;
 	if( n > size() ) n = size();
 	RandomAccessIterator current = begin;
-	for( std::size_t i = 0; i < n; i += column_size(), current += column_size() ) {
-		std::size_t len = column_size();
+	for( std::size_t i = 0; i < n; i += number_columns(), current += number_columns() ) {
+		std::size_t len = number_columns();
 		if( i+len > size() ) len = size()-i;
 		std::vector<T> row( current, current+len );
-		CUDA_CALL( cudaMemcpy<T>( allocator.address( deviceMemory.get(), i/column_size(), 0, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<T>( allocator.address( deviceMemory.get(), i/number_columns(), 0, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
 	}
 }
 

@@ -66,12 +66,19 @@ public:
 	typedef std::ptrdiff_t difference_type;
 	typedef std::size_t size_type;
 
-	typedef contiguous_memory_proxy<value_type> xy_type;
-	typedef contiguous_memory_proxy<const value_type> const_xy_type;
-	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > xz_type;
-	typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_xz_type;
-	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > yz_type;
-	typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_yz_type;
+	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > row_type;
+	typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > column_type;
+	typedef contiguous_memory_proxy< value_type> depth_type;
+	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_row_type;
+	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_column_type;
+	typedef contiguous_memory_proxy< const value_type> const_depth_type;
+
+	//typedef contiguous_memory_proxy<value_type> xy_type;
+	//typedef contiguous_memory_proxy<const value_type> const_xy_type;
+	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > xz_type;
+	//typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_xz_type;
+	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > yz_type;
+	//typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_yz_type;
 	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
 	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
 	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
@@ -181,6 +188,10 @@ public:
 	DEVICE inline const_reference at( const size_type index ) const { return at( index/(numberColumns*numberDepths), (index % (numberColumns*numberDepths))/numberDepths, (index % (numberColumns*numberDepths)) % numberDepths ); }
 	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+
+	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) { return row_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() ); }
+	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) { return column_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), rowIndex, depthIndex, pitch ), pitch ), column_size() ); }
+	HOST DEVICE inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) { return depth_type( allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, 0, pitch ), depth_size() ); }
 
 	HOST DEVICE inline slice_type get_row( const size_type rowIndex ) { return slice_type( allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch ), column_size(), depth_size(), get_pitch() ); }
 	HOST DEVICE inline const_slice_type get_row( const size_type rowIndex ) const { return const_slice_type( allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch ), column_size(), depth_size(), get_pitch() ); }
