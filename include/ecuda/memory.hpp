@@ -177,6 +177,10 @@ private:
 };
 */
 
+template<typename T> struct cast_to_char;
+template<typename T> struct cast_to_char<T*> { typedef char* type; };
+template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
+
 ///
 /// A pointer class that implements all pointer-compatible operators for strided memory.
 ///
@@ -198,12 +202,13 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 private:
-	char* ptr;
+	typename cast_to_char<pointer>::type ptr;
+	//char* ptr;
 	//pointer ptr;
 	size_type stride;
 
 public:
-	HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(reinterpret_cast<char*>(p)), stride(stride*StrideBytes) {}
+	HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(reinterpret_cast<typename cast_to_char<pointer>::type>(p)), stride(stride*StrideBytes) {}
 	HOST DEVICE strided_ptr( const strided_ptr<T,StrideBytes>& src ) : ptr(src.ptr), stride(src.stride) {}
 	//template<typename U,std::size_t StrideBytes2>
 	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
