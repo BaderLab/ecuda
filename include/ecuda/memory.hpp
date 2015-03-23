@@ -177,6 +177,12 @@ private:
 };
 */
 
+///
+/// Utility to convert arbitrary pointer type to char* whilst maintaining constness.
+///
+/// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
+///       this is a less elegant method that works with C98 and later.
+///
 template<typename T> struct cast_to_char;
 template<typename T> struct cast_to_char<T*> { typedef char* type; };
 template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
@@ -240,6 +246,14 @@ public:
 	HOST DEVICE inline strided_ptr operator+( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr+(strides*stride)), stride/StrideBytes ); }
 	HOST DEVICE inline strided_ptr operator-( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr-(strides*stride)), stride/StrideBytes ); }
 
+	///
+	/// \brief operator-
+	///
+	/// Note this will always be expressed in bytes, regardless of the size of element_type.
+	///
+	/// \param other
+	/// \return
+	///
 	HOST DEVICE inline difference_type operator-( const strided_ptr& other ) const { return ptr-other.ptr; } // strided_ptr<T>( ptr-other.ptr, stride ); }
 
 	DEVICE inline reference operator*() const { return *get(); }
@@ -253,6 +267,138 @@ public:
 	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator>=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr >= other.ptr; }
 
 };
+
+template<typename T,std::size_t PaddingUnitBytes=1>
+class pitched_ptr {
+
+public:
+	typedef T element_type;
+	typedef T* pointer;
+	typedef T& reference;
+	typedef std::size_t size_type;
+	typedef std::ptrdiff_t difference_type;
+
+private:
+	pointer ptr;
+	//typename cast_to_char<pointer>::type ptr;
+	const size_type data_length; // contiguous elements of data before pad, expressed in units of element_type
+	const size_type pad_length;  // contiguous elements of padding after data, expressed in bytes
+	size_type distance_to_pad; // distance of current pointer from the padding, expressed in units of element_type
+
+private:
+	void jump_forward_pad_length() {
+		typename cast_to_char<pointer>::type char_ptr = reinterpret_cast<typename cast_to_char<pointer>::type>(ptr);
+		char_ptr += pad_length;
+		ptr = reinterpret_cast<pointer>(char_ptr);
+	}
+	void jump_backwards_pad_length() {
+		typename cast_to_char<pointer>::type char_ptr = reinterpret_cast<typename cast_to_char<pointer>::type>(ptr);
+		char_ptr -= pad_length;
+		ptr = reinterpret_cast<pointer>(char_ptr);
+	}
+	inline typename cast_to_char<pointer>::type to_char_ptr() const { return reinterpret_cast<typename cast_to_char<pointer>::type>(ptr); }
+
+public:
+	HOST DEVICE pitched_ptr( pointer p = pointer(), const size_type data_length = 1, const size_type pitch_in_bytes = sizeof(element_type), const size_type pointer_position = 0 ) :
+		ptr(p),
+		data_length(data_length),
+		pad_length(pitch_in_bytes-data_length*sizeof(element_type)),
+		distance_to_pad(data_length-pointer_position)
+	{
+	}
+	HOST DEVICE pitched_ptr( const pitched_ptr<T>& src ) : ptr(src.ptr), data_length(src.data_length), pad_length(src.pad_length), distance_to_pad(src.distance_to_pad) {}
+	HOST DEVICE ~pitched_ptr() {}
+
+	HOST DEVICE inline size_type get_data_length() const { return data_length; }
+	HOST DEVICE inline size_type get_pad_length() const { return pad_length/PaddingUnitBytes; }
+	HOST DEVICE inline __CONSTEXPR__ size_type get_pad_length_units() const { return PaddingUnitBytes; }
+	HOST DEVICE inline size_type get_distance_to_pad() const { return distance_to_pad; }
+
+	HOST DEVICE inline pointer get() const { return reinterpret_cast<pointer>(ptr); }
+	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+
+	HOST DEVICE inline pitched_ptr& operator++() {
+		++ptr;
+		--distance_to_pad;
+		if( !distance_to_pad ) {
+			jump_forward_pad_length();
+			distance_to_pad = data_length;
+		}
+		return *this;
+	}
+	HOST DEVICE inline pitched_ptr operator++( int ) {
+		pitched_ptr tmp(*this);
+		++(*this);
+		return tmp;
+	}
+
+	HOST DEVICE inline pitched_ptr& operator--() {
+		if( distance_to_pad == data_length ) {
+			jump_backwards_pad_length();
+			distance_to_pad = 0;
+		}
+		--ptr;
+		++distance_to_pad;
+		return *this;
+	}
+	HOST DEVICE inline pitched_ptr operator--( int ) {
+		pitched_ptr tmp(*this);
+		--(*this);
+		return tmp;
+	}
+
+	HOST DEVICE pitched_ptr& operator+=( int units ) {
+		if( units >= distance_to_pad ) {
+			units -= distance_to_pad;
+			ptr += distance_to_pad;
+			jump_forward_pad_length();
+			distance_to_pad = data_length;
+			return operator+=( units );
+		}
+		ptr += units;
+		distance_to_pad -= units;
+		return *this;
+	}
+
+	HOST DEVICE pitched_ptr& operator-=( int units ) {
+		const difference_type distance_from_start = data_length-distance_to_pad;
+		if( units > distance_from_start ) {
+			units -= distance_from_start;
+			ptr -= distance_from_start;
+			jump_backwards_pad_length();
+			distance_to_pad = 0;
+			return operator-=( units );
+		}
+		ptr -= units;
+		distance_to_pad += units;
+		return *this;
+	}
+
+	HOST DEVICE inline pitched_ptr operator+( const int units ) const { return pitched_ptr(*this).operator+=(units); }
+	HOST DEVICE inline pitched_ptr operator-( const int units ) const { return pitched_ptr(*this).operator-=(units); }
+
+	///
+	/// \brief operator-
+	///
+	/// Note this will always be expressed in bytes, regardless of the size of element_type.
+	///
+	/// \param other
+	/// \return
+	///
+	HOST DEVICE inline difference_type operator-( const pitched_ptr& other ) const { return to_char_ptr() - other.to_char_ptr(); }
+
+	DEVICE inline reference operator*() const { return *get(); }
+	DEVICE inline pointer operator->() const { return get(); }
+
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator==( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr == other.ptr; }
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator!=( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr != other.ptr; }
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator< ( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr < other.ptr; }
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator> ( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr > other.ptr; }
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator<=( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr <= other.ptr; }
+	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator>=( const pitched_ptr<T,PaddingUnitBytes2>& other ) const { return ptr >= other.ptr; }
+
+};
+
 
 ///
 /// A proxy to a pre-allocated block of contiguous memory.

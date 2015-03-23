@@ -39,6 +39,13 @@ void fetchColumn( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
 	for( typename ecuda::matrix<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
 }
 
+template<typename T,std::size_t U>
+__global__
+void fetchAll( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
+	unsigned index = 0;
+	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) array[index] = *iter;
+}
+
 int main( int argc, char* argv[] ) {
 
 	estd::matrix<Coordinate> hostMatrix( 5, 10 );
@@ -94,6 +101,16 @@ int main( int argc, char* argv[] ) {
 	for( std::vector<Coordinate>::size_type i = 0; i < hostColumn.size(); ++i ) std::cout << hostColumn[i];
 	std::cout << std::endl;
 
+	ecuda::array<Coordinate,50> deviceLinearMatrix;
+	fetchColumn<<<1,1>>>( deviceMatrix, deviceLinearMatrix );
+	CUDA_CHECK_ERRORS();
+	CUDA_CALL( cudaDeviceSynchronize() );
+
+	std::vector<Coordinate> hostLinearMatrix;
+	deviceLinearMatrix >> hostLinearMatrix;
+
+	std::cout << "LINEARIZED" << std::endl;
+	for( std::vector<Coordinate>::size_type i = 0; i < hostLinearMatrix.size(); ++i ) std::cout << hostLinearMatrix[i] << std::endl;
 
 
 	return EXIT_SUCCESS;

@@ -73,6 +73,10 @@ public:
 	typedef contiguous_memory_proxy< const value_type, const_pointer > const_row_type; //!< matrix const row container type
 	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_column_type; //!< matrix column container type
 
+	typedef pointer_iterator< value_type, pitched_ptr<value_type> > iterator;
+	typedef pointer_iterator< const value_type, pitched_ptr<const value_type> > const_iterator;
+
+
 private:
 	// REMEMBER: numberRows, numberColumns, and pitch altered on device memory won't be
 	//           reflected on the host object. Don't allow the device to perform any operations that
@@ -118,6 +122,11 @@ public:
 	HOST DEVICE inline size_type get_pitch() const { return pitch; }
 	HOST DEVICE inline T* data() { return deviceMemory.get(); }
 	HOST DEVICE inline const T* data() const { return deviceMemory.get(); }
+
+	HOST DEVICE inline iterator begin() { return iterator( pitched_ptr<value_type>( data(), column_size(), pitch, 0 ) ); }
+	HOST DEVICE inline iterator end() { return iterator( pitched_ptr<value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator( pitched_ptr<const value_type>( data(), column_size(), pitch, 0 ) ); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator( pitched_ptr<const value_type>( allocator.address( data(), row_size(), 0, pitch ), column_size(), pitch, 0 ) ); }
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), column_size() ); }
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), row_size() ); }
