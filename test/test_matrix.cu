@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <vector>
 #include <estd/matrix.hpp>
 #include "../include/ecuda/array.hpp"
 #include "../include/ecuda/matrix.hpp"
@@ -22,6 +23,14 @@ struct coord_t {
 typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
+
+
+template<typename T,std::size_t U>
+__global__
+void fetchRow( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
+	typename ecuda::matrix<T>::const_row_type row = matrix[0];
+	for( typename ecuda::matrix<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
+}
 
 int main( int argc, char* argv[] ) {
 
@@ -51,6 +60,19 @@ int main( int argc, char* argv[] ) {
 		}
 		std::cout << std::endl;
 	}
+
+	ecuda::array<Coordinate,10> deviceRow;
+
+	fetchRow<<<1,1>>>( deviceMatrix, deviceRow );
+	CUDA_CHECK_ERRORS();
+	CUDA_CALL( cudaDeviceSynchronize() );
+
+	std::vector<Coordinate> hostRow;
+	deviceRow >> hostRow;
+
+	std::cout << "ROW";
+	for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
+	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 
