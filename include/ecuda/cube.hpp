@@ -194,14 +194,14 @@ public:
 	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
+		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
 		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
 		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, column_size()*depth_size() );
 		return row_type( sp, row_size() );
 		//return row_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
 	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
+		pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), depthIndex, pitch );
 		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
 		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, depth_size() );
 		return column_type( sp, column_size() );
@@ -213,14 +213,14 @@ public:
 		//return depth_type( allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, 0, pitch ), depth_size() );
 	}
 	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
+		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
 		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, column_size()*depth_size() );
 		return const_row_type( sp, row_size() );
 		//return const_row_type( strided_ptr<const value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
 	HOST DEVICE inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
+		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), depthIndex, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
 		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, depth_size() );
 		return const_column_type( sp, column_size() );
