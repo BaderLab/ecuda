@@ -170,35 +170,36 @@ public:
 	//typedef strided_memory_proxy<T> column_type;
 
 protected:
-	size_type numberBlocks; // cf. height
+	size_type height; // cf. height
 	//size_type pitch;
 
 public:
-	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), numberBlocks(0) {}
+	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), height(0) {}
 	template<typename U>
-	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T,PointerType>(src), numberBlocks(src.numberBlocks) {}
-	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type w, size_type h ) : contiguous_memory_proxy<T,PointerType>(ptr,w*h), numberBlocks(h) {}
+	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T,PointerType>(src), height(src.height) {}
+	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type width, size_type height ) : contiguous_memory_proxy<T,PointerType>(ptr,width*height), height(height) {}
 	HOST DEVICE virtual ~contiguous_2d_memory_proxy() {}
 
 	// capacity:
-	HOST DEVICE inline size_type get_number_blocks() const { return numberBlocks; }
-	HOST DEVICE inline size_type get_block_size() const { return contiguous_memory_proxy<T,PointerType>::size()/numberBlocks; }
-	//HOST DEVICE inline size_type get_pitch() const { return pitch; }
-
-	HOST DEVICE inline size_type size() const { return numberBlocks*base_type::size(); }
+	HOST DEVICE inline size_type get_width() const { return contiguous_memory_proxy<T,PointerType>::size()/height; }
+	HOST DEVICE inline size_type get_height() const { return height; }
+	//HOST DEVICE inline size_type size() const { return height*base_type::size(); }
 
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
-		ptr += index*get_block_size(); //base_type::size();
-		return row_type( ptr, get_block_size() );
-		//return row_type( base_type::data()+(index*base_type::size()), get_block_size() );
+		ptr += index*get_width();
+		return row_type( ptr, get_width() );
 	}
-	HOST DEVICE inline const_row_type operator[]( size_type index ) const {	return const_row_type( base_type::data()+(index*base_type::size()), get_block_size() ); }
+	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
+		pointer ptr = base_type::data();
+		ptr += index*get_width();
+		return const_row_type( ptr, get_width() );
+	}
 
 	HOST DEVICE contiguous_2d_memory_proxy& operator=( const contiguous_2d_memory_proxy& other ) {
 		base_type::operator=( other );
-		numberBlocks = other.numberBlocks;
+		height = other.height;
 		return *this;
 	}
 

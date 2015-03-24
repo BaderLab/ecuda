@@ -41,11 +41,23 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 template<typename T> __global__
 void fetchSliceYZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 1 );
-printf( "get_number_blocks()=%i\n", sliceYZ.get_number_blocks() );
-printf( "get_block_size()=%i\n", sliceYZ.get_block_size() );
-	for( unsigned i = 0; i < sliceYZ.get_number_blocks(); ++i ) {
-		for( unsigned j = 0; j < sliceYZ.get_block_size(); ++j ) {
+printf( "get_width()=%i\n", sliceYZ.get_width() );
+printf( "get_height()=%i\n", sliceYZ.get_height() );
+	for( unsigned i = 0; i < sliceYZ.get_width(); ++i ) {
+		for( unsigned j = 0; j < sliceYZ.get_height(); ++j ) {
 			matrix[i][j] = sliceYZ[i][j];
+		}
+	}
+}
+
+template<typename T> __global__
+void fetchSliceXY( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_xy_type sliceXY = cube.get_xy( 3 );
+printf( "get_width()=%i\n", sliceXY.get_width() );
+printf( "get_height()=%i\n", sliceXY.get_height() );
+	for( unsigned i = 0; i < sliceXY.get_width(); ++i ) {
+		for( unsigned j = 0; j < sliceXY.get_height(); ++j ) {
+			matrix[i][j] = sliceXY[i][j];
 		}
 	}
 }
@@ -114,7 +126,23 @@ int main( int argc, char* argv[] ) {
 		estd::matrix<Coordinate> hostMatrix( 4, 5 );
 		deviceMatrix >> hostMatrix;
 		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
-			std::cout << "SLICE_ROW";
+			std::cout << "SLICE_YZ_ROW";
+			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
+				std::cout << " " << hostMatrix[i][j];
+			}
+			std::cout << std::endl;
+		}
+	}
+
+	{
+		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
+		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		estd::matrix<Coordinate> hostMatrix( 3, 4 );
+		deviceMatrix >> hostMatrix;
+		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+			std::cout << "SLICE_XY_ROW";
 			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
 				std::cout << " " << hostMatrix[i][j];
 			}
