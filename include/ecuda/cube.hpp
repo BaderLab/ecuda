@@ -76,7 +76,8 @@ public:
 	typedef contiguous_2d_memory_proxy< value_type > slice_yz_type;
 	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type;
 	typedef contiguous_2d_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type;
-	typedef contiguous_2d_memory_proxy< const value_type,   padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xz_type;
+	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type;
+	//typedef contiguous_2d_memory_proxy< const value_type,   padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xz_type;
 
 	//typedef yz_type matrix_type;
 	//typedef const_yz_type const_matrix_type;
@@ -250,9 +251,11 @@ xy_type stride=pitch
 
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), row_size()*columnIndex, 0, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
-		padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > pp2( pp, depth_size(), column_size()*depth_size()-depth_size(), 0 );
-		return const_slice_xz_type( pp2, row_size(), depth_size() );
+		const size_type padding = (pitch-depth_size()*sizeof(value_type)) + column_size()*pitch;
+		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), padding, 0 );
+		//padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
+		//padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > pp2( pp, depth_size(), column_size()*depth_size()-depth_size(), 0 );
+		return const_slice_xz_type( pp, row_size(), depth_size() );
 	}
 
 	/*
