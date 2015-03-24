@@ -149,45 +149,51 @@ template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_t
 class contiguous_2d_memory_proxy : public contiguous_memory_proxy<T,PointerType>
 {
 protected:
-	typedef contiguous_memory_proxy<T> base_type;
+	typedef contiguous_memory_proxy<T,PointerType> base_type;
 
 public:
 	typedef typename base_type::value_type value_type;
 	typedef typename base_type::pointer pointer;
 	typedef typename base_type::reference reference;
-	typedef typename base_type::const_pointer const_pointer;
+	//typedef typename base_type::const_pointer const_pointer;
 	typedef typename base_type::const_reference const_reference;
+	typedef typename base_type::difference_type difference_type;
+	typedef typename base_type::size_type size_type;
+
 	typedef typename base_type::iterator iterator;
 	typedef typename base_type::const_iterator const_iterator;
 	typedef typename base_type::reverse_iterator reverse_iterator;
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
-	typedef typename base_type::difference_type difference_type;
-	typedef typename base_type::size_type size_type;
 
-	typedef contiguous_memory_proxy<T> row_type;
-	typedef contiguous_memory_proxy<const T> const_row_type;
+	typedef contiguous_memory_proxy<T,PointerType> row_type;
+	typedef contiguous_memory_proxy<const T,PointerType> const_row_type;
 	//typedef strided_memory_proxy<T> column_type;
 
 protected:
-	size_type numberBlocks;
+	size_type numberBlocks; // cf. height
 	//size_type pitch;
 
 public:
 	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), numberBlocks(0) {}
 	template<typename U>
-	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T>(src), numberBlocks(src.numberBlocks) {}
-	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks ) : contiguous_memory_proxy<T>(ptr,length), numberBlocks(numberBlocks) {}
+	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T,PointerType>(src), numberBlocks(src.numberBlocks) {}
+	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks ) : contiguous_memory_proxy<T,PointerType>(ptr,length), numberBlocks(numberBlocks) {}
 	HOST DEVICE virtual ~contiguous_2d_memory_proxy() {}
 
 	// capacity:
 	HOST DEVICE inline size_type get_number_blocks() const { return numberBlocks; }
-	HOST DEVICE inline size_type get_block_size() const { return contiguous_memory_proxy<T>::size()/numberBlocks; }
+	HOST DEVICE inline size_type get_block_size() const { return contiguous_memory_proxy<T,PointerType>::size()/numberBlocks; }
 	//HOST DEVICE inline size_type get_pitch() const { return pitch; }
 
 	HOST DEVICE inline size_type size() const { return numberBlocks*base_type::size(); }
 
 	// element access:
-	HOST DEVICE inline row_type operator[]( size_type index ) {	return row_type( base_type::data()+(index*base_type::size()), get_block_size() );	}
+	HOST DEVICE inline row_type operator[]( size_type index ) {
+		pointer ptr = base_type::data();
+		ptr += index*base_type::size();
+		return row_type( ptr, get_block_size() );
+		//return row_type( base_type::data()+(index*base_type::size()), get_block_size() );
+	}
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {	return const_row_type( base_type::data()+(index*base_type::size()), get_block_size() ); }
 
 	HOST DEVICE contiguous_2d_memory_proxy& operator=( const contiguous_2d_memory_proxy& other ) {

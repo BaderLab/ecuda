@@ -67,34 +67,14 @@ public:
 	typedef std::size_t size_type;
 
 	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type;
-	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > row_type;
 	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type;
-	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > column_type;
-	typedef contiguous_memory_proxy<value_type> depth_type;
+	typedef contiguous_memory_proxy< value_type                                                               > depth_type;
 	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type;
-	//typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_row_type;
 	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type;
-	//typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_column_type;
-	typedef contiguous_memory_proxy<const value_type> const_depth_type;
+	typedef contiguous_memory_proxy< const value_type                                                                                 > const_depth_type;
 
-	//typedef contiguous_memory_proxy<value_type> xy_type;
-	//typedef contiguous_memory_proxy<const value_type> const_xy_type;
-	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > xz_type;
-	//typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_xz_type;
-	//typedef contiguous_memory_proxy< value_type, strided_ptr<value_type,1> > yz_type;
-	//typedef contiguous_memory_proxy< const value_type, strided_ptr<value_type,1> > const_yz_type;
-	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
-	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
-	//typedef contiguous_2d_memory_proxy<value_type> xy_type;
-	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xy_type;
-	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > xz_type;
-	//typedef ecuda::CubeSliceContainer< cube<T>, size_type, pointer > yz_type;
-	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xy_type;
-	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_xz_type;
-	//typedef const ecuda::CubeSliceContainer< const cube<T>, size_type, const_pointer > const_yz_type;
-
-	typedef contiguous_2d_memory_proxy<value_type> slice_type;
-	typedef contiguous_2d_memory_proxy<const value_type> const_slice_type;
+	typedef contiguous_2d_memory_proxy< value_type > slice_yz_type;
+	typedef contiguous_2d_memory_proxy< const value_type, padded_ptr<const value_type,const_pointer,1> > const_slice_yz_type;
 	//typedef yz_type matrix_type;
 	//typedef const_yz_type const_matrix_type;
 
@@ -195,11 +175,8 @@ public:
 
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
 		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-printf( "np=%i\n", np );
 		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
-printf( "pp=%i\n", pp.get() );
 		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, column_size()*depth_size() );
-printf( "sp=%i\n", sp.get() );
 		return row_type( sp, row_size() );
 		//return row_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
@@ -216,14 +193,9 @@ printf( "sp=%i\n", sp.get() );
 		//return depth_type( allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, 0, pitch ), depth_size() );
 	}
 	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
-printf( "pitch=%i sizeof(value_type)=%i\n", get_pitch(), (int)sizeof(value_type) );
-printf( "dp=%i\n", deviceMemory.get() );
 		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-printf( "np=%i\n", np );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
-printf( "pp=%i\n", pp.get() );
 		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, column_size()*depth_size() );
-printf( "sp=%i\n", sp.get().get() );
 		return const_row_type( sp, row_size() );
 		//return const_row_type( strided_ptr<const value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
@@ -260,6 +232,12 @@ xz_type stride=c*pitch
 yz_type stride=0
 xy_type stride=pitch
 */
+	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
+		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
+		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
+		return const_slice_yz_type( pp, depth_size(), column_size() );
+	}
+
 	/*
 	HOST DEVICE inline xy_type get_xy( const size_type x, const size_type y ) { return xy_type( allocator.address( deviceMemory.get(), x*column_size()+y, 0, pitch ), depth_size() ); }
 	HOST DEVICE inline xz_type get_xz( const size_type x, const size_type z ) { return xz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), x*column_size(), z, pitch ), pitch ), column_size() ); }

@@ -29,21 +29,22 @@ void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 template<typename T,std::size_t U> __global__
 void fetchColumn( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_column_type column = cube.get_column( 1, 4 );
-	for( typename ecuda::cube<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) {
-//		typename ecuda::cube<T>::const_column
-		array[i] = column[i];
-	}
+	for( typename ecuda::cube<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
 }
 
 template<typename T,std::size_t U> __global__
 void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
-	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) {
-//		typename ecuda::cube<T>::const_depth_type::pointer ptr = depth.data();
-//		ptr += static_cast<int>(i);
-//		printf( "POINTER=%i\n", ptr );
-//		printf( "POINTER=%i\n", (depth.data()+static_cast<int>(i)).get().get().get() );
-		array[i] = depth[i];
+	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
+}
+
+template<typename T> __global__
+void fetchSliceYZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 1 );
+	for( unsigned i = 0; i < sliceYZ.get_number_blocks(); ++i ) {
+		for( unsigned j = 0; j < sliceYZ.get_block_size(); ++j ) {
+			matrix[i][j] = sliceYZ[i][j];
+		}
 	}
 }
 
@@ -101,6 +102,22 @@ int main( int argc, char* argv[] ) {
 		std::cout << "DEPTH";
 		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
 		std::cout << std::endl;
+	}
+
+	{
+		ecuda::matrix<Coordinate> deviceMatrix( 4, 5 );
+		fetchSliceYZ<<<1,1>>>( deviceCube, deviceMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		estd::matrix<Coordinate> hostMatrix( 4, 5 );
+		deviceMatrix >> hostMatrix;
+		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+			std::cout << "SLICE_ROW";
+			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
+				std::cout << " " << hostMatrix[i][j];
+			}
+			std::cout << std::endl;
+		}
 	}
 
 	return EXIT_SUCCESS;
