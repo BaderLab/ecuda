@@ -28,14 +28,23 @@ void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 
 template<typename T,std::size_t U> __global__
 void fetchColumn( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
-	typename ecuda::cube<T>::const_depth_type column = cube.get_column( 1, 4 );
-	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
+	typename ecuda::cube<T>::const_column_type column = cube.get_column( 1, 4 );
+	for( typename ecuda::cube<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) {
+//		typename ecuda::cube<T>::const_column
+		array[i] = column[i];
+	}
 }
 
 template<typename T,std::size_t U> __global__
 void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
-	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
+	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) {
+//		typename ecuda::cube<T>::const_depth_type::pointer ptr = depth.data();
+//		ptr += static_cast<int>(i);
+//		printf( "POINTER=%i\n", ptr );
+//		printf( "POINTER=%i\n", (depth.data()+static_cast<int>(i)).get().get().get() );
+		array[i] = depth[i];
+	}
 }
 
 int main( int argc, char* argv[] ) {
