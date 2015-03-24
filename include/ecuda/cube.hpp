@@ -274,8 +274,16 @@ xy_type stride=pitch
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
-		//TODO: this needs to be re-implemented, it won't work as currently written
+		//TODO: this can be optimized
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
+		std::vector<value_type> tmp( numberDepths );
+		for( size_type i = 0; i < numberRows; ++i ) {
+			for( size_type j = 0; j < numberColumns; ++j ) {
+				CUDA_CALL( cudaMemcpy<value_type>( &tmp.front(), allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), numberDepths, cudaMemcpyDeviceToHost ) );
+				for( size_type k = 0; k < numberDepths; ++k ) dest[i][j][k] = tmp[k];
+			}
+		}
+		/*
 		CUDA_CALL( cudaMemcpy2D<T>(
 			&dest[0][0][0], // dest
 			numberColumns*numberDepths*sizeof(T), // dpitch
@@ -285,8 +293,7 @@ xy_type stride=pitch
 			numberRows, // height
 			cudaMemcpyDeviceToHost // kind
 		) );
-		//CUDA_CALL( cudaMemcpy2D( &dest[0][0][0], numberColumns*numberDepths*sizeof(T), deviceMemory.get(), pitch, numberColumns*numberDepths*sizeof(T), numberRows, cudaMemcpyDeviceToHost ) );
-		//for( size_type i = 0; i < numberRows; ++i ) operator[](i) >> dest[i];
+		*/
 		return *this;
 	}
 	#endif
@@ -303,8 +310,16 @@ xy_type stride=pitch
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
+		//TODO: this can be optimized
 		resize( src.row_size(), src.column_size(), src.depth_size() );
-		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths, numberRows, cudaMemcpyHostToDevice ) );
+		std::vector<value_type> tmp( src.depth_size() );
+		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.row_size(); ++i ) {
+			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.column_size(); ++j ) {
+				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];
+				CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), &tmp.front(), numberDepths, cudaMemcpyHostToDevice ) );
+			}
+		}
+		//CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*numberDepths*sizeof(T), numberColumns*numberDepths, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 	#endif
