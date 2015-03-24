@@ -1,0 +1,144 @@
+/*
+Copyright (c) 2014-2015, Scott Zuyderduyn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+*/
+
+//----------------------------------------------------------------------------
+// striding_ptr.hpp
+//
+// Pointer specialization that causes increment/decrement operations to
+// skip (stride) a fixed number of units of the size of the type pointed to.
+//
+// Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
+//----------------------------------------------------------------------------
+
+#pragma once
+#ifndef ECUDA_STRIDING_PTR_HPP
+#define ECUDA_STRIDING_PTR_HPP
+
+//#include <cstddef>
+#include "global.hpp"
+//#include "iterators.hpp"
+//#include "device_ptr.hpp"
+
+//#ifdef __CPP11_SUPPORTED__
+//#include <memory>
+//#endif
+
+namespace ecuda {
+
+///
+/// A pointer class that implements all pointer-compatible operators for strided memory.
+///
+/// Strided memory is a block of contiguous memory where elements are separated by
+/// fixed-length padding.  Thus, one has to "stride" over the padding to reach the
+/// next element.  The term was borrowed from the GNU Scientific Library.
+///
+/// An optional second template parameter StrideBytes can be specified when the stride
+/// is not a multiple of the byte size of the first template parameter T. By default
+/// StrideBytes=sizeof(T).
+///
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
+class striding_ptr {
+
+public:
+	typedef T element_type; //!< data type represented in allocated memory
+	typedef PointerType pointer; //!< data type pointer
+	typedef T& reference; //!< data type reference
+	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
+	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
+
+private:
+	pointer ptr;
+	size_type stride;
+
+public:
+	HOST DEVICE striding_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(p), stride(stride) {}
+	HOST DEVICE striding_ptr( const striding_ptr<T,PointerType>& src ) : ptr(src.ptr), stride(src.stride) {}
+	//template<typename U,std::size_t StrideBytes2>
+	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
+	HOST DEVICE ~striding_ptr() {}
+
+	HOST DEVICE inline size_type get_stride() const { return stride; }
+
+	HOST DEVICE inline pointer get() const { return ptr; }
+	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+	HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
+
+	HOST DEVICE inline striding_ptr& operator++() { ptr += stride; return *this; }
+	HOST DEVICE inline striding_ptr operator++( int ) {
+		striding_ptr tmp(*this);
+		++(*this);
+		return tmp;
+	}
+
+	HOST DEVICE inline striding_ptr& operator--() { ptr -= stride; return *this; }
+	HOST DEVICE inline striding_ptr operator--( int ) {
+		striding_ptr tmp(*this);
+		--(*this);
+		return tmp;
+	}
+
+	HOST DEVICE inline striding_ptr& operator+=( const int strides ) { ptr += stride*strides; return *this; }
+	HOST DEVICE inline striding_ptr& operator-=( const int strides ) { ptr -= stride*strides; return *this; }
+
+	HOST DEVICE inline striding_ptr operator+( const int strides ) const {
+		striding_ptr tmp(*this);
+		tmp += strides;
+		return tmp;
+	}
+	HOST DEVICE inline striding_ptr operator-( const int strides ) const {
+		striding_ptr tmp(*this);
+		tmp -= strides;
+		return tmp;
+	}
+
+	///
+	/// \brief operator-
+	///
+	/// Note this will always be expressed in bytes, regardless of the size of element_type.
+	///
+	/// \param other
+	/// \return
+	///
+	HOST DEVICE inline difference_type operator-( const striding_ptr& other ) const { return ptr-other.ptr; } // strided_ptr<T>( ptr-other.ptr, stride ); }
+
+	DEVICE inline reference operator*() const { return *get(); }
+	DEVICE inline pointer operator->() const { return get(); }
+
+	HOST DEVICE inline bool operator==( const striding_ptr<T,PointerType>& other ) const { return ptr == other.ptr; }
+	HOST DEVICE inline bool operator!=( const striding_ptr<T,PointerType>& other ) const { return ptr != other.ptr; }
+	HOST DEVICE inline bool operator< ( const striding_ptr<T,PointerType>& other ) const { return ptr <  other.ptr; }
+	HOST DEVICE inline bool operator> ( const striding_ptr<T,PointerType>& other ) const { return ptr >  other.ptr; }
+	HOST DEVICE inline bool operator<=( const striding_ptr<T,PointerType>& other ) const { return ptr <= other.ptr; }
+	HOST DEVICE inline bool operator>=( const striding_ptr<T,PointerType>& other ) const { return ptr >= other.ptr; }
+
+};
+
+} // namespace ecuda
+
+#endif

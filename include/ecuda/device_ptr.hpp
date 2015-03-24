@@ -84,6 +84,7 @@ public:
 	typedef T* pointer; //!< data type pointer
 	typedef T& reference; //!< data type reference
 	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
+	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
 
 private:
 	pointer ptr; //!< pointer to device memory
@@ -147,6 +148,8 @@ public:
 	HOST DEVICE inline bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
 	HOST DEVICE inline bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
 	HOST DEVICE inline bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
+
+	HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
 
 	HOST device_ptr<T>& operator=( pointer ptr ) {
 		~device_ptr();
