@@ -177,7 +177,7 @@ public:
 	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), numberBlocks(0) {}
 	template<typename U>
 	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T,PointerType>(src), numberBlocks(src.numberBlocks) {}
-	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks ) : contiguous_memory_proxy<T,PointerType>(ptr,length), numberBlocks(numberBlocks) {}
+	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type w, size_type h ) : contiguous_memory_proxy<T,PointerType>(ptr,w*h), numberBlocks(h) {}
 	HOST DEVICE virtual ~contiguous_2d_memory_proxy() {}
 
 	// capacity:
@@ -190,7 +190,7 @@ public:
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
-		ptr += index*base_type::size();
+		ptr += index*get_block_size(); //base_type::size();
 		return row_type( ptr, get_block_size() );
 		//return row_type( base_type::data()+(index*base_type::size()), get_block_size() );
 	}

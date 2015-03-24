@@ -41,6 +41,8 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 template<typename T> __global__
 void fetchSliceYZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 1 );
+printf( "get_number_blocks()=%i\n", sliceYZ.get_number_blocks() );
+printf( "get_block_size()=%i\n", sliceYZ.get_block_size() );
 	for( unsigned i = 0; i < sliceYZ.get_number_blocks(); ++i ) {
 		for( unsigned j = 0; j < sliceYZ.get_block_size(); ++j ) {
 			matrix[i][j] = sliceYZ[i][j];
