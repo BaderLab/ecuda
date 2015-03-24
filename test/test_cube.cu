@@ -62,6 +62,18 @@ printf( "get_height()=%i\n", sliceXY.get_height() );
 	}
 }
 
+template<typename T> __global__
+void fetchSliceXZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_xz_type sliceXZ = cube.get_xz( 2 );
+printf( "get_width()=%i\n", sliceXZ.get_width() );
+printf( "get_height()=%i\n", sliceXZ.get_height() );
+	for( unsigned i = 0; i < sliceXZ.get_width(); ++i ) {
+		for( unsigned j = 0; j < sliceXZ.get_height(); ++j ) {
+			matrix[i][j] = sliceXZ[i][j];
+		}
+	}
+}
+
 int main( int argc, char* argv[] ) {
 
 	estd::cube<Coordinate> hostCube( 3, 4, 5 );
@@ -143,6 +155,22 @@ int main( int argc, char* argv[] ) {
 		deviceMatrix >> hostMatrix;
 		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
 			std::cout << "SLICE_XY_ROW";
+			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
+				std::cout << " " << hostMatrix[i][j];
+			}
+			std::cout << std::endl;
+		}
+	}
+
+	{
+		ecuda::matrix<Coordinate> deviceMatrix( 3, 5 );
+		fetchSliceXZ<<<1,1>>>( deviceCube, deviceMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		estd::matrix<Coordinate> hostMatrix( 3, 5 );
+		deviceMatrix >> hostMatrix;
+		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+			std::cout << "SLICE_XZ_ROW";
 			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
 				std::cout << " " << hostMatrix[i][j];
 			}

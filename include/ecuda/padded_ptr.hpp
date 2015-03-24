@@ -199,6 +199,22 @@ public:
 	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator<=( const padded_ptr<T,PointerType,PaddingUnitBytes2>& other ) const { return ptr <= other.ptr; }
 	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator>=( const padded_ptr<T,PointerType,PaddingUnitBytes2>& other ) const { return ptr >= other.ptr; }
 
+	HOST DEVICE padded_ptr& operator=( const padded_ptr<T,PointerType,PaddingUnitBytes>& other ) {
+		ptr = other.ptr;
+		distance_to_padding = other.distance_to_padding;
+		return *this;
+	}
+
+	HOST DEVICE padded_ptr& operator=( PointerType& pt ) {
+		ptr = pt;
+		return *this;
+	}
+
+	HOST DEVICE padded_ptr& operator=( T* p ) {
+		ptr = p;
+		return *this;
+	}
+
 };
 
 } // namespace ecuda
