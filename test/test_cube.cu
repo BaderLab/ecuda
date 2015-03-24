@@ -39,8 +39,8 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 }
 
 template<typename T> __global__
-void fetchSliceYZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 1 );
+void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 1 );
 printf( "get_width()=%i\n", sliceYZ.get_width() );
 printf( "get_height()=%i\n", sliceYZ.get_height() );
 	for( unsigned i = 0; i < sliceYZ.get_width(); ++i ) {
@@ -51,8 +51,8 @@ printf( "get_height()=%i\n", sliceYZ.get_height() );
 }
 
 template<typename T> __global__
-void fetchSliceXY( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::const_slice_xy_type sliceXY = cube.get_xy( 3 );
+void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
 printf( "get_width()=%i\n", sliceXY.get_width() );
 printf( "get_height()=%i\n", sliceXY.get_height() );
 	for( unsigned i = 0; i < sliceXY.get_width(); ++i ) {
@@ -63,8 +63,8 @@ printf( "get_height()=%i\n", sliceXY.get_height() );
 }
 
 template<typename T> __global__
-void fetchSliceXZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::const_slice_xz_type sliceXZ = cube.get_xz( 2 );
+void fetchSliceXZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::/*const_*/slice_xz_type sliceXZ = cube.get_xz( 2 );
 printf( "get_width()=%i\n", sliceXZ.get_width() );
 printf( "get_height()=%i\n", sliceXZ.get_height() );
 	for( unsigned i = 0; i < sliceXZ.get_width(); ++i ) {
@@ -73,6 +73,13 @@ printf( "get_height()=%i\n", sliceXZ.get_height() );
 		}
 	}
 }
+
+template<typename T,std::size_t U> __global__
+void fetchAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	typename ecuda::array<T,U>::size_type index = 0;
+	for( typename ecuda::cube<T>::const_iterator iter = cube.begin(); iter != cube.end(); ++iter, ++index ) array[index] = *iter;
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -174,6 +181,20 @@ int main( int argc, char* argv[] ) {
 			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
 				std::cout << " " << hostMatrix[i][j];
 			}
+			std::cout << std::endl;
+		}
+	}
+
+	{
+		ecuda::array<Coordinate,60> deviceArray;
+		fetchAll<<<1,1>>>( deviceCube, deviceArray );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostArray;
+		deviceArray >> hostArray;
+		for( unsigned i = 0; i < hostArray.size(); ++i ) {
+			std::cout << "LINEAR";
+			std::cout << " " << hostArray[i];
 			std::cout << std::endl;
 		}
 	}

@@ -73,12 +73,19 @@ public:
 	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type;
 	typedef contiguous_memory_proxy< const value_type                                                                                 > const_depth_type;
 
-	typedef contiguous_2d_memory_proxy< value_type > slice_yz_type;
+	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type;
+	typedef contiguous_2d_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type;
+	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type;
+	//typedef contiguous_2d_memory_proxy< value_type > slice_yz_type;
 	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type;
 	typedef contiguous_2d_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type;
 	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type;
 	//typedef contiguous_2d_memory_proxy< const value_type,   padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xz_type;
 
+	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator;
+	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator;
+	typedef pointer_reverse_iterator<iterator> reverse_iterator;
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator;
 	//typedef yz_type matrix_type;
 	//typedef const_yz_type const_matrix_type;
 
@@ -177,6 +184,16 @@ public:
 	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
+	HOST DEVICE inline iterator begin() { return iterator( padded_ptr<value_type,pointer,1>( data(), depth_size(), get_pitch()-depth_size()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator end() { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), row_size()*column_size(), 0, get_pitch() ), depth_size(), get_pitch()-depth_size()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), depth_size(), get_pitch()-depth_size()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), row_size()*column_size(), 0, get_pitch() ), depth_size(), get_pitch()-depth_size()*sizeof(value_type), 0 ) ); }
+
+	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
 		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
 		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
@@ -236,6 +253,26 @@ xz_type stride=c*pitch
 yz_type stride=0
 xy_type stride=pitch
 */
+	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
+		pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
+		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
+		return slice_yz_type( pp, column_size(), depth_size() );
+	}
+
+	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
+		pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
+		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
+		striding_ptr<value_type, padded_ptr<value_type,pointer,1> > sp( pp, depth_size() );
+		return slice_xy_type( sp, row_size(), column_size() );
+	}
+
+	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
+		pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
+		const size_type padding = (pitch-depth_size()*sizeof(value_type)) + (column_size()-1)*pitch;
+		padded_ptr<value_type,pointer,1> pp( np, depth_size(), padding, 0 );
+		return slice_xz_type( pp, row_size(), depth_size() );
+	}
+
 	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
@@ -253,8 +290,6 @@ xy_type stride=pitch
 		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		const size_type padding = (pitch-depth_size()*sizeof(value_type)) + (column_size()-1)*pitch;
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), padding, 0 );
-		//padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
-		//padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > pp2( pp, depth_size(), column_size()*depth_size()-depth_size(), 0 );
 		return const_slice_xz_type( pp, row_size(), depth_size() );
 	}
 
