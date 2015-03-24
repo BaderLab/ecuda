@@ -69,9 +69,9 @@ public:
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
 	typedef contiguous_memory_proxy< value_type, pointer > row_type; //!< matrix row container type
-	typedef contiguous_memory_proxy< value_type, strided_ptr<const value_type,1> > column_type; //!< matrix column container type
+	typedef contiguous_memory_proxy< value_type, strided_ptr<const value_type,pointer,1> > column_type; //!< matrix column container type
 	typedef contiguous_memory_proxy< const value_type, const_pointer > const_row_type; //!< matrix const row container type
-	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,1> > const_column_type; //!< matrix column container type
+	typedef contiguous_memory_proxy< const value_type, strided_ptr<const value_type,const_pointer,1> > const_column_type; //!< matrix column container type
 
 	typedef pointer_iterator< value_type, pitched_ptr<value_type> > iterator; //!< iterator type
 	typedef pointer_iterator< const value_type, pitched_ptr<const value_type> > const_iterator; //!< const iterator type
@@ -128,9 +128,9 @@ public:
 	*/
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( strided_ptr<const value_type,pointer,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
 	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( strided_ptr<const value_type,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( strided_ptr<const value_type,const_pointer,1>( allocator.address( data(), 0, columnIndex, pitch ), get_pitch() ), number_rows() ); }
 
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }

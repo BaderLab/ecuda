@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014, Scott Zuyderduyn
+Copyright (c) 2014-2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,139 +43,13 @@ either expressed or implied, of the FreeBSD Project.
 #include <cstddef>
 #include "global.hpp"
 #include "iterators.hpp"
+#include "device_ptr.hpp"
 
 #ifdef __CPP11_SUPPORTED__
 #include <memory>
 #endif
 
 namespace ecuda {
-
-template<typename T>
-class deleter {
-public:
-	typedef T element_type;
-	typedef T* pointer;
-public:
-	HOST DEVICE deleter() {}
-	HOST DEVICE deleter( const deleter& other ) {}
-	HOST DEVICE ~deleter() {}
-	HOST inline void operator()( pointer ptr ) { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
-};
-
-
-///
-/// A smart pointer for device memory.
-///
-/// This class keeps a pointer to allocated device memory and automatically
-/// deallocates it when it goes out of scope.  The workings are similar to
-/// a C++11 shared_ptr.  Since deallocation can only be done from host code
-/// reference counting only occurs within host code.  On the device the pointer
-/// is passed around freely without regards to reference counting and will
-/// never undergo deallocation.
-///
-template<typename T>
-class device_ptr {
-
-public:
-	typedef T element_type; //!< data type represented in allocated memory
-	typedef T* pointer; //!< data type pointer
-	typedef T& reference; //!< data type reference
-	//typedef void** allocation_pointer; //!< pointer to pointer used by CUDA API to allocate device memory
-	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
-
-private:
-	pointer ptr; //!< pointer to device memory
-	size_type* shared_count; //!< pointer to reference count
-
-public:
-	HOST DEVICE device_ptr() : ptr(NULL) {
-		#ifndef __CUDA_ARCH__
-		shared_count = new size_type;
-		*shared_count = 1;
-		#endif
-	}
-	HOST DEVICE device_ptr( pointer ptr ) : ptr(ptr) {
-		#ifndef __CUDA_ARCH__
-		shared_count = new size_type;
-		*shared_count = 1;
-		#endif
-	}
-
-	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
-		#ifndef __CUDA_ARCH__
-		++(*shared_count);
-		#endif
-	}
-
-	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), shared_count(src.shared_count) {
-		src.ptr = NULL;
-		src.shared_count = NULL;
-	}
-	#endif
-
-	// destroys the smart pointer, if instantiated from the host this will decrement the share count,
-	// if instantiated from the device nothing happens, iff. the share count is zero and the smart
-	// pointer resides on the host, the underlying device memory will be deallocated.
-	HOST DEVICE ~device_ptr() {
-		#ifndef __CUDA_ARCH__
-		--(*shared_count);
-		if( !(*shared_count) ) {
-			deleter<T>()(ptr);
-			delete shared_count;
-		}
-		#endif
-	}
-
-	// both host and device can get the pointer itself
-	HOST DEVICE inline pointer get() const { return ptr; }
-	HOST DEVICE inline operator bool() const { return get() != NULL; }
-
-	// only device can dereference the pointer or call for the pointer in the context of acting upon the object
-	DEVICE inline reference operator*() const { return *ptr; }
-	DEVICE inline pointer   operator->() const { return ptr; }
-	DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
-
-	// get a pointer to the pointer to the device memory suitable for use with cudaMalloc...()-style calls
-	//HOST inline allocation_pointer alloc_ptr() { return reinterpret_cast<void**>(&ptr); }
-
-	// both host and device can do comparisons on the pointer
-	HOST DEVICE inline bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
-	HOST DEVICE inline bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
-	HOST DEVICE inline bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
-	HOST DEVICE inline bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
-	HOST DEVICE inline bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
-	HOST DEVICE inline bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
-
-	HOST DEVICE device_ptr<T>& operator=( const device_ptr<T>& other ) {
-		#ifndef __CUDA_ARCH__
-		~device_ptr();
-		#endif
-		ptr = other.ptr;
-		#ifndef __CUDA_ARCH__
-		shared_count = other.shared_count;
-		++(*shared_count);
-		#endif
-		return *this;
-	}
-
-};
-
-/*
-template<typename T>
-class device_pitched_ptr : public device_ptr {
-
-public:
-	typedef typename device_ptr<T>::element_type element_type; //!< data type represented in allocated memory
-	typedef typename device_ptr<T>::pointer pointer; //!< data type pointer
-	typedef typename device_ptr<T>::pointer reference; //!< data type reference
-	typedef typename device_ptr<T>::pointer size_type; //!< size type for pointer arithmetic and reference counting
-
-private:
-	size_type pitch; //!< padded memory width in bytes
-
-};
-*/
 
 ///
 /// Utility to convert arbitrary pointer type to char* whilst maintaining constness.
@@ -198,24 +72,27 @@ template<typename T> struct cast_to_char<const T*> { typedef const char* type; }
 /// is not a multiple of the byte size of the first template parameter T. By default
 /// StrideBytes=sizeof(T).
 ///
-template<typename T,std::size_t StrideBytes=sizeof(T)>
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,std::size_t StrideBytes=sizeof(T)>
 class strided_ptr {
 public:
 	typedef T element_type;
-	typedef T* pointer;
+	typedef PointerType pointer;
+	//typedef T* pointer;
 	typedef T& reference;
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
 private:
-	typename cast_to_char<pointer>::type ptr;
-	//char* ptr;
-	//pointer ptr;
+	pointer ptr;
+	//typename cast_to_char<pointer>::type ptr;
 	size_type stride;
 
+	HOST DEVICE inline typename cast_to_char<pointer>::type get_char_ptr() const { return reinterpret_cast<typename cast_to_char<pointer>::type>( static_cast<element_type*>(ptr) ); }
+
 public:
-	HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(reinterpret_cast<typename cast_to_char<pointer>::type>(p)), stride(stride*StrideBytes) {}
-	HOST DEVICE strided_ptr( const strided_ptr<T,StrideBytes>& src ) : ptr(src.ptr), stride(src.stride) {}
+	HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(p), stride(stride*StrideBytes) {}
+	//HOST DEVICE strided_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(reinterpret_cast<typename cast_to_char<pointer>::type>(p)), stride(stride*StrideBytes) {}
+	HOST DEVICE strided_ptr( const strided_ptr<T,PointerType,StrideBytes>& src ) : ptr(src.ptr), stride(src.stride) {}
 	//template<typename U,std::size_t StrideBytes2>
 	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
 	HOST DEVICE ~strided_ptr() {}
@@ -223,28 +100,43 @@ public:
 	HOST DEVICE inline size_type get_stride() const { return stride/StrideBytes; }
 	HOST DEVICE inline __CONSTEXPR__ size_type get_stride_bytes() const { return StrideBytes; }
 
-	HOST DEVICE inline pointer get() const { return reinterpret_cast<pointer>(ptr); }
+	//HOST DEVICE inline pointer get() const { return reinterpret_cast<pointer>(ptr); }
+	HOST DEVICE inline pointer get() const { return ptr; }
 	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
 
-	HOST DEVICE inline strided_ptr& operator++() { ptr += stride; return *this; }
+	HOST DEVICE inline strided_ptr& operator++() {
+		ptr = get_char_ptr() + stride;
+		return *this;
+	}
 	HOST DEVICE inline strided_ptr operator++( int ) {
 		strided_ptr tmp(*this);
-		ptr += stride;
+		++(*this);
 		return tmp;
 	}
 
-	HOST DEVICE inline strided_ptr& operator--() { ptr -= stride; return *this; }
+	HOST DEVICE inline strided_ptr& operator--() {
+		ptr = get_char_ptr() - stride;
+		return *this;
+	}
 	HOST DEVICE inline strided_ptr operator--( int ) {
 		strided_ptr tmp(*this);
-		ptr -= stride;
+		--(*this);
 		return tmp;
 	}
 
-	HOST DEVICE inline strided_ptr& operator+=( const int strides ) { ptr += strides*stride; return *this; }
-	HOST DEVICE inline strided_ptr& operator-=( const int strides ) { ptr -= strides*stride; return *this; }
+	HOST DEVICE inline strided_ptr& operator+=( const int strides ) { ptr = pointer( get_char_ptr() + (strides*stride) ); return *this; }
+	HOST DEVICE inline strided_ptr& operator-=( const int strides ) { ptr = pointer( get_char_ptr() - (strides*stride) ); return *this; }
 
-	HOST DEVICE inline strided_ptr operator+( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr+(strides*stride)), stride/StrideBytes ); }
-	HOST DEVICE inline strided_ptr operator-( const int strides ) const { return strided_ptr<T,StrideBytes>( reinterpret_cast<pointer>(ptr-(strides*stride)), stride/StrideBytes ); }
+	HOST DEVICE inline strided_ptr operator+( const int strides ) const {
+		strided_ptr tmp(*this);
+		tmp += strides*stride;
+		return tmp;
+	}
+	HOST DEVICE inline strided_ptr operator-( const int strides ) const {
+		strided_ptr tmp(*this);
+		tmp -= strides*stride;
+		return tmp;
+	}
 
 	///
 	/// \brief operator-
@@ -259,12 +151,12 @@ public:
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }
 
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator==( const strided_ptr<T,StrideBytes2>& other ) const { return ptr == other.ptr; }
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator!=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr != other.ptr; }
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator< ( const strided_ptr<T,StrideBytes2>& other ) const { return ptr < other.ptr; }
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator> ( const strided_ptr<T,StrideBytes2>& other ) const { return ptr > other.ptr; }
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator<=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr <= other.ptr; }
-	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator>=( const strided_ptr<T,StrideBytes2>& other ) const { return ptr >= other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator==( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr == other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator!=( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr != other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator< ( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr < other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator> ( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr > other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator<=( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr <= other.ptr; }
+	template<std::size_t StrideBytes2> HOST DEVICE inline bool operator>=( const strided_ptr<T,PointerType,StrideBytes2>& other ) const { return ptr >= other.ptr; }
 
 };
 
@@ -316,6 +208,7 @@ public:
 
 	HOST DEVICE inline pointer get() const { return reinterpret_cast<pointer>(ptr); }
 	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+	HOST DEVICE inline operator pointer() const { return ptr; }
 
 	HOST DEVICE inline pitched_ptr& operator++() {
 		++ptr;
@@ -415,7 +308,7 @@ public:
 	typedef PointerType pointer;
 	//typedef value_type* pointer; //!< value_type*
 	typedef value_type& reference; //!< value_type&
-	typedef const T* const_pointer;
+	//typedef const PointerType const_pointer;
 	// nvcc V6.0.1 produced a warning "type qualifiers are meaningless here", but above replacement line is fine
 	//typedef const pointer const_pointer; //!< const value_type*
 	typedef const T& const_reference;
@@ -492,8 +385,8 @@ public:
 ///
 ///
 ///
-template<typename T>
-class contiguous_2d_memory_proxy : public contiguous_memory_proxy<T>
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
+class contiguous_2d_memory_proxy : public contiguous_memory_proxy<T,PointerType>
 {
 protected:
 	typedef contiguous_memory_proxy<T> base_type;
@@ -517,44 +410,25 @@ public:
 
 protected:
 	size_type numberBlocks;
-	size_type pitch;
+	//size_type pitch;
 
 public:
 	HOST DEVICE contiguous_2d_memory_proxy() : contiguous_memory_proxy<T>(), numberBlocks(0) {}
 	template<typename U>
-	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T>(src), numberBlocks(src.numberBlocks), pitch(src.pitch) {}
-	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks, size_type pitch = 0 ) : contiguous_memory_proxy<T>(ptr,length), numberBlocks(numberBlocks), pitch(pitch) {}
-	/*
-	template<class Container>
-	HOST DEVICE contiguous_2d_memory_proxy(
-		Container& container,
-		typename Container::size_type numberBlocks,
-		typename Container::size_type blockSize,
-		//typename Container::size_type width,
-		//typename Container::size_type height,
-		typename Container::size_type offset = typename Container::size_type()
-	) :	contiguous_memory_proxy<T>( container, numberBlocks*blockSize, offset ), numberBlocks(numberBlocks) {
-		//std::cerr << "contiguous_2d_memory_proxy( width=" << width << ", height=" << height << ", offset=" << offset << " )" << std::endl;
-	}
-	*/
+	HOST DEVICE contiguous_2d_memory_proxy( const contiguous_2d_memory_proxy<U>& src ) : contiguous_memory_proxy<T>(src), numberBlocks(src.numberBlocks) {}
+	HOST DEVICE contiguous_2d_memory_proxy( pointer ptr, size_type length, size_type numberBlocks ) : contiguous_memory_proxy<T>(ptr,length), numberBlocks(numberBlocks) {}
 	HOST DEVICE virtual ~contiguous_2d_memory_proxy() {}
 
 	// capacity:
 	HOST DEVICE inline size_type get_number_blocks() const { return numberBlocks; }
 	HOST DEVICE inline size_type get_block_size() const { return contiguous_memory_proxy<T>::size()/numberBlocks; }
-	HOST DEVICE inline size_type get_pitch() const { return pitch; }
+	//HOST DEVICE inline size_type get_pitch() const { return pitch; }
+
+	HOST DEVICE inline size_type size() const { return numberBlocks*base_type::size(); }
 
 	// element access:
-	HOST DEVICE inline row_type operator[]( size_type index ) {
-		char* ptr = reinterpret_cast<char*>(base_type::data());
-		ptr += get_pitch();
-		return row_type( reinterpret_cast<pointer>(ptr), get_block_size() );
-	}
-	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
-		const char* ptr = reinterpret_cast<const char*>(base_type::data());
-		ptr += get_pitch();
-		return row_type( reinterpret_cast<const_pointer>(ptr), get_block_size() );
-	}	
+	HOST DEVICE inline row_type operator[]( size_type index ) {	return row_type( base_type::data()+(index*base_type::size()), get_block_size() );	}
+	HOST DEVICE inline const_row_type operator[]( size_type index ) const {	return const_row_type( base_type::data()+(index*base_type::size()), get_block_size() ); }
 
 	HOST DEVICE contiguous_2d_memory_proxy& operator=( const contiguous_2d_memory_proxy& other ) {
 		base_type::operator=( other );
