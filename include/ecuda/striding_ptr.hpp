@@ -40,14 +40,7 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_STRIDING_PTR_HPP
 #define ECUDA_STRIDING_PTR_HPP
 
-//#include <cstddef>
 #include "global.hpp"
-//#include "iterators.hpp"
-//#include "device_ptr.hpp"
-
-//#ifdef __CPP11_SUPPORTED__
-//#include <memory>
-//#endif
 
 namespace ecuda {
 
@@ -57,10 +50,6 @@ namespace ecuda {
 /// Strided memory is a block of contiguous memory where elements are separated by
 /// fixed-length padding.  Thus, one has to "stride" over the padding to reach the
 /// next element.  The term was borrowed from the GNU Scientific Library.
-///
-/// An optional second template parameter StrideBytes can be specified when the stride
-/// is not a multiple of the byte size of the first template parameter T. By default
-/// StrideBytes=sizeof(T).
 ///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class striding_ptr {
@@ -87,6 +76,13 @@ public:
 
 	HOST DEVICE inline pointer get() const { return ptr; }
 	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+
+	///
+	/// \brief operator T*
+	///
+	/// Allows this object to be type-cast (e.g. static_cast<T*>(*this) or (T*)(*this))
+	/// to a naked pointer of type T*.
+	///
 	HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
 
 	HOST DEVICE inline striding_ptr& operator++() { ptr += stride; return *this; }
@@ -117,15 +113,7 @@ public:
 		return tmp;
 	}
 
-	///
-	/// \brief operator-
-	///
-	/// Note this will always be expressed in bytes, regardless of the size of element_type.
-	///
-	/// \param other
-	/// \return
-	///
-	HOST DEVICE inline difference_type operator-( const striding_ptr& other ) const { return ptr-other.ptr; } // strided_ptr<T>( ptr-other.ptr, stride ); }
+	HOST DEVICE inline difference_type operator-( const striding_ptr& other ) const { return ptr-other.ptr; }
 
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }

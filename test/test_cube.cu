@@ -20,6 +20,12 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
+template<typename T,std::size_t U> __global__
+void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
+	for( typename ecuda::cube<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
+}
+
 int main( int argc, char* argv[] ) {
 
 	estd::cube<Coordinate> hostCube( 3, 4, 5 );
@@ -33,6 +39,16 @@ int main( int argc, char* argv[] ) {
 
 	ecuda::cube<Coordinate> deviceCube( 3, 4, 5 );
 	deviceCube << hostCube;
+
+	ecuda::array<Coordinate,3> deviceRow;
+	fetchRow<<<1,1>>>( deviceCube, deviceRow );
+	CUDA_CHECK_ERRORS();
+	CUDA_CALL( cudaDeviceSynchronize() );
+	std::vector<Coordinate> hostRow;
+	deviceRow >> hostRow;
+	std::cout << "ROW";
+	for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
+	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 

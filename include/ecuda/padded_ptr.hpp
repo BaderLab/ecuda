@@ -41,14 +41,7 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_PADDED_PTR_HPP
 #define ECUDA_PADDED_PTR_HPP
 
-//#include <cstddef>
 #include "global.hpp"
-//#include "iterators.hpp"
-//#include "device_ptr.hpp"
-
-//#ifdef __CPP11_SUPPORTED__
-//#include <memory>
-//#endif
 
 namespace ecuda {
 
@@ -179,6 +172,12 @@ public:
 	HOST DEVICE inline padded_ptr operator+( const int units ) const { return padded_ptr(*this).operator+=(units); }
 	HOST DEVICE inline padded_ptr operator-( const int units ) const { return padded_ptr(*this).operator-=(units); }
 
+	/*
+	 * Going to disable this for now. It's unclear to me how this would be useful and produce intuitive behaviour.
+	 * Since the padding isn't necessarily a multiple of the element_type, the difference between two pointers, even
+	 * if they're in the same "array" (so to speak), cannot be guaranteed to be a whole numbered multiple of
+	 * element_type-sized bytes.  Yet, this is probably what you'd intuitively expect.  The commented out implementation
+	 * below returns the number of bytes difference, which is guaranteed to be correct, but is unintuitive.
 	///
 	/// \brief operator-
 	///
@@ -188,6 +187,7 @@ public:
 	/// \return
 	///
 	HOST DEVICE inline difference_type operator-( const padded_ptr& other ) const { return to_char_ptr() - other.to_char_ptr(); }
+	*/
 
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }
