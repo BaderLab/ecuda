@@ -251,7 +251,7 @@ xy_type stride=pitch
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), row_size()*columnIndex, 0, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
-		padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > pp2( pp, depth_size(), column_size()*depth_size(), 0 );
+		padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > pp2( pp, depth_size(), column_size()*depth_size()-depth_size(), 0 );
 		return const_slice_xz_type( pp2, row_size(), depth_size() );
 	}
 
