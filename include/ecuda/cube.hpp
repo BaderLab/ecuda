@@ -331,13 +331,45 @@ xy_type stride=pitch
 	}
 	#endif
 
-	HOST void resize( const size_type numberRows, const size_type numberColumns, const size_type numberDepths ) {
-		if( row_size() == numberRows and column_size() == numberColumns and depth_size() == numberDepths ) return; // no resize needed
-		// allocate memory
-		this->numberRows = numberRows;
-		this->numberColumns = numberColumns;
-		this->numberDepths = numberDepths;
-		deviceMemory = device_ptr<T>( DevicePitchAllocator<T>().allocate( numberColumns*numberDepths, numberRows, pitch ) );
+	HOST void resize( const size_type r, const size_type c, const size_type d ) {
+		if( row_size() == r and column_size() == c and depth_size() == d ) return; // no resize needed
+		cube<value_type,allocator_type> newCube( r, c, d );
+		for( size_type i = 0; i < std::min(r,row_size()); ++i ) {
+			for( size_type j = 0; j < std::min(c,column_size()); ++j ) {
+				CUDA_CALL(
+					cudaMemcpy<value_type>(
+						newCube.allocator.address( newCube.deviceMemory.get(), i*newCube.numberColumns+j, 0, newCube.pitch ),
+						allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ),
+						std::min(d,depth_size()),
+						cudaMemcpyDeviceToDevice
+					)
+				);
+			}
+		}
+		// take the information from the new structure
+		deviceMemory = newCube.deviceMemory;
+		pitch = newCube.pitch;
+		numberRows = newCube.numberRows;
+		numberColumns = newCube.numberColumns;
+		numberDepths = newCube.numberDepths;
+	}
+
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector<value_type> v( depth_size(), value );
+		// seed the device memory
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), depth_size(), cudaMemcpyHostToDevice ) );
+		// make additional copies within the device
+		for( size_type i = 1; i < row_size()*column_size(); ++i ) {
+			CUDA_CALL(
+				cudaMemcpy<value_type>(
+					allocator.address( data(), i, 0, pitch ), deviceMemory.get(), depth_size(), cudaMemcpyDeviceToDevice
+				)
+			);
+		}
+		#endif
 	}
 
 	#if HAVE_ESTD_LIBRARY > 0
