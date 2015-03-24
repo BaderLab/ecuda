@@ -22,11 +22,20 @@ typedef unsigned char uint8_t;
 
 template<typename T,std::size_t U> __global__
 void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
-	T val = *cube.get_allocator().address( cube.data(), 2, 3, cube.get_pitch() );
-                //const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-	printf( "start=[%.05f %.05f %.05f]\n", val.x, val.y, val.z );
 	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
 	for( typename ecuda::cube<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
+}
+
+template<typename T,std::size_t U> __global__
+void fetchColumn( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	typename ecuda::cube<T>::const_depth_type column = cube.get_column( 1, 4 );
+	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
+}
+
+template<typename T,std::size_t U> __global__
+void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
+	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
 }
 
 int main( int argc, char* argv[] ) {
@@ -49,15 +58,41 @@ int main( int argc, char* argv[] ) {
 
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
-	ecuda::array<Coordinate,3> deviceRow;
-	fetchRow<<<1,1>>>( deviceCube, deviceRow );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
-	std::vector<Coordinate> hostRow;
-	deviceRow >> hostRow;
-	std::cout << "ROW";
-	for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
-	std::cout << std::endl;
+	{
+		ecuda::array<Coordinate,3> deviceRow;
+		fetchRow<<<1,1>>>( deviceCube, deviceRow );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostRow;
+		deviceRow >> hostRow;
+		std::cout << "ROW";
+		for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
+		std::cout << std::endl;
+	}
+
+	{
+		ecuda::array<Coordinate,4> deviceColumn;
+		fetchColumn<<<1,1>>>( deviceCube, deviceColumn );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostColumn;
+		deviceColumn >> hostColumn;
+		std::cout << "COLUMN";
+		for( std::vector<Coordinate>::size_type i = 0; i < hostColumn.size(); ++i ) std::cout << hostColumn[i];
+		std::cout << std::endl;
+	}
+
+	{
+		ecuda::array<Coordinate,5> deviceDepth;
+		fetchDepth<<<1,1>>>( deviceCube, deviceDepth );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostDepth;
+		deviceDepth >> hostDepth;
+		std::cout << "DEPTH";
+		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
+		std::cout << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 
