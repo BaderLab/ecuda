@@ -188,13 +188,13 @@ public:
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
-		ptr += index*get_width();
-		return row_type( ptr, get_width() );
+		ptr += index*get_height(); //get_width();
+		return row_type( ptr, get_height() ); // get_width() );
 	}
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
 		pointer ptr = base_type::data();
-		ptr += index*get_width();
-		return const_row_type( ptr, get_width() );
+		ptr += index*get_height(); //get_width();
+		return const_row_type( ptr, get_height() ); //get_width() );
 	}
 
 	HOST DEVICE contiguous_2d_memory_proxy& operator=( const contiguous_2d_memory_proxy& other ) {

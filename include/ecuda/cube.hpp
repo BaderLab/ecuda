@@ -237,14 +237,14 @@ xy_type stride=pitch
 	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*column_size(), 0, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
-		return const_slice_yz_type( pp, depth_size(), column_size() );
+		return const_slice_yz_type( pp, column_size(), depth_size() );
 	}
 
 	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), 0 );
 		striding_ptr<const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, depth_size() );
-		return const_slice_xy_type( sp, column_size(), row_size() );
+		return const_slice_xy_type( sp, row_size(), column_size() );
 	}
 
 	/*
