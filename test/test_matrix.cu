@@ -66,6 +66,9 @@ int main( int argc, char* argv[] ) {
 	ecuda::matrix<Coordinate> deviceMatrix( 5, 10 );
 	deviceMatrix << hostMatrix;
 
+std::cerr << "pitch=" << deviceMatrix.get_pitch() << std::endl;
+std::cerr << "pad=" << ( deviceMatrix.get_pitch() - deviceMatrix.number_columns()*sizeof(Coordinate) ) << std::endl;
+
 	deviceMatrix >> hostMatrix;
 	for( estd::matrix<Coordinate>::row_index_type i = 0; i < hostMatrix.row_size(); ++i ) {
 		std::cout << "DEVICE";

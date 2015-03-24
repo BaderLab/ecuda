@@ -137,6 +137,22 @@ public:
 	HOST DEVICE inline bool operator<=( const striding_ptr<T,PointerType>& other ) const { return ptr <= other.ptr; }
 	HOST DEVICE inline bool operator>=( const striding_ptr<T,PointerType>& other ) const { return ptr >= other.ptr; }
 
+	HOST DEVICE striding_ptr& operator=( const striding_ptr<T,PointerType>& other ) {
+		ptr = other.ptr;
+		stride = other.stride;
+		return *this;
+	}
+
+	HOST DEVICE striding_ptr& operator=( PointerType& pt ) {
+		ptr = pt;
+		return *this;
+	}
+
+	HOST DEVICE striding_ptr& operator=( T* p ) {
+		ptr = p;
+		return *this;
+	}
+
 };
 
 } // namespace ecuda

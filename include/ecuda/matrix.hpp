@@ -130,8 +130,6 @@ public:
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) {
-		std::cerr << "pitch=" << pitch << std::endl;
-		std::cerr << "pad=" << ( pitch - numberColumns*sizeof(value_type) ) << std::endl;
 		pointer p = allocator.address( data(), 0, columnIndex, pitch );
 		striding_ptr<value_type> sp( p, number_columns() );
 		padded_ptr< value_type, striding_ptr<value_type>, 1 > pp( sp, 1, pitch-numberColumns*sizeof(value_type), 0 );
