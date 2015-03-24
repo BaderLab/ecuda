@@ -22,6 +22,9 @@ typedef unsigned char uint8_t;
 
 template<typename T,std::size_t U> __global__
 void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	T val = *cube.get_allocator().address( cube.data(), 2, 3, cube.get_pitch() );
+                //const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
+	printf( "start=[%.05f %.05f %.05f]\n", val.x, val.y, val.z );
 	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
 	for( typename ecuda::cube<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
 }
@@ -39,6 +42,12 @@ int main( int argc, char* argv[] ) {
 
 	ecuda::cube<Coordinate> deviceCube( 3, 4, 5 );
 	deviceCube << hostCube;
+
+	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
+	deviceCube >> hostCube;
+	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
+
+	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
 	ecuda::array<Coordinate,3> deviceRow;
 	fetchRow<<<1,1>>>( deviceCube, deviceRow );

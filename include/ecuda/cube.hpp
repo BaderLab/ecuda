@@ -195,8 +195,11 @@ public:
 
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
 		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
+printf( "np=%i\n", np );
 		padded_ptr<value_type,pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
+printf( "pp=%i\n", pp.get() );
 		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, column_size()*depth_size() );
+printf( "sp=%i\n", sp.get() );
 		return row_type( sp, row_size() );
 		//return row_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
@@ -213,9 +216,14 @@ public:
 		//return depth_type( allocator.address( deviceMemory.get(), rowIndex*column_size()+columnIndex, 0, pitch ), depth_size() );
 	}
 	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
+printf( "pitch=%i sizeof(value_type)=%i\n", get_pitch(), (int)sizeof(value_type) );
+printf( "dp=%i\n", deviceMemory.get() );
 		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
+printf( "np=%i\n", np );
 		padded_ptr<const value_type,const_pointer,1> pp( np, depth_size(), pitch-depth_size()*sizeof(value_type), depthIndex );
+printf( "pp=%i\n", pp.get() );
 		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, column_size()*depth_size() );
+printf( "sp=%i\n", sp.get().get() );
 		return const_row_type( sp, row_size() );
 		//return const_row_type( strided_ptr<const value_type,1>( allocator.address( deviceMemory.get(), columnIndex*row_size(), depthIndex, pitch ), pitch*numberColumns ), row_size() );
 	}
@@ -261,7 +269,7 @@ xy_type stride=pitch
 	HOST DEVICE inline const_yz_type get_yz( const size_type y, const size_type z ) const { return const_yz_type( strided_ptr<value_type,1>( allocator.address( deviceMemory.get(), y, z, pitch ), column_size()*pitch ), row_size() ); }
 	*/
 
-	HOST inline allocator_type get_allocator() const { return allocator; }
+	HOST DEVICE inline allocator_type get_allocator() const { return allocator; }
 
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
