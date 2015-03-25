@@ -29,7 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // allocators.hpp
-// STL-compatible memory allocators.
+// STL-compatible memory allocators using CUDA memory allocation routines.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------

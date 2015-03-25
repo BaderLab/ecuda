@@ -59,7 +59,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// \brief A video memory-bound vector structure.
+/// \brief A video memory-bound vector container.
 ///
 ///
 ///
@@ -71,7 +71,7 @@ public:
 	typedef T value_type; //!< cell data type
 	typedef Alloc allocator_type; //!< allocator type
 	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integer type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
 	#ifdef __CPP11_SUPPORTED__
 	typedef value_type& reference; //!< cell reference type
 	typedef const value_type& const_reference; //!< cell const reference type

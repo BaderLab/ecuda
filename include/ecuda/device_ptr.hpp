@@ -42,6 +42,10 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "algorithm.hpp"
 
+#ifdef __CPP11_SUPPORTED__
+#include <cstddef> // to get std::nullptr_t
+#endif
+
 namespace ecuda {
 
 ///
@@ -153,16 +157,76 @@ public:
 		#endif
 	}
 
+	///
+	/// \brief Releases ownership of the managed pointer to device memory.
+	///
+	/// After this call, *this manages no object.
+	///
 	HOST DEVICE inline void reset() __NOEXCEPT__ { device_ptr().swap(*this); }
+
+	///
+	/// \brief Replaces the managed pointer to device memory with another.
+	///
+	/// U must be a complete type and implicitly convertible to T.
+	///
 	template<typename U> HOST DEVICE inline void reset( U* p ) __NOEXCEPT__ { device_ptr<T>(p).swap(*this); }
 
-	HOST DEVICE inline pointer get() const { return ptr; }
-	DEVICE inline reference operator*() const { return *ptr; }
-	DEVICE inline pointer   operator->() const { return ptr; }
+	///
+	/// \brief Returns the managed pointer to device memory.
+	///
+	/// If no pointer is being managed, this will return null.
+	///
+	/// \returns A pointer to device memory.
+	///
+	HOST DEVICE inline pointer get() const __NOEXCEPT__ { return ptr; }
+
+	///
+	/// \brief Dereferences the managed pointer to device memory.
+	///
+	/// \returns A reference to the object at the managed device memory location.
+	///
+	DEVICE inline reference operator*() const __NOEXCEPT__ { return *ptr; }
+
+	///
+	/// \brief Dereferences the managed pointer to device memory.
+	///
+	/// \returns A pointer to the object at the managed device memory location.
+	///
+	DEVICE inline pointer   operator->() const __NOEXCEPT__ { return ptr; }
+
+	///
+	/// \brief Returns the number of different host-bound device_ptr instances managing the current pointer to device memory.
+	///
+	/// If there is no managed pointer 0 is returned.
+	///
+	/// \returns The number of host-bound device_ptr instances managing the current pointer to device memory. 0 if there is no managed pointer.
+	///
 	HOST inline size_type use_count() const __NOEXCEPT__ { return reference_count ? *reference_count : 0; }
+
+	///
+	/// \brief Checks if *this is the only device_ptr instance managing the current pointer to device memory.
+	///
+	/// \returns true if *this is the only device_ptr instance managing the current pointer to device memory, false otherwise.
+	///
 	HOST inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
-	HOST DEVICE inline operator bool() const { return get() != nullptr; }
-	HOST DEVICE inline operator pointer() const { return ptr; }
+
+	///
+	/// \brief Checks if *this stores a non-null pointer, i.e. whether get() != nullptr.
+	///
+	/// \returns true if *this stores a pointer, false otherwise.
+	///
+	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != nullptr; }
+
+	///
+	/// \brief Checks whether this device_ptr precedes other in implementation defined owner-based (as opposed to value-based) order.
+	///
+	/// This method is included to make device_ptr have as much as common with the STL C++11 shared_ptr specification, although
+	/// it is not currently used for any internal ecuda purposes and hasn't been extensively tested.  At present, it returns false
+	/// if neither of the compared device_ptrs manage pointers, and true if this managed pointer's address is less than other
+	/// (if one or the other manages no pointers, i.e. is null, the address is considered to be 0 for the purposes of comparison).
+	///
+	/// \returns true if *this precedes other, false otherwise.
+	///
 	template<typename U>
 	bool owner_before( const device_ptr<U>& other ) const {
 		if( ptr == other.ptr ) return false;
@@ -171,18 +235,27 @@ public:
 		return ptr < other.ptr;
 	}
 
-	// only device can dereference the pointer or call for the pointer in the context of acting upon the object
-	//DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
+	template<typename U> HOST DEVICE inline bool operator==( const device_ptr<U>& other ) const { return ptr == other.get(); }
+	template<typename U> HOST DEVICE inline bool operator!=( const device_ptr<U>& other ) const { return ptr != other.get(); }
+	template<typename U> HOST DEVICE inline bool operator< ( const device_ptr<U>& other ) const { return ptr <  other.get(); }
+	template<typename U> HOST DEVICE inline bool operator> ( const device_ptr<U>& other ) const { return ptr >  other.get(); }
+	template<typename U> HOST DEVICE inline bool operator<=( const device_ptr<U>& other ) const { return ptr <= other.get(); }
+	template<typename U> HOST DEVICE inline bool operator>=( const device_ptr<U>& other ) const { return ptr >= other.get(); }
 
-	// both host and device can do comparisons on the pointer
-	HOST DEVICE inline bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
-	HOST DEVICE inline bool operator!=( const device_ptr<T>& other ) const { return ptr != other.ptr; }
-	HOST DEVICE inline bool operator< ( const device_ptr<T>& other ) const { return ptr <  other.ptr; }
-	HOST DEVICE inline bool operator> ( const device_ptr<T>& other ) const { return ptr >  other.ptr; }
-	HOST DEVICE inline bool operator<=( const device_ptr<T>& other ) const { return ptr <= other.ptr; }
-	HOST DEVICE inline bool operator>=( const device_ptr<T>& other ) const { return ptr >= other.ptr; }
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE inline bool operator==( std::nullptr_t other ) const { return ptr == other; }
+	HOST DEVICE inline bool operator!=( std::nullptr_t other ) const { return ptr != other; }
+	HOST DEVICE inline bool operator< ( std::nullptr_t other ) const { return ptr <  other; }
+	HOST DEVICE inline bool operator> ( std::nullptr_t other ) const { return ptr >  other; }
+	HOST DEVICE inline bool operator<=( std::nullptr_t other ) const { return ptr <= other; }
+	HOST DEVICE inline bool operator>=( std::nullptr_t other ) const { return ptr >= other; }
+	#endif
 
-	HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
+	template<typename U,typename V>
+	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const device_ptr& ptr ) {
+		out << ptr.get();
+		return out;
+	}
 
 	HOST device_ptr<T>& operator=( pointer p ) {
 		~device_ptr();
@@ -204,8 +277,29 @@ public:
 		return *this;
 	}
 
+	/*
+	 * These methods were included at one time, but in retrospect are not part of
+	 * shared_ptr spec and don't actually have any use in ecuda implementation.
+	 * Listed here for debugging purposes in case there was an unforseen dependency.
+	 */
+	//HOST DEVICE inline operator pointer() const { return ptr; }
+	//DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
+	//HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
+
 };
 
 } // namespace ecuda
+
+#ifdef __CPP11_SUPPORTED__
+//
+// C++ hash support for device_ptr.
+//
+namespace std {
+template<typename T>
+struct hash< ecuda::device_ptr<T> > {
+	size_t operator()( const ecuda::device_ptr<T>& dp ) const { return hash<typename ecuda::device_ptr<T>::pointer>()( dp.get() ); }
+};
+} // namespace std
+#endif
 
 #endif

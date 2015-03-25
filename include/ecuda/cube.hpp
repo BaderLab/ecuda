@@ -46,48 +46,112 @@ either expressed or implied, of the FreeBSD Project.
 #endif
 #include "global.hpp"
 #include "allocators.hpp"
-#include "containers.hpp"
-//#include "iterators.hpp"
+#include "device_ptr.hpp"
+#include "padded_ptr.hpp"
+#include "striding_ptr.hpp"
 #include "matrix.hpp"
 #include "memory.hpp"
 
 namespace ecuda {
 
+///
+/// \brief A video-memory bound cube container.
+///
+/// A cube is defined as a 3D structure of dimensions rows*columns*depths. The default implementation
+/// uses pitched memory where a 2D block of video memory is allocated with width=depths and height=rows*columns.
+/// Pitched memory is aligned in a device-dependent manner so that calls to individual elements can
+/// be threaded more efficiently (i.e. minimizing the number of read operations required to supply data to
+/// multiple threads). Consult the CUDA API documentation for a more verbose explanation.
+///
+/// Memory use can be conceptualized as:
+/// \code
+///              |- depths -|
+///              |---- pitch ----|
+///    _     _   +----------+----+
+///   |     |    |          |xxxx|
+///   |  columns |          |xxxx| x = allocated but not used, just padding to
+///   |     |_   |          |xxxx|     enforce an efficient memory alignment
+///  rows        |          |xxxx|
+///   |          |          |xxxx|
+///   |          |          |xxxx|
+///   |_         +----------+----+
+/// \endcode
+///
+/// As a result, it is highly desirable for threading to utilize a depth-wise orientation.
+/// For example, a good kernel to perform an operation on the elements of a cube might be:
+///
+/// \code{.cpp}
+/// template<typename T> __global__ void doCubeOperation( ecuda::cube<T> cube ) {
+///    const int dep = blockDim.x*gridDim.x; // each thread gets a different depth value
+///    const int row = blockIdx.y;
+///    const int col = blockIdx.z;
+///    if( row < cube.number_rows() and col < cube.number_columns() and dep < cube.number_depths() ) {
+///       T& value = cube[row][col][dep];
+///       // ... do work on value
+///    }
+/// }
+/// \endcode
+///
+/// This could be called from host code like:
+/// \code{.cpp}
+/// ecuda::cube<double> cube( 10, 20, 1000 );
+/// // ... fill cube with data
+/// dim3 grid( 1, 10, 20 ), block( 1000, 1, 1 );
+/// doCubeOperation<<<grid,block>>>( cube );
+/// \endcode
+///
+/// Unfortunately, CUDA solutions are very problem specific, so there is no generally applicable example for
+/// specifying how thread blocks should be defined.  The size of the cube, hardware limitations, CUDA API
+/// limitations, etc. all play a part.  For example, the above implementation won't work in earlier versions
+/// of CUDA since blockDim.x is limited to 512.
+///
+/// Just keep in mind that the depth dimension lies in contiguous memory, the column dimension is contiguous
+/// blocks of depth blocks, and the row dimension is contiguous blocks of column blocks; thus, an implementation
+/// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
+///
 template< typename T, class Alloc=DevicePitchAllocator<T> >
 class cube {
 
 public:
-	typedef T value_type;
-	typedef Alloc allocator_type;
-	typedef T* pointer;
-	typedef const T* const_pointer;
-	typedef T& reference;
-	typedef const T& const_reference;
-	typedef std::ptrdiff_t difference_type;
-	typedef std::size_t size_type;
+	typedef T value_type; //!< cell data type
+	typedef Alloc allocator_type; //!< allocator type
+	typedef std::size_t size_type; //!< unsigned integral type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
+	#ifdef __CPP11_SUPPORTED__
+	typedef value_type& reference; //!< cell reference type
+	typedef const value_type& const_reference; //!< cell const reference type
+	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
+	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
+	#else
+	typedef typename Alloc::reference reference; //!< cell reference type
+	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
+	typedef typename Alloc::pointer pointer; //!< cell pointer type
+	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
+	#endif
 
-	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type;
-	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type;
-	typedef contiguous_memory_proxy< value_type                                                               > depth_type;
-	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type;
-	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type;
-	typedef contiguous_memory_proxy< const value_type                                                                                 > const_depth_type;
+	//typedef T* pointer;
+	//typedef const T* const_pointer;
+	//typedef T& reference;
+	//typedef const T& const_reference;
 
-	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type;
-	typedef contiguous_2d_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type;
-	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type;
-	//typedef contiguous_2d_memory_proxy< value_type > slice_yz_type;
-	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type;
-	typedef contiguous_2d_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type;
-	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type;
-	//typedef contiguous_2d_memory_proxy< const value_type,   padded_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xz_type;
+	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
+	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
+	typedef contiguous_memory_proxy< value_type                                                               > depth_type; //!< cube depth type
+	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
+	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
+	typedef contiguous_memory_proxy< const value_type                                                                                 > const_depth_type; //!< const cube depth type
 
-	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator;
-	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator;
-	typedef pointer_reverse_iterator<iterator> reverse_iterator;
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator;
-	//typedef yz_type matrix_type;
-	//typedef const_yz_type const_matrix_type;
+	typedef contiguous_2d_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
+	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
+	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
+	typedef contiguous_2d_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
+	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
+	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
+
+	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
+	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
+	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be

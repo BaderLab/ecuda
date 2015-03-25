@@ -47,13 +47,61 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
-#include "containers.hpp"
 #include "memory.hpp"
 
 namespace ecuda {
 
 ///
-/// A video memory-bound matrix structure.
+/// \brief A video-memory bound matrix container.
+///
+/// A matrix is defined as a 2D structure of dimensions rows*columns.  The default implementation
+/// uses pitched memory where a 2D block of video memory is allocated with width=columns and height=rows.
+/// Pitched memory is aligned in a device-dependent manner so that calls to individual elements can be
+/// threaded more efficiently (i.e. minimizing the number of read operations required to supply data to
+/// multiple threads). Consult the CUDA API documentation for a more verbose explanation.
+///
+/// Memory use can be conceptualized as:
+/// \code
+///       |- columns -|
+///       |---- pitch -----|
+///    _  +-----------+----+
+///   |   |           |xxxx| x = allocated but not used, just padding to
+///   |   |           |xxxx|     enforce an efficient memory alignment
+///  rows |           |xxxx|
+///   |   |           |xxxx|
+///   |_  +-----------+----+
+/// \endcode
+///
+/// As a result, it is highly desirable for threading to utilize a column-wise orientation.
+/// For example, a good kernel to perform an operation on the elements of a matrix might be:
+///
+/// \code{.cpp}
+/// template<typename T> __global__ void doMatrixOperation( ecuda::matrix<T> matrix ) {
+///    const int row = blockIdx.x;
+///    const int col = blockDim.y*gridDim.y; // each thread gets a different column value
+///    if( row < matrix.number_rows() and col < matrix.number_columns() ) {
+///       T& value = matrix[row][col];
+///       // ... do work on value
+///    }
+/// }
+/// \endcode
+///
+/// This could be called from host code like:
+/// \code{.cpp}
+/// ecuda::matrix<double> matrix( 100, 1000 );
+/// // ... fill matrix with data
+/// dim3 grid( 100, 1 ), block( 1, 1000 );
+/// doMatrixOperation<<<grid,block>>>( matrix );
+/// \endcode
+///
+/// Unfortunately, CUDA solutions are very problem specific, so there is no generally applicable example for
+/// specifying how thread blocks should be defined.  The size of the matrix, hardware limitations, CUDA API
+/// limitations, etc. all play a part.  For example, the above implementation won't work in earlier versions
+/// of CUDA since blockDim.y is limited to 512.
+///
+/// Just keep in mind that the column dimension lies in contiguous memory, and the row dimension is contiguous
+/// blocks of columns; thus, an implementation that aims to have concurrently running threads accessing
+/// column >>>> row will run much more efficiently.
 ///
 template< typename T, class Alloc=DevicePitchAllocator<T> >
 class matrix {

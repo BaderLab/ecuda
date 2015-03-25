@@ -146,11 +146,11 @@ public:
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
 	/// of the container is required in host code, use the assignment operator. For example:
 	///
-	/// <code>
+	/// \code{.cpp}
 	/// ecuda::array<int,10> arr( 3 ); // fill array with 3s
 	/// ecuda::array<int,10> newArr( arr ); // shallow copy
 	/// ecuda::array<int,10> newArr; newArr = arr; // deep copy
-	/// </code>
+	/// \endcode
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
@@ -211,7 +211,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( size_type index ) { return deviceMemory[index]; }
+	DEVICE inline reference operator[]( size_type index ) { return *(deviceMemory.get()+index); }
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
@@ -235,7 +235,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( size_type index ) const { return deviceMemory[index]; }
+	DEVICE inline const_reference operator[]( size_type index ) const { return *(deviceMemory.get()+index); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.

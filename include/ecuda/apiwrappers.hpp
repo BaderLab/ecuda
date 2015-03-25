@@ -39,9 +39,6 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_APIWRAPPERS_HPP
 #define ECUDA_APIWRAPPERS_HPP
 
-#include <limits>
-#include <stdexcept>
-
 #include "global.hpp"
 
 namespace ecuda {

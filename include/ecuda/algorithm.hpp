@@ -29,7 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // algorithm.hpp
-// General functions for use with CUDA.
+// Generic functions found in STL algorithm reimplemented for use with CUDA.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -42,6 +42,11 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+///
+/// \brief Exchanges the given values.
+///
+/// \param t1,t2 the values to be swapped
+///
 template<typename T>
 DEVICE void swap( T& t1, T& t2 ) {
 	T tmp = t1;
@@ -49,6 +54,11 @@ DEVICE void swap( T& t1, T& t2 ) {
 	t2 = tmp;
 }
 
+///
+/// \brief Checks if the first range [begin1,end1) is lexicographically less than the second range [begin2,end2).
+///
+/// \returns true if the first range is lexicographically less than the second.
+///
 template<class InputIterator1,class InputIterator2>
 DEVICE bool lexicographical_compare( InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, InputIterator2 end2 ) {
 	for( ; (begin1 != end1) and (begin2 != end2); ++begin1, ++begin2 ) {
@@ -57,7 +67,6 @@ DEVICE bool lexicographical_compare( InputIterator1 begin1, InputIterator1 end1,
 	}
 	return begin1 == end1 and begin2 == end2;
 }
-
 
 } // namespace ecuda
 
