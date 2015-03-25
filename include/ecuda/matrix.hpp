@@ -48,6 +48,9 @@ either expressed or implied, of the FreeBSD Project.
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "memory.hpp"
+#include "device_ptr.hpp"
+#include "padded_ptr.hpp"
+#include "striding_ptr.hpp"
 
 namespace ecuda {
 
