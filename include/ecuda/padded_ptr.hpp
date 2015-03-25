@@ -45,8 +45,12 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond INTERNAL_CODE
+
 ///
-/// Utility to convert arbitrary pointer type to char* whilst maintaining constness.
+/// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.
+/// Since we don't know if the pointer provided to padded_ptr is const or not, whether to
+/// convert to const char* or char* is not implicit.
 ///
 /// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
 ///       this is a less elegant method that works with C98 and later.
@@ -54,6 +58,8 @@ namespace ecuda {
 template<typename T> struct cast_to_char;
 template<typename T> struct cast_to_char<T*> { typedef char* type; };
 template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
+
+/// \endcond
 
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,std::size_t PaddingUnitBytes=sizeof(T)>
 class padded_ptr {
@@ -66,33 +72,59 @@ public:
 	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
 
 private:
-	pointer ptr;
-	const size_type data_length; // contiguous elements of data before pad, expressed in units of element_type
-	const size_type padding_length;  // contiguous elements of padding after data, expressed in PaddingUnitBytes
-	size_type distance_to_padding; // distance of current pointer from the padding, expressed in units of element_type
+	pointer ptr; //!< underlying pointer
+	const size_type data_length; //!< contiguous elements of data before pad, expressed in units of element_type
+	const size_type padding_length;  //!< contiguous elements of padding after data, expressed in PaddingUnitBytes
+	size_type distance_to_padding; //!< distance of current pointer from the padding, expressed in units of element_type
 
 private:
+	///
+	/// Move the pointer ahead padding_length bytes, regardless of
+	/// the sizeof the managed pointer.
+	///
 	HOST DEVICE void jump_forward_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-		//typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(ptr);
 		char_ptr += padding_length*PaddingUnitBytes;
 		ptr = reinterpret_cast<T*>(char_ptr);
 	}
+
+	///
+	/// Move the pointer back padding_length bytes, regardless of
+	/// the sizeof the managed pointer.
+	///
 	HOST DEVICE void jump_backwards_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-		//typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(ptr);
 		char_ptr -= padding_length*PaddingUnitBytes;
 		ptr = reinterpret_cast<T*>(char_ptr);
 	}
+
+	///
+	/// Casts the underlying pointer to a char pointer whilst maintaining constness.
+	/// e.g. const int* -> const char* ; int* -> char*
+	///
 	HOST DEVICE inline typename cast_to_char<T*>::type to_char_ptr() const {
 		T* p = static_cast<T*>(ptr);
 		return reinterpret_cast<typename cast_to_char<T*>::type>(p);
-		//return reinterpret_cast<typename cast_to_char<T*>::type>(ptr);
 	}
 
 public:
+	///
+	/// \brief Default constructor.
+	///
+	/// The pointer p points to a location within a block of padded memory where
+	/// every data_length contiguous elements of type T are followed by a block
+	/// of ignorable memory that is padding_length units of size PaddingUnitBytes.
+	/// pointer_position specifies the current location of the pointer within a
+	/// data block.
+	///
+	/// \param p a pointer to an element of type T
+	/// \param data_length the number of contiguous elements of type T that comprise the data block
+	/// \param padding_length the number of PaddingUnitBytes-sized elements of padding following each data block
+	/// \param pointer_position the index of the pointer within the current data block
+	///
+	///
 	HOST DEVICE padded_ptr( pointer p = pointer(), const size_type data_length = 1, const size_type padding_length = 0, const size_type pointer_position = 0 ) :
 		ptr(p),
 		data_length(data_length),
@@ -100,16 +132,42 @@ public:
 		distance_to_padding(data_length-pointer_position)
 	{
 	}
+
+	///
+	/// \brief Copy constructor.
+	///
 	HOST DEVICE padded_ptr( const padded_ptr<T,PointerType,PaddingUnitBytes>& src ) : ptr(src.ptr), data_length(src.data_length), padding_length(src.padding_length), distance_to_padding(src.distance_to_padding) {}
+
+	///
+	/// \brief Destructor.
+	///
 	HOST DEVICE ~padded_ptr() {}
 
+	///
+	/// \brief Gets the size of the contiguous data block in units of sizeof(T).
+	///
 	HOST DEVICE inline size_type get_data_length() const { return data_length; }
+
+	///
+	/// \brief Gets the the size of the contiguous padding block in units of size PaddingUnitBytes.
+	///
 	HOST DEVICE inline size_type get_padding_length() const { return padding_length; }
+
+	///
+	/// \brief Gets the size in bytes of the padding unit.
+	///
 	HOST DEVICE inline __CONSTEXPR__ size_type get_pad_length_units() const { return PaddingUnitBytes; }
+
+	///
+	/// \brief Gets the distance in units of sizeof(T) of the current pointer position from the next padding region.
+	///
 	HOST DEVICE inline size_type get_distance_to_padding() const { return distance_to_padding; }
 
+
 	HOST DEVICE inline pointer get() const { return ptr; }
+
 	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+
 	HOST DEVICE inline operator pointer() const { return ptr; }
 
 	HOST DEVICE inline padded_ptr& operator++() {
