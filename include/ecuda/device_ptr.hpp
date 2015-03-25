@@ -39,28 +39,10 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_DEVICE_PTR_HPP
 #define ECUDA_DEVICE_PTR_HPP
 
-//#include <cstddef>
 #include "global.hpp"
-
-//#ifdef __CPP11_SUPPORTED__
-//#include <memory>
-//#endif
+#include "algorithm.hpp"
 
 namespace ecuda {
-
-/*
-template<typename T>
-class deleter {
-public:
-	typedef T element_type;
-	typedef T* pointer;
-public:
-	HOST DEVICE deleter() {}
-	HOST DEVICE deleter( const deleter& other ) {}
-	HOST DEVICE ~deleter() {}
-	HOST inline void operator()( pointer ptr ) { if( ptr ) CUDA_CALL( cudaFree(ptr) ); }
-};
-*/
 
 ///
 /// A smart pointer for device memory.
@@ -88,58 +70,109 @@ public:
 
 private:
 	pointer ptr; //!< pointer to device memory
-	size_type* shared_count; //!< pointer to reference count
+	size_type* reference_count; //!< pointer to reference count
 
 public:
-	//HOST DEVICE device_ptr() : ptr(NULL) {
-	//	#ifndef __CUDA_ARCH__
-	//	shared_count = new size_type;
-	//	*shared_count = 1;
-	//	#endif
-	//}
+	///
+	/// \brief Default constructor.
+	///
+	/// \param ptr A pointer to the allocated block of device memory.
+	///
 	HOST DEVICE device_ptr( pointer ptr = pointer() ) : ptr(ptr) {
 		#ifndef __CUDA_ARCH__
-		shared_count = new size_type;
-		*shared_count = 1;
+		reference_count = new size_type;
+		*reference_count = 1;
+		#else
+		reference_count = nullptr;
 		#endif
 	}
 
-	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), shared_count(src.shared_count) {
+	///
+	/// \brief Copy constructor.
+	///
+	/// If called from the host, the reference count is incremented. If called from the device,
+	/// the underlying pointer is copied but no change to the reference count occurs.
+	///
+	/// \param src Another device pointer to be used as source to initialize with.
+	///
+	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), reference_count(src.reference_count) {
 		#ifndef __CUDA_ARCH__
-		++(*shared_count);
+		++(*reference_count);
 		#endif
 	}
 
 	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Move constructor.
+	///
+	/// Constructs the device pointer using move semantics.
+	///
+	/// \param src Another device pointer whose contents are to be moved.
+	///
 	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), shared_count(src.shared_count) {
-		src.ptr = NULL;
-		src.shared_count = NULL;
+		src.ptr = nullptr;
+		#ifndef __CUDA_ARCH__
+		src.reference_count = new size_type;
+		*(src.reference_count) = 1;
+		#else
+		src.reference_count = nullptr;
+		#endif
 	}
 	#endif
 
-	// destroys the smart pointer, if instantiated from the host this will decrement the share count,
-	// if instantiated from the device nothing happens, iff. the share count is zero and the smart
-	// pointer resides on the host, the underlying device memory will be deallocated.
+	///
+	/// \brief Destructor.
+	///
+	/// Destructs the device pointer. If called from host code, the reference count is decremented.
+	/// If the reference count becomes zero, the device memory is freed. If called from the device
+	/// the object is destroyed but nothing happens to the underlying pointer or reference count.
+	///
 	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
-		--(*shared_count);
-		if( !(*shared_count) ) {
+		--(*reference_count);
+		if( !(*reference_count) ) {
 			if( ptr ) CUDA_CALL( cudaFree( ptr ) );
 			//deleter<T>()(ptr);
-			delete shared_count;
+			delete reference_count;
 		}
 		#endif
 	}
 
-	// both host and device can get the pointer itself
-	HOST DEVICE inline pointer get() const { return ptr; }
-	HOST DEVICE inline operator bool() const { return get() != NULL; }
-	HOST DEVICE inline operator pointer() const { return ptr; }
+	///
+	/// \brief Exchanges the contents of *this and other.
+	///
+	/// \param other device pointer to exchange the contents with
+	///
+	HOST DEVICE inline void swap( device_ptr& other ) __NOEXCEPT__ {
+		#ifdef __CUDA_ARCH__
+		ecuda::swap( ptr, other.ptr );
+		ecuda::swap( reference_count, other.reference_count );
+		#else
+		std::swap( ptr, other.ptr );
+		std::swap( reference_count, other.reference_count );
+		#endif
+	}
 
-	// only device can dereference the pointer or call for the pointer in the context of acting upon the object
+	HOST DEVICE inline void reset() __NOEXCEPT__ { device_ptr().swap(*this); }
+	template<typename U> HOST DEVICE inline void reset( U* p ) __NOEXCEPT__ { device_ptr<T>(p).swap(*this); }
+
+	HOST DEVICE inline pointer get() const { return ptr; }
 	DEVICE inline reference operator*() const { return *ptr; }
 	DEVICE inline pointer   operator->() const { return ptr; }
-	DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
+	HOST inline size_type use_count() const __NOEXCEPT__ { return reference_count ? *reference_count : 0; }
+	HOST inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
+	HOST DEVICE inline operator bool() const { return get() != nullptr; }
+	HOST DEVICE inline operator pointer() const { return ptr; }
+	template<typename U>
+	bool owner_before( const device_ptr<U>& other ) const {
+		if( ptr == other.ptr ) return false;
+		if( !ptr ) return true;
+		if( !other.ptr ) return false;
+		return ptr < other.ptr;
+	}
+
+	// only device can dereference the pointer or call for the pointer in the context of acting upon the object
+	//DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 
 	// both host and device can do comparisons on the pointer
 	HOST DEVICE inline bool operator==( const device_ptr<T>& other ) const { return ptr == other.ptr; }
@@ -151,11 +184,11 @@ public:
 
 	HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
 
-	HOST device_ptr<T>& operator=( pointer ptr ) {
+	HOST device_ptr<T>& operator=( pointer p ) {
 		~device_ptr();
-		this->ptr = ptr;
-		shared_count = new size_type;
-		*shared_count = 1;
+		ptr = p;
+		reference_count = new size_type;
+		*reference_count = 1;
 		return *this;
 	}
 
@@ -165,8 +198,8 @@ public:
 		#endif
 		ptr = other.ptr;
 		#ifndef __CUDA_ARCH__
-		shared_count = other.shared_count;
-		++(*shared_count);
+		reference_count = other.reference_count;
+		++(*reference_count);
 		#endif
 		return *this;
 	}
