@@ -82,7 +82,7 @@ public:
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
 	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
+	typedef pointer_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
 	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 

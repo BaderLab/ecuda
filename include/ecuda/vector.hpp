@@ -85,7 +85,7 @@ public:
 	#endif
 
 	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef pointer_iterator<const value_type,pointer> const_iterator; //!< const iterator type
+	typedef pointer_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
 	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
@@ -349,7 +349,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( const size_type index ) { return deviceMemory[index]; }
+	DEVICE inline reference operator[]( const size_type index ) { return *(deviceMemory.get()+index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -357,7 +357,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( const size_type index ) const { return deviceMemory[index]; }
+	DEVICE inline const_reference operator[]( const size_type index ) const { return *(deviceMemory.get()+index); }
 
 	/*
 	 * Deprecating these functions since the STL standard seems to specify that at() accessors

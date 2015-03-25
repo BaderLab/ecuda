@@ -123,7 +123,6 @@ public:
 	typedef contiguous_memory_proxy< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
 	typedef contiguous_memory_proxy< const value_type, const_pointer > const_row_type; //!< matrix const row container type
 	typedef contiguous_memory_proxy< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
-	//typedef contiguous_memory_proxy< const value_type, striding_ptr<const value_type> > const_column_type; //!< matrix column container type
 
 	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type

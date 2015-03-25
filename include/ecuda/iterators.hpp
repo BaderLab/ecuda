@@ -29,6 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // iterators.hpp
+// Iterators using pointers to device memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -41,52 +42,85 @@ either expressed or implied, of the FreeBSD Project.
 
 #include "global.hpp"
 
-//
-// Iterators are fashioned after STL iterators.  Pointers to an element are used
-// to denote the location of an iterator, and then pointer arithmetic can be used
-// to traverse container contents.  Traversing certain containers in a particular
-// way (e.g. column-wise for a matrix) where consecutive elements are not side-by-side
-// in memory can be achieved using a PointerType specialized for this purpose 
-// (e.g. strided_ptr).
-//
-// A PointerType is a required parameter to deal with const/non-const iterators.
-// For example, the container may be const, and accessing elements within that
-// container in some contexts may need the elements themselves to be const.
-// However, this cannot be determined easily at compile-time (prior to C++11).
-// Therefore, passing a const PointerType will achieve this effect.
-//
-// These are essentially the iterator definitions from estd:: with __device__
-// added to the appropriate function definitions.
-//
-
 namespace ecuda {
 
+///
+/// \brief Iterator template compatible with pointers to device memory.
+///
+/// This general iterator definition builds on top of the standard STL iterator.
+/// All of the functionality of a standard random access STL iterator is present,
+/// but can be performed in device code. The iterator simply carries around a pointer
+/// to device memory which is incremented or decremented as appropriate.
+///
+/// Providing the ability to specify the template parameter PointerType explicitly
+/// allows specialized pointers to be used (rather than assuming a naked pointer T*).
+/// Specialized pointers can be designed to accomodate issues that arise from
+/// a) traversing matrices and cubes in non-contiguous order and/or b) the memory padding
+/// that exists in pitched memory allocations on the device. striding_ptr and pitched_ptr
+/// are two such pointer specializations that deal with these issues, respectively.
+///
 template<typename T,typename PointerType,class Category=std::random_access_iterator_tag>
 class pointer_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
 {
 protected:
-	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_iterator_type;
-	typedef PointerType pointer_type;
-public:
-	typedef typename base_iterator_type::iterator_category iterator_category;
-	typedef typename base_iterator_type::value_type value_type;
-	typedef typename base_iterator_type::difference_type difference_type;
-	typedef typename base_iterator_type::pointer pointer;
-	typedef typename base_iterator_type::reference reference;
-	typedef const pointer_type const_pointer;
-	//typedef const pointer const_pointer;
-	typedef const reference const_reference;
-private:
-	pointer_type ptr;
-	friend class pointer_iterator<const T,PointerType,Category>; // to allow non-const -> const iterator conversion
-public:
-	HOST DEVICE pointer_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
-	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
-	template<typename T2>
-	HOST DEVICE pointer_iterator( const pointer_iterator<T2,PointerType,Category>& src ) : ptr(src.ptr) {}
-	HOST DEVICE /*virtual*/ ~pointer_iterator() {}
+	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_iterator_type; //!< redeclares base STL iterator type to make later typedefs more compact
+	//typedef PointerType pointer_type;
 
+public:
+	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
+	typedef typename base_iterator_type::value_type value_type; //!< type of elements pointed by the iterator
+	typedef typename base_iterator_type::difference_type difference_type; //!< type to represent difference between two iterators
+	typedef typename base_iterator_type::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
+	typedef typename base_iterator_type::reference reference; //!< type to represent a reference to an element pointed by the iterator
+
+private:
+	pointer ptr;
+
+public:
+	///
+	/// \brief Default constructor.
+	///
+	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
+	///
+	HOST DEVICE pointer_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// \param src Another iterator whose contents are to be copied.
+	///
+	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// The element type and pointer type of the other iterator can be of a different types than
+	/// this iterator, but they must be implicitly convertible to the type(s) in this iterator.
+	/// This is currently utilized to allow an iterator pointing to non-const elements to be converted
+	/// to one that does.
+	///
+	/// \param src Another iterator whose contents are to be copied.
+	///
+	template<typename T2,typename PointerType2>
+	HOST DEVICE pointer_iterator( const pointer_iterator<T2,PointerType2,Category>& src ) : ptr(src.operator->()) {}
+
+	///
+	/// \brief Destructor.
+	///
+	HOST DEVICE ~pointer_iterator() {}
+
+	///
+	/// \brief Prefix increments the position of the iterator.
+	///
+	/// This ability is required of all STL iterators.
+	///
 	HOST DEVICE inline pointer_iterator& operator++() { ++ptr; return *this; }
+
+	///
+	/// \brief Postfix increments the position of the iterator.
+	///
+	/// This ability is required of all STL iterators.
+	///
 	HOST DEVICE inline pointer_iterator operator++( int ) {
 		pointer_iterator tmp(*this);
 		++(*this);
@@ -94,7 +128,18 @@ public:
 		return tmp;
 	}
 
+	///
+	/// \brief Prefix decrements the position of the iterator.
+	///
+	/// This ability is required of bidirectional STL iterators.
+	///
 	HOST DEVICE inline pointer_iterator& operator--() { --ptr; return *this; }
+
+	///
+	/// \brief Postfix decrements the position of the iterator.
+	///
+	/// This ability is required of bidirectional STL iterators.
+	///
 	HOST DEVICE inline pointer_iterator& operator--( int ) const {
 		pointer_iterator tmp(*this);
 		--(*this);
@@ -102,73 +147,216 @@ public:
 		return tmp;
 	}
 
-	HOST DEVICE /*virtual*/ bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
-	HOST DEVICE /*virtual*/ bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
+	///
+	/// \brief Equality comparison of this iterator with another.
+	///
+	/// This ability is required of input STL iterators.
+	///
+	/// \returns true if this iterator points to the same element as the other.
+	///
+	HOST DEVICE bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
 
-	DEVICE /*virtual*/ const_reference operator*() const { return *ptr; }
-	DEVICE /*virtual*/ const_pointer operator->() const { return ptr; }
-	DEVICE /*virtual*/ reference operator*() { return *ptr; }
-	DEVICE /*virtual*/ pointer operator->() { return ptr; }
+	///
+	/// \brief Inequality comparison of this iterator with another.
+	///
+	/// This ability is required of input STL iterators.
+	///
+	/// \returns true if this iterator does not point to the same element as the other.
+	///
+	HOST DEVICE bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
 
-	HOST DEVICE /*virtual*/ difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
+	///
+	/// \brief Gets a reference to the element pointed at by this iterator.
+	///
+	/// Since this is an lvalue (even though the type may be const) it satisfies
+	/// the requirements of both an input and output STL iterator.
+	///
+	/// \returns a reference to the element pointed at by this iterator
+	///
+	DEVICE reference operator*() const { return *ptr; }
 
+	///
+	/// \brief Gets a pointer to the element pointed at by this iterator.
+	///
+	/// This ability is required of input STL iterators.
+	///
+	/// \returns a pointer to the element pointed at by this iterator
+	///
+	HOST DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion pointer_iterator<T,T*> -> pointer_iterator<const T,const T*>
+
+	///
+	/// \brief Gets the difference in location between the element pointed at by this iterator and another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator with which to determine the difference in location.
+	/// \returns the difference in location between the element pointed at by this iterator and other
+	///
+	HOST DEVICE difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
+
+	///
+	/// \brief Creates an iterator pointing to a later element some specified positions away.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions ahead to move the new iterator to.
+	/// \returns Another iterator which points to an element x positions after this iterator's element.
+	///
 	HOST DEVICE inline pointer_iterator operator+( int x ) const { return pointer_iterator( ptr + x ); }
+
+	///
+	/// \brief Creates an iterator pointing to a prior element some specified positions away.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions prior to move the new iterator to.
+	/// \returns Another iterator which points to an element x positions before this iterator's element.
+	///
 	HOST DEVICE inline pointer_iterator operator-( int x ) const { return pointer_iterator( ptr - x ); }
 
-	HOST DEVICE /*virtual*/ bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
-	HOST DEVICE /*virtual*/ bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
-	HOST DEVICE /*virtual*/ bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
-	HOST DEVICE /*virtual*/ bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
+	///
+	/// \brief Checks if the element pointed at by this iterator comes before another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator comes before the element pointed at by other.
+	///
+	HOST DEVICE bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
 
+	///
+	/// \brief Checks if the element pointed at by this iterator comes after another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator comes after the element pointed at by other.
+	///
+	HOST DEVICE bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator is equal to or comes before another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator is equal to or comes before the element pointed at by other.
+	///
+	HOST DEVICE bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator is equal to or comes after another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator is equal to or comes after the element pointed at by other.
+	///
+	HOST DEVICE bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
+
+	///
+	/// \brief Increments the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
 	HOST DEVICE inline pointer_iterator& operator+=( int x ) { ptr += x; return *this; }
+
+	///
+	/// \brief Decrements the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
 	HOST DEVICE inline pointer_iterator& operator-=( int x ) { ptr -= x; return *this; }
 
-	DEVICE /*virtual*/ reference operator[]( int x ) { return *(ptr+x); }
-	DEVICE /*virtual*/ const_reference operator[]( int x ) const { return *(ptr+x); }
+	///
+	/// \brief Gets a reference to an element whose position is offset by a specified amount from this iterator's element.
+	/// \param x The amount to offset the current position by (can be positive or negative).
+	/// \returns a reference to the offset element
+	///
+	DEVICE reference operator[]( int x ) const { return *(ptr+x); }
 
-//	template<typename T2>
-	DEVICE pointer_iterator& operator=( const pointer_iterator<T,PointerType,Category>& src ) {
-		ptr = src.ptr;
+	///
+	/// \brief Assigns a copy of another iterators position to this iterator.
+	/// \param other another iterator whose position should be assigned to this iterator
+	///
+	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T,PointerType,Category>& other ) {
+		ptr = other.ptr;
+		return *this;
+	}
+
+	///
+	/// \brief Assigns a copy of another iterators position to this iterator.
+	///
+	/// The element type and pointer type of the other iterator can be of a different types than
+	/// this iterator, but they must be implicitly convertible to the type(s) in this iterator.
+	/// This is currently utilized to allow an iterator pointing to non-const elements to be converted
+	/// to one that does.
+	///
+	/// \param other another iterator whose position should be assigned to this iterator
+	///
+	template<typename T2,typename PointerType2>
+	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T2,PointerType2,Category>& other ) {
+		ptr = other.ptr;
 		return *this;
 	}
 
 };
 
 ///
-/// Reverse iterator.
+/// \brief Reverse iterator.
 ///
-/// Takes any class of the above container and traverses the elements in reverse order.
+/// Given a BaseIterator of type pointer_iterator, this provides the same capabilities
+/// as the given pointer_iterator, but in reverse order.  The same strategy as standard
+/// STL reverse iterators is used: the provided base iterator is assumed to point
+/// to an element one position ahead of the element that the reverse iterator wishes
+/// to refer to.  All increment/decrement operations are reversed in this iterator.
 ///
-
-template<class ParentIterator>
-class pointer_reverse_iterator // : public std::reverse_iterator<ParentIterator>
+/// Note that this single-position offset in the base iterator imposes on operations
+/// where the element itself is retrieved (e.g. operator*()) the need to correct the
+/// offset prior to getting the value.  This introduces some additional overhead
+/// (although a smart compiler may be able to reduce this to a infinitesimal cost).
+///
+/// Any undocumented methods are exactly the same as their counterpart in pointer_iterator.
+///
+template<class BaseIterator>
+class pointer_reverse_iterator : public std::iterator<typename BaseIterator::iterator_category,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
 {
-//protected:
-//	typedef PointerForwardIterator<typename ParentIterator::value_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category> super_iterator_type;
-//	typedef typename super_iterator_type::base_iterator_type base_iterator_type;
 
 public:
-	typedef ParentIterator iterator_type;
-	typedef typename ParentIterator::iterator_category iterator_category;
-	typedef typename ParentIterator::value_type value_type;
-	typedef typename ParentIterator::difference_type difference_type;
-	typedef typename ParentIterator::pointer pointer;
-	typedef typename ParentIterator::reference reference;
-	typedef typename ParentIterator::const_pointer const_pointer;
-	typedef typename ParentIterator::const_reference const_reference;
+	typedef BaseIterator iterator_type; //!< type of the parent iterator being reversed
+	typedef typename BaseIterator::iterator_category iterator_category; //!< STL iterator category
+	typedef typename BaseIterator::value_type value_type; //!< type of elements pointed by the iterator
+	typedef typename BaseIterator::difference_type difference_type; //!< type to represent difference between two iterators
+	typedef typename BaseIterator::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
+	typedef typename BaseIterator::reference reference; //!< type to represent a reference to an element pointed by the iterator
 
 private:
-	ParentIterator parentIterator;
+	BaseIterator parentIterator; //!< parent iterator being operated on in reverse
 
 public:
-	HOST DEVICE pointer_reverse_iterator() {} //: std::reverse_iterator<ParentIterator>() {}
-	HOST DEVICE pointer_reverse_iterator( ParentIterator parentIterator ) : parentIterator(parentIterator) {} // std::reverse_iterator<ParentIterator>( parentIterator ) {}
-	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : parentIterator(src.parentIterator) {} //std::reverse_iterator<ParentIterator>( src ) {}
+	HOST DEVICE pointer_reverse_iterator( BaseIterator parentIterator = BaseIterator() ) : parentIterator(parentIterator) {}
+
+	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : parentIterator(src.parentIterator) {}
+
 	template<class ParentIterator2>
 	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator<ParentIterator2>& src ) : parentIterator(src.base()) {}
+
 	HOST DEVICE virtual ~pointer_reverse_iterator() {}
 
-	HOST DEVICE ParentIterator base() const { return parentIterator; }
+	///
+	/// \brief Returns a copy of the base iterator.
+	///
+	///	The base iterator is an iterator of the same type as the one used to construct the pointer_reverse_iterator,
+	/// but pointing to the element next to the one the pointer_reverse_iterator is currently pointing to (a
+	/// pointer_reverse_iterator has always an offset of -1 with respect to its base iterator).
+	///
+	/// \returns A copy of the base iterator, which iterates in the opposite direction.
+	///
+	HOST DEVICE BaseIterator base() const { return parentIterator; }
 
 	HOST DEVICE inline pointer_reverse_iterator& operator++() { --parentIterator; return *this; }
 	HOST DEVICE inline pointer_reverse_iterator operator++( int ) {
@@ -189,23 +377,13 @@ public:
 	HOST DEVICE inline bool operator==( const pointer_reverse_iterator& other ) const { return parentIterator == other.parentIterator; }
 	HOST DEVICE inline bool operator!=( const pointer_reverse_iterator& other ) const { return !operator==(other); }
 
-	DEVICE inline const_reference operator*() const {
-		ParentIterator tmp(parentIterator);
+	DEVICE inline reference operator*() const {
+		BaseIterator tmp(parentIterator);
 		--tmp;
 		return tmp.operator*();
 	}
-	DEVICE inline const_pointer operator->() const {
-		ParentIterator tmp(parentIterator);
-		--tmp;
-		return tmp.operator->();
-	}
-	DEVICE inline reference operator*() {
-		ParentIterator tmp(parentIterator);
-		--tmp;
-		return tmp.operator*();
-	}
-	DEVICE inline pointer operator->() {
-		ParentIterator tmp(parentIterator);
+	DEVICE inline pointer operator->() const {
+		BaseIterator tmp(parentIterator);
 		--tmp;
 		return tmp.operator->();
 	}
@@ -223,308 +401,18 @@ public:
 	HOST DEVICE inline pointer_reverse_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
 	HOST DEVICE inline pointer_reverse_iterator& operator-=( int x ) { parentIterator += x; return *this; }
 
-//	DEVICE virtual reference operator[]( int x ) { return *(ptr+x); }
-//	DEVICE virtual const_reference operator[]( int x ) const { return *(ptr+x); }
+	DEVICE reference operator[]( int x ) const { return parentIterator.operator[]( -x-1 ); }
 
-//	template<class ParentIterator2>
-//	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator<ParentIterator2>& src ) {
-//		parentIterator = src.parentIterator;
-//		return *this;
-//	}
+	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator& other ) {
+		parentIterator = other.parentIterator;
+		return *this;
+	}
 
-};
-
-
-//
-// Iterators are fashioned after STL iterators.  In this case, however, the logic
-// doesn't rely on pointer math to traverse contents.  Rather, an index is stored
-// and used to call the underlying container's operator[].  This allows containers
-// where consecutive elements are not necessarily side-by-side in memory.
-//
-// A PointerType is a required parameter to deal with const/non-const iterators.
-// For example, the container may be const, and accessing elements within that
-// container in some contexts may need the elements themselves to be const.
-// However, this cannot be determined easily at compile-time (prior to C++11).
-// Therefore, passing a const PointerType will achieve this effect.
-//
-// These are essentially the iterator definitions from estd:: with __device__
-// added to the appropriate function definitions.
-//
-
-// INDEX BASED ITERATORS ARE SCHEDULED TO BE RETIRED
-// - all containers can use iterators based on pointers alone which are must faster
-// - this was insanely over-engineered, there was no need to define each iterator type
-
-///
-/// Base iterator.
-///
-/// Holds a pointer to the underlying container and the index of the element.
-/// Implements the prefix and postfix ++ operator to advance the iterator.
-///
-template<class ContainerType,typename PointerType,class Category>
-class Iterator : public std::iterator<Category,typename ContainerType::value_type,typename ContainerType::difference_type,PointerType,typename dereference<PointerType>::type>
-{
-protected:
-	typedef std::iterator<Category,typename ContainerType::value_type,typename ContainerType::difference_type,PointerType,typename dereference<PointerType>::type> base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename base_iterator_type::pointer pointer; // reverse iterator needs to access this
-
-protected:
-	ContainerType* pContainer; //!< pointer to underlying container
-	typename ContainerType::size_type index; //!< index of underlying container element
-
-protected:
-	HOST DEVICE virtual Iterator copy() const { return Iterator(*this); }
-
-public:
-	HOST DEVICE Iterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : pContainer(pContainer), index(index) {}
-	HOST DEVICE Iterator( const Iterator<ContainerType,PointerType,Category>& src ) : pContainer(src.pContainer), index(src.index) {}
-	HOST DEVICE virtual ~Iterator() {}
-
-	HOST DEVICE inline Iterator& operator++() { ++index; return *this; } //if( index < pContainer->size() ) ++index; return *this; }
-	HOST DEVICE inline Iterator operator++( int ) const { return ++(this->copy()); }
-
-};
-
-///
-/// Input iterator.
-///
-/// Implements the == and != operators to compare different iterators.
-/// Implements const-only * and -> operators to access the underlying element.
-///
-template<class ContainerType,typename PointerType,class Category=std::input_iterator_tag>
-class InputIterator : public virtual Iterator<ContainerType,PointerType,Category>
-{
-protected:
-	typedef Iterator<ContainerType,PointerType,Category> base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename base_iterator_type::pointer pointer; // reverse iterator needs to access this
-	typedef const typename base_iterator_type::base_iterator_type::pointer const_pointer;
-	typedef typename dereference<const_pointer>::type const_reference;
-
-protected:
-	HOST DEVICE virtual base_iterator_type copy() const { return InputIterator(*this); }
-
-public:
-	HOST DEVICE InputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	HOST DEVICE InputIterator( const InputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
-	HOST DEVICE virtual ~InputIterator() {}
-
-	HOST DEVICE virtual bool operator==( const InputIterator& other ) const { return base_iterator_type::index == other.index; }
-	HOST DEVICE virtual bool operator!=( const InputIterator& other ) const { return !operator==(other); }
-	DEVICE virtual const_reference operator*() const { return base_iterator_type::pContainer->operator[]( base_iterator_type::index ); }
-	DEVICE virtual const_pointer operator->() const { return &(base_iterator_type::pContainer->operator[]( base_iterator_type::index )); }
-};
-
-///
-/// Output iterator.
-///
-/// Implements non-explicit const * and -> operators to access the underlying element (however, const can be introduced by using a const PointerType).
-///
-template<class ContainerType,typename PointerType,class Category=std::output_iterator_tag>
-class OutputIterator : public virtual Iterator<ContainerType,PointerType,Category>
-{
-protected:
-	typedef Iterator<ContainerType,PointerType,Category> base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename base_iterator_type::base_iterator_type::pointer pointer;
-	typedef typename dereference<pointer>::type reference;
-
-protected:
-	HOST DEVICE virtual base_iterator_type copy() const { return OutputIterator(*this); }
-
-public:
-	HOST DEVICE OutputIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	HOST DEVICE OutputIterator( const OutputIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ) {}
-	HOST DEVICE virtual ~OutputIterator() {}
-
-	DEVICE virtual reference operator*() {	return base_iterator_type::pContainer->operator[]( base_iterator_type::index ); }
-	DEVICE virtual pointer operator->() { return &(base_iterator_type::pContainer->operator[]( base_iterator_type::index )); }
-};
-
-///
-/// Forward iterator.
-///
-/// Combines both the InputIterator and OutputIterator into a single iterator type.
-///
-template<class ContainerType,typename PointerType,class Category=std::forward_iterator_tag>
-class ForwardIterator : public InputIterator<ContainerType,PointerType,Category>, public OutputIterator<ContainerType,PointerType,Category>
-{
-protected:
-	typedef InputIterator<ContainerType,PointerType,Category> super_input_iterator_type;
-	typedef OutputIterator<ContainerType,PointerType,Category> super_output_iterator_type;
-	typedef typename super_input_iterator_type::base_iterator_type base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename super_output_iterator_type::pointer pointer;
-	typedef typename super_output_iterator_type::reference reference;
-	typedef typename super_input_iterator_type::const_pointer const_pointer;
-	typedef typename super_input_iterator_type::const_reference const_reference;
-
-protected:
-	HOST DEVICE virtual base_iterator_type copy() const { return ForwardIterator(*this); }
-
-public:
-	HOST DEVICE ForwardIterator() : Iterator<ContainerType,PointerType,Category>(), InputIterator<ContainerType,PointerType,Category>( nullptr, 0 ), OutputIterator<ContainerType,PointerType,Category>( nullptr, 0 ) {}
-	HOST DEVICE ForwardIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), InputIterator<ContainerType,PointerType,Category>( pContainer, index ), OutputIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	HOST DEVICE ForwardIterator( const ForwardIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), InputIterator<ContainerType,PointerType,Category>( src ), OutputIterator<ContainerType,PointerType,Category>( src ) {}
-	HOST DEVICE virtual ~ForwardIterator() {}
-
-	DEVICE virtual const_reference operator*() const { return super_input_iterator_type::operator*(); }
-	DEVICE virtual const_pointer operator->() const { return super_input_iterator_type::operator->(); }
-	DEVICE virtual reference operator*() { return super_output_iterator_type::operator*(); }
-	DEVICE virtual pointer operator->() { return super_output_iterator_type::operator->(); }
-};
-
-///
-/// Bidirectional iterator.
-///
-/// Implements the prefix and postfix -- operator to regress the iterator.
-///
-template<class ContainerType,typename PointerType,class Category=std::bidirectional_iterator_tag>
-class BidirectionalIterator : public ForwardIterator<ContainerType,PointerType,Category>
-{
-protected:
-	typedef ForwardIterator<ContainerType,PointerType,Category> super_iterator_type;
-	typedef typename super_iterator_type::base_iterator_type base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename super_iterator_type::pointer pointer;
-	typedef typename super_iterator_type::reference reference;
-	typedef typename super_iterator_type::const_pointer const_pointer;
-	typedef typename super_iterator_type::const_reference const_reference;
-
-protected:
-	HOST DEVICE virtual base_iterator_type copy() const { return BidirectionalIterator(*this); }
-
-public:
-	HOST DEVICE BidirectionalIterator() : Iterator<ContainerType,PointerType,Category>(), ForwardIterator<ContainerType,PointerType,Category>() {}
-	HOST DEVICE BidirectionalIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), ForwardIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	HOST DEVICE BidirectionalIterator( const BidirectionalIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), ForwardIterator<ContainerType,PointerType,Category>( src ) {}
-	HOST DEVICE virtual ~BidirectionalIterator() {}
-
-	HOST DEVICE inline BidirectionalIterator& operator--() { if( base_iterator_type::index ) --base_iterator_type::index; return *this; }
-	HOST DEVICE inline BidirectionalIterator operator--( int ) const { return BidirectionalIterator<ContainerType,PointerType,Category>( base_iterator_type::pContainer, base_iterator_type::index-1 ); }
-};
-
-///
-/// Random-access iterator.
-///
-/// Implements the operator-( RandomAccessIterator ) to determine the difference in position between two iterators.
-/// Implements the operator+(int), operator+=(int), operator-(int), and operator-=(int) to advance or regress the element a given number of positions.
-/// Implements the operator<( RandomAccessIterator ), operator<=( RandomAccessIterator ), operator>( RandomAccessIterator ),
-///   operator>=( RandomAccessIterator ) to compare the position of two iterators.
-/// Implements the operator[](int) to access an element some number ahead relative to the position of the iterator.
-///
-
-template<class ContainerType,typename PointerType,class Category=std::random_access_iterator_tag>
-class RandomAccessIterator : public BidirectionalIterator<ContainerType,PointerType,Category>
-{
-protected:
-	typedef BidirectionalIterator<ContainerType,PointerType,Category> super_iterator_type;
-	typedef typename super_iterator_type::super_iterator_type::super_input_iterator_type super_input_iterator_type;
-	typedef typename super_iterator_type::super_iterator_type::base_iterator_type base_iterator_type;
-public:
-	typedef ContainerType container_type;
-	typedef typename base_iterator_type::iterator_category iterator_category; // reverse iterator needs to access this
-	typedef typename super_iterator_type::pointer pointer;
-	typedef typename super_iterator_type::reference reference;
-	typedef typename super_iterator_type::const_pointer const_pointer;
-	typedef typename super_iterator_type::const_reference const_reference;
-	typedef typename base_iterator_type::difference_type difference_type;
-
-protected:
-	HOST DEVICE virtual base_iterator_type copy() const { return RandomAccessIterator(*this); }
-
-public:
-	HOST DEVICE RandomAccessIterator() : Iterator<ContainerType,PointerType,Category>(), BidirectionalIterator<ContainerType,PointerType,Category>() {}
-	HOST DEVICE RandomAccessIterator( ContainerType* pContainer, const typename ContainerType::size_type index = 0 ) : Iterator<ContainerType,PointerType,Category>( pContainer, index ), BidirectionalIterator<ContainerType,PointerType,Category>( pContainer, index ) {}
-	HOST DEVICE RandomAccessIterator( const RandomAccessIterator<ContainerType,PointerType,Category>& src ) : Iterator<ContainerType,PointerType,Category>( src ), BidirectionalIterator<ContainerType,PointerType,Category>( src ) {}
-	HOST DEVICE virtual ~RandomAccessIterator() {}
-
-	HOST DEVICE virtual difference_type operator-( const RandomAccessIterator& other ) { return base_iterator_type::index - other.index; }
-
-	HOST DEVICE inline RandomAccessIterator operator+( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index+x ); }
-	HOST DEVICE inline RandomAccessIterator operator-( int x ) const { return RandomAccessIterator( base_iterator_type::pContainer, base_iterator_type::index-x ); }
-
-	HOST DEVICE virtual bool operator<( const RandomAccessIterator& other ) const { return base_iterator_type::index < other.index; }
-	HOST DEVICE virtual bool operator>( const RandomAccessIterator& other ) const { return base_iterator_type::index > other.index; }
-	HOST DEVICE virtual bool operator<=( const RandomAccessIterator& other ) const { return operator<(other) or super_input_iterator_type::operator==(other); }
-	HOST DEVICE virtual bool operator>=( const RandomAccessIterator& other ) const { return operator>(other) or super_input_iterator_type::operator==(other); }
-
-	HOST DEVICE inline RandomAccessIterator& operator+=( int x ) { base_iterator_type::index += x; return *this; }
-	HOST DEVICE inline RandomAccessIterator& operator-=( int x ) { base_iterator_type::index -= x; return *this; }
-
-	DEVICE virtual reference operator[]( int x ) { return base_iterator_type::pContainer->at( base_iterator_type::index+x ); }
-	DEVICE virtual const_reference operator[]( int x ) const { return base_iterator_type::pContainer->at( base_iterator_type::index+x ); }
-
-};
-
-///
-/// Reverse iterator.
-///
-/// Takes any class of the above container and traverses the elements in reverse order.
-///
-
-template<class ParentIterator>
-class ReverseIterator : public ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>
-{
-protected:
-	typedef ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category> super_iterator_type;
-	typedef typename super_iterator_type::base_iterator_type base_iterator_type;
-
-public:
-	typedef typename ParentIterator::container_type container_type;
-	typedef typename ParentIterator::iterator_category iterator_category;
-	typedef typename ParentIterator::pointer pointer;
-	typedef typename dereference<pointer>::type reference;
-	typedef const typename ParentIterator::pointer const_pointer;
-	typedef typename dereference<const_pointer>::type const_reference;
-
-private:
-	ParentIterator parentIterator;
-
-public:
-	HOST DEVICE ReverseIterator() : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer_type,typename ParentIterator::iterator_category>(nullptr){}
-	HOST DEVICE ReverseIterator( ParentIterator parentIterator ) : Iterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), ForwardIterator<typename ParentIterator::container_type,typename ParentIterator::pointer,typename ParentIterator::iterator_category>(nullptr), parentIterator(parentIterator) {}
-
-	HOST DEVICE ParentIterator base() const { return parentIterator; }
-
-	HOST DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator==( other.parentIterator ); }
-	HOST DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator!=( other.parentIterator ); }
-	DEVICE virtual const_reference operator*() const { return parentIterator.operator--(0).operator*(); }
-	DEVICE virtual const_pointer operator->() const { return parentIterator.operator--(0).operator->(); }
-
-	HOST DEVICE virtual bool operator==( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator==( other.parentIterator ); }
-	HOST DEVICE virtual bool operator!=( const ReverseIterator<ParentIterator>& other ) { return parentIterator.operator!=( other.parentIterator ); }
-	DEVICE virtual reference operator*() { return parentIterator.operator--(0).operator*(); }
-	DEVICE virtual pointer operator->() { return parentIterator.operator--(0).operator->(); }
-
-	HOST DEVICE ReverseIterator<ParentIterator>& operator++() { --parentIterator; return *this; }
-	HOST DEVICE ReverseIterator<ParentIterator> operator++( int x ) const { return ReverseIterator<ParentIterator>(*this).operator--(x); } // ReverseIterator<ParentIterator>(parentIterator.operator--(x)); }
-
-	HOST DEVICE ReverseIterator<ParentIterator>& operator--() { ++parentIterator; return *this; }
-	HOST DEVICE ReverseIterator<ParentIterator> operator--( int x ) const { return ReverseIterator<ParentIterator>(*this).operator++(x); } // ReverseIterator<ParentIterator>(parentIterator.operator++(x)); }
-
-	HOST DEVICE ReverseIterator<ParentIterator> operator+( int x ) { return ReverseIterator<ParentIterator>(*this).operator-(x); }
-	HOST DEVICE ReverseIterator<ParentIterator> operator-( int x ) { return ReverseIterator<ParentIterator>(*this).operator+(x); }
-	HOST DEVICE bool operator<( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator>=(other); }
-	HOST DEVICE bool operator>( const ReverseIterator<ParentIterator>& other ) const { return parentIterator.operator<=(other); }
-	HOST DEVICE bool operator<=( const ReverseIterator<ParentIterator>& other ) const { return operator<(other) or operator==(other); }
-	HOST DEVICE bool operator>=( const ReverseIterator<ParentIterator>& other ) const { return operator>(other) or operator==(other); }
-	HOST DEVICE ReverseIterator<ParentIterator>& operator+=( int x ) { parentIterator.operator-=(x); return *this; }
-	HOST DEVICE ReverseIterator<ParentIterator>& operator-=( int x ) { parentIterator.operator+=(x); return *this; }
-
-	DEVICE inline reference operator[]( int x ) { return parentIterator.operator[]( -x ); }
-	DEVICE inline const_reference operator[]( int x ) const { return parentIterator.operator[]( -x ); }
+	template<class ParentIterator2>
+	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator<ParentIterator2>& other ) {
+		parentIterator = other.parentIterator;
+		return *this;
+	}
 
 };
 
