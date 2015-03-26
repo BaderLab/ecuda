@@ -180,10 +180,12 @@ public:
 	HOST array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
 	#endif
 
+	/*
 	///
 	/// \brief Destructs the array object.
 	///
-	HOST DEVICE ~array() {}
+	//HOST DEVICE virtual ~array() {}
+	*/
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor

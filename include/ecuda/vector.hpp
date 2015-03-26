@@ -208,7 +208,7 @@ public:
 	}
 	#endif
 
-	HOST DEVICE ~vector() {}
+	//HOST DEVICE ~vector() {}
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -293,7 +293,7 @@ public:
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
-	/// or library implementation limitations.
+	///        or library implementation limitations.
 	///
 	/// \returns Maximum number of elements.
 	///
@@ -328,7 +328,7 @@ public:
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	HOST DEVICE inline bool empty() const { return !n; }
+	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !n; }
 
 	///
 	/// \brief Increase the capacity of the container to a value that's greater or equal to newCapacity.
@@ -713,8 +713,8 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	HOST DEVICE bool operator==( const vector& other ) const {
-		#ifdef __CUDA_ARCH__
 		if( size() != other.size() ) return false;
+		#ifdef __CUDA_ARCH__
 		const_iterator iter1 = begin();
 		const_iterator iter2 = other.begin();
 		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;

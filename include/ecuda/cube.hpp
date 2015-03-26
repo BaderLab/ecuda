@@ -162,10 +162,7 @@ private:
 
 public:
 	///
-	/// \brief Default constructor.
-	///
-	/// Creates a cube container with numberRows*numberColumns*numberDepths elements stored in device memory.
-	///
+	/// \brief Constructs a cube with dimensions numberRows x numberColumns x numberDepths filled with copies of elements with value value.
 	/// \param numberRows number of rows (default=0)
 	/// \param numberColumns number of columns (default=0)
 	/// \param numberDepths number of depths (default=0)
@@ -221,8 +218,43 @@ public:
 	}
 
 	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	/// \param src another container to be used as source to initialize the elements of the container with
+	///
 	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
 	#endif
+
+	#if HAVE_ESTD_LIBRARY > 0
+	///
+	/// \brief Constructs a cube by copying the dimensions and elements of an estd library cube container.
+	///
+	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
+	/// The estd library needs to be visible to the compiler.
+	///
+	/// \param src Another cube object of the same type, whose contents are copied.
+	///
+	template<typename U,typename V,typename W>
+	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
+		if( numberRows and numberColumns and numberDepths ) {
+			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
+			std::vector<value_type> v( numberDepths );
+			for( size_type i = 0; i < numberRows; ++i ) {
+				for( size_type j = 0; j < numberColumns; ++j ) {
+					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
+					CUDA_CALL( cudaMemcpy<value_type>(
+						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
+						&v.front(), // src
+						numberDepths, // count
+						cudaMemcpyHostToDevice
+					) );
+				}
+			}
+		}
+	}
+	#endif
+
+	HOST DEVICE virtual ~cube() {}
 
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
@@ -258,34 +290,6 @@ public:
 		}
 	}
 
-	#if HAVE_ESTD_LIBRARY > 0
-	///
-	/// \brief Constructs a cube by copying the dimensions and elements of an estd library cube container.
-	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
-	///
-	/// \param src Another cube object of the same type, whose contents are copied.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
-		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector<value_type> v( numberDepths );
-			for( size_type i = 0; i < numberRows; ++i ) {
-				for( size_type j = 0; j < numberColumns; ++j ) {
-					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
-					CUDA_CALL( cudaMemcpy<value_type>(
-						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
-						&v.front(), // src
-						numberDepths, // count
-						cudaMemcpyHostToDevice
-					) );
-				}
-			}
-		}
-	}
-	#endif
 
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }

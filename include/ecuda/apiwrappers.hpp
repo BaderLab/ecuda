@@ -81,6 +81,55 @@ inline cudaError_t cudaMemcpy2D( T* dest, const std::size_t dpitch, const T* src
 	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
 }
 
+
+///
+/// \brief Re-implementation of CUDA API function cudaMemset that allows for any data type.
+///
+/// The CUDA API cudaMemset function allows only a single-byte value to be specified. This
+/// implementation allows any arbitrary data type and value to be specified. However, the
+/// underlying call is to cudaMemcpy since a staging block of memory is first filled with the
+/// value and then transfered to the device. Thus, this function is more general but takes
+/// some unspecified performance hit.
+///
+/// \param devPtr Pointer to device memory.
+/// \param value Value to set for each element.
+/// \param count The number of elements to set.
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+///
+template<typename T>
+inline cudaError_t cudaMemset( T* devPtr, const T& value, const std::size_t count ) {
+	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
+	std::vector<T> v( count, value );
+	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
+}
+
+///
+/// \brief Re-implementation of CUDA API function cudaMemset2D that allows for any data type.
+///
+/// The CUDA API cudaMemset2D function allows only a single-byte value to be specified. This
+/// implementation allows any arbitrary data type and value to be specified. However, the
+/// underlying call is to cudaMemcpy since a staging block of memory is first filled with the
+/// value and then transfered to the device. Thus, this function is more general but takes
+/// some unspecified performance hit.
+///
+/// \param devPtr Pointer to 2D device memory.
+/// \param pitch Pitch in bytes of 2D device memory.
+/// \param value Value to set for each element.
+/// \param width Width of matrix.
+/// \param height Height of matrix.
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+///
+template<typename T>
+inline cudaError_t cudaMemset2D( T* devPtr, const std::size_t pitch, const T& value, const std::size_t width, const std::size_t height ) {
+	std::vector<T> v( width, value );
+	char* charPtr = reinterpret_cast<char*>(devPtr);
+	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {
+		const cudaError_t rc = cudaMemcpy<T>( reinterpret_cast<T*>(charPtr), &v.front(), width, cudaMemcpyHostToDevice );
+		if( rc != cudaSuccess ) return rc;
+	}
+	return cudaSuccess;
+}
+
 } // namespace ecuda
 
 #endif
