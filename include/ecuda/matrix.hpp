@@ -57,7 +57,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "device_ptr.hpp"
 #include "padded_ptr.hpp"
 #include "striding_ptr.hpp"
-
+#include "vector.hpp"
 
 
 namespace ecuda {
@@ -528,7 +528,7 @@ public:
 	/// \param newNumberColumns new number of columns
 	/// \param value the value to initialize elements of the container with
 	///
-	HOST inline void assign( size_type newNumberRows, size_type newNumberColumns, const value_type& value = value_type() ) { resize( newNUmberRows, newNumberColumns, value ); }
+	HOST inline void assign( size_type newNumberRows, size_type newNumberColumns, const value_type& value = value_type() ) { resize( newNumberRows, newNumberColumns, value ); }
 
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
@@ -544,6 +544,21 @@ public:
 			v.assign( begin, begin+number_columns() );
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
 		}
+	}
+
+	///
+	/// \brief Assigns a given value to all elements in the container.
+	///
+	/// \param value the value to assign to the elements
+	///
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector<value_type> v( number_columns(), value );
+		for( size_type i = 0; i < number_rows(); ++i )
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
+		#endif
 	}
 
 	///
@@ -716,39 +731,6 @@ public:
 	DEVICE inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
 	*/
 
-
-	///
-	/// \brief Assigns a given value to all elements in the container.
-	///
-	/// \param value the value to assign to the elements
-	///
-	HOST DEVICE void fill( const value_type& value ) {
-		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-		#else
-		std::vector<value_type> v( number_columns(), value );
-		for( size_type i = 0; i < number_rows(); ++i )
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
-		#endif
-	}
-
-	HOST matrix<value_type> excise( const size_type offsetRow, const size_type offsetColumn, const size_type sizeRow, const size_type sizeColumn ) {
-		if( offsetRow >= number_rows() ) throw std::out_of_range( "ecuda::matrix::excise offsetRow argument out of range" );
-		if( offsetColumn >= number_columns() ) throw std::out_of_range( "ecuda::matrix::excise offsetColumn argument out of range" );
-		if( (offsetRow+sizeRow) > number_rows() ) throw std::out_of_range( "ecuda::matrix::excise sizeRow argument out of range" );
-		if( (offsetColumn+sizeColumn) > number_columns() ) throw std::out_of_range( "ecuda::matrix::excise sizeColumn argument out of range" );
-		ecuda::matrix<value_type,allocator_type> matrix( sizeRow, sizeColumn, value_type(), get_allocator() );
-		for( size_type i = 0; i < sizeRow; ++i ) {
-			CUDA_CALL( cudaMemcpy<value_type>(
-						matrix.allocator.address( matrix.data(), i, 0, matrix.pitch ),
-						allocator.address( data(), offsetRow+i, offsetColumn, pitch ),
-						sizeColumn,
-						cudaMemcpyDeviceToDevice
-			) );
-		}
-		return matrix;
-	}
-
 	///
 	/// \brief Assignment operator.
 	///
@@ -841,6 +823,63 @@ public:
 	}
 
 };
+
+
+///
+/// \brief Copies some or all of a source matrix to a destination matrix.
+///
+/// The subset of the source matrix can be specified by the offsetRow and offsetColumn parameters
+/// as well as the size of the destination matrix. If the destination matrix is larger than needed
+/// in either dimension the extra elements remain unaltered.
+///
+/// For example, to copy a subset of a matrix:
+/// \code{.cpp}
+/// ecuda::matrix<int> src( 100, 100, 99 ); // fill 100x100 matrix with the number 99
+/// ecuda::matrix<int> dest( 20, 10 ); // fill 20x10 matrix with zeros
+/// // copies the elements of the src matrix lying within the top-left coordinate (30,30)
+/// // and bottom-right coordinate (50,40) to the dest matrix
+/// ecuda::matrix_copy( dest, src, 30, 30 );
+/// \endcode
+///
+/// \param dest the destination matrix
+/// \param src the source matrix
+/// \param offsetRow offset in the starting row of the source matrix (default: 0)
+/// \param offsetColumn offset in the starting column of the destination matrix (default: 0)
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+///
+template<typename T,class Alloc1,class Alloc2>
+HOST cudaError_t matrix_copy( matrix<T,Alloc1>& dest, const matrix<T,Alloc2>& src, typename matrix<T,Alloc2>::size_type offsetRow=0, typename matrix<T,Alloc2>::size_type offsetColumn=0 ) {
+	typedef typename matrix<T,Alloc2>::size_type size_type;
+	const size_type nr = std::min( dest.number_rows()   , src.number_rows()-offsetRow       );
+	const size_type nc = std::min( dest.number_columns(), src.number_columns()-offsetColumn );
+	for( size_type i = 0; i < nr; ++i ) {
+		cudaError_t rc = cudaMemcpy<T>( dest[i].data(), src[i+offsetRow].data(), nc, cudaMemcpyDeviceToDevice );
+		if( rc != cudaSuccess ) return rc;
+	}
+	return cudaSuccess;
+}
+
+/** TODO
+template<typename T,class Alloc1,class Alloc2>
+HOST cudaError_t matrix_swap(
+	matrix<T,Alloc1>& mat1,
+	matrix<T,Alloc2>& mat2,
+	typename matrix<T,Alloc1>::size_type numberRows=0, typename matrix<T,Alloc1>::size_type numberColumns=0,
+	typename matrix<T,Alloc1>::size_type offsetRow1=0, typename matrix<T,Alloc1>::size_type offsetColumn1=0,
+	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0,
+)
+{
+	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( "ecuda::matrix_swap() specified row subset of mat1 is out of bounds" );
+	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( "ecuda::matrix_swap() specified row subset of mat2 is out of bounds" );
+	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( "ecuda::matrix_swap() specified column subset of mat1 is out of bounds" );
+	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( "ecuda::matrix_swap() specified column subset of mat2 is out of bounds" );
+	ecuda::vector<T> stagingMemory( numberColumns );
+	typedef typename matrix<T,Alloc1>::size_type size_type;
+	for( size_type i = 0; i < numberRows; ++i ) {
+		stagingMemory.assign( );
+	}
+}
+*/
 
 } // namespace ecuda
 

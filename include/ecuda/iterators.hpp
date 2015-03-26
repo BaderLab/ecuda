@@ -47,10 +47,14 @@ namespace ecuda {
 ///
 /// \brief Iterator template compatible with pointers to device memory.
 ///
-/// This general iterator definition builds on top of the standard STL iterator.
-/// All of the functionality of a standard random access STL iterator is present,
-/// but can be performed in device code. The iterator simply carries around a pointer
-/// to device memory which is incremented or decremented as appropriate.
+/// This general iterator definition builds on top of the standard STL iterator but
+/// is functional using device memory and within device code. Almost all of the
+/// capabilities of a standard random access STL iterator are present, except for the
+/// difference operator.  Thus, the category tag is set to indicate a bidirectional
+/// iterator, even though most of the capabilities of a random access iterator are
+/// also present. The iterator simply carries around a "pointer" (or an object with
+/// pointer semantics) to device memory which is incremented or decremented as
+/// appropriate.
 ///
 /// Providing the ability to specify the template parameter PointerType explicitly
 /// allows specialized pointers to be used (rather than assuming a naked pointer T*).
@@ -59,12 +63,16 @@ namespace ecuda {
 /// that exists in pitched memory allocations on the device. striding_ptr and pitched_ptr
 /// are two such pointer specializations that deal with these issues, respectively.
 ///
-template<typename T,typename PointerType,class Category=std::random_access_iterator_tag>
+/// Since this definition doesn't necessarily imply contiguous memory, a subclass
+/// of this template called contiguous_pointer_iterator (which does impose this
+/// requirement) is also available (since it includes the difference operator it
+/// is considered a true random access iterator).
+///
+template<typename T,typename PointerType,class Category=std::bidirectional_iterator_tag>
 class pointer_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
 {
-protected:
+private:
 	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_iterator_type; //!< redeclares base STL iterator type to make later typedefs more compact
-	//typedef PointerType pointer_type;
 
 public:
 	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
@@ -185,16 +193,6 @@ public:
 	HOST DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion pointer_iterator<T,T*> -> pointer_iterator<const T,const T*>
 
 	///
-	/// \brief Gets the difference in location between the element pointed at by this iterator and another.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param other Another iterator with which to determine the difference in location.
-	/// \returns the difference in location between the element pointed at by this iterator and other
-	///
-	HOST DEVICE difference_type operator-( const pointer_iterator& other ) { return ptr - other.ptr; }
-
-	///
 	/// \brief Creates an iterator pointing to a later element some specified positions away.
 	///
 	/// This ability is required of random access STL iterators.
@@ -303,6 +301,63 @@ public:
 		ptr = other.ptr;
 		return *this;
 	}
+
+};
+
+///
+/// \brief Iterator template for use with naked pointers to contiguous device memory.
+///
+template<typename T>
+class contiguous_pointer_iterator : public pointer_iterator<T,T*,std::random_access_iterator_tag>
+{
+
+private:
+	typedef pointer_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base pointer_iterator type to make later typedefs more compact
+
+public:
+	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
+	typedef typename base_iterator_type::value_type value_type; //!< type of elements pointed by the iterator
+	typedef typename base_iterator_type::difference_type difference_type; //!< type to represent difference between two iterators
+	typedef typename base_iterator_type::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
+	typedef typename base_iterator_type::reference reference; //!< type to represent a reference to an element pointed by the iterator
+
+public:
+	///
+	/// \brief Default constructor.
+	///
+	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
+	///
+	HOST DEVICE contiguous_pointer_iterator( T* ptr = nullptr ) : base_iterator_type(ptr) {}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// \param src Another iterator whose contents are to be copied.
+	///
+	HOST DEVICE contiguous_pointer_iterator( const contiguous_pointer_iterator<T>& src ) : base_iterator_type(src) {}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// The element type and pointer type of the other iterator can be of a different types than
+	/// this iterator, but they must be implicitly convertible to the type(s) in this iterator.
+	/// This is currently utilized to allow an iterator pointing to non-const elements to be converted
+	/// to one that does.
+	///
+	/// \param src Another iterator whose contents are to be copied.
+	///
+	template<typename T2>
+	HOST DEVICE contiguous_pointer_iterator( const contiguous_pointer_iterator<T2>& src ) : base_iterator_type(src.operator->()) {}
+
+	///
+	/// \brief Gets the difference in location between the element pointed at by this iterator and another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator with which to determine the difference in location.
+	/// \returns the difference in location between the element pointed at by this iterator and other
+	///
+	HOST DEVICE inline difference_type operator-( const contiguous_pointer_iterator& other ) { return base_iterator_type::operator->() - other.operator->(); }
 
 };
 

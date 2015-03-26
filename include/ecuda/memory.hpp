@@ -141,6 +141,9 @@ public:
 template<typename T>
 class contiguous_temporary_array : public temporary_array<T,T*>
 {
+private:
+	typedef temporary_array<T,T*> base_type;
+
 public:
 	typedef typename temporary_array<T,T*>::value_type value_type; //!< element data type
 	typedef typename temporary_array<T,T*>::pointer pointer; //!< element pointer type
@@ -149,10 +152,10 @@ public:
 	typedef typename temporary_array<T,T*>::size_type size_type; //!< unsigned integral type
 	typedef typename temporary_array<T,T*>::difference_type difference_type; //!< signed integral type
 
-	typedef typename temporary_array<T,T*>::iterator iterator; //!< iterator type
-	typedef typename temporary_array<T,T*>::const_iterator const_iterator; //!< const iterator type
-	typedef typename temporary_array<T,T*>::reverse_iterator reverse_iterator; //!< reverse iterator type
-	typedef typename temporary_array<T,T*>::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+	typedef contiguous_pointer_iterator<T> iterator; //!< iterator type
+	typedef contiguous_pointer_iterator<const T> const_iterator; //!< const iterator type
+	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 public:
 	HOST DEVICE contiguous_temporary_array() : temporary_array<T,T*>() {}
@@ -162,9 +165,16 @@ public:
 	HOST DEVICE ~contiguous_temporary_array() {}
 
 	template<class InputIterator>
-	HOST void assign( InputIterator begin, InputIterator end ) {
+	HOST void assign_from_host( InputIterator begin, InputIterator end ) {
 		std::vector<value_type> v( begin, end );
 		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
+	}
+
+	template<class ContiguousIterator>
+	HOST void assign_from_device( ContiguousIterator begin, ContiguousIterator end ) {
+		const std::ptrdiff_t n = end-begin;
+		if( n < 0 ) throw std::length_error( "ecuda::contiguous_temporary_array::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin, std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
 	}
 
 };

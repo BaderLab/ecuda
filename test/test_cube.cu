@@ -104,7 +104,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<Coordinate> v( 5 );
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
-		slice[0].assign( v.begin(), v.end() );
+		slice[0].assign_from_host( v.begin(), v.end() );
 	}
 
 	{
