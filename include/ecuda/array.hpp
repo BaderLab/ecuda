@@ -74,8 +74,8 @@ class array {
 
 public:
 	typedef T value_type; //!< cell data type
-	typedef std::size_t size_type; //!< index data type
-	typedef std::ptrdiff_t difference_type; //!<
+	typedef std::size_t size_type; //!< unsigned integral type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
 	typedef value_type& reference; //!< cell reference type
 	typedef const value_type& const_reference; //!< cell const reference type
 	typedef value_type* pointer; //!< cell pointer type

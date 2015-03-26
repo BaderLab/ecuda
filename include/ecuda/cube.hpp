@@ -134,19 +134,19 @@ public:
 	//typedef T& reference;
 	//typedef const T& const_reference;
 
-	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
-	typedef contiguous_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
-	typedef contiguous_memory_proxy< value_type                                                               > depth_type; //!< cube depth type
-	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
-	typedef contiguous_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
-	typedef contiguous_memory_proxy< const value_type                                                                                 > const_depth_type; //!< const cube depth type
+	typedef temporary_array< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
+	typedef temporary_array< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
+	typedef temporary_array< value_type                                                               > depth_type; //!< cube depth type
+	typedef temporary_array< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
+	typedef temporary_array< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
+	typedef temporary_array< const value_type                                                                                 > const_depth_type; //!< const cube depth type
 
-	typedef contiguous_2d_memory_proxy< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
-	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
-	typedef contiguous_2d_memory_proxy< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
-	typedef contiguous_2d_memory_proxy< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
-	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
-	typedef contiguous_2d_memory_proxy< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
+	typedef temporary_matrix< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
+	typedef temporary_matrix< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
+	typedef temporary_matrix< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
+	typedef temporary_matrix< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
+	typedef temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
+	typedef temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
 
 	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type

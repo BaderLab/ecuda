@@ -112,17 +112,17 @@ class matrix {
 public:
 	typedef T value_type; //!< cell data type
 	typedef Alloc allocator_type; //!< allocator type
-	typedef std::size_t size_type; //!< index data type
-	typedef std::ptrdiff_t difference_type; //!<
+	typedef std::size_t size_type; //!< unsigned integral type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
 	typedef value_type& reference; //!< cell reference type
 	typedef const value_type& const_reference; //!< cell const reference type
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef contiguous_memory_proxy< value_type, pointer > row_type; //!< matrix row container type
-	typedef contiguous_memory_proxy< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	typedef contiguous_memory_proxy< const value_type, const_pointer > const_row_type; //!< matrix const row container type
-	typedef contiguous_memory_proxy< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
+	typedef temporary_array< value_type, pointer > row_type; //!< matrix row container type
+	typedef temporary_array< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
+	typedef temporary_array< const value_type, const_pointer > const_row_type; //!< matrix const row container type
+	typedef temporary_array< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
 	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
@@ -137,7 +137,7 @@ private:
 	size_type numberRows; //!< number of matrix rows
 	size_type numberColumns; //!< number of matrix columns
 	size_type pitch; //!< the padded width of the 2D memory allocation in bytes
-	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
+	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 	allocator_type allocator;
 
 public:
@@ -157,6 +157,12 @@ public:
 
 	template<class RandomAccessIterator>
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end );
+
+	template<class InputIterator>
+	HOST void assign_row( size_type rowIndex, InputIterator begin, InputIterator end ) {
+		std::vector<value_type> v( begin, end );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), std::min(v.size(),number_columns()), cudaMemcpyHostToDevice ) );
+	}
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
@@ -273,7 +279,7 @@ public:
 	template<typename U,typename V>
 	HOST matrix<T,Alloc>& operator>>( estd::matrix<T,U,V>& dest ) {
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns) );
-		CUDA_CALL( cudaMemcpy2D<T>( dest.data(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest.data(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 	#endif
@@ -281,7 +287,7 @@ public:
 	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
 		other.resize( size() );
-		CUDA_CALL( cudaMemcpy2D<T>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
@@ -290,21 +296,22 @@ public:
 		// allocate memory
 		this->numberRows = numberRows;
 		this->numberColumns = numberColumns;
-		deviceMemory = device_ptr<T>( DevicePitchAllocator<T>().allocate( numberColumns, numberRows, pitch ) );
+		deviceMemory = device_ptr<value_type>( DevicePitchAllocator<T>().allocate( numberColumns, numberRows, pitch ) );
 	}
 
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V>
 	HOST matrix<T,Alloc>& operator<<( const estd::matrix<T,U,V>& src ) {
 		resize( src.row_size(), src.column_size() );
-		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 	#endif
 
 	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator<<( std::vector<T,OtherAlloc>& other ) {
-		CUDA_CALL( cudaMemcpy2D<T>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		if( other.size() != size() ) throw std::length_error( "ecuda::operator<<(std::vector) provided with vector of non-matching size" );
+		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
@@ -313,9 +320,9 @@ public:
 template<typename T,class Alloc>
 HOST matrix<T,Alloc>::matrix( const size_type numberRows, const size_type numberColumns, const_reference value, const Alloc& allocator ) : numberRows(numberRows), numberColumns(numberColumns), pitch(0), allocator(allocator) {
 	if( numberRows and numberColumns ) {
-		deviceMemory = device_ptr<T>( get_allocator().allocate( numberColumns, numberRows, pitch ) );
+		deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberColumns, numberRows, pitch ) );
 		std::vector<T> v( numberRows*numberColumns, value );
-		CUDA_CALL( cudaMemcpy2D<T>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 	}
 }
 
@@ -327,8 +334,8 @@ template<typename T,class Alloc>
 template<typename U,typename V>
 HOST matrix<T,Alloc>::matrix( const estd::matrix<T,U,V>& src, const Alloc& allocator ) : numberRows(static_cast<size_type>(src.row_size())), numberColumns(static_cast<size_type>(src.column_size())), pitch(0), allocator(allocator) {
 	if( numberRows and numberColumns ) {
-		deviceMemory = device_ptr<T>( get_allocator().allocate( numberColumns, numberRows, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<T>( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberColumns, numberRows, pitch ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 	}
 }
 #endif
@@ -343,7 +350,7 @@ HOST void matrix<T,Alloc>::assign( RandomAccessIterator begin, RandomAccessItera
 		std::size_t len = number_columns();
 		if( i+len > size() ) len = size()-i;
 		std::vector<T> row( current, current+len );
-		CUDA_CALL( cudaMemcpy<T>( allocator.address( deviceMemory.get(), i/number_columns(), 0, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i/number_columns(), 0, pitch ), &row[0], len, cudaMemcpyHostToDevice ) );
 	}
 }
 
