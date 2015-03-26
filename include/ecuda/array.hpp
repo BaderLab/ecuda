@@ -556,12 +556,19 @@ public:
 	#endif
 
 	///
-	/// \brief Critical method to bridge host-device code.
+	/// \brief Assignment operator.
 	///
-	/// This method is called during the entry to a kernel functions to generate
-	/// device-bound copies of host-bound objects passed as arguments.
-	/// In this case, we simply need the pointer to the start of the array.
+	/// Copies the contents of other into this container.
 	///
+	/// Note that the behaviour differs depending on whether the assignment occurs on the
+	/// host or the device. If called from the host, a deep copy is performed: additional
+	/// memory is allocated in this container and the contents of other are copied there.
+	/// If called from the device, a shallow copy is performed: the pointer to the device
+	/// memory is copied only.  Therefore any changes made to this container are reflected
+	/// in other as well, and vice versa.
+	///
+	/// \param other Container whose contents are to be assigned to this container.
+	/// \return A reference to this container.
 	///
 	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
 		#ifdef __CUDA_ARCH__

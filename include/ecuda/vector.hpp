@@ -154,11 +154,11 @@ public:
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
 	/// of the container is required in host code, use the assignment operator. For example:
 	///
-	/// <code>
+	/// \code{.cpp}
 	/// ecuda::vector<int> vec( 10, 3 ); // create a vector of size 10 filled with 3s
 	/// ecuda::vector<int> newVec( vec ); // shallow copy
 	/// ecuda::vector<int> newVec; newVec = vec; // deep copy
-	/// </code>
+	/// \endcode
 	///
 	/// \param src Another vector object of the same type, whose contents are copied.
 	///
@@ -818,12 +818,13 @@ public:
 	/// memory is allocated in this container and the contents of other are copied there.
 	/// If called from the device, a shallow copy is performed: the pointer to the device
 	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, an vice versa.
+	/// in other as well, and vice versa.
 	///
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
-	HOST DEVICE vector<value_type,allocator_type>& operator=( const vector<value_type>& other ) {
+	template<class Alloc2>
+	HOST DEVICE vector<value_type,allocator_type>& operator=( const vector<value_type,Alloc2>& other ) {
 		#ifdef __CUDA_ARCH__
 		// shallow copy if called from device
 		n = other.n;

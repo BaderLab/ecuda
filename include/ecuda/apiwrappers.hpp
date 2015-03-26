@@ -43,11 +43,39 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+///
+/// \brief Wrapper around CUDA API function cudaMemcpy.
+///
+/// Copies a contiguous block of memory holding count elements of type T to another
+/// contiguous block of memory.
+///
+/// \param dest Pointer to destination memory.
+/// \param src Pointer to source memory.
+/// \param count Number of elements to copy.
+/// \param kind Type of transfer (cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice, cudaMemcpyHostToDevice)
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+///
 template<typename T>
 inline cudaError_t cudaMemcpy( T* dest, const T* src, const std::size_t count, cudaMemcpyKind kind ) {
 	return cudaMemcpy( reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
 }
 
+///
+/// \brief Wrapper around CUDA API function cudaMemcpy2D.
+///
+/// Copies a matrix of width*height elements of type T from a contiguous memory block
+/// with a given pitch (in bytes) to another contiguous memory block with a given
+/// pitch (in bytes).
+///
+/// \param dest Pointer to destination memory.
+/// \param dpitch Pitch (in bytes) of destination memory.
+/// \param src Pointer to source memory.
+/// \param spitch Pitch (in bytes) of source memory.
+/// \param width Width of matrix.
+/// \param height Height of matrix.
+/// \param kind Type of transfer (cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice, cudaMemcpyHostToDevice)
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidPitchValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+///
 template<typename T>
 inline cudaError_t cudaMemcpy2D( T* dest, const std::size_t dpitch, const T* src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind ) {
 	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );

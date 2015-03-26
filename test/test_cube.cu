@@ -102,6 +102,12 @@ int main( int argc, char* argv[] ) {
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
 	{
+		std::vector<Coordinate> v( 5 );
+		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
+		slice[0].assign( v.begin(), v.end() );
+	}
+
+	{
 		ecuda::array<Coordinate,3> deviceRow;
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
 		CUDA_CHECK_ERRORS();

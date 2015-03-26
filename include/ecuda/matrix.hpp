@@ -44,6 +44,9 @@ either expressed or implied, of the FreeBSD Project.
 #if HAVE_ESTD_LIBRARY > 0
 #include <estd/matrix.hpp>
 #endif
+#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
+#include <gsl/gsl_matrix.h>
+#endif
 #include "global.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
@@ -119,9 +122,9 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef temporary_array< value_type, pointer > row_type; //!< matrix row container type
+	typedef contiguous_temporary_array<value_type> row_type; //!< matrix row container type
 	typedef temporary_array< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	typedef temporary_array< const value_type, const_pointer > const_row_type; //!< matrix const row container type
+	typedef contiguous_temporary_array<const value_type> const_row_type; //!< matrix const row container type
 	typedef temporary_array< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
 	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
@@ -143,7 +146,7 @@ private:
 public:
 	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T(), const Alloc& allocator = Alloc() );
 
-	HOST matrix( const matrix<T>& src );
+	HOST DEVICE matrix( const matrix<T>& src );
 
 	#ifdef __CPP11_SUPPORTED__
 	HOST matrix( matrix<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
@@ -154,6 +157,13 @@ public:
 	HOST matrix( const estd::matrix<T,U,V>& src, const Alloc& allocator = Alloc() );
 	#endif
 
+	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
+	HOST matrix( const gsl_matrix& src ) : numberRows(src.size1), numberColumns(src.size2) {
+		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.data, src.tda*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+	}
+	#endif
+
 	HOST DEVICE virtual ~matrix() {}
 
 	HOST inline allocator_type get_allocator() const { return allocator; }
@@ -161,12 +171,6 @@ public:
 
 	template<class RandomAccessIterator>
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end );
-
-	template<class InputIterator>
-	HOST void assign_row( size_type rowIndex, InputIterator begin, InputIterator end ) {
-		std::vector<value_type> v( begin, end );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), std::min(v.size(),number_columns()), cudaMemcpyHostToDevice ) );
-	}
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
@@ -270,12 +274,36 @@ public:
 		return matrix;
 	}
 
-	// critical function used to bridge host->device code
-	HOST DEVICE matrix<T>& operator=( const matrix<T>& other ) {
-		numberRows = other.numberRows;
-		numberColumns = other.numberColumns;
-		pitch = other.pitch;
-		deviceMemory = other.deviceMemory;
+	///
+	/// \brief Assignment operator.
+	///
+	/// Copies the contents of other into this container.
+	///
+	/// Note that the behaviour differs depending on whether the assignment occurs on the
+	/// host or the device. If called from the host, a deep copy is performed: additional
+	/// memory is allocated in this container and the contents of other are copied there.
+	/// If called from the device, a shallow copy is performed: the pointer to the device
+	/// memory is copied only.  Therefore any changes made to this container are reflected
+	/// in other as well, and vice versa.
+	///
+	/// \param other Container whose contents are to be assigned to this container.
+	/// \return A reference to this container.
+	///
+	template<class Alloc2>
+	HOST DEVICE matrix<value_type,allocator_type>& operator=( const matrix<value_type,Alloc2>& src ) {
+		#ifdef __CUDA_ARCH__
+		// shallow copy if called from device
+		numberRows = src.numberRows;
+		numberColumns = src.numberColumns;
+		pitch = src.pitch;
+		deviceMemory = src.deviceMemory;
+		#else
+		// deep copy if called from host
+		numberRows = src.numberRows;
+		numberColumns = src.numberColumns;
+		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberColumns, numberRows, cudaMemcpyDeviceToDevice ) );
+		#endif
 		return *this;
 	}
 
@@ -284,6 +312,21 @@ public:
 	HOST matrix<T,Alloc>& operator>>( estd::matrix<T,U,V>& dest ) {
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns) );
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest.data(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+	#endif
+
+	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
+	HOST matrix<T,Alloc>& operator>>( gsl_matrix** dest ) {
+		*dest = gsl_matrix_alloc( numberRows, numberColumns );
+		CUDA_CALL( cudaMemcpy2D<value_type>( (*dest)->data, (*dest)->tda*sizeof(double), deviceMemory.get(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+
+	HOST matrix<T,Alloc>& operator>>( gsl_matrix& dest ) {
+		if( dest.size1 != number_rows() ) throw std::length_error( "ecuda::matrix::operator>>(gsl_matrix&) target rows in GSL matrix and this matrix do not match" );
+		if( dest.size2 != number_columns() ) throw std::length_error( "ecuda::matrix::operator>>(gsl_matrix&) target columns in GSL matrix and this matrix do not match" );
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest.data, dest.tda*sizeof(double), deviceMemory.get(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 	#endif
@@ -300,7 +343,7 @@ public:
 		// allocate memory
 		this->numberRows = numberRows;
 		this->numberColumns = numberColumns;
-		deviceMemory = device_ptr<value_type>( DevicePitchAllocator<T>().allocate( numberColumns, numberRows, pitch ) );
+		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
 	}
 
 	#if HAVE_ESTD_LIBRARY > 0
@@ -308,6 +351,16 @@ public:
 	HOST matrix<T,Alloc>& operator<<( const estd::matrix<T,U,V>& src ) {
 		resize( src.row_size(), src.column_size() );
 		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+		return *this;
+	}
+	#endif
+
+	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
+	HOST matrix<T,Alloc>& operator<<( const gsl_matrix& dest ) {
+		numberRows = dest.size1;
+		numberColumns = dest.size2;
+		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, dest.data, dest.tda*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 	#endif

@@ -84,7 +84,7 @@ public:
 	template<typename T2,typename PointerType2>
 	HOST DEVICE temporary_array( const temporary_array<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
 	HOST DEVICE temporary_array( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
-	HOST DEVICE virtual ~temporary_array() {}
+	HOST DEVICE ~temporary_array() {}
 
 	HOST DEVICE pointer data() const { return ptr; }
 
@@ -125,14 +125,47 @@ public:
 		return *this;
 	}
 
-	/*
-	 * unfortunately cannot assume ptr refers contiguous memory
+};
+
+
+///
+/// \brief A specialized temporary array guaranteed to be comprised of a contiguous sequence of memory.
+///
+/// This is a subclass of temporary_array that imposes the requirement that the
+/// underlying pointer refers to a contiguous block of memory.  Thus, PointerType
+/// (the second template parameter of temporary_array) is strictly defined as a
+/// naked pointer of type T*.
+///
+/// This allows the assign method to be made available safely.
+///
+template<typename T>
+class contiguous_temporary_array : public temporary_array<T,T*>
+{
+public:
+	typedef typename temporary_array<T,T*>::value_type value_type; //!< element data type
+	typedef typename temporary_array<T,T*>::pointer pointer; //!< element pointer type
+	typedef typename temporary_array<T,T*>::reference reference; //!< element reference type
+	typedef typename temporary_array<T,T*>::const_reference const_reference; //!< const element reference type
+	typedef typename temporary_array<T,T*>::size_type size_type; //!< unsigned integral type
+	typedef typename temporary_array<T,T*>::difference_type difference_type; //!< signed integral type
+
+	typedef typename temporary_array<T,T*>::iterator iterator; //!< iterator type
+	typedef typename temporary_array<T,T*>::const_iterator const_iterator; //!< const iterator type
+	typedef typename temporary_array<T,T*>::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename temporary_array<T,T*>::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+
+public:
+	HOST DEVICE contiguous_temporary_array() : temporary_array<T,T*>() {}
+	template<typename T2>
+	HOST DEVICE contiguous_temporary_array( const contiguous_temporary_array<T2>& src ) : temporary_array<T2,T2*>( src ) {}
+	HOST DEVICE contiguous_temporary_array( pointer ptr, size_type length ) : temporary_array<T,T*>( ptr, length ) {}
+	HOST DEVICE ~contiguous_temporary_array() {}
+
 	template<class InputIterator>
 	HOST void assign( InputIterator begin, InputIterator end ) {
 		std::vector<value_type> v( begin, end );
-		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(ptr), &v.front(), std::min(v.size(),size()), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
 	}
-	*/
 
 };
 
@@ -145,11 +178,12 @@ public:
 /// is a contrived structure to provide matrix-like operations, no
 /// allocation/deallocation is done.
 ///
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class temporary_matrix : public temporary_array<T,PointerType>
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,class RowType=temporary_array<T,PointerType> >
+class temporary_matrix : public RowType //temporary_array<T,PointerType>
 {
 private:
-	typedef temporary_array<T,PointerType> base_type;
+	//typedef temporary_array<T,PointerType> base_type;
+	typedef RowType base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< element data type
@@ -173,26 +207,26 @@ private:
 	size_type height;
 
 public:
-	HOST DEVICE temporary_matrix() : temporary_array<T>(), height(0) {}
+	HOST DEVICE temporary_matrix() : base_type(), height(0) {} //temporary_array<T>(), height(0) {}
 	template<typename U>
-	HOST DEVICE temporary_matrix( const temporary_matrix<U>& src ) : temporary_array<T,PointerType>(src), height(src.height) {}
-	HOST DEVICE temporary_matrix( pointer ptr, size_type width, size_type height ) : temporary_array<T,PointerType>(ptr,width*height), height(height) {}
-	HOST DEVICE virtual ~temporary_matrix() {}
+	HOST DEVICE temporary_matrix( const temporary_matrix<U>& src ) : base_type(src), height(src.height) {} // temporary_array<T,PointerType>(src), height(src.height) {}
+	HOST DEVICE temporary_matrix( pointer ptr, size_type width, size_type height ) : base_type(ptr,width*height), height(height) {} //temporary_array<T,PointerType>(ptr,width*height), height(height) {}
+	HOST DEVICE ~temporary_matrix() {}
 
 	// capacity:
-	HOST DEVICE inline size_type get_width() const { return temporary_array<T,PointerType>::size()/height; }
+	HOST DEVICE inline size_type get_width() const { return base_type::size()/height; }
 	HOST DEVICE inline size_type get_height() const { return height; }
 
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
-		ptr += index*get_height(); //get_width();
-		return row_type( ptr, get_height() ); // get_width() );
+		ptr += index*get_width();
+		return row_type( ptr, get_width() );
 	}
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
 		pointer ptr = base_type::data();
-		ptr += index*get_height(); //get_width();
-		return const_row_type( ptr, get_height() ); //get_width() );
+		ptr += index*get_width();
+		return const_row_type( ptr, get_width() );
 	}
 
 	HOST DEVICE inline row_type get_row( size_type rowIndex ) { return operator[]( rowIndex ); }
@@ -213,6 +247,67 @@ public:
 	HOST DEVICE temporary_matrix& operator=( const temporary_matrix& other ) {
 		base_type::operator=( other );
 		height = other.height;
+		return *this;
+	}
+
+};
+
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
+class contiguous_temporary_matrix : private temporary_matrix< T, PointerType, contiguous_temporary_array<T> >
+{
+private:
+	typedef temporary_matrix< T, PointerType, contiguous_temporary_array<T> > base_type;
+
+public:
+	typedef typename base_type::value_type value_type; //!< element data type
+	typedef typename base_type::pointer pointer; //!< element pointer type
+	typedef typename base_type::reference reference; //!< element reference type
+	typedef typename base_type::const_reference const_reference; //!< const element reference type
+	typedef typename base_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_type::difference_type difference_type; //!< signed integral type
+
+	typedef typename base_type::iterator iterator; //!< iterator type
+	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
+	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+
+	typedef contiguous_temporary_array<value_type> row_type;
+	typedef contiguous_temporary_array<const value_type> const_row_type;
+	typedef typename base_type::column_type column_type;
+	typedef typename base_type::const_column_type const_column_type;
+
+public:
+	HOST DEVICE contiguous_temporary_matrix() : base_type() {}
+	template<typename U>
+	HOST DEVICE contiguous_temporary_matrix( const contiguous_temporary_matrix<U>& src ) : base_type(src) {}
+	HOST DEVICE contiguous_temporary_matrix( pointer ptr, size_type width, size_type height ) : base_type(ptr,width,height) {}
+	HOST DEVICE ~contiguous_temporary_matrix() {}
+
+	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
+	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
+
+	HOST DEVICE inline row_type operator[]( size_type index ) {
+		pointer p = base_type::data();
+		p += index*base_type::get_height();
+		typename row_type::pointer np = p;
+		return row_type( np, base_type::get_height() );
+	}
+
+	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
+		pointer p = base_type::data();
+		p += index*base_type::get_height();
+		typename const_row_type::pointer np = p;
+		return const_row_type( np, base_type::get_height() );
+	}
+
+	HOST DEVICE inline row_type get_row( size_type rowIndex ) { return operator[]( rowIndex ); }
+	HOST DEVICE inline const_row_type get_row( size_type rowIndex ) const { return operator[]( rowIndex ); }
+
+	HOST DEVICE inline column_type get_column( size_type columnIndex ) { return base_type::get_column(); }
+	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const { return base_type::get_column(); }
+
+	HOST DEVICE contiguous_temporary_matrix& operator=( const contiguous_temporary_matrix& other ) {
+		base_type::operator=( other );
 		return *this;
 	}
 

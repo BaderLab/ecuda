@@ -48,7 +48,7 @@ namespace ecuda {
 /// \param t1,t2 the values to be swapped
 ///
 template<typename T>
-DEVICE void swap( T& t1, T& t2 ) {
+DEVICE inline void swap( T& t1, T& t2 ) {
 	T tmp = t1;
 	t1 = t2;
 	t2 = tmp;
@@ -67,6 +67,9 @@ DEVICE bool lexicographical_compare( InputIterator1 begin1, InputIterator1 end1,
 	}
 	return begin1 == end1 and begin2 == end2;
 }
+
+template<typename T>
+DEVICE inline const T& min( const T& a, const T& b ) { return a < b ? a : b; }
 
 } // namespace ecuda
 
