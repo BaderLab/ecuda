@@ -154,7 +154,7 @@ public:
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST array( const array& src ) : deviceMemory(src.deviceMemory) {}
+	HOST DEVICE array( const array& src ) : deviceMemory(src.deviceMemory) {}
 	
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
@@ -177,7 +177,7 @@ public:
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST DEVICE array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
+	HOST array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
 	#endif
 
 	///

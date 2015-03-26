@@ -195,6 +195,10 @@ public:
 
 	HOST DEVICE cube( const cube<T>& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(src.deviceMemory), allocator(src.allocator) {}
 
+	#ifdef __CPP11_SUPPORTED__
+	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
+	#endif
+
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V,typename W>
 	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {

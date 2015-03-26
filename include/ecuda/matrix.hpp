@@ -143,7 +143,11 @@ private:
 public:
 	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const_reference value = T(), const Alloc& allocator = Alloc() );
 
-	HOST DEVICE matrix( const matrix<T>& src );
+	HOST matrix( const matrix<T>& src );
+
+	#ifdef __CPP11_SUPPORTED__
+	HOST matrix( matrix<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
+	#endif
 
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V>
