@@ -40,6 +40,7 @@ either expressed or implied, of the FreeBSD Project.
 #define ECUDA_APIWRAPPERS_HPP
 
 #include "global.hpp"
+#include "allocators.hpp"
 
 namespace ecuda {
 
@@ -99,7 +100,7 @@ inline cudaError_t cudaMemcpy2D( T* dest, const std::size_t dpitch, const T* src
 template<typename T>
 inline cudaError_t cudaMemset( T* devPtr, const T& value, const std::size_t count ) {
 	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
-	std::vector<T> v( count, value );
+	std::vector< T, host_allocator<T> > v( count, value );
 	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
 }
 
@@ -121,7 +122,7 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const std::size_t coun
 ///
 template<typename T>
 inline cudaError_t cudaMemset2D( T* devPtr, const std::size_t pitch, const T& value, const std::size_t width, const std::size_t height ) {
-	std::vector<T> v( width, value );
+	std::vector< T, host_allocator<T> > v( width, value );
 	char* charPtr = reinterpret_cast<char*>(devPtr);
 	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {
 		const cudaError_t rc = cudaMemcpy<T>( reinterpret_cast<T*>(charPtr), &v.front(), width, cudaMemcpyHostToDevice );

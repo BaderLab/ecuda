@@ -29,7 +29,9 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // algorithm.hpp
-// Generic functions found in STL algorithm reimplemented for use with CUDA.
+//
+// Generic functions found in STL <algorithm> reimplemented so they can be
+// called from device code.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -68,8 +70,29 @@ DEVICE bool lexicographical_compare( InputIterator1 begin1, InputIterator1 end1,
 	return begin1 == end1 and begin2 == end2;
 }
 
-template<typename T>
-DEVICE inline const T& min( const T& a, const T& b ) { return a < b ? a : b; }
+template<typename T> DEVICE inline const T& min( const T& a, const T& b ) { return a < b ? a : b; }
+
+template<typename T> DEVICE inline const T& max( const T& a, const T& b ) { return a < b ? b : a; }
+
+template<class ForwardIterator>
+DEVICE ForwardIterator max_element( ForwardIterator first, ForwardIterator last ) {
+	ForwardIterator best = first;
+	while( ++first != last ) if( first > best ) best = first;
+	return best;
+}
+
+template<class ForwardIterator>
+DEVICE ForwardIterator min_element( ForwardIterator first, ForwardIterator last ) {
+	ForwardIterator best = first;
+	while( ++first != last ) if( first < best ) best = first;
+	return best;
+}
+
+template<class InputIterator,typename T>
+DEVICE T accumulate( InputIterator first, InputIterator last, T init=0 ) {
+	while( first != last ) { init += *first; ++first; }
+	return init;
+}
 
 } // namespace ecuda
 

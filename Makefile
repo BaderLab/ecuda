@@ -36,7 +36,7 @@ AR = ar
 CC = gcc -x c
 CFLAGS = -Wall
 CXX = g++
-CXXFLAGS = -std=c++0x -Wall -flto -L/usr/local/cuda/lib64
+CXXFLAGS = -std=c++0x -Wall -flto -L/usr/local/cuda/lib64 -pedantic
 FC = gfortran
 NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -Xcompiler -fopenmp

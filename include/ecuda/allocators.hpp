@@ -42,7 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 
 #include "global.hpp"
-#include "apiwrappers.hpp"
 
 namespace ecuda {
 

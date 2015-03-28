@@ -164,7 +164,7 @@ public:
 	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), allocator(allocator) {
 		if( numberRows and numberColumns ) {
 			deviceMemory = device_ptr<value_type>( this->allocator.allocate( numberColumns, numberRows, pitch ) );
-			std::vector<T> v( numberRows*numberColumns, value );
+			std::vector< value_type, host_allocator<value_type> > v( numberRows*numberColumns, value );
 			CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		}
 	}
@@ -539,7 +539,7 @@ public:
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
 		const std::size_t n = end-begin;
 		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
-		std::vector<value_type> v( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v( number_columns() );
 		for( std::size_t i = 0; i < number_rows(); ++i, begin += number_columns() ) {
 			v.assign( begin, begin+number_columns() );
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
@@ -555,7 +555,7 @@ public:
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
-		std::vector<value_type> v( number_columns(), value );
+		std::vector< value_type, host_allocator<value_type> > v( number_columns(), value );
 		for( size_type i = 0; i < number_rows(); ++i )
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
 		#endif
@@ -612,8 +612,8 @@ public:
 		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
 		return true;
 		#else
-		std::vector<value_type> v1( number_columns() );
-		std::vector<value_type> v2( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
 			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
@@ -651,8 +651,8 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
-		std::vector<value_type> v1( number_columns() );
-		std::vector<value_type> v2( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
 			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
@@ -676,8 +676,8 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else
-		std::vector<value_type> v1( number_columns() );
-		std::vector<value_type> v2( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
 			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );

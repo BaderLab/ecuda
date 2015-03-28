@@ -173,7 +173,7 @@ public:
 	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), allocator(allocator) {
 		if( numberRows and numberColumns and numberDepths ) {
 			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector<value_type> v( numberDepths, value );
+			std::vector< value_type, host_allocator<value_type> > v( numberDepths, value );
 			for( size_type i = 0; i < numberRows; ++i ) {
 				for( size_type j = 0; j < numberColumns; ++j ) {
 					CUDA_CALL( cudaMemcpy<value_type>(
@@ -238,7 +238,7 @@ public:
 	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
 			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector<value_type> v( numberDepths );
+			std::vector< value_type, host_allocator<value_type> > v( numberDepths );
 			for( size_type i = 0; i < numberRows; ++i ) {
 				for( size_type j = 0; j < numberColumns; ++j ) {
 					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
@@ -284,8 +284,10 @@ public:
 	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
 		if( (end-begin) != size() ) throw std::length_error( "ecuda::cube::assign(begin,end) iterator range [begin,end) does not have correct length" );
 		const size_type rc = number_rows()*number_columns();
+		std::vector< value_type, host_allocator<value_type> > v( number_depths() );
 		for( std::size_t i = 0; i < rc; ++i, begin += number_depths() ) {
-			std::vector<value_type> v( begin, begin+number_depths() );
+			v.assign( begin, begin+number_depths() );
+			//std::vector<value_type> v( begin, begin+number_depths() );
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), &v.begin(), number_depths(), cudaMemcpyHostToDevice ) );
 		}
 	}
@@ -390,7 +392,7 @@ public:
 	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
 		//TODO: this can be optimized
 		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
-		std::vector<value_type> tmp( numberDepths );
+		std::vector< value_type, host_allocator<value_type> > tmp( numberDepths );
 		for( size_type i = 0; i < numberRows; ++i ) {
 			for( size_type j = 0; j < numberColumns; ++j ) {
 				CUDA_CALL( cudaMemcpy<value_type>( &tmp.front(), allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), numberDepths, cudaMemcpyDeviceToHost ) );
@@ -428,7 +430,7 @@ public:
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
-		std::vector<value_type> v( number_depths(), value );
+		std::vector< value_type, host_allocator<value_type> > v( number_depths(), value );
 		// seed the device memory
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), number_depths(), cudaMemcpyHostToDevice ) );
 		// make additional copies within the device
@@ -477,7 +479,7 @@ public:
 	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
 		//TODO: this can be optimized
 		resize( src.row_size(), src.column_size(), src.depth_size() );
-		std::vector<value_type> tmp( src.depth_size() );
+		std::vector< value_type, host_allocator<value_type> > tmp( src.depth_size() );
 		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.row_size(); ++i ) {
 			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.column_size(); ++j ) {
 				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];

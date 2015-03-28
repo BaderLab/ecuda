@@ -112,7 +112,7 @@ public:
 	template<class InputIterator>
 	HOST array( InputIterator begin, InputIterator end ) {
 		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
-		std::vector<T> v( N );
+		std::vector< T, host_allocator<T> > v( N );
 		typename std::vector<T>::size_type index = 0;
 		while( index < N ) {
 			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
@@ -133,7 +133,7 @@ public:
 	///
 	HOST array( std::initializer_list<T> il ) {
 		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
-		std::vector<T> v( il );
+		std::vector< T, host_allocator<T> > v( il );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
 	#endif
@@ -398,7 +398,7 @@ public:
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
-		std::vector<value_type> v( size(), value );
+		std::vector< value_type, host_allocator<value_type> > v( size(), value );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), size(), cudaMemcpyHostToDevice ) );
 		#endif
 	}
@@ -416,8 +416,8 @@ public:
 		iterator iter2 = other.begin();
 		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
 		#else
-		std::vector<value_type> host1; operator>>( host1 );
-		std::vector<value_type> host2; other.operator>>( host2 );
+		std::vector< value_type, host_allocator<value_type> > host1; operator>>( host1 );
+		std::vector< value_type, host_allocator<value_type> > host2; other.operator>>( host2 );
 		operator<<( host2 );
 		other.operator<<( host1 );
 		#endif
@@ -442,7 +442,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector<T> arr1, arr2;
+		std::vector< T, host_allocator<T> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -474,7 +474,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector<T> arr1, arr2;
+		std::vector< T, host_allocator<T> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -495,7 +495,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector<T> arr1, arr2;
+		std::vector< T, host_allocator<T> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -522,7 +522,8 @@ public:
 	///
 	/// \brief Copies the contents of this device array to a host STL vector.
 	///
-	HOST const array<T,N>& operator>>( std::vector<value_type>& vector ) const {
+	template<class Alloc>
+	HOST const array<T,N>& operator>>( std::vector<value_type,Alloc>& vector ) const {
 		vector.resize( N );
 		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
@@ -531,7 +532,8 @@ public:
 	///
 	/// \brief Copies the contents of a host STL vector to this device array.
 	///
-	HOST array<T,N>& operator<<( std::vector<value_type>& vector ) {
+	template<class Alloc>
+	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
 		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;

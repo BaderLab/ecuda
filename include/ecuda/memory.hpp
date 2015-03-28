@@ -172,7 +172,7 @@ public:
 
 	template<class InputIterator>
 	HOST void assign( InputIterator begin, InputIterator end ) {
-		std::vector<value_type> v( begin, end );
+		std::vector< value_type, host_allocator<value_type> > v( begin, end );
 		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
 	}
 
