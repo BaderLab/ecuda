@@ -81,10 +81,10 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef pointer_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
-	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
+	typedef device_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
@@ -95,7 +95,7 @@ public:
 	/// \param value Value to fill the container with.
 	///
 	HOST array( const value_type& value = value_type() ) {
-		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
 		fill( value );
 	}
 
@@ -111,7 +111,7 @@ public:
 	///
 	template<class InputIterator>
 	HOST array( InputIterator begin, InputIterator end ) {
-		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
 		std::vector<T> v( N );
 		typename std::vector<T>::size_type index = 0;
 		while( index < N ) {
@@ -132,7 +132,7 @@ public:
 	////          declarators.
 	///
 	HOST array( std::initializer_list<T> il ) {
-		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
 		std::vector<T> v( il );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
@@ -168,7 +168,7 @@ public:
 	///
 	template<std::size_t N2>
 	HOST array( const array<T,N2>& src ) {
-		deviceMemory = device_ptr<T>( DeviceAllocator<T>().allocate(N) );
+		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 	}
 
@@ -578,7 +578,7 @@ public:
 		deviceMemory = other.deviceMemory;
 		#else
 		// deep copy if called from host
-		deviceMemory = device_ptr<value_type>( DeviceAllocator<value_type>().allocate(N) );
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
 		#endif
 		return *this;

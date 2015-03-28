@@ -118,7 +118,7 @@ namespace ecuda {
 /// linearly in row-major fashion (i.e. each column of the first row is traversed, then each column of the
 /// next row, and so on...).
 ///
-template< typename T, class Alloc=DevicePitchAllocator<T> >
+template< typename T, class Alloc=device_pitch_allocator<T> >
 class matrix {
 
 public:
@@ -136,10 +136,10 @@ public:
 	typedef contiguous_temporary_array<const value_type> const_row_type; //!< matrix const row container type
 	typedef temporary_array< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
-	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
+	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 
 private:
@@ -859,14 +859,13 @@ HOST cudaError_t matrix_copy( matrix<T,Alloc1>& dest, const matrix<T,Alloc2>& sr
 	return cudaSuccess;
 }
 
-/** TODO
 template<typename T,class Alloc1,class Alloc2>
 HOST cudaError_t matrix_swap(
 	matrix<T,Alloc1>& mat1,
 	matrix<T,Alloc2>& mat2,
 	typename matrix<T,Alloc1>::size_type numberRows=0, typename matrix<T,Alloc1>::size_type numberColumns=0,
 	typename matrix<T,Alloc1>::size_type offsetRow1=0, typename matrix<T,Alloc1>::size_type offsetColumn1=0,
-	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0,
+	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0
 )
 {
 	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( "ecuda::matrix_swap() specified row subset of mat1 is out of bounds" );
@@ -876,10 +875,18 @@ HOST cudaError_t matrix_swap(
 	ecuda::vector<T> stagingMemory( numberColumns );
 	typedef typename matrix<T,Alloc1>::size_type size_type;
 	for( size_type i = 0; i < numberRows; ++i ) {
-		stagingMemory.assign( );
+		typename matrix<T,Alloc1>::row_type row1 = mat1[offsetRow1+i];
+		typename matrix<T,Alloc2>::row_type row2 = mat1[offsetRow2+i];
+		try {
+			stagingMemory.assign_from_device( row1+offsetColumn1, row1+(offsetColumn1+numberColumns) );
+			row1.assign_from_device( row2+offsetColumn2, row2+(offsetColumn2+numberColumns) );
+			row2.assign_from_device( stagingMemory.begin(), stagingMemory.end() );
+		} catch( cuda_error& ex ) {
+			return ex.get_cuda_error_type();
+		}
 	}
+	return cudaSuccess;
 }
-*/
 
 } // namespace ecuda
 

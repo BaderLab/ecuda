@@ -68,3 +68,8 @@ benchmarks/% :: benchmarks/%.cu
 dist:
 	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp
 
+docs: FORCE
+	doxygen doxygen.cfg
+
+FORCE:
+

@@ -51,7 +51,7 @@ namespace ecuda {
 ///
 /// A video memory-bound stack structure.
 ///
-template< typename T, class Alloc=DeviceAllocator<T>, typename Container=vector<T,Alloc> >
+template< typename T, class Alloc=device_allocator<T>, typename Container=vector<T,Alloc> >
 class stack {
 
 public:

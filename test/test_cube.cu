@@ -81,6 +81,13 @@ void fetchAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 }
 
 
+template<typename T,std::size_t U> __global__
+void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
+	typename ecuda::array<T,U>::size_type index = 0;
+	typename ecuda::cube<T>::const_row_type row = cube.get_row(0,0);
+	for( typename ecuda::cube<T>::const_row_type::const_iterator iter = row.begin(); iter != row.end(); ++iter, ++index ) array[index] = *iter;
+}
+
 int main( int argc, char* argv[] ) {
 
 	estd::cube<Coordinate> hostCube( 3, 4, 5 );
@@ -104,7 +111,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<Coordinate> v( 5 );
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
-		slice[0].assign_from_host( v.begin(), v.end() );
+		slice[0].assign( v.begin(), v.end() );
 	}
 
 	{
@@ -187,6 +194,20 @@ int main( int argc, char* argv[] ) {
 			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
 				std::cout << " " << hostMatrix[i][j];
 			}
+			std::cout << std::endl;
+		}
+	}
+
+	{
+		ecuda::array<Coordinate,3> deviceArray;
+		iterateAll<<<1,1>>>( deviceCube, deviceArray );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostArray;
+		deviceArray >> hostArray;
+		for( unsigned i = 0; i < hostArray.size(); ++i ) {
+			std::cout << "LINEAR";
+			std::cout << " " << hostArray[i];
 			std::cout << std::endl;
 		}
 	}

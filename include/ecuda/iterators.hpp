@@ -48,28 +48,21 @@ namespace ecuda {
 /// \brief Iterator template compatible with pointers to device memory.
 ///
 /// This general iterator definition builds on top of the standard STL iterator but
-/// is functional using device memory and within device code. Almost all of the
-/// capabilities of a standard random access STL iterator are present, except for the
-/// difference operator.  Thus, the category tag is set to indicate a bidirectional
-/// iterator, even though most of the capabilities of a random access iterator are
-/// also present. The iterator simply carries around a "pointer" (or an object with
-/// pointer semantics) to device memory which is incremented or decremented as
-/// appropriate.
+/// is functional using device memory and within device code. All the capabilities
+/// of an STL bidirectional iterator are present. Specialized pointer-like classes
+/// (e.g. striding_ptr and padded_ptr) are compatible with the bidirectional
+/// specification, so traversing elements oriented in memory non-contiguously
+/// are possible (contiguous_device_iterator enforces the use of a naked pointer
+/// and expands the capabilities to an STL random access iterator for cases where
+/// elements are oriented contiguously).
 ///
-/// Providing the ability to specify the template parameter PointerType explicitly
-/// allows specialized pointers to be used (rather than assuming a naked pointer T*).
-/// Specialized pointers can be designed to accomodate issues that arise from
-/// a) traversing matrices and cubes in non-contiguous order and/or b) the memory padding
-/// that exists in pitched memory allocations on the device. striding_ptr and pitched_ptr
-/// are two such pointer specializations that deal with these issues, respectively.
-///
-/// Since this definition doesn't necessarily imply contiguous memory, a subclass
-/// of this template called contiguous_pointer_iterator (which does impose this
-/// requirement) is also available (since it includes the difference operator it
-/// is considered a true random access iterator).
+/// The use of specialized pointers are important for traversing matrices and cubes
+/// in non-standard order (i.e. column-wise matrix traversal) and to deal with the
+/// fact that 2D device memory allocations often include padding to align the
+/// memory for optimal read/write operations.
 ///
 template<typename T,typename PointerType,class Category=std::bidirectional_iterator_tag>
-class pointer_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
+class device_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
 {
 private:
 	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_iterator_type; //!< redeclares base STL iterator type to make later typedefs more compact
@@ -84,20 +77,23 @@ public:
 private:
 	pointer ptr;
 
+protected:
+	HOST DEVICE inline pointer& get_pointer_ref() const { return ptr; }
+
 public:
 	///
 	/// \brief Default constructor.
 	///
 	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
 	///
-	HOST DEVICE pointer_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
+	HOST DEVICE device_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
 
 	///
 	/// \brief Copy constructor.
 	///
 	/// \param src Another iterator whose contents are to be copied.
 	///
-	HOST DEVICE pointer_iterator( const pointer_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
+	HOST DEVICE device_iterator( const device_iterator<T,PointerType,Category>& src ) : ptr(src.ptr) {}
 
 	///
 	/// \brief Copy constructor.
@@ -110,27 +106,27 @@ public:
 	/// \param src Another iterator whose contents are to be copied.
 	///
 	template<typename T2,typename PointerType2>
-	HOST DEVICE pointer_iterator( const pointer_iterator<T2,PointerType2,Category>& src ) : ptr(src.operator->()) {}
+	HOST DEVICE device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.operator->()) {}
 
 	///
 	/// \brief Destructor.
 	///
-	HOST DEVICE ~pointer_iterator() {}
+	HOST DEVICE ~device_iterator() {}
 
 	///
 	/// \brief Prefix increments the position of the iterator.
 	///
 	/// This ability is required of all STL iterators.
 	///
-	HOST DEVICE inline pointer_iterator& operator++() { ++ptr; return *this; }
+	HOST DEVICE inline device_iterator& operator++() { ++ptr; return *this; }
 
 	///
 	/// \brief Postfix increments the position of the iterator.
 	///
 	/// This ability is required of all STL iterators.
 	///
-	HOST DEVICE inline pointer_iterator operator++( int ) {
-		pointer_iterator tmp(*this);
+	HOST DEVICE inline device_iterator operator++( int ) {
+		device_iterator tmp(*this);
 		++(*this);
 		// operator++(); // nvcc V6.0.1 didn't like this but above line works
 		return tmp;
@@ -141,15 +137,15 @@ public:
 	///
 	/// This ability is required of bidirectional STL iterators.
 	///
-	HOST DEVICE inline pointer_iterator& operator--() { --ptr; return *this; }
+	HOST DEVICE inline device_iterator& operator--() { --ptr; return *this; }
 
 	///
 	/// \brief Postfix decrements the position of the iterator.
 	///
 	/// This ability is required of bidirectional STL iterators.
 	///
-	HOST DEVICE inline pointer_iterator& operator--( int ) const {
-		pointer_iterator tmp(*this);
+	HOST DEVICE inline device_iterator& operator--( int ) const {
+		device_iterator tmp(*this);
 		--(*this);
 		// operator--(); // nvcc V6.0.1 didn't like this but above line works
 		return tmp;
@@ -162,7 +158,7 @@ public:
 	///
 	/// \returns true if this iterator points to the same element as the other.
 	///
-	HOST DEVICE bool operator==( const pointer_iterator& other ) const { return ptr == other.ptr; }
+	HOST DEVICE bool operator==( const device_iterator& other ) const { return ptr == other.ptr; }
 
 	///
 	/// \brief Inequality comparison of this iterator with another.
@@ -171,7 +167,7 @@ public:
 	///
 	/// \returns true if this iterator does not point to the same element as the other.
 	///
-	HOST DEVICE bool operator!=( const pointer_iterator& other ) const { return !operator==(other); }
+	HOST DEVICE bool operator!=( const device_iterator& other ) const { return !operator==(other); }
 
 	///
 	/// \brief Gets a reference to the element pointed at by this iterator.
@@ -190,98 +186,14 @@ public:
 	///
 	/// \returns a pointer to the element pointed at by this iterator
 	///
-	HOST DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion pointer_iterator<T,T*> -> pointer_iterator<const T,const T*>
+	HOST DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion device_iterator<T,T*> -> device_iterator<const T,const T*>
 
-	///
-	/// \brief Creates an iterator pointing to a later element some specified positions away.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions ahead to move the new iterator to.
-	/// \returns Another iterator which points to an element x positions after this iterator's element.
-	///
-	HOST DEVICE inline pointer_iterator operator+( int x ) const { return pointer_iterator( ptr + x ); }
-
-	///
-	/// \brief Creates an iterator pointing to a prior element some specified positions away.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions prior to move the new iterator to.
-	/// \returns Another iterator which points to an element x positions before this iterator's element.
-	///
-	HOST DEVICE inline pointer_iterator operator-( int x ) const { return pointer_iterator( ptr - x ); }
-
-	///
-	/// \brief Checks if the element pointed at by this iterator comes before another.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param other Another iterator to compare element location with.
-	/// \returns true if the element pointed at by this iterator comes before the element pointed at by other.
-	///
-	HOST DEVICE bool operator<( const pointer_iterator& other ) const { return ptr < other.ptr; }
-
-	///
-	/// \brief Checks if the element pointed at by this iterator comes after another.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param other Another iterator to compare element location with.
-	/// \returns true if the element pointed at by this iterator comes after the element pointed at by other.
-	///
-	HOST DEVICE bool operator>( const pointer_iterator& other ) const { return ptr > other.ptr; }
-
-	///
-	/// \brief Checks if the element pointed at by this iterator is equal to or comes before another.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param other Another iterator to compare element location with.
-	/// \returns true if the element pointed at by this iterator is equal to or comes before the element pointed at by other.
-	///
-	HOST DEVICE bool operator<=( const pointer_iterator& other ) const { return operator<(other) or operator==(other); }
-
-	///
-	/// \brief Checks if the element pointed at by this iterator is equal to or comes after another.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param other Another iterator to compare element location with.
-	/// \returns true if the element pointed at by this iterator is equal to or comes after the element pointed at by other.
-	///
-	HOST DEVICE bool operator>=( const pointer_iterator& other ) const { return operator>(other) or operator==(other); }
-
-	///
-	/// \brief Increments the position of this iterator by some amount.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions to increment this iterator by.
-	///
-	HOST DEVICE inline pointer_iterator& operator+=( int x ) { ptr += x; return *this; }
-
-	///
-	/// \brief Decrements the position of this iterator by some amount.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions to increment this iterator by.
-	///
-	HOST DEVICE inline pointer_iterator& operator-=( int x ) { ptr -= x; return *this; }
-
-	///
-	/// \brief Gets a reference to an element whose position is offset by a specified amount from this iterator's element.
-	/// \param x The amount to offset the current position by (can be positive or negative).
-	/// \returns a reference to the offset element
-	///
-	DEVICE reference operator[]( int x ) const { return *(ptr+x); }
 
 	///
 	/// \brief Assigns a copy of another iterators position to this iterator.
 	/// \param other another iterator whose position should be assigned to this iterator
 	///
-	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T,PointerType,Category>& other ) {
+	HOST DEVICE device_iterator& operator=( const device_iterator<T,PointerType,Category>& other ) {
 		ptr = other.ptr;
 		return *this;
 	}
@@ -297,7 +209,7 @@ public:
 	/// \param other another iterator whose position should be assigned to this iterator
 	///
 	template<typename T2,typename PointerType2>
-	HOST DEVICE pointer_iterator& operator=( const pointer_iterator<T2,PointerType2,Category>& other ) {
+	HOST DEVICE device_iterator& operator=( const device_iterator<T2,PointerType2,Category>& other ) {
 		ptr = other.ptr;
 		return *this;
 	}
@@ -308,11 +220,11 @@ public:
 /// \brief Iterator template for use with naked pointers to contiguous device memory.
 ///
 template<typename T>
-class contiguous_pointer_iterator : public pointer_iterator<T,T*,std::random_access_iterator_tag>
+class contiguous_device_iterator : public device_iterator<T,T*,std::random_access_iterator_tag>
 {
 
 private:
-	typedef pointer_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base pointer_iterator type to make later typedefs more compact
+	typedef device_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
 
 public:
 	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
@@ -321,20 +233,23 @@ public:
 	typedef typename base_iterator_type::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
 	typedef typename base_iterator_type::reference reference; //!< type to represent a reference to an element pointed by the iterator
 
+private:
+	HOST DEVICE inline pointer get_naked_pointer() const { return base_iterator_type::operator->(); }
+
 public:
 	///
 	/// \brief Default constructor.
 	///
 	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
 	///
-	HOST DEVICE contiguous_pointer_iterator( T* ptr = nullptr ) : base_iterator_type(ptr) {}
+	HOST DEVICE contiguous_device_iterator( T* ptr = nullptr ) : base_iterator_type(ptr) {}
 
 	///
 	/// \brief Copy constructor.
 	///
 	/// \param src Another iterator whose contents are to be copied.
 	///
-	HOST DEVICE contiguous_pointer_iterator( const contiguous_pointer_iterator<T>& src ) : base_iterator_type(src) {}
+	HOST DEVICE contiguous_device_iterator( const contiguous_device_iterator<T>& src ) : base_iterator_type(src) {}
 
 	///
 	/// \brief Copy constructor.
@@ -347,7 +262,92 @@ public:
 	/// \param src Another iterator whose contents are to be copied.
 	///
 	template<typename T2>
-	HOST DEVICE contiguous_pointer_iterator( const contiguous_pointer_iterator<T2>& src ) : base_iterator_type(src.operator->()) {}
+	HOST DEVICE contiguous_device_iterator( const contiguous_device_iterator<T2>& src ) : base_iterator_type(src.operator->()) {}
+
+	///
+	/// \brief Creates an iterator pointing to a later element some specified positions away.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions ahead to move the new iterator to.
+	/// \returns Another iterator which points to an element x positions after this iterator's element.
+	///
+	HOST DEVICE inline contiguous_device_iterator operator+( int x ) const { return contiguous_device_iterator( get_naked_pointer() + x ); }
+
+	///
+	/// \brief Creates an iterator pointing to a prior element some specified positions away.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions prior to move the new iterator to.
+	/// \returns Another iterator which points to an element x positions before this iterator's element.
+	///
+	HOST DEVICE inline contiguous_device_iterator operator-( int x ) const { return contiguous_device_iterator( get_naked_pointer() - x ); }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator comes before another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator comes before the element pointed at by other.
+	///
+	HOST DEVICE bool operator<( const contiguous_device_iterator& other ) const { return get_naked_pointer() < other.get_naked_pointer(); }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator comes after another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator comes after the element pointed at by other.
+	///
+	HOST DEVICE bool operator>( const contiguous_device_iterator& other ) const { return get_naked_pointer() > other.get_naked_pointer(); }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator is equal to or comes before another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator is equal to or comes before the element pointed at by other.
+	///
+	HOST DEVICE bool operator<=( const contiguous_device_iterator& other ) const { return operator<(other) or operator==(other); }
+
+	///
+	/// \brief Checks if the element pointed at by this iterator is equal to or comes after another.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param other Another iterator to compare element location with.
+	/// \returns true if the element pointed at by this iterator is equal to or comes after the element pointed at by other.
+	///
+	HOST DEVICE bool operator>=( const contiguous_device_iterator& other ) const { return operator>(other) or operator==(other); }
+
+	///
+	/// \brief Increments the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
+	HOST DEVICE inline contiguous_device_iterator& operator+=( int x ) { base_iterator_type::get_pointer_ref() += x; return *this; }
+
+	///
+	/// \brief Decrements the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
+	HOST DEVICE inline contiguous_device_iterator& operator-=( int x ) { base_iterator_type::get_pointer_ref() -= x; return *this; }
+
+	///
+	/// \brief Gets a reference to an element whose position is offset by a specified amount from this iterator's element.
+	/// \param x The amount to offset the current position by (can be positive or negative).
+	/// \returns a reference to the offset element
+	///
+	DEVICE reference operator[]( int x ) const { return *(get_naked_pointer()+x); }
 
 	///
 	/// \brief Gets the difference in location between the element pointed at by this iterator and another.
@@ -357,15 +357,15 @@ public:
 	/// \param other Another iterator with which to determine the difference in location.
 	/// \returns the difference in location between the element pointed at by this iterator and other
 	///
-	HOST DEVICE inline difference_type operator-( const contiguous_pointer_iterator& other ) { return base_iterator_type::operator->() - other.operator->(); }
+	HOST DEVICE inline difference_type operator-( const contiguous_device_iterator& other ) { return get_naked_pointer() - other.get_naked_pointer(); }
 
 };
 
 ///
 /// \brief Reverse iterator.
 ///
-/// Given a BaseIterator of type pointer_iterator, this provides the same capabilities
-/// as the given pointer_iterator, but in reverse order.  The same strategy as standard
+/// Given a BaseIterator of type device_iterator, this provides the same capabilities
+/// as the given device_iterator, but in reverse order.  The same strategy as standard
 /// STL reverse iterators is used: the provided base iterator is assumed to point
 /// to an element one position ahead of the element that the reverse iterator wishes
 /// to refer to.  All increment/decrement operations are reversed in this iterator.
@@ -375,10 +375,10 @@ public:
 /// offset prior to getting the value.  This introduces some additional overhead
 /// (although a smart compiler may be able to reduce this to a infinitesimal cost).
 ///
-/// Any undocumented methods are exactly the same as their counterpart in pointer_iterator.
+/// Any undocumented methods are exactly the same as their counterpart in device_iterator.
 ///
 template<class BaseIterator>
-class pointer_reverse_iterator : public std::iterator<typename BaseIterator::iterator_category,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
+class reverse_device_iterator : public std::iterator<typename BaseIterator::iterator_category,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
 {
 
 public:
@@ -393,44 +393,44 @@ private:
 	BaseIterator parentIterator; //!< parent iterator being operated on in reverse
 
 public:
-	HOST DEVICE pointer_reverse_iterator( BaseIterator parentIterator = BaseIterator() ) : parentIterator(parentIterator) {}
+	HOST DEVICE reverse_device_iterator( BaseIterator parentIterator = BaseIterator() ) : parentIterator(parentIterator) {}
 
-	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator& src ) : parentIterator(src.parentIterator) {}
+	HOST DEVICE reverse_device_iterator( const reverse_device_iterator& src ) : parentIterator(src.parentIterator) {}
 
 	template<class ParentIterator2>
-	HOST DEVICE pointer_reverse_iterator( const pointer_reverse_iterator<ParentIterator2>& src ) : parentIterator(src.base()) {}
+	HOST DEVICE reverse_device_iterator( const reverse_device_iterator<ParentIterator2>& src ) : parentIterator(src.base()) {}
 
-	HOST DEVICE virtual ~pointer_reverse_iterator() {}
+	HOST DEVICE virtual ~reverse_device_iterator() {}
 
 	///
 	/// \brief Returns a copy of the base iterator.
 	///
-	///	The base iterator is an iterator of the same type as the one used to construct the pointer_reverse_iterator,
-	/// but pointing to the element next to the one the pointer_reverse_iterator is currently pointing to (a
-	/// pointer_reverse_iterator has always an offset of -1 with respect to its base iterator).
+	///	The base iterator is an iterator of the same type as the one used to construct the reverse_device_iterator,
+	/// but pointing to the element next to the one the reverse_device_iterator is currently pointing to (a
+	/// reverse_device_iterator has always an offset of -1 with respect to its base iterator).
 	///
 	/// \returns A copy of the base iterator, which iterates in the opposite direction.
 	///
 	HOST DEVICE BaseIterator base() const { return parentIterator; }
 
-	HOST DEVICE inline pointer_reverse_iterator& operator++() { --parentIterator; return *this; }
-	HOST DEVICE inline pointer_reverse_iterator operator++( int ) {
-		pointer_reverse_iterator tmp(*this);
+	HOST DEVICE inline reverse_device_iterator& operator++() { --parentIterator; return *this; }
+	HOST DEVICE inline reverse_device_iterator operator++( int ) {
+		reverse_device_iterator tmp(*this);
 		++(*this);
 		// operator++(); // nvcc V6.0.1 didn't like this but above line works
 		return tmp;
 	}
 
-	HOST DEVICE inline pointer_reverse_iterator& operator--() { ++parentIterator; return *this; }
-	HOST DEVICE inline pointer_reverse_iterator& operator--( int ) const {
-		pointer_reverse_iterator tmp(*this);
+	HOST DEVICE inline reverse_device_iterator& operator--() { ++parentIterator; return *this; }
+	HOST DEVICE inline reverse_device_iterator& operator--( int ) const {
+		reverse_device_iterator tmp(*this);
 		--(*this);
 		// operator--(); // nvcc V6.0.1 didn't like this but above line works
 		return tmp;
 	}
 
-	HOST DEVICE inline bool operator==( const pointer_reverse_iterator& other ) const { return parentIterator == other.parentIterator; }
-	HOST DEVICE inline bool operator!=( const pointer_reverse_iterator& other ) const { return !operator==(other); }
+	HOST DEVICE inline bool operator==( const reverse_device_iterator& other ) const { return parentIterator == other.parentIterator; }
+	HOST DEVICE inline bool operator!=( const reverse_device_iterator& other ) const { return !operator==(other); }
 
 	DEVICE inline reference operator*() const {
 		BaseIterator tmp(parentIterator);
@@ -443,28 +443,28 @@ public:
 		return tmp.operator->();
 	}
 
-	HOST DEVICE inline difference_type operator-( const pointer_reverse_iterator& other ) { return parentIterator - other.parentIterator; }
+	HOST DEVICE inline difference_type operator-( const reverse_device_iterator& other ) { return parentIterator - other.parentIterator; }
 
-	HOST DEVICE inline pointer_reverse_iterator operator+( int x ) const { return pointer_reverse_iterator( parentIterator-x ); }
-	HOST DEVICE inline pointer_reverse_iterator operator-( int x ) const { return pointer_reverse_iterator( parentIterator+x ); }
+	HOST DEVICE inline reverse_device_iterator operator+( int x ) const { return reverse_device_iterator( parentIterator-x ); }
+	HOST DEVICE inline reverse_device_iterator operator-( int x ) const { return reverse_device_iterator( parentIterator+x ); }
 
-	HOST DEVICE inline bool operator<( const pointer_reverse_iterator& other ) const { return parentIterator < other.parentIterator; }
-	HOST DEVICE inline bool operator>( const pointer_reverse_iterator& other ) const { return parentIterator > other.parentIterator; }
-	HOST DEVICE inline bool operator<=( const pointer_reverse_iterator& other ) const { return operator<(other) or operator==(other); }
-	HOST DEVICE inline bool operator>=( const pointer_reverse_iterator& other ) const { return operator>(other) or operator==(other); }
+	HOST DEVICE inline bool operator<( const reverse_device_iterator& other ) const { return parentIterator < other.parentIterator; }
+	HOST DEVICE inline bool operator>( const reverse_device_iterator& other ) const { return parentIterator > other.parentIterator; }
+	HOST DEVICE inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) or operator==(other); }
+	HOST DEVICE inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) or operator==(other); }
 
-	HOST DEVICE inline pointer_reverse_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
-	HOST DEVICE inline pointer_reverse_iterator& operator-=( int x ) { parentIterator += x; return *this; }
+	HOST DEVICE inline reverse_device_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
+	HOST DEVICE inline reverse_device_iterator& operator-=( int x ) { parentIterator += x; return *this; }
 
 	DEVICE reference operator[]( int x ) const { return parentIterator.operator[]( -x-1 ); }
 
-	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator& other ) {
+	HOST DEVICE reverse_device_iterator& operator=( const reverse_device_iterator& other ) {
 		parentIterator = other.parentIterator;
 		return *this;
 	}
 
 	template<class ParentIterator2>
-	HOST DEVICE pointer_reverse_iterator& operator=( const pointer_reverse_iterator<ParentIterator2>& other ) {
+	HOST DEVICE reverse_device_iterator& operator=( const reverse_device_iterator<ParentIterator2>& other ) {
 		parentIterator = other.parentIterator;
 		return *this;
 	}

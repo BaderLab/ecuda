@@ -46,11 +46,24 @@ either expressed or implied, of the FreeBSD Project.
 #define __CPP11_SUPPORTED__
 #endif
 
+namespace ecuda {
+
+class cuda_error : public std::runtime_error {
+private:
+	cudaError_t errorType;
+public:
+	explicit cuda_error( cudaError_t errorType, const std::string& what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
+	explicit cuda_error( cudaError_t errorType, const char* what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
+	inline cudaError_t get_cuda_error_type() const { return errorType; }
+};
+
+} // namespace ecuda
+
 ///
 /// Function wrapper that capture and throw an exception on error.  All calls
 /// to functions in the CUDA API that return an error code should use this.
 ///
-#define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw std::runtime_error(oss.str()); }} while(0);
+#define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro

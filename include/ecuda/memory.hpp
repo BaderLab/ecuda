@@ -70,10 +70,10 @@ public:
 	typedef std::size_t size_type; //!< unsigned integral type
 	typedef std::ptrdiff_t difference_type; //!< signed integral type
 
-	typedef pointer_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef pointer_iterator<const value_type,const pointer> const_iterator; //!< const iterator type
-	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
+	typedef device_iterator<const value_type,/*const*/ pointer> const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 protected:
 	pointer ptr; //!< pointer to the start of the array
@@ -152,10 +152,10 @@ public:
 	typedef typename temporary_array<T,T*>::size_type size_type; //!< unsigned integral type
 	typedef typename temporary_array<T,T*>::difference_type difference_type; //!< signed integral type
 
-	typedef contiguous_pointer_iterator<T> iterator; //!< iterator type
-	typedef contiguous_pointer_iterator<const T> const_iterator; //!< const iterator type
-	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef contiguous_device_iterator<T> iterator; //!< iterator type
+	typedef contiguous_device_iterator<const T> const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 public:
 	HOST DEVICE contiguous_temporary_array() : temporary_array<T,T*>() {}
@@ -164,17 +164,16 @@ public:
 	HOST DEVICE contiguous_temporary_array( pointer ptr, size_type length ) : temporary_array<T,T*>( ptr, length ) {}
 	HOST DEVICE ~contiguous_temporary_array() {}
 
-	template<class InputIterator>
-	HOST void assign_from_host( InputIterator begin, InputIterator end ) {
-		std::vector<value_type> v( begin, end );
-		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
-	}
-
-	template<class ContiguousIterator>
-	HOST void assign_from_device( ContiguousIterator begin, ContiguousIterator end ) {
+	HOST void assign( contiguous_device_iterator<const T> begin, contiguous_device_iterator<const T> end ) {
 		const std::ptrdiff_t n = end-begin;
 		if( n < 0 ) throw std::length_error( "ecuda::contiguous_temporary_array::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin, std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
+	}
+
+	template<class InputIterator>
+	HOST void assign( InputIterator begin, InputIterator end ) {
+		std::vector<value_type> v( begin, end );
+		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
 	}
 
 };
@@ -209,9 +208,9 @@ public:
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
 	typedef temporary_array<value_type,pointer> row_type;
-	typedef temporary_array<const value_type,const pointer> const_row_type;
+	typedef temporary_array<const value_type,/*const*/ pointer> const_row_type;
 	typedef temporary_array< value_type, striding_ptr<value_type,pointer> > column_type;
-	typedef temporary_array< const value_type, striding_ptr<const value_type,const pointer> > const_column_type;
+	typedef temporary_array< const value_type, striding_ptr<const value_type,/*const*/ pointer> > const_column_type;
 
 private:
 	size_type height;

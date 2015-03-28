@@ -57,17 +57,17 @@ namespace ecuda {
 /// The implementation uses the CUDA API functions cudaMallocHost and
 /// cudaFreeHost.
 ///
-/// e.g. std::vector< int, HostAllocator<int> >( HostAllocator<int>() ) would
+/// e.g. std::vector< int, host_allocator<int> >( host_allocator<int>() ) would
 ///      instantiate a vector whose underlying contents would be stored in
 ///      page-locked host memory.  Then a call to, for example:
 ///        ecuda::vector<int> deviceVector(1000);
 ///        // do work on device vector using the GPU...
-///        std::vector< int, ecuda::HostAllocator<int> > hostVector( 1000, HostAllocator<int>() );
+///        std::vector< int, ecuda::host_allocator<int> > hostVector( 1000, host_allocator<int>() );
 ///        deviceVector >> hostVector; // copy results from device to host
 ///        // do work on the host vector...
 ///
 template<typename T>
-class HostAllocator {
+class host_allocator {
 
 public:
 	typedef T value_type; //!< element type
@@ -77,28 +77,28 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	template<typename U> struct rebind { typedef HostAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 
 public:
 	///
 	/// \brief Constructs a host allocator object.
 	///
-	HostAllocator() throw() {}
+	host_allocator() throw() {}
 	///
 	/// \brief Constructs a host allocator object from another host allocator object.
 	/// \param alloc Allocator object.
 	///
-	HostAllocator( const HostAllocator& alloc ) throw() {}
+	host_allocator( const host_allocator& alloc ) throw() {}
 	///
 	/// \brief Constructs a host allocator object from another host allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-	HostAllocator( const HostAllocator<U>& alloc ) throw() {}
+	host_allocator( const host_allocator<U>& alloc ) throw() {}
 	///
 	/// \brief Destructs the host allocator object.
 	///
-	~HostAllocator() throw() {}
+	~host_allocator() throw() {}
 	///
 	/// \brief address Returns the address of x.
 	///
@@ -152,7 +152,7 @@ public:
 	/// during the function call, or later).
 	///
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
-	///            (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
 	inline void deallocate( pointer ptr, size_type /*n*/ ) {
 		if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
@@ -169,9 +169,9 @@ public:
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
 	/// \param ptr Pointer to a location with enough storage space to contain an element of type value_type.
-	///            pointer is a member type (defined as an alias of T* in ecuda::HostAllocator<T>).
+	///            pointer is a member type (defined as an alias of T* in ecuda::host_allocator<T>).
 	/// \param val Value to initialize the constructed element to.
-	///            const_reference is a member type (defined as an alias of T& in ecuda::HostAllocator<T>).
+	///            const_reference is a member type (defined as an alias of T& in ecuda::host_allocator<T>).
 	///
 	inline void construct( pointer ptr, const_reference val ) { new ((void*)ptr) value_type (val);	}
 	///
@@ -189,7 +189,7 @@ public:
 /// The implementation uses the CUDA API functions cudaMalloc and cudaFree.
 ///
 template<typename T>
-class DeviceAllocator {
+class device_allocator {
 
 public:
 	typedef T value_type; //!< element type
@@ -199,28 +199,28 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	template<typename U> struct rebind { typedef DeviceAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 
 public:
 	///
 	/// \brief Constructs a device allocator object.
 	///
-	HOST DEVICE DeviceAllocator() throw() {}
+	HOST DEVICE device_allocator() throw() {}
 	///
 	/// \brief Constructs a device allocator object from another device allocator object.
 	/// \param alloc Allocator object.
 	///
-	HOST DEVICE DeviceAllocator( const DeviceAllocator& alloc ) throw() {}
+	HOST DEVICE device_allocator( const device_allocator& alloc ) throw() {}
 	///
 	/// \brief Constructs a device allocator object from another device allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-	HOST DEVICE DeviceAllocator( const DeviceAllocator<U>& alloc ) throw() {}
+	HOST DEVICE device_allocator( const device_allocator<U>& alloc ) throw() {}
 	///
 	/// \brief Destructs the device allocator object.
 	///
-	HOST DEVICE ~DeviceAllocator() throw() {}
+	HOST DEVICE ~device_allocator() throw() {}
 	///
 	/// \brief address Returns the address of x.
 	///
@@ -274,7 +274,7 @@ public:
 	/// during the function call, or later).
 	///
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
-	///            (defined as an alias of T* in ecuda::DeviceAllocator<T>).
+	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
 	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
 	///
@@ -289,9 +289,9 @@ public:
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
 	/// \param ptr Pointer to a location with enough storage space to contain an element of type value_type.
-	///            pointer is a member type (defined as an alias of T* in ecuda::DeviceAllocator<T>).
+	///            pointer is a member type (defined as an alias of T* in ecuda::device_allocator<T>).
 	/// \param val Value to initialize the constructed element to.
-	///            const_reference is a member type (defined as an alias of T& in ecuda::DeviceAllocator<T>).
+	///            const_reference is a member type (defined as an alias of T& in ecuda::device_allocator<T>).
 	///
 	HOST inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
@@ -311,7 +311,7 @@ public:
 /// The implementation uses the CUDA API functions cudaMallocPitch and cudaFree.
 ///
 template<typename T>
-class DevicePitchAllocator {
+class device_pitch_allocator {
 
 public:
 	typedef T value_type; //!< element type
@@ -321,28 +321,28 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	template<typename U> struct rebind { typedef DeviceAllocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 
 public:
 	///
 	/// \brief Constructs a device pitched memory allocator object.
 	///
-	HOST DEVICE DevicePitchAllocator() throw() {}
+	HOST DEVICE device_pitch_allocator() throw() {}
 	///
 	/// \brief Constructs a device pitched memory allocator object from another host allocator object.
 	/// \param alloc Allocator object.
 	///
-	HOST DEVICE DevicePitchAllocator( const DevicePitchAllocator& alloc ) throw() {}
+	HOST DEVICE device_pitch_allocator( const device_pitch_allocator& alloc ) throw() {}
 	///
 	/// \brief Constructs a device pitched memory allocator object from another device pitched memory allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-	HOST DEVICE DevicePitchAllocator( const DevicePitchAllocator<U>& alloc ) throw() {}
+	HOST DEVICE device_pitch_allocator( const device_pitch_allocator<U>& alloc ) throw() {}
 	///
 	/// \brief Destructs the device pitched memory allocator object.
 	///
-	HOST DEVICE ~DevicePitchAllocator() throw() {}
+	HOST DEVICE ~device_pitch_allocator() throw() {}
 	///
 	/// \brief Returns the address of x.
 	///
@@ -396,7 +396,7 @@ public:
 	/// during the function call, or later).
 	///
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
-	///            (defined as an alias of T* in ecuda::DevicePitchAllocator<T>).
+	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
 	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
 	///
@@ -411,9 +411,9 @@ public:
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
 	/// \param ptr Pointer to a location with enough storage space to contain an element of type value_type.
-	///            pointer is a member type (defined as an alias of T* in ecuda::DevicePitchAllocator<T>).
+	///            pointer is a member type (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	/// \param val Value to initialize the constructed element to.
-	///            const_reference is a member type (defined as an alias of T& in ecuda::DevicePitchAllocator<T>).
+	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
 	HOST inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );

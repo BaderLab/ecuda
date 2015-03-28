@@ -110,7 +110,7 @@ namespace ecuda {
 /// blocks of depth blocks, and the row dimension is contiguous blocks of column blocks; thus, an implementation
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
-template< typename T, class Alloc=DevicePitchAllocator<T> >
+template< typename T, class Alloc=device_pitch_allocator<T> >
 class cube {
 
 public:
@@ -144,10 +144,10 @@ public:
 	typedef contiguous_temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
 	typedef contiguous_temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
 
-	typedef pointer_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	typedef pointer_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	typedef pointer_reverse_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef pointer_reverse_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
+	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
