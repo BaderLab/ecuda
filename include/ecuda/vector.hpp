@@ -89,6 +89,8 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
+	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
+
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
 	//           the device to perform any operations that change their value.
@@ -437,8 +439,8 @@ public:
 	}
 
 	///
-	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
-	/// \param begin,end the range to copy the elements from
+	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
+	/// \param first,last the range to copy the elements from
 	///
 	template<class InputIterator>
 	HOST void assign( InputIterator first, InputIterator last ) {
@@ -461,7 +463,8 @@ public:
 	}
 	#endif
 
-	HOST void assign( contiguous_device_iterator<const value_type> begin, contiguous_device_iterator<const value_type> end ) {
+	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
+		//contiguous_device_iterator<const value_type> begin, contiguous_device_iterator<const value_type> end ) {
 		growMemory( end-begin ); // make sure enough device memory is allocated
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), begin, end-begin, cudaMemcpyDeviceToDevice ) );
 	}

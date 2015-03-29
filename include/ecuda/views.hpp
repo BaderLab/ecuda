@@ -263,15 +263,16 @@ public:
 ///
 /// \brief View of data matrix residing in contiguous memory given a pointer and dimensions.
 ///
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class contiguous_matrix_view : private matrix_view< T, PointerType, contiguous_sequence_view<T> >
+template<typename T>
+class contiguous_matrix_view : private matrix_view< T, padded_ptr<T,T*,1>, contiguous_sequence_view<T> >
 {
 private:
-	typedef matrix_view< T, PointerType, contiguous_sequence_view<T> > base_type;
+	typedef matrix_view< T, padded_ptr<T,T*,1>, contiguous_sequence_view<T> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< element data type
-	typedef typename base_type::pointer pointer; //!< element pointer type
+	typedef T* pointer; //!< element pointer type
+	//typedef typename base_type::pointer pointer; //!< element pointer type
 	typedef typename base_type::reference reference; //!< element reference type
 	typedef typename base_type::const_reference const_reference; //!< const element reference type
 	typedef typename base_type::size_type size_type; //!< unsigned integral type
@@ -291,7 +292,8 @@ public:
 	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
 	HOST DEVICE contiguous_matrix_view( const contiguous_matrix_view<U>& src ) : base_type(src) {}
-	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height ) : base_type(ptr,width,height) {}
+	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height, size_type paddingBytes=0 ) :
+		base_type( padded_ptr<T,T*,1>( ptr, width, paddingBytes ), width, height ) {}
 	HOST DEVICE ~contiguous_matrix_view() {}
 
 	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }

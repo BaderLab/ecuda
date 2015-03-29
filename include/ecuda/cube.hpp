@@ -138,11 +138,11 @@ public:
 	typedef contiguous_sequence_view<const value_type> const_depth_type; //!< const cube depth type
 
 	typedef matrix_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
-	typedef contiguous_matrix_view< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
-	typedef contiguous_matrix_view< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
+	typedef contiguous_matrix_view<value_type> slice_xz_type; //!< cube xz-slice type
+	typedef contiguous_matrix_view<value_type> slice_yz_type; //!< cube yz-slice type
 	typedef matrix_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
-	typedef contiguous_matrix_view< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
-	typedef contiguous_matrix_view< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
+	typedef contiguous_matrix_view<const value_type> const_slice_xz_type; //!< const cube xz-slice type
+	typedef contiguous_matrix_view<const value_type> const_slice_yz_type; //!< const cube yz-slice type
 
 	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
@@ -348,8 +348,9 @@ public:
 
 	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
 		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		return slice_yz_type( pp, number_depths(), number_columns() );
+		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
+		const size_type padding = pitch-number_depths()*sizeof(value_type);
+		return slice_yz_type( np, number_depths(), number_columns(), padding );
 	}
 
 	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
@@ -362,14 +363,15 @@ public:
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
 		pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), padding, 0 );
-		return slice_xz_type( pp, number_depths(), number_rows() );
+		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), padding, 0 );
+		return slice_xz_type( np, number_depths(), number_rows(), padding );
 	}
 
 	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		return const_slice_yz_type( pp, number_depths(), number_columns() );
+		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
+		const size_type padding = pitch-number_depths()*sizeof(value_type);
+		return const_slice_yz_type( np, number_depths(), number_columns(), padding );
 	}
 
 	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
@@ -382,8 +384,8 @@ public:
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
 		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), padding, 0 );
-		return const_slice_xz_type( pp, number_depths(), number_rows() );
+		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), padding, 0 );
+		return const_slice_xz_type( np, number_depths(), number_rows(), padding );
 	}
 
 
