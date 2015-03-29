@@ -80,8 +80,11 @@ public:
 	///
 	/// \brief operator T*
 	///
-	/// Allows this object to be type-cast (e.g. static_cast<T*>(*this) or (T*)(*this))
-	/// to a naked pointer of type T*.
+	/// Allows this object to be type-cast to a naked pointer of type T*.
+	/// \code{.cpp}
+	/// static_cast<T*>(this)
+	/// (T*)(*this)
+	/// \endcode
 	///
 	HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
 

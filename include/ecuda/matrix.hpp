@@ -214,6 +214,8 @@ public:
 	/// The estd library needs to be visible to the compiler.
 	///
 	/// \param src An estd library matrix object containing the same element type, whose contents are copied.
+	/// \param allocator allocator to use for all memory allocations of this container
+	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
 	template<typename U,typename V>
 	HOST matrix( const estd::matrix<T,U,V>& src, const Alloc& allocator = Alloc() ) {
@@ -393,39 +395,39 @@ public:
 	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !number_rows() or !number_columns(); }
 
 	///
-	/// \brief Gets a container that acts as a proxy for a single row of the matrix.
+	/// \brief Gets a view object of a single row of the matrix.
 	///
-	/// The proxy container is guaranteed to perform no memory allocations or deallocation, and merely
+	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
 	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
 	/// the underlying data.
 	///
-	/// \param index of the row to isolate
-	/// \returns proxy container that represents the specified row
+	/// \param rowIndex of the row to isolate
+	/// \returns view object for the specified row
 	///
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
 
 	///
-	/// \brief Gets a container that acts as a proxy for a single row of the matrix.
+	/// \brief Gets a view object of a single row of the matrix.
 	///
-	/// The proxy container is guaranteed to perform no memory allocations or deallocation, and merely
+	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
 	/// holds a pointer to the start of the row and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the proxy will not
+	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
 	/// allow any alterations to the underlying data.
 	///
-	/// \param index of the row to isolate
-	/// \returns proxy container that represents the specified row
+	/// \param rowIndex of the row to isolate
+	/// \returns view object for the specified row
 	///
 	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
 
 	///
-	/// \brief Gets a container that acts as a proxy for a single column of the matrix.
+	/// \brief Gets a view object of a single column of the matrix.
 	///
-	/// The proxy container is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the column and provides methods to traverse, access, and alter
+	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
 	/// the underlying data.
 	///
-	/// \param index of the column to isolate
-	/// \returns proxy container that represents the specified column
+	/// \param columnIndex index of the column to isolate
+	/// \returns view object for the specified column
 	///
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) {
 		pointer p = allocator.address( data(), 0, columnIndex, pitch );
@@ -435,15 +437,15 @@ public:
 	}
 
 	///
-	/// \brief Gets a container that acts as a proxy for a single column of the matrix.
+	/// \brief Gets a view object of a single column of the matrix.
 	///
-	/// The proxy container is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the column and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the proxy will not
+	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+	/// holds a pointer to the start of the row and provides methods to traverse and access the
+	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
 	/// allow any alterations to the underlying data.
 	///
-	/// \param index of the column to isolate
-	/// \returns proxy container that represents the specified column
+	/// \param columnIndex index of the column to isolate
+	/// \returns view object for the specified column
 	///
 	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const {
 		const_pointer p = allocator.address( data(), 0, columnIndex, pitch );
@@ -454,15 +456,15 @@ public:
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
-	/// \param index of the row to isolate
-	/// \returns proxy container that represents the specified row
+	/// \param rowIndex index of the row to isolate
+	/// \returns view object for the specified row
 	///
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
-	/// \param index of the row to isolate
-	/// \returns proxy container that represents the specified row
+	/// \param rowIndex index of the row to isolate
+	/// \returns view object for the specified row
 	///
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
@@ -743,7 +745,7 @@ public:
 	/// memory is copied only.  Therefore any changes made to this container are reflected
 	/// in other as well, and vice versa.
 	///
-	/// \param other Container whose contents are to be assigned to this container.
+	/// \param src Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
 	template<class Alloc2>

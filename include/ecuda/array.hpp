@@ -494,7 +494,7 @@ public:
 	///
 	/// \brief Copies the contents of a host STL vector to this device array.
 	///
-	/// \param std::vector to copy the contents from
+	/// \param vector std::vector to copy the contents from
 	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
 	template<class Alloc>

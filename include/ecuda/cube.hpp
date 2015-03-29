@@ -595,9 +595,9 @@ public:
 	/// \param newNumberDepths new number of depths
 	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
-	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths ) {
+	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() ) {
 		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
-		cube<value_type,allocator_type> newCube( newNumberRows, newNumberColumns, newNumberDepths );
+		cube<value_type,allocator_type> newCube( newNumberRows, newNumberColumns, newNumberDepths, value );
 		for( size_type i = 0; i < std::min(newNumberRows,number_rows()); ++i ) {
 			for( size_type j = 0; j < std::min(newNumberColumns,number_columns()); ++j ) {
 				CUDA_CALL(
@@ -648,7 +648,7 @@ public:
 	/// memory is copied only.  Therefore any changes made to this container are reflected
 	/// in other as well, and vice versa.
 	///
-	/// \param other Container whose contents are to be assigned to this container.
+	/// \param src Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
 	template<class Alloc2>
