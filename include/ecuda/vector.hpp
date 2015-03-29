@@ -52,14 +52,14 @@ either expressed or implied, of the FreeBSD Project.
 #include "algorithm.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
+#include "device_ptr.hpp"
 #include "iterators.hpp"
 #include "global.hpp"
-#include "memory.hpp"
 
 namespace ecuda {
 
 ///
-/// \brief A video memory-bound vector container.
+/// \brief A resizable vector stored in device memory.
 ///
 ///
 ///

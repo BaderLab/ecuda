@@ -46,7 +46,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// An STL allocator that utilizes page-locked host memory.
+/// \brief An STL allocator for page-locked host memory.
 ///
 /// Page-locked or "pinned" memory makes copying memory from the GPU (device)
 /// to the CPU (host) faster.  Using STL containers with this allocator makes
@@ -76,7 +76,9 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
+	/// \cond INTERNAL_CODE
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	/// \endcond
 
 public:
 	///
@@ -183,7 +185,7 @@ public:
 
 
 ///
-/// An STL allocator that utilizes GPU memory.
+/// \brief An STL allocator for device memory.
 ///
 /// The implementation uses the CUDA API functions cudaMalloc and cudaFree.
 ///
@@ -198,7 +200,9 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
+	/// \cond INTERNAL_CODE
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	/// \endcond
 
 public:
 	///
@@ -305,7 +309,7 @@ public:
 };
 
 ///
-/// An STL allocator that utilizes GPU pitched memory.
+/// \brief An STL allocator for hardware aligned device memory.
 ///
 /// The implementation uses the CUDA API functions cudaMallocPitch and cudaFree.
 ///
@@ -320,7 +324,9 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
+	/// \cond INTERNAL_CODE
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
+	/// \endcond
 
 public:
 	///

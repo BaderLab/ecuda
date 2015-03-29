@@ -45,6 +45,9 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+///
+/// \brief Encapsulates CUDA API device information functions.
+///
 class device {
 
 private:

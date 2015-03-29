@@ -51,12 +51,12 @@ either expressed or implied, of the FreeBSD Project.
 #include "padded_ptr.hpp"
 #include "striding_ptr.hpp"
 #include "matrix.hpp"
-#include "memory.hpp"
+#include "views.hpp"
 
 namespace ecuda {
 
 ///
-/// \brief A video-memory bound cube container.
+/// \brief A resizable cube stored in device memory.
 ///
 /// A cube is defined as a 3D structure of dimensions rows*columns*depths. The default implementation
 /// uses pitched memory where a 2D block of video memory is allocated with width=depths and height=rows*columns.
@@ -130,19 +130,19 @@ public:
 	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
 	#endif
 
-	typedef temporary_array< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
-	typedef temporary_array< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
-	typedef contiguous_temporary_array<value_type> depth_type; //!< cube depth type
-	typedef temporary_array< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
-	typedef temporary_array< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
-	typedef contiguous_temporary_array<const value_type> const_depth_type; //!< const cube depth type
+	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
+	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
+	typedef contiguous_sequence_view<value_type> depth_type; //!< cube depth type
+	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
+	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
+	typedef contiguous_sequence_view<const value_type> const_depth_type; //!< const cube depth type
 
-	typedef temporary_matrix< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
-	typedef contiguous_temporary_matrix< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
-	typedef contiguous_temporary_matrix< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
-	typedef temporary_matrix< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
-	typedef contiguous_temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
-	typedef contiguous_temporary_matrix< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
+	typedef matrix_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
+	typedef contiguous_matrix_view< value_type,                           padded_ptr<value_type,pointer,1>   > slice_xz_type; //!< cube xz-slice type
+	typedef contiguous_matrix_view< value_type,                           padded_ptr<value_type,pointer,1>   > slice_yz_type; //!< cube yz-slice type
+	typedef matrix_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
+	typedef contiguous_matrix_view< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_xz_type; //!< const cube xz-slice type
+	typedef contiguous_matrix_view< const value_type,                                 padded_ptr<const value_type,const_pointer,1>   > const_slice_yz_type; //!< const cube yz-slice type
 
 	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type

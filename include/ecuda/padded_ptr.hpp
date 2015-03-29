@@ -61,6 +61,9 @@ template<typename T> struct cast_to_char<const T*> { typedef const char* type; }
 
 /// \endcond
 
+///
+/// \brief A specialized pointer to memory with padding after a fixed-size sequence of data.
+///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,std::size_t PaddingUnitBytes=sizeof(T)>
 class padded_ptr {
 

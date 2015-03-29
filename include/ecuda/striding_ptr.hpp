@@ -45,7 +45,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// A pointer class that implements all pointer-compatible operators for strided memory.
+/// \brief A specialized pointer to memory holding a sequence of data with fixed-sized spacing between each value.
 ///
 /// Strided memory is a block of contiguous memory where elements are separated by
 /// fixed-length padding.  Thus, one has to "stride" over the padding to reach the

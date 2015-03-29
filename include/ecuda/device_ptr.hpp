@@ -49,7 +49,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// A smart pointer for device memory.
+/// \brief A reference-counting smart pointer for device memory.
 ///
 /// This class keeps a pointer to allocated device memory and automatically
 /// deallocates it when it goes out of scope.  The workings are similar to

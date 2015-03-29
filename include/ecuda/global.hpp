@@ -48,6 +48,9 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+///
+/// \brief Exception for CUDA API cudaError_t errors.
+///
 class cuda_error : public std::runtime_error {
 private:
 	cudaError_t errorType;
@@ -89,6 +92,8 @@ public:
 #define __CONSTEXPR__
 #endif
 
+/// \cond INTERNAL_CODE
+
 ///
 /// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
 /// for implementing the strategy required to make const/non-const iterators.
@@ -108,5 +113,7 @@ namespace ecuda {
 		typedef T element_type;
 	};
 } // namespace ecuda
+
+/// \endcond
 
 #endif

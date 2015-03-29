@@ -39,27 +39,25 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_ARRAY_HPP
 #define ECUDA_ARRAY_HPP
 
-#include <iterator>
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <vector>
-
-#include "global.hpp"
-#include "algorithm.hpp"
-#include "allocators.hpp"
-#include "apiwrappers.hpp"
-#include "iterators.hpp"
-#include "memory.hpp"
-
 #ifdef __CPP11_SUPPORTED__
 #include <array>
 #include <initializer_list>
 #endif
 
+#include "global.hpp"
+#include "allocators.hpp"
+#include "apiwrappers.hpp"
+#include "iterators.hpp"
+#include "device_ptr.hpp"
+
 namespace ecuda {
 
 ///
-/// A video memory-bound fixed-size array structure.
+/// \brief A fixed-size array stored in device memory.
 ///
 /// Creates a fixed size array in GPU memory.  Redeclares most of the
 /// STL methods on the equivalent C++11 std::array (although this implementation
@@ -87,15 +85,15 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
-	device_ptr<T> deviceMemory; //!< smart pointer to video card memory
+	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 
 public:
 	///
 	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
 	/// \param value Value to fill the container with.
 	///
-	HOST array( const value_type& value = value_type() ) {
-		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
+	HOST array( const T& value = T() ) {
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
 		fill( value );
 	}
 
@@ -111,13 +109,13 @@ public:
 	///
 	template<class InputIterator>
 	HOST array( InputIterator begin, InputIterator end ) {
-		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
-		std::vector< T, host_allocator<T> > v( N );
-		typename std::vector<T>::size_type index = 0;
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		std::vector< value_type, host_allocator<value_type> > v( N );
+		typename std::vector<value_type>::size_type index = 0;
 		while( index < N ) {
 			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
 		}
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -132,9 +130,9 @@ public:
 	////          declarators.
 	///
 	HOST array( std::initializer_list<T> il ) {
-		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
-		std::vector< T, host_allocator<T> > v( il );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		std::vector< value_type, host_allocator<value_type> > v( il );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
 	#endif
 
@@ -168,8 +166,8 @@ public:
 	///
 	template<std::size_t N2>
 	HOST array( const array<T,N2>& src ) {
-		deviceMemory = device_ptr<T>( device_allocator<T>().allocate(N) );
-		CUDA_CALL( cudaMemcpy<T>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -187,26 +185,6 @@ public:
 	//HOST DEVICE virtual ~array() {}
 	*/
 
-	/*
-	 * Deprecating this function since the STL standard seems to specify that the at() accessor
-	 * must implement range checking that throws an exception on failure.  Since exceptions are
-	 * not supported within a CUDA kernel, this cannot be satisfied.
-	 *
-	///
-	/// \brief Returns a reference to the element at specified location index, with bounds checking.
-	///
-	///
-	/// \param index position of the element to return
-	/// \returns Reference to the requested element.
-	///
-	// Below is untrue because device code doesn't allow exceptions to be thrown.
-	// If index not within the range of the container, an exception of type std::out_of_range is thrown.
-	DEVICE inline reference at( size_type index ) {
-		//if( index >= N ) throw std::out_of_range( "ecuda::array<T,N>::at() index parameter is out of range" );
-		return deviceMemory[index]; 
-	}
-	*/
-
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
 	///
@@ -214,22 +192,6 @@ public:
 	/// \returns Reference to the requested element.
 	///
 	DEVICE inline reference operator[]( size_type index ) { return *(deviceMemory.get()+index); }
-
-	/*
-	 * Deprecating this function since the STL standard seems to specify that the at() accessor
-	 * must implement range checking that throws an exception on failure.  Since exceptions are
-	 * not supported within a CUDA kernel, this cannot be satisfied.
-	 *
-	///
-	/// \brief Returns a reference to the element at specified location index, with bounds checking.
-	///
-	/// If index not within the range of the container, an exception of type std::out_of_range is thrown.
-	///
-	/// \param index position of the element to return
-	/// \returns Reference to the requested element.
-	///
-	DEVICE inline const_reference at( size_type index ) const { return deviceMemory[index]; }
-	*/
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -442,7 +404,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< T, host_allocator<T> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -474,7 +436,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< T, host_allocator<T> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -495,7 +457,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< T, host_allocator<T> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -529,12 +491,15 @@ public:
 		return *this;
 	}
 
-	///
-	/// \brief Copies the contents of a host STL vector to this device array.
-	///
+///
+/// \brief Copies the contents of a host STL vector to this device array.
+///
+/// \param std::vector to copy the contents from
+/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
+///
 	template<class Alloc>
 	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
-		if( size() < vector.size() ) throw std::out_of_range( "ecuda::array is not large enough to fit contents of provided std::vector" );
+		if( size() < vector.size() ) throw std::length_error( "ecuda::array is not large enough to fit contents of provided std::vector" );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;
 	}

@@ -28,17 +28,16 @@ either expressed or implied, of the FreeBSD Project.
 */
 
 //----------------------------------------------------------------------------
-// memory.hpp
+// views.hpp
 //
-// Smart pointers to device memory and simple homespun unique_ptr in absense
-// of C++11 memory library.
+// Provides specialized view of the data within a container.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
 #pragma once
-#ifndef ECUDA_MEMORY_HPP
-#define ECUDA_MEMORY_HPP
+#ifndef ECUDA_VIEWS_HPP
+#define ECUDA_VIEWS_HPP
 
 #include <cstddef>
 #include "global.hpp"
@@ -51,7 +50,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// \brief A temporary array comprised of a pointer and size.
+/// \brief View of data sequence given a pointer and size.
 ///
 /// Acts as a standalone representation of a linear fixed-size series of values
 /// given a pointer and the desired size. Used to generate subsequences from
@@ -60,7 +59,7 @@ namespace ecuda {
 /// allocation/deallocation is done.
 ///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class temporary_array
+class sequence_view
 {
 public:
 	typedef T value_type; //!< element data type
@@ -80,11 +79,11 @@ protected:
 	size_type length; //!< number of elements in the array
 
 public:
-	HOST DEVICE temporary_array() : ptr(nullptr), length(0) {}
+	HOST DEVICE sequence_view() : ptr(nullptr), length(0) {}
 	template<typename T2,typename PointerType2>
-	HOST DEVICE temporary_array( const temporary_array<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
-	HOST DEVICE temporary_array( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
-	HOST DEVICE ~temporary_array() {}
+	HOST DEVICE sequence_view( const sequence_view<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
+	HOST DEVICE sequence_view( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
+	HOST DEVICE ~sequence_view() {}
 
 	HOST DEVICE pointer data() const { return ptr; }
 
@@ -119,7 +118,7 @@ public:
 	DEVICE inline const_reference front() const { return operator[](0); }
 	DEVICE inline const_reference back() const { return operator[](size()-1); }
 
-	HOST DEVICE temporary_array& operator=( const temporary_array& other ) {
+	HOST DEVICE sequence_view& operator=( const sequence_view& other ) {
 		ptr = other.ptr;
 		length = other.length;
 		return *this;
@@ -129,28 +128,28 @@ public:
 
 
 ///
-/// \brief A specialized temporary array guaranteed to be comprised of a contiguous sequence of memory.
+/// \brief View of data sequence residing in contiguous memory given a pointer and size.
 ///
-/// This is a subclass of temporary_array that imposes the requirement that the
+/// This is a subclass of sequence_view that imposes the requirement that the
 /// underlying pointer refers to a contiguous block of memory.  Thus, PointerType
-/// (the second template parameter of temporary_array) is strictly defined as a
+/// (the second template parameter of sequence_view) is strictly defined as a
 /// naked pointer of type T*.
 ///
 /// This allows the assign method to be made available safely.
 ///
 template<typename T>
-class contiguous_temporary_array : public temporary_array<T,T*>
+class contiguous_sequence_view : public sequence_view<T,T*>
 {
 private:
-	typedef temporary_array<T,T*> base_type;
+	typedef sequence_view<T,T*> base_type;
 
 public:
-	typedef typename temporary_array<T,T*>::value_type value_type; //!< element data type
-	typedef typename temporary_array<T,T*>::pointer pointer; //!< element pointer type
-	typedef typename temporary_array<T,T*>::reference reference; //!< element reference type
-	typedef typename temporary_array<T,T*>::const_reference const_reference; //!< const element reference type
-	typedef typename temporary_array<T,T*>::size_type size_type; //!< unsigned integral type
-	typedef typename temporary_array<T,T*>::difference_type difference_type; //!< signed integral type
+	typedef typename sequence_view<T,T*>::value_type value_type; //!< element data type
+	typedef typename sequence_view<T,T*>::pointer pointer; //!< element pointer type
+	typedef typename sequence_view<T,T*>::reference reference; //!< element reference type
+	typedef typename sequence_view<T,T*>::const_reference const_reference; //!< const element reference type
+	typedef typename sequence_view<T,T*>::size_type size_type; //!< unsigned integral type
+	typedef typename sequence_view<T,T*>::difference_type difference_type; //!< signed integral type
 
 	typedef contiguous_device_iterator<T> iterator; //!< iterator type
 	typedef contiguous_device_iterator<const T> const_iterator; //!< const iterator type
@@ -158,28 +157,28 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 public:
-	HOST DEVICE contiguous_temporary_array() : temporary_array<T,T*>() {}
+	HOST DEVICE contiguous_sequence_view() : sequence_view<T,T*>() {}
 	template<typename T2>
-	HOST DEVICE contiguous_temporary_array( const contiguous_temporary_array<T2>& src ) : temporary_array<T2,T2*>( src ) {}
-	HOST DEVICE contiguous_temporary_array( pointer ptr, size_type length ) : temporary_array<T,T*>( ptr, length ) {}
-	HOST DEVICE ~contiguous_temporary_array() {}
+	HOST DEVICE contiguous_sequence_view( const contiguous_sequence_view<T2>& src ) : sequence_view<T2,T2*>( src ) {}
+	HOST DEVICE contiguous_sequence_view( pointer ptr, size_type length ) : sequence_view<T,T*>( ptr, length ) {}
+	HOST DEVICE ~contiguous_sequence_view() {}
 
 	HOST void assign( contiguous_device_iterator<const T> begin, contiguous_device_iterator<const T> end ) {
 		const std::ptrdiff_t n = end-begin;
-		if( n < 0 ) throw std::length_error( "ecuda::contiguous_temporary_array::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		if( n < 0 ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin, std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
 	}
 
 	template<class InputIterator>
 	HOST void assign( InputIterator begin, InputIterator end ) {
 		std::vector< value_type, host_allocator<value_type> > v( begin, end );
-		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(temporary_array<T,T*>::data()), &v.front(), std::min(v.size(),temporary_array<T,T*>::size()), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(sequence_view<T,T*>::data()), &v.front(), std::min(v.size(),sequence_view<T,T*>::size()), cudaMemcpyHostToDevice ) );
 	}
 
 };
 
 ///
-/// \brief A temporary matrix comprised of a pointer, width and height.
+/// \brief View of data matrix residing given a pointer and dimensions.
 ///
 /// Acts as a standalone representation of a fixed-size matrix of values
 /// given a pointer and the desired dimensions. Used to generate submatrices from
@@ -187,11 +186,11 @@ public:
 /// is a contrived structure to provide matrix-like operations, no
 /// allocation/deallocation is done.
 ///
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,class RowType=temporary_array<T,PointerType> >
-class temporary_matrix : public RowType //temporary_array<T,PointerType>
+template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type,class RowType=sequence_view<T,PointerType> >
+class matrix_view : public RowType //sequence_view<T,PointerType>
 {
 private:
-	//typedef temporary_array<T,PointerType> base_type;
+	//typedef sequence_view<T,PointerType> base_type;
 	typedef RowType base_type;
 
 public:
@@ -207,20 +206,20 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef temporary_array<value_type,pointer> row_type;
-	typedef temporary_array<const value_type,/*const*/ pointer> const_row_type;
-	typedef temporary_array< value_type, striding_ptr<value_type,pointer> > column_type;
-	typedef temporary_array< const value_type, striding_ptr<const value_type,/*const*/ pointer> > const_column_type;
+	typedef sequence_view<value_type,pointer> row_type;
+	typedef sequence_view<const value_type,/*const*/ pointer> const_row_type;
+	typedef sequence_view< value_type, striding_ptr<value_type,pointer> > column_type;
+	typedef sequence_view< const value_type, striding_ptr<const value_type,/*const*/ pointer> > const_column_type;
 
 private:
 	size_type height;
 
 public:
-	HOST DEVICE temporary_matrix() : base_type(), height(0) {} //temporary_array<T>(), height(0) {}
+	HOST DEVICE matrix_view() : base_type(), height(0) {} //sequence_view<T>(), height(0) {}
 	template<typename U>
-	HOST DEVICE temporary_matrix( const temporary_matrix<U>& src ) : base_type(src), height(src.height) {} // temporary_array<T,PointerType>(src), height(src.height) {}
-	HOST DEVICE temporary_matrix( pointer ptr, size_type width, size_type height ) : base_type(ptr,width*height), height(height) {} //temporary_array<T,PointerType>(ptr,width*height), height(height) {}
-	HOST DEVICE ~temporary_matrix() {}
+	HOST DEVICE matrix_view( const matrix_view<U>& src ) : base_type(src), height(src.height) {} // sequence_view<T,PointerType>(src), height(src.height) {}
+	HOST DEVICE matrix_view( pointer ptr, size_type width, size_type height ) : base_type(ptr,width*height), height(height) {} //sequence_view<T,PointerType>(ptr,width*height), height(height) {}
+	HOST DEVICE ~matrix_view() {}
 
 	// capacity:
 	HOST DEVICE inline size_type get_width() const { return base_type::size()/height; }
@@ -253,7 +252,7 @@ public:
 		return const_column_type( striding_ptr<const value_type,const pointer>( ptr, get_width() ), get_height() );
 	}
 
-	HOST DEVICE temporary_matrix& operator=( const temporary_matrix& other ) {
+	HOST DEVICE matrix_view& operator=( const matrix_view& other ) {
 		base_type::operator=( other );
 		height = other.height;
 		return *this;
@@ -261,11 +260,14 @@ public:
 
 };
 
+///
+/// \brief View of data matrix residing in contiguous memory given a pointer and dimensions.
+///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class contiguous_temporary_matrix : private temporary_matrix< T, PointerType, contiguous_temporary_array<T> >
+class contiguous_matrix_view : private matrix_view< T, PointerType, contiguous_sequence_view<T> >
 {
 private:
-	typedef temporary_matrix< T, PointerType, contiguous_temporary_array<T> > base_type;
+	typedef matrix_view< T, PointerType, contiguous_sequence_view<T> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< element data type
@@ -280,17 +282,17 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef contiguous_temporary_array<value_type> row_type;
-	typedef contiguous_temporary_array<const value_type> const_row_type;
+	typedef contiguous_sequence_view<value_type> row_type;
+	typedef contiguous_sequence_view<const value_type> const_row_type;
 	typedef typename base_type::column_type column_type;
 	typedef typename base_type::const_column_type const_column_type;
 
 public:
-	HOST DEVICE contiguous_temporary_matrix() : base_type() {}
+	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
-	HOST DEVICE contiguous_temporary_matrix( const contiguous_temporary_matrix<U>& src ) : base_type(src) {}
-	HOST DEVICE contiguous_temporary_matrix( pointer ptr, size_type width, size_type height ) : base_type(ptr,width,height) {}
-	HOST DEVICE ~contiguous_temporary_matrix() {}
+	HOST DEVICE contiguous_matrix_view( const contiguous_matrix_view<U>& src ) : base_type(src) {}
+	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height ) : base_type(ptr,width,height) {}
+	HOST DEVICE ~contiguous_matrix_view() {}
 
 	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
 	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
@@ -315,7 +317,7 @@ public:
 	HOST DEVICE inline column_type get_column( size_type columnIndex ) { return base_type::get_column(); }
 	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const { return base_type::get_column(); }
 
-	HOST DEVICE contiguous_temporary_matrix& operator=( const contiguous_temporary_matrix& other ) {
+	HOST DEVICE contiguous_matrix_view& operator=( const contiguous_matrix_view& other ) {
 		base_type::operator=( other );
 		return *this;
 	}

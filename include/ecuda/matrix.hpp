@@ -53,17 +53,17 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
-#include "memory.hpp"
 #include "device_ptr.hpp"
 #include "padded_ptr.hpp"
 #include "striding_ptr.hpp"
 #include "vector.hpp"
+#include "views.hpp"
 
 
 namespace ecuda {
 
 ///
-/// \brief A video-memory bound matrix container.
+/// \brief A resizable matrix stored in device memory.
 ///
 /// A matrix is defined as a 2D structure of dimensions rows*columns.  The default implementation
 /// uses pitched memory where a 2D block of video memory is allocated with width=columns and height=rows.
@@ -131,10 +131,10 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef contiguous_temporary_array<value_type> row_type; //!< matrix row container type
-	typedef temporary_array< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	typedef contiguous_temporary_array<const value_type> const_row_type; //!< matrix const row container type
-	typedef temporary_array< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
+	typedef contiguous_sequence_view<value_type> row_type; //!< matrix row container type
+	typedef sequence_view< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
+	typedef contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
+	typedef sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
 	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
