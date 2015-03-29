@@ -361,7 +361,7 @@ public:
 	///
 	/// \param newNumberRows new number of rows
 	/// \param newNumberColumns new number of columns
-	/// \param value the value to initialize the new elements with
+	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
 	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const value_type& value = value_type() ) {
 		if( number_rows() == newNumberRows and number_columns() == newNumberColumns ) return; // no resize needed

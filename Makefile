@@ -66,10 +66,14 @@ benchmarks/% :: benchmarks/%.cu
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
 dist:
-	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp
+	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp test/*.cu benchmarks/*.cu
 
 docs: FORCE
 	doxygen doxygen.cfg
+
+tests: test/test_array test/test_cube test/test_matrix test/test_vector
+
+benchmarks: benchmarks/array benchmarks/matrix
 
 FORCE:
 

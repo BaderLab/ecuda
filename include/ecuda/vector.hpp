@@ -219,7 +219,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() { return iterator(deviceMemory.get()); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(deviceMemory.get()); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -228,7 +228,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() { return iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(deviceMemory.get()+size()); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -237,7 +237,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -246,7 +246,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()+size()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -255,7 +255,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -265,7 +265,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -274,7 +274,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -284,14 +284,14 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns the number of elements in the container.
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE inline size_type size() const { return n; }
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return n; }
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
@@ -299,7 +299,7 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Resizes the container to contain newSize elements.
@@ -323,7 +323,7 @@ public:
 	/// \brief Returns the number of elements that the container has currently allocated space for.
 	/// \return Capacity of the currently allocated storage.
 	///
-	HOST DEVICE inline size_type capacity() const { return m; }
+	HOST DEVICE inline size_type capacity() const __NOEXCEPT__ { return m; }
 
 	///
 	/// \brief Checks if the container has no elements.
@@ -693,7 +693,7 @@ public:
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const { return allocator; }
+	HOST inline allocator_type get_allocator() const __NOEXCEPT__ { return allocator; }
 
 	///
 	/// \brief Requests the removal of unused capacity.

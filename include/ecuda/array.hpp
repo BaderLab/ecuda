@@ -491,12 +491,12 @@ public:
 		return *this;
 	}
 
-///
-/// \brief Copies the contents of a host STL vector to this device array.
-///
-/// \param std::vector to copy the contents from
-/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
-///
+	///
+	/// \brief Copies the contents of a host STL vector to this device array.
+	///
+	/// \param std::vector to copy the contents from
+	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
+	///
 	template<class Alloc>
 	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
 		if( size() < vector.size() ) throw std::length_error( "ecuda::array is not large enough to fit contents of provided std::vector" );
