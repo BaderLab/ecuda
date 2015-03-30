@@ -1,0 +1,298 @@
+/**
+\mainpage
+
+\tableofcontents
+
+\section intro Introduction
+
+The \em ecuda library is a set of templates fashioned after the C++ Standard Template Library (STL) that provide several useful containers for use with the CUDA API.  These containers remove most of the repetitive low-level tasks that are required when assigning, traversing, and manipulating data in device memory.  The containers can be instantiated in host code and passed to kernel functions, so familiar STL-style semantics can be used inside the device code itself.  The library is header only, so it's portable and simple to install.
+
+The original motivation for creating the library was to remove a lot of the headaches and inherent lack of safety when using naked pointers to device memory.  For example, here's some typical looking code using the CUDA API that a) creates a matrix and b) uses the GPU to calculate the column sums:
+
+\code{.cpp}
+const size_t width = 100;
+const size_t height = 100;
+
+// create a 2D array in device memory
+double* deviceMatrix;
+size_t pitch;
+cudaMalloc2D( &deviceMatrix, &pitch, width*sizeof(double), height );
+
+// create linearized row-major matrix in host memory
+std::vector<double> hostMatrix( width*height );
+
+// ... do stuff to prepare matrix data
+
+// copy matrix from host to device
+cudaMemcpy2D( deviceMatrix, pitch, &hostMatrix.front(), width*sizeof(double), width*sizeof(double), height, cudaMemcpyHostToDevice );
+
+// create an array on device to hold results
+double* deviceColumnSums;
+cudaMalloc( &deviceColumnSums, width*sizeof(double) );
+cudaMemset( deviceColumnSums, 0, width*sizeof(double) ); // set initial values to zero
+
+// run kernel
+sumColumns<<<1,width>>>( deviceMatrix, pitch, width, height, deviceColumnSums );
+cudaDeviceSynchronize();
+
+// create an array with page-locked memory to store results off device
+double* hostColumnSums;
+cudaMallocHost( &hostColumnSums, width );
+
+// copy results from device to host
+cudaMemcpy( hostColumnSums, deviceColumnSums, width*sizeof(double), cudaMemcpyDeviceToHost );
+
+//... do stuff with the results
+
+// deallocate memory
+cudaFreeHost( hostColumnSums );
+cudaFree( columnSums );
+cudaFree( deviceMatrix );
+
+// kernel function
+__global__ void sumColumns( const char* matrix, const size_t pitch, const size_t width, const size_t height, double* columnSums ) {
+
+  const int threadNum = threadIdx.x;
+  if( threadNum < width ) {
+    double columnSum = 0;
+	const char* pRow = matrix;
+    for( size_t i = 0; i < height; ++i ) {
+	  pRow += pitch; // move pointer to next row
+      const double* pElement = reinterpret_cast<const double*>(ptr); // cast to proper type!
+      columnSum += pElement[threadNum];
+    }
+    columnSums[threadNum] = columnSum;
+  }
+
+}
+\endcode
+
+There are so many places to innocently go wrong.  Did you remember to specify <tt>width*sizeof(double)</tt> instead of just <tt>width</tt>?  Did you remember to free the allocated memory?  Did you remember to account for the padding in the matrix memory that properly aligns the memory?  Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing?  Are you an adherent to the RAII programming idiom and using CUDA makes you generally uncomfortable?
+
+Here's the equivalent code using \em ecuda:
+
+\code{.cpp}
+const size_t width = 100;
+const size_t height = 100;
+
+// create 2D matrix on device
+ecuda::matrix<double> deviceMatrix( width, height );
+
+// create linearized row-major matrix in host memory
+std::vector<double> hostMatrix( width*height );
+
+// ... do stuff to prepare matrix data
+
+// copy matrix from host to device
+deviceMatrix.assign( hostMatrix.begin(), hostMatrix.end() );
+
+// create vector on device to hold results
+ecuda::vector<double> deviceColumnSums( width ); 
+
+// run kernel
+sumColumns<<<1,width>>>( deviceMatrix, deviceColumnSums );
+cudaDeviceSynchronize();
+
+// create a vector with page-locked memory to store results off device
+std::vector< double, ecuda::host_allocator<double> > hostColumnSums( width );
+
+// copy results from device to host
+deviceColumnSums >> hostColumnSums;
+
+// ... do stuff with the results
+
+// kernel function
+__global__ void sumColumns( const ecuda::matrix<double> matrix, ecuda::vector<double> columnSums ) {
+
+  const int threadNum = threadIdx.x;
+  if( threadNum < matrix.number_columns() ) {
+    double columnSum = 0;
+    ecuda::matrix<double>::const_column_type column = matrix.get_column( threadNum );
+    for( ecuda::matrix<double>::const_column_type::iterator iter = column.begin(); iter != column.end(); ++iter )
+      columnSum += *iter;
+    columnSums[threadNum] = columnSum;
+  }
+
+}
+\endcode
+
+Besides being more compact and readable, there are no naked pointers, allocation or deallocation operations, or worries about device memory padding.  STL semantics like the use of iterators in the kernel function are also much more recognizable.  With the very recent addition of C++11 support to the nvcc compiler (yah!), developers using CUDA 7 and later could even replace the column sum loop with:
+
+\code{.cpp}
+for( double x : matrix.get_column( threadNum ) ) columnSum += x;
+\endcode
+
+\section overview Overview
+
+\subsection overview_containers Containers
+
+\image html containers.png "The four core containers."
+
+The library features four containers:
+  -# fixed-sized \b array
+  -# variable-sized \b vector
+  -# 2D \b matrix
+  -# 3D \b cube
+
+The \b array and \b vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
+
+\code{.cpp}
+ecuda::array<double,100> deviceArray( 66 ); // create fixed 100 element array filled with value 66
+
+ecuda::vector<double> deviceVector1( 100, 66 ); // create 100 element vector filled with value 66
+deviceVector1.resize( 200, 99 ); // expand the vector to 200 elements filling new elements with value 99
+
+std::vector<int> hostVector( 50 ); // create 50 element vector in host memory
+for( unsigned i = 0; i < 50; ++i ) hostVector[i] = i; // set the values to range from 0-49
+ecuda::vector<int> deviceVector2( hostVector.begin(), hostVector.end() ); // create a vector in device memory and initialize with the host values
+\endcode
+
+The \b matrix and \b cube try to implement STL conventions as faithfully as possible so using them is intuitive.
+
+\code{.cpp}
+ecuda::matrix<double> deviceMatrix( 100, 100 ); // create 100x100 matrix
+
+std::vector<double> hostVector( 100 ); // create 100 element vector in host memory
+for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i; // set the values to range from 0-99
+
+for( unsigned i = 0; i < 100; ++i ) 
+   deviceMatrix[i].assign( hostVector.begin(), hostVector.end() ); // set each row of matrix to hold this sequence of values
+\endcode
+
+The containers can then be passed to kernel functions and manipulated as needed.
+
+\code{.cpp}
+__global__ 
+void addColumns( const ecuda::matrix<double> srcMatrix, ecuda::array<double,100> columnSums ) {
+
+   const int threadNum = threadIdx.x;
+   typedef ecuda::matrix<double>::const_column_type ColumnType;
+
+   if( threadNum < 100 ) {
+      ColumnType column = srcMatrix.get_column(threadNum);
+      for( ColumnType::iterator iter = column.begin(); iter != column.end(); ++iter )
+         columnSums[threadNum] += *iter;
+   }
+
+}
+
+ecuda::array<double,100> deviceArray;
+addColumns<<<1,100>>>( deviceMatrix, deviceArray );
+\endcode
+
+\subsection overview_allocators Allocators
+
+\image html allocators.png "The three memory allocators."
+
+STL containers often include an optional "Allocator" template parameter so that memory allocation can be specialized.  \em ecuda uses the same design pattern to handle any allocations of device memory.  The default allocator parameter for \em ecuda containers work fine, so this aspect of the library doesn't require much mention.  However, the \b host_allocator allocates page-locked memory and can be useful if you want to use STL containers as a staging point to exchange data between the host and device memory (see the CUDA API documentation for the cudaMallocHost function for a more discussion of the advantages and considerations of using page-locked memory).
+
+For example:
+
+\code{.cpp}
+ecuda::vector<double> deviceVector( 1000 );
+// ... do stuff
+
+std::vector< double, ecuda::host_allocator<double> > hostVector1( 1000 ); // underlying memory allocated using cudaMallocHost
+std::vector<double> hostVector2( 1000 ); // underlying memory allocated using standard "new"
+
+deviceVector >> hostVector1; // faster
+deviceVector >> hostVector2; // slower
+\endcode
+
+\subsection overview_iterators Iterators
+
+\image html iterators.png ""
+
+Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, the basic iterator is Bidirectional, with a further specialized iterator that is Random Access and requires the range being traversed to reside in contiguous memory.  A reverse iterator, which simply reverses the order of traversal is also available.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the begin(), end(), rbegin(), and rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
+
+\code{.cpp}
+ecuda::vector<int> deviceVector1( 1000 ); // create 1000 element vector in device memory
+ecuda::vector<int>::iterator begin = deviceVector1.begin();
+ecuda::vector<int> deviceVector2( begin, begin+50 ); // create a new vector initialized with the first 50 elements
+\endcode
+
+Keep in mind that operations which essentially move a contiguous block of memory to another behind the scenes using cudaMemcpy must be a contiguous_device_iterator.  Code that doesn't follow this will fail to compile.  For example:
+
+\code{.cpp}
+ecuda::matrix<int> deviceMatrix( 100, 100 );
+ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0);
+ecuda::matrix<int>::column_type column = deviceMatrix.get_column(0);
+ecuda::vector<int> deviceVector;
+deviceArray.assign( row.begin(), row.end() ); // works fine
+deviceArray.assign( row.rbegin(), row.rend() ); // won't compile, elements in the wrong order
+deviceArray.assign( column.begin(), column.end() ); // won't compile, elements not in contiguous memory
+\endcode
+
+\subsection overview_views Container Views
+
+\image html views.png ""
+
+The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the organization of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \b matrix is provided to a contiguous_sequence_view or sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon in that context.  Similarly, a slice of a \b cube along the x-y, x-z, or y-z plane would be represented as a matrix_view or contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
+
+\code{.cpp}
+ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix
+ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // is a contiguous_sequence_view
+ecuda::matrix<int>::column_type column = deviceMatrix.get_row(0); // is a sequence_view
+
+ecuda::cube<int> deviceCube( 100, 100, 100 ); // create 100x100x100 cube
+ecuda::cube<int>::slice_xy_type xy = deviceCube.get_xy(0); // is a matrix_view
+ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_matrix_view
+\endcode
+
+\subsection overview_pointers Specialized Pointers
+
+\image html pointers.png ""
+
+asdfas
+
+\section optimizing_threads Optimizing Thread Operations
+
+One of the core dogmas in CUDA programming is that read/write operations to device memory are extremely time-consuming, so organizing these operations so that different threads access data in close physical proximity greatly optimizes the program.  This can be a source of optimization with all programs, although it is particularly impactful for multi-threading with GPUs.  The specifics depend on the hardware, but the bus might always transfer say, 128 bits of memory per read operation.  If each data element is 8 bytes then a single read can potentially supply 16 threads with the information it requires.
+
+\section optional_libraries Optional Libraries
+
+
+
+estd
+gsl
+
+\section performance Performance
+
+asdfdas
+
+\section compatibility Tool Chain Compatibility
+
+The library has been tested with CUDA versions ... and GCC ....
+
+\section license License
+
+The \em ecuda library is open source and released under the FreeBSD license.
+
+\verbatim
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+\endverbatim
+
+
+*/
