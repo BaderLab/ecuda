@@ -57,8 +57,10 @@ __global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
 	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) {
-		T& valXY = matrix.at( x, y );
-		T& valYX = matrix.at( y, x );
+		//T& valXY = matrix.at( x, y );
+		//T& valYX = matrix.at( y, x );
+		T& valXY = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*x) )+y);
+		T& valYX = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*y) )+x);
 		//T& valXY = matrix[x][y];
 		//T& valYX = matrix[y][x];
 		T tmp = valXY;
@@ -110,7 +112,6 @@ __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T>
 float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::size_t m, const std::size_t p ) {
 
 	ecuda::event start, stop;
-	start.record();
 
 	double *A, *B, *AB;
 	std::size_t pitchA, pitchB, pitchAB;
@@ -120,15 +121,16 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 	cudaMallocPitch( &AB, &pitchAB, p*sizeof(double), n );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
+	start.record();
 	matrixMultiply<<<grid,threads>>>( A, pitchA, B, pitchB, n, m, p, AB, pitchAB );
+	stop.record();
+
+	CUDA_CHECK_ERRORS();
+	stop.synchronize();
 
 	cudaFree( A );
 	cudaFree( B );
 	cudaFree( AB );
-
-	stop.record();
-	CUDA_CHECK_ERRORS();
-	stop.synchronize();
 
 	return ( stop - start );
 
@@ -137,16 +139,16 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std::size_t m, const std::size_t p ) {
 
 	ecuda::event start, stop;
-	start.record();
 
 	ecuda::matrix<double> A( n, m );
 	ecuda::matrix<double> B( m, p );
 	ecuda::matrix<double> AB( n, p );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
+	start.record();
 	matrixMultiply<<<grid,threads>>>( A, B, AB );
-
 	stop.record();
+
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
@@ -180,20 +182,23 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 
 	ecuda::event start, stop;
-	start.record();
 
 	double *matrix;
 	std::size_t pitch;
 	cudaMallocPitch( &matrix, &pitch, n*sizeof(double), n );
 
 	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
+	start.record();
 	matrixTranspose<<<grid,threads>>>( matrix, pitch, n );
-
 	stop.record();
+
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
 	cudaFree( matrix );
+
+
+//	cudaFree( matrix );
 
 	return ( stop - start );
 
@@ -202,14 +207,14 @@ float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 float ecudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 
 	ecuda::event start, stop;
-	start.record();
 
 	ecuda::matrix<double> matrix( n, n );
 
 	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
+	start.record();
 	matrixTranspose<<<grid,threads>>>( matrix );
-
 	stop.record();
+
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
