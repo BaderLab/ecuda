@@ -312,6 +312,8 @@ There are hooks within the \ref ecuda::matrix and \ref ecuda::cube containers to
 
 Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is extremely small (lower single digit percentage), and in some cases, programs execute faster.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.
 
+For example, the program <tt>benchmarks/matrix</tt> performing a simple, brute-force matrix multiplication of two matrices A(100x1000) and B(1000x1000) to get AB(100x1000) takes 53.54ms using standard C-style CUDA code, and 55.23ms using \em ecuda.  When increasing the size to A(1000x1000) to get AB(1000x1000), the same program takes 515.5ms using C-style CUDA code, and 141.1ms using \em ecuda.
+
 \section compatibility Tool Chain Compatibility
 
 The library has been tested and compiles successfully with CUDA versions 3.2, 4.0, 4.1, 4.2, 5.0, 5.5, 6.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully.
