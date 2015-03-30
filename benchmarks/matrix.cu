@@ -80,16 +80,7 @@ __global__ void matrixTranspose( T* matrix, const std::size_t pitch, const std::
 }
 
 template<typename T>
-__global__ void matrixMultiply(
-	const T* A,
-	std::size_t pitchA,
-	const T* B,
-	std::size_t pitchB,
-	std::size_t n, std::size_t m, std::size_t p,
-	T* AB,
-	std::size_t pitchAB
-)
-{
+__global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std::size_t pitchB,	std::size_t n, std::size_t m, std::size_t p, T* AB,	std::size_t pitchAB ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
 	if( x < n and y < p ) {
@@ -104,12 +95,7 @@ __global__ void matrixMultiply(
 }
 
 template<typename T>
-__global__ void matrixMultiply(
-	const ecuda::matrix<T> A,
-	const ecuda::matrix<T> B,
-	ecuda::matrix<T> AB
-)
-{
+__global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T> B,	ecuda::matrix<T> AB ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
 	if( x < A.number_rows() and y < B.number_columns() ) {
@@ -189,6 +175,7 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 
 }
 
+
 float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 
 	ecuda::event start, stop;
@@ -198,7 +185,7 @@ float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 	std::size_t pitch;
 	cudaMallocPitch( &matrix, &pitch, n*sizeof(double), n );
 
-	dim3 grid( (n+numThreads-1)/numThreads, (n+numThreads-1)/numThreads ), threads( numThreads, numThreads );
+	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
 	matrixTranspose<<<grid,threads>>>( matrix, pitch, n );
 
 	stop.record();
@@ -218,7 +205,7 @@ float ecudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 
 	ecuda::matrix<double> matrix( n, n );
 
-	dim3 grid( (n+numThreads-1)/numThreads, (n+numThreads-1)/numThreads ), threads( numThreads, numThreads );
+	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
 	matrixTranspose<<<grid,threads>>>( matrix );
 
 	stop.record();
