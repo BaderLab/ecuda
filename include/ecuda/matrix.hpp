@@ -850,6 +850,10 @@ public:
 		return *this;
 	}
 
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+
 };
 
 

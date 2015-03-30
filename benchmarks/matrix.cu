@@ -57,8 +57,10 @@ __global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
 	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) {
-		T& valXY = matrix[x][y];
-		T& valYX = matrix[y][x];
+		T& valXY = matrix.at( x, y );
+		T& valYX = matrix.at( y, x );
+		//T& valXY = matrix[x][y];
+		//T& valYX = matrix[y][x];
 		T tmp = valXY;
 		valXY = valYX;
 		valYX = tmp;
