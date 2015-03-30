@@ -52,11 +52,11 @@ namespace ecuda {
 /// \brief A reference-counting smart pointer for device memory.
 ///
 /// This class keeps a pointer to allocated device memory and automatically
-/// deallocates it when it goes out of scope.  The workings are similar to
-/// a C++11 shared_ptr.  Since deallocation can only be done from host code
-/// reference counting only occurs within host code.  On the device the pointer
-/// is passed around freely without regards to reference counting and will
-/// never undergo deallocation.
+/// deallocates it when all references to it go out of scope.  The workings are
+/// similar to a C++11 \c std\::shared_ptr.  Since deallocation can only be
+/// done from host code reference counting only occurs within host code.  On the
+/// device the pointer is passed around freely without regards to reference
+/// counting and will never undergo deallocation.
 ///
 /// Like a typical smart pointer, this class handles deallocation but allocation
 /// is performed elsewhere and the pointer to the allocated memory location is

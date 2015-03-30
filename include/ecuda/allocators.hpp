@@ -48,22 +48,30 @@ namespace ecuda {
 ///
 /// \brief An STL allocator for page-locked host memory.
 ///
-/// Page-locked or "pinned" memory makes copying memory from the GPU (device)
-/// to the CPU (host) faster.  Using STL containers with this allocator makes
-/// them better at acting as "staging" points when moving data from the
-/// device memory to the host memory.
-///
 /// The implementation uses the CUDA API functions cudaMallocHost and
 /// cudaFreeHost.
 ///
-/// e.g. std::vector< int, host_allocator<int> >( host_allocator<int>() ) would
-///      instantiate a vector whose underlying contents would be stored in
-///      page-locked host memory.  Then a call to, for example:
-///        ecuda::vector<int> deviceVector(1000);
-///        // do work on device vector using the GPU...
-///        std::vector< int, ecuda::host_allocator<int> > hostVector( 1000, host_allocator<int>() );
-///        deviceVector >> hostVector; // copy results from device to host
-///        // do work on the host vector...
+/// Page-locked or "pinned" memory makes copying memory from the GPU (device)
+/// to the CPU (host) faster.  Using STL containers with this allocator makes
+/// them better at acting as "staging" points when moving data from the
+/// device memory to the host memory. This is used internally to optimize
+/// host <=> device transfers that involve any kind of temporary staging memory,
+/// but can be used effectively by an end-user of the library as well.
+///
+/// For example:
+/// \code{.cpp}
+/// std::vector< int, host_allocator<int> > v;
+/// \endcode
+/// This would instantiate a vector whose underlying contents would be stored in
+/// page-locked host memory.  Then a call to, for example:
+/// \code{.cpp}
+/// ecuda::vector<int> deviceVector(1000);
+/// // do work on device vector using the GPU...
+/// std::vector< int, ecuda::host_allocator<int> > hostVector( 1000 );
+/// deviceVector >> hostVector; // copy results from device to host
+/// \endcode
+/// This would potentially be a faster transfer than one would get using a
+/// <tt>std::vector</tt> with the default STL allocator.
 ///
 template<typename T>
 class host_allocator {
@@ -76,7 +84,7 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	/// \cond INTERNAL_CODE
+	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
 
@@ -105,7 +113,7 @@ public:
 	~host_allocator() throw() {}
 
 	///
-	/// \brief address Returns the address of x.
+	/// \brief Returns the address of x.
 	///
 	/// This effectively means returning &x.
 	///
@@ -115,7 +123,7 @@ public:
 	inline pointer address( reference x ) { return &x; }
 
 	///
-	/// \brief address Returns the address of x.
+	/// \brief Returns the address of x.
 	///
 	/// This effectively means returning &x.
 	///
@@ -211,7 +219,7 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	/// \cond INTERNAL_CODE
+	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
 
@@ -240,7 +248,7 @@ public:
 	HOST DEVICE ~device_allocator() throw() {}
 
 	///
-	/// \brief address Returns the address of x.
+	/// \brief Returns the address of x.
 	///
 	/// This effectively means returning &x.
 	///
@@ -250,7 +258,7 @@ public:
 	HOST DEVICE inline pointer address( reference x ) { return &x; }
 
 	///
-	/// \brief address Returns the address of x.
+	/// \brief Returns the address of x.
 	///
 	/// This effectively means returning &x.
 	///
@@ -345,7 +353,7 @@ public:
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-	/// \cond INTERNAL_CODE
+	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
 

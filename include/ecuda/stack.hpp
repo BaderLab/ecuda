@@ -43,8 +43,9 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 #include "iterators.hpp"
 #include "global.hpp"
-#include "memory.hpp"
 #include "vector.hpp"
+
+/// \cond NOT_SOMETHING_TO_CARE_ABOUT_CURRENTLY
 
 namespace ecuda {
 
@@ -67,7 +68,7 @@ private:
 
 public:
 	HOST stack( const container_type& ctnr = container_type() ) : container(ctnr) {}
-	HOST DEVICE stack( const stack<T,Alloc,Container>& other ) : container(other.container) {}
+	HOST stack( const stack<T,Alloc,Container>& other ) : container(other.container) {}
 	HOST DEVICE virtual ~stack() {}
 
 	HOST DEVICE inline bool empty() const { return container.empty(); }
@@ -81,5 +82,7 @@ public:
 };
 
 } // namespace ecuda
+
+\endcond
 
 #endif

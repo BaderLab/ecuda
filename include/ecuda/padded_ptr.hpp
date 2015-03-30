@@ -45,7 +45,7 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-/// \cond INTERNAL_CODE
+/// \cond DEVELOPER_DOCUMENTATION
 
 ///
 /// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.

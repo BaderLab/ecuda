@@ -41,7 +41,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <sstream>
 
-/** Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag */
+// Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 #define __CPP11_SUPPORTED__
 #endif
@@ -92,7 +92,7 @@ public:
 #define __CONSTEXPR__
 #endif
 
-/// \cond INTERNAL_CODE
+/// \cond DEVELOPER_DOCUMENTATION
 
 ///
 /// Metaprogramming trick to get the type of a dereferenced pointer. Helpful

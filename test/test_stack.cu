@@ -6,7 +6,7 @@
 __global__ void testKernel( ecuda::stack<float> input, ecuda::vector<float> output )
 //__global__ void testKernel( const ecuda::array<float>::DevicePayload in, ecuda::array<float>::DevicePayload out )
 {
-	const int index = threadIdx.x;
+	//const int index = threadIdx.x;
 	while( !input.empty() ) { /*output.push_back( input.top() );*/ input.pop(); }
 	//output[index] = input[index]*static_cast<float>(index);
         //printf( "index=%i value_before=%.2f value_after=%.2f\n", index, input[index], output[index] );
@@ -30,7 +30,7 @@ std::cerr << "step5" << std::endl;
 std::cerr << "step6" << std::endl;
 	testKernel<<<dimGrid,dimBlock>>>( deviceVectorInput, deviceVectorOutput );
 std::cerr << "step7" << std::endl;
-	CUDA_CHECK_ERRORS
+	CUDA_CHECK_ERRORS();
 std::cerr << "step8" << std::endl;
 	CUDA_CALL( cudaDeviceSynchronize() );
 std::cerr << "COMPLETE" << std::endl;

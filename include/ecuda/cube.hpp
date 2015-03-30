@@ -104,7 +104,8 @@ namespace ecuda {
 /// Unfortunately, CUDA solutions are very problem specific, so there is no generally applicable example for
 /// specifying how thread blocks should be defined.  The size of the cube, hardware limitations, CUDA API
 /// limitations, etc. all play a part.  For example, the above implementation won't work in earlier versions
-/// of CUDA since blockDim.x is limited to 512.
+/// of CUDA when blockDim.x is limited to 512 (at the time of this writing it was 1024 in the newer versions
+/// of CUDA).
 ///
 /// Just keep in mind that the depth dimension lies in contiguous memory, the column dimension is contiguous
 /// blocks of depth blocks, and the row dimension is contiguous blocks of column blocks; thus, an implementation

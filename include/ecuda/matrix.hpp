@@ -790,6 +790,12 @@ public:
 	}
 	#endif
 
+	///
+	/// \brief Copies the contents of this device matrix to a host STL vector.
+	///
+	/// The matrix is converted into a row-major linearized form (all columns
+	/// of the first row, then all columns of the second row, ...).
+	///
 	template<class OtherAlloc>
 	HOST const matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) const {
 		other.resize( size() );
@@ -797,6 +803,12 @@ public:
 		return *this;
 	}
 
+	///
+	/// \brief Copies the contents of this device matrix to a host STL vector.
+	///
+	/// The matrix is converted into a row-major linearized form (all columns
+	/// of the first row, then all columns of the second row, ...).
+	///
 	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
 		other.resize( size() );
@@ -823,6 +835,14 @@ public:
 	}
 	#endif
 
+	///
+	/// \brief Copies the contents of a host STL vector to this device matrix.
+	///
+	/// The size of the host vector must match the number of elements in this
+	/// matrix (number_rows()*number_columns()). The host vector is assumed to
+	/// be in row-major lineared form (all columns of the first row, then all
+	/// columns of the second row, ...).
+	///
 	template<class OtherAlloc>
 	HOST matrix<T,Alloc>& operator<<( std::vector<T,OtherAlloc>& other ) {
 		if( other.size() != size() ) throw std::length_error( "ecuda::operator<<(std::vector) provided with vector of non-matching size" );
@@ -867,6 +887,27 @@ HOST cudaError_t matrix_copy( matrix<T,Alloc1>& dest, const matrix<T,Alloc2>& sr
 	return cudaSuccess;
 }
 
+///
+/// \brief Swaps some or all of a source matrix with a destination matrix.
+///
+/// The subset of the two matrices can be specified with the offsetRow1, offsetColumn1, offsetRow2,
+/// offsetColumn2 parameters along with the numberRows and numberColumns parameters which are applied
+/// to both of the matrices.
+///
+/// If either of the subsets exceed the bounds of their matrix in either dimension a std::out_of_range
+/// exception is thrown.
+///
+/// \param mat1 a matrix whose contents are to be swapped
+/// \param mat2 the other matrix whose contents are to be swapped
+/// \param numberRows the number of rows to swap
+/// \param numberColumns the number of columns to swap
+/// \param offsetRow1 the starting row in mat1 that will be swapped (default:0)
+/// \param offsetColumn1 the starting column in mat1 that will be swapped (default:0)
+/// \param offsetRow2 the starting row in mat2 that will be swapped (default:0)
+/// \param offsetColumn2 the starting column in mat2 that will be swapped (default:0)
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+/// \throws std::out_of_range thrown if the specified bounds of either matrix exceeds its actual dimensions
+///
 template<typename T,class Alloc1,class Alloc2>
 HOST cudaError_t matrix_swap(
 	matrix<T,Alloc1>& mat1,

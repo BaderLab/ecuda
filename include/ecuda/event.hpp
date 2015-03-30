@@ -53,7 +53,7 @@ namespace ecuda {
 /// style.  The documentation is shamelessly lifted from the official CUDA
 /// documentation (http://docs.nvidia.com/cuda/index.html).
 ///
-/// For example, to get the running time of a kernal function:
+/// For example, to get the running time of a kernel function:
 ///
 /// \code{.cpp}
 /// ecuda::event start, stop;

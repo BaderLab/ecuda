@@ -55,9 +55,9 @@ __global__ void sumColumns( const char* matrix, const size_t pitch, const size_t
   const int threadNum = threadIdx.x;
   if( threadNum < width ) {
     double columnSum = 0;
-	const char* pRow = matrix;
+    const char* pRow = matrix;
     for( size_t i = 0; i < height; ++i ) {
-	  pRow += pitch; // move pointer to next row
+      pRow += pitch; // move pointer to next row
       const double* pElement = reinterpret_cast<const double*>(ptr); // cast to proper type!
       columnSum += pElement[threadNum];
     }
@@ -134,7 +134,7 @@ The library features four containers:
   -# 2D \b matrix
   -# 3D \b cube
 
-The \b array and \b vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
+The \ref ecuda:array array and \ref ecuda::vector vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
 
 \code{.cpp}
 ecuda::array<double,100> deviceArray( 66 ); // create fixed 100 element array filled with value 66
@@ -147,7 +147,7 @@ for( unsigned i = 0; i < 50; ++i ) hostVector[i] = i; // set the values to range
 ecuda::vector<int> deviceVector2( hostVector.begin(), hostVector.end() ); // create a vector in device memory and initialize with the host values
 \endcode
 
-The \b matrix and \b cube try to implement STL conventions as faithfully as possible so using them is intuitive.
+The \ref ecuda::matrix matrix and \ref ecuda::cube cube try to implement STL conventions as faithfully as possible so using them is intuitive.
 
 \code{.cpp}
 ecuda::matrix<double> deviceMatrix( 100, 100 ); // create 100x100 matrix
@@ -184,7 +184,7 @@ addColumns<<<1,100>>>( deviceMatrix, deviceArray );
 
 \image html allocators.png "The three memory allocators."
 
-STL containers often include an optional "Allocator" template parameter so that memory allocation can be specialized.  \em ecuda uses the same design pattern to handle any allocations of device memory.  The default allocator parameter for \em ecuda containers work fine, so this aspect of the library doesn't require much mention.  However, the \b host_allocator allocates page-locked memory and can be useful if you want to use STL containers as a staging point to exchange data between the host and device memory (see the CUDA API documentation for the cudaMallocHost function for a more discussion of the advantages and considerations of using page-locked memory).
+STL containers often include an optional "Allocator" template parameter so that memory allocation can be specialized.  \em ecuda uses the same design pattern to handle any allocations of device memory.  The default allocator parameter for \em ecuda containers work fine, so this aspect of the library doesn't require much mention.  However, the \ref ecuda::host_allocator allocates page-locked memory and can be useful if you want to use STL containers as a staging point to exchange data between the host and device memory (see the CUDA API documentation for the <tt>cudaMallocHost</tt> function for a more complete discussion of the advantages and considerations of using page-locked memory).
 
 For example:
 
@@ -203,7 +203,7 @@ deviceVector >> hostVector2; // slower
 
 \image html iterators.png ""
 
-Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, the basic iterator is Bidirectional, with a further specialized iterator that is Random Access and requires the range being traversed to reside in contiguous memory.  A reverse iterator, which simply reverses the order of traversal is also available.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the begin(), end(), rbegin(), and rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
+Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, the basic iterator is Bidirectional, with a further specialized iterator that is Random Access and requires the range being traversed to reside in contiguous memory.  A reverse iterator, which simply reverses the order of traversal is also available.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
 
 \code{.cpp}
 ecuda::vector<int> deviceVector1( 1000 ); // create 1000 element vector in device memory
@@ -211,7 +211,7 @@ ecuda::vector<int>::iterator begin = deviceVector1.begin();
 ecuda::vector<int> deviceVector2( begin, begin+50 ); // create a new vector initialized with the first 50 elements
 \endcode
 
-Keep in mind that operations which essentially move a contiguous block of memory to another behind the scenes using cudaMemcpy must be a contiguous_device_iterator.  Code that doesn't follow this will fail to compile.  For example:
+Keep in mind that operations which essentially move a contiguous block of memory to another behind the scenes using <tt>cudaMemcpy</tt> must be a \ref ecuda::contiguous_device_iterator.  Code that doesn't follow this will fail to compile.  For example:
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 );
@@ -227,7 +227,7 @@ deviceArray.assign( column.begin(), column.end() ); // won't compile, elements n
 
 \image html views.png ""
 
-The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the organization of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \b matrix is provided to a contiguous_sequence_view or sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon in that context.  Similarly, a slice of a \b cube along the x-y, x-z, or y-z plane would be represented as a matrix_view or contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
+The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the inner workings of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \ref ecuda::matrix is provided to a \ref ecuda::contiguous_sequence_view or \ref ecuda::sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon as if it were actually a sequence.  Similarly, a slice of a \ref ecuda::cube along the x-y, x-z, or y-z plane would be represented as a \ref ecuda::matrix_view or \ref ecuda::contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix
@@ -241,28 +241,82 @@ ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_ma
 
 \subsection overview_pointers Specialized Pointers
 
+\warning Specialized pointers are quite far removed from a developer's interaction with the library. This section is included only for completeness.
+
 \image html pointers.png ""
 
-asdfas
+\ref ecuda::device_ptr is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when the reference count reaches zero.  It's quite similar to a std::shared_ptr.  All \em ecuda containers use a \ref ecuda::device_ptr to interface with any underlying device memory.
+
+\ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used to create efficient views and iterators.
 
 \section optimizing_threads Optimizing Thread Operations
 
-One of the core dogmas in CUDA programming is that read/write operations to device memory are extremely time-consuming, so organizing these operations so that different threads access data in close physical proximity greatly optimizes the program.  This can be a source of optimization with all programs, although it is particularly impactful for multi-threading with GPUs.  The specifics depend on the hardware, but the bus might always transfer say, 128 bits of memory per read operation.  If each data element is 8 bytes then a single read can potentially supply 16 threads with the information it requires.
+One of the central concerns when CUDA programming is that read/write operations to device memory are extremely time-consuming, so organizing these operations so that different threads access data in close physical proximity greatly optimizes the program.  This can be a source of optimization with any program, but it is particularly impactful for multi-threading with GPUs.  The specifics depend on the hardware, but the bus might always transfer say, 128 bits of memory per read operation.  If each data element is 8 bytes then a single read can potentially supply 16 threads with the information it requires.  When using the \ref ecuda::matrix matrix and \ref ecuda::cube containers, it's important to note how these are represented in memory and which dimension different threads should preferably access.  The rule of thumb is that the minor dimension should be the target of separate threads.  For a matrix, this is a column; for a cube, this is a depth (and secondarily, a column). For example, given these two kernel functions:
+
+\code{.cpp}
+// kernel #1
+__global__ void rowSums( const ecuda::matrix<double> matrix, ecuda::vector<double> sums ) {
+  const int threadNum = threadIdx.x;
+  if( threadNum < matrix.number_rows() ) {
+    double sum = 0.0;
+    for( double x : matrix.get_row(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
+    sums[threadNum] = sum;
+  }
+}
+
+// kernel #2
+__global__ void columnSums( const ecuda::matrix<double> matrix, ecuda::vector<double> sums ) {
+  const int threadNum = threadIdx.x;
+  if( threadNum < matrix.number_columns() ) {
+    double sum = 0.0;
+    for( double x : matrix.get_column(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
+    sums[threadNum] = sum;
+  }
+}
+
+// host code
+ecuda::matrix<double> deviceMatrix( 1000, 1000 ); // create 1000x1000 matrix
+ecuda::vector<double> deviceVector( 1000 ); // create zero-initialized vector
+// ... put stuff into deviceMatrix
+{
+  ecuda::event start, stop;
+  start.record();
+  rowSums<<<1,1000>>>( deviceMatrix, deviceVector );
+  stop.record();
+  stop.synchronize();
+  std::cout << "EXECUTION TIME: " << (stop-start) << "ms" << std::endl;
+}
+{
+  ecuda::event start, stop;
+  start.record();
+  columnSums<<<1,1000>>>( deviceMatrix, deviceVector );
+  stop.record();
+  stop.synchronize();
+  std::cout << "EXECUTION TIME: " << (stop-start) << "ms" << std::endl;
+}
+\endcode
+
+The execution time of the second kernel will invariably be \em much faster than the first.
 
 \section optional_libraries Optional Libraries
 
+\subsection optional_library_gsl GNU Scientific Library (GSL)
 
+There are hooks within the \ref ecuda::matrix container to copy information to and from a <tt>gsl_matrix</tt> used in the GNU Scientific Library (GSL).  Modify the <tt>HAVE_GNU_SCIENTIFIC_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
 
-estd
-gsl
+\subsection optional_library_estd Extended STL (estd)
+
+There are hooks within the \ref ecuda::matrix and \ref ecuda::cube containers to copy information to and from the equivalent \em estd containers.  This is a header-only library that contains several container types that follow the semantics of the STL much like \em ecuda itself does.  As of this writing, this library hasn't been publicly released.  Nonetheless, the methods are present awaiting the day this changes.  Modify the <tt>HAVE_ESTD_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
 
 \section performance Performance
 
-asdfdas
+Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is extremely small (lower single digit percentage), and in some cases, programs execute faster.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.
 
 \section compatibility Tool Chain Compatibility
 
-The library has been tested with CUDA versions ... and GCC ....
+The library has been tested and compiles successfully with CUDA versions 3.2, 4.0, 4.1, 4.2, 5.0, 5.5, 6.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully.
+
+\em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is true, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.
 
 \section license License
 
@@ -294,5 +348,19 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of the FreeBSD Project.
 \endverbatim
 
+\section author Author
+
+Scott Zuyderduyn, Ph.D.<br/>
+Postdoctoral Research Fellow<br/>
+Bader Lab<br/>
+The University of Toronto<br/>
+<br/>
+Email: scott.zuyderduyn \*at\* utoronto.ca
+
+\section acknowledgements Acknowledgements
+
+The resources and expertise of the <a href="http://www.scinethpc.ca">SciNet</a> supercomputing centre at The University of Toronto which is home to several GPU clusters.  I used these extensively for my own scientific research (which spawned the creation of this library).
+
+The support of the <a href="http://baderlab.org/">Bader Lab</a>, part of the <a href="http://tdccbr.med.utoronto.ca">Donnelly Centre for Cellular and Biomolecular Research</a> at The University of Toronto, where I am currently a postdoctoral fellow.
 
 */
