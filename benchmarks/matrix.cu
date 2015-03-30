@@ -56,7 +56,14 @@ template<typename T>
 __global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
-	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) ecuda::swap( matrix[y][x], matrix[x][y] );
+	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) {
+		T& valXY = matrix[x][y];
+		T& valYX = matrix[y][x];
+		T tmp = valXY;
+		valXY = valYX;
+		valYX = valXY;
+	}
+	//ecuda::swap( matrix[x][y], matrix[y][x] );
 }
 
 template<typename T>
@@ -132,6 +139,7 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 	cudaFree( AB );
 
 	stop.record();
+	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
 	return ( stop - start );
@@ -151,6 +159,7 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	matrixMultiply<<<grid,threads>>>( A, B, AB );
 
 	stop.record();
+	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
 	return ( stop - start );
@@ -193,6 +202,7 @@ float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 	matrixTranspose<<<grid,threads>>>( matrix, pitch, n );
 
 	stop.record();
+	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
 	cudaFree( matrix );
@@ -212,6 +222,7 @@ float ecudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 	matrixTranspose<<<grid,threads>>>( matrix );
 
 	stop.record();
+	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
 	return ( stop - start );
