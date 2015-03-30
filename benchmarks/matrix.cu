@@ -25,7 +25,7 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n = 100, cons
 int main( int argc, char* argv[] ) {
 
 	const std::size_t THREADS = 480;
-	const std::size_t n = 100;
+	const std::size_t n = 1000;
 	const std::size_t m = 1000;
 	const std::size_t p = 1000;
 
