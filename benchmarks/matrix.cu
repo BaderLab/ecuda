@@ -59,10 +59,10 @@ __global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
 	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) {
 		//T& valXY = matrix.at( x, y );
 		//T& valYX = matrix.at( y, x );
-		T& valXY = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*x) )+y);
-		T& valYX = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*y) )+x);
-		//T& valXY = matrix[x][y];
-		//T& valYX = matrix[y][x];
+		//T& valXY = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*x) )+y);
+		//T& valYX = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*y) )+x);
+		T& valXY = matrix[x][y];
+		T& valYX = matrix[y][x];
 		T tmp = valXY;
 		valXY = valYX;
 		valYX = tmp;
