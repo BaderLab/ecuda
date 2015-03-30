@@ -18,69 +18,23 @@ __global__ void matrixMultiply(
 );
 template<typename T> __global__ void matrixMultiply( const ecuda::matrix<T> A, const ecuda::matrix<T> B, ecuda::matrix<T> AB );
 
-template<typename T> __global__ void matrixTranspose( T* matrix, const std::size_t pitch, const std::size_t n );
-template<typename T> __global__ void matrixTranspose( ecuda::matrix<T> matrix );
-
 
 float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::size_t p );
 float cudaMatrixMultiply( const int numThreads, const std::size_t n = 100, const std::size_t m = 100, const std::size_t p = 100 );
 float ecudaMatrixMultiply( const int numThreads, const std::size_t n = 100, const std::size_t m = 100, const std::size_t p = 100 );
 
-float cpuMatrixTranspose( const std::size_t n );
-float cudaMatrixTranspose( const int numberThreads, const std::size_t n = 100 );
-float ecudaMatrixTranspose( const int numberThreads, const std::size_t n = 100 );
-
 int main( int argc, char* argv[] ) {
 
 	const std::size_t THREADS = 480;
-	{
-		const std::size_t n = 1000;
-		const std::size_t m = 1000;
-		const std::size_t p = 1000;
-		std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p ) << " ms" << std::endl;
-		std::cout << "MATRIX MULTIPLICATION CUDA : " << std::fixed <<  cudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
-		std::cout << "MATRIX MULTIPLICATION ECUDA: " << std::fixed << ecudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
-	}
-	{
-		const std::size_t n = 10000;
-		std::cout << "MATRIX TRANSPOSE CPU  : " << std::fixed <<   cpuMatrixTranspose(          n ) << " ms" << std::endl;
-		std::cout << "MATRIX TRANSPOSE CUDA : " << std::fixed <<  cudaMatrixTranspose( THREADS, n ) << " ms" << std::endl;
-		std::cout << "MATRIX TRANSPOSE ECUDA: " << std::fixed << ecudaMatrixTranspose( THREADS, n ) << " ms" << std::endl;
-	}
+	const std::size_t n = 1000;
+	const std::size_t m = 1000;
+	const std::size_t p = 1000;
+	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p ) << " ms" << std::endl;
+	std::cout << "MATRIX MULTIPLICATION CUDA : " << std::fixed <<  cudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
+	std::cout << "MATRIX MULTIPLICATION ECUDA: " << std::fixed << ecudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
 
 	return EXIT_SUCCESS;
 
-}
-
-template<typename T>
-__global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
-	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
-	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
-	if( x < matrix.number_rows() and y < matrix.number_columns() and x < y ) {
-		//T& valXY = matrix.at( x, y );
-		//T& valYX = matrix.at( y, x );
-		//T& valXY = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*x) )+y);
-		//T& valYX = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix.data())+(matrix.get_pitch()*y) )+x);
-		T& valXY = matrix[x][y];
-		T& valYX = matrix[y][x];
-		T tmp = valXY;
-		valXY = valYX;
-		valYX = tmp;
-	}
-	//ecuda::swap( matrix[x][y], matrix[y][x] );
-}
-
-template<typename T>
-__global__ void matrixTranspose( T* matrix, const std::size_t pitch, const std::size_t n ) {
-	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
-	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
-	if( x < n and y < n and x < y ) {
-		T& valXY = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix)+(pitch*x) )+y);
-		T& valYX = *(reinterpret_cast<T*>( reinterpret_cast<char*>(matrix)+(pitch*y) )+x);
-		T tmp = valXY;
-		valXY = valYX;
-		valYX = tmp;
-	}
 }
 
 template<typename T>
@@ -171,65 +125,6 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 			for( std::size_t k = 0; k < m; ++k ) sum += A[i*m+k] * B[k*p+j];
 			AB[i*p+j] = sum;
 		}
-	}
-
-	stop.record();
-
-	return ( stop - start );
-
-}
-
-float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
-
-	ecuda::event start, stop;
-
-	double *matrix;
-	std::size_t pitch;
-	cudaMallocPitch( &matrix, &pitch, n*sizeof(double), n );
-
-	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
-	start.record();
-	matrixTranspose<<<grid,threads>>>( matrix, pitch, n );
-	stop.record();
-
-	CUDA_CHECK_ERRORS();
-	stop.synchronize();
-
-	cudaFree( matrix );
-
-
-//	cudaFree( matrix );
-
-	return ( stop - start );
-
-}
-
-float ecudaMatrixTranspose( const int numThreads, const std::size_t n ) {
-
-	ecuda::event start, stop;
-
-	ecuda::matrix<double> matrix( n, n );
-
-	dim3 grid( n, (n+numThreads-1)/numThreads ), threads( 1, numThreads );
-	start.record();
-	matrixTranspose<<<grid,threads>>>( matrix );
-	stop.record();
-
-	CUDA_CHECK_ERRORS();
-	stop.synchronize();
-
-	return ( stop - start );
-
-}
-
-float cpuMatrixTranspose( const std::size_t n ) {
-
-	ecuda::event start, stop;
-	start.record();
-
-	std::vector<double> v( n*n );
-	for( std::size_t i = 0; i < n; ++i ) {
-		for( std::size_t j = i+1; j < n; ++j ) std::swap( v[i*n+j], v[j*n+i] );
 	}
 
 	stop.record();
