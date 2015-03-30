@@ -209,11 +209,11 @@ public:
 		numberDepths(src.numberDepths),
 		pitch(src.pitch),
 		deviceMemory(src.deviceMemory),
-		#ifdef __CPP11_SUPPORTED__
-		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+		//#else
 		allocator(src.allocator)
-		#endif
+		//#endif
 	{
 	}
 

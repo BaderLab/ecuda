@@ -113,7 +113,7 @@ public:
 	///
 	/// \param src Another device pointer whose contents are to be moved.
 	///
-	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), shared_count(src.shared_count) {
+	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), reference_count(src.reference_count) {
 		src.ptr = nullptr;
 		#ifndef __CUDA_ARCH__
 		src.reference_count = new size_type;

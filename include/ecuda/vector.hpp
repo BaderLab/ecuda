@@ -203,7 +203,7 @@ public:
 	/// \param il initializer list to initialize the elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST DEVICE vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : n(0), m(0), allocator(allocator) {
+	HOST vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : n(0), m(0), allocator(allocator) {
 		std::vector< value_type, host_allocator<value_type> > v( il );
 		growMemory( v.size() );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), v.data(), v.size(), cudaMemcpyHostToDevice ) );

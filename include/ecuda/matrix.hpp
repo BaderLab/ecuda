@@ -190,11 +190,11 @@ public:
 		numberColumns(src.numberColumns),
 		pitch(src.pitch),
 		deviceMemory(src.deviceMemory),
-		#ifdef __CPP11_SUPPORTED__
-		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+		//#else
 		allocator(src.allocator)
-		#endif
+		//#endif
 	{
 	}
 
@@ -791,12 +791,18 @@ public:
 	#endif
 
 	template<class OtherAlloc>
-	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
+	HOST const matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) const {
 		other.resize( size() );
 		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
+	template<class OtherAlloc>
+	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
+		other.resize( size() );
+		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
 
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V>
