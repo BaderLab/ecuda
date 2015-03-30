@@ -61,7 +61,7 @@ __global__ void matrixTranspose( ecuda::matrix<T> matrix ) {
 		T& valYX = matrix[y][x];
 		T tmp = valXY;
 		valXY = valYX;
-		valYX = valXY;
+		valYX = tmp;
 	}
 	//ecuda::swap( matrix[x][y], matrix[y][x] );
 }
