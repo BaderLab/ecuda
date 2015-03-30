@@ -175,7 +175,6 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 
 }
 
-
 float cudaMatrixTranspose( const int numThreads, const std::size_t n ) {
 
 	ecuda::event start, stop;
