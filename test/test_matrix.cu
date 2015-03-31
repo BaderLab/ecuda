@@ -68,6 +68,19 @@ void kernel_checkMatrixAccessors(
 	}
 }
 
+
+template<typename T> __global__
+void kernel_checkDeviceIterators(
+	const ecuda::matrix<T> srcMatrix,
+	ecuda::matrix<T> destMatrix
+)
+{
+	typename ecuda::matrix<T>::const_iterator srcIterator = srcMatrix.begin();
+	typename ecuda::matrix<T>::iterator destIterator = destMatrix.begin();
+	for( ; srcIterator != srcMatrix.end() and destIterator != destMatrix.end(); ++srcIterator, ++destIterator ) *destIterator = *srcIterator;
+}
+
+
 int main( int argc, char* argv[] ) {
 
 	std::cout << "Testing ecuda::matrix..." << std::endl;
@@ -186,30 +199,45 @@ int main( int argc, char* argv[] ) {
 		std::vector<Coordinate> hostResults;
 
 		destDeviceMatrix >> hostResults;
-for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) {
-	std::cout << "[" << i << "] COORDINATE ( " << hostResults[i].x << "," << hostResults[i].y << " )" << std::endl;
-}
+
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(i/20,i%20) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceFronts >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceBacks >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceFrontsNonConst >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceBacksNonConst >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		testResults.push_back( passed ? 1 : 0 );
 
+	}
+
+	// Test 5: check device iterators
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> srcDeviceMatrix( 10, 20 );
+		srcDeviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
+		kernel_checkDeviceIterators<<<1,1>>>( srcDeviceMatrix, destDeviceMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::fill( hostVector.begin(), hostVector.end(), Coordinate(9000,9000) );
+		destDeviceMatrix >> hostVector;
+		bool passed = true;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
 	}
 
 	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
