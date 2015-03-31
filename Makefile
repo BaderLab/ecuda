@@ -36,11 +36,12 @@ AR = ar
 CC = gcc -x c
 CFLAGS = -Wall
 CXX = g++
-CXXFLAGS = -std=c++0x -Wall -flto -L/usr/local/cuda/lib64 -pedantic
+CXXFLAGS = -std=c++11 -Wall -flto -L/usr/local/cuda/lib64 -pedantic
 FC = gfortran
 NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -O3
 # for OpenMP support add to above: -X compiler -fopenmp
+# for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
 
 -include local-config.cfg
@@ -53,6 +54,10 @@ else
 	CXXFLAGS += -O3 -march=native
 	CFLAGS += -O3 -march=native
 endif
+
+install:
+	@mkdir -p $(includedir)
+	cp -a include/ecuda $(includedir)/ecuda
 
 test/% :: test/%.cu
 	@mkdir -p bin/test

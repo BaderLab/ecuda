@@ -24,30 +24,6 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
-
-template<typename T,std::size_t U>
-__global__
-void fetchRow( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
-	typename ecuda::matrix<T>::const_row_type row = matrix[1];
-	for( typename ecuda::matrix<T>::const_row_type::size_type i = 0; i < row.size(); ++i ) array[i] = row[i];
-}
-
-template<typename T,std::size_t U>
-__global__
-void fetchColumn( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
-	typename ecuda::matrix<T>::const_column_type column = matrix.get_column(1);
-	for( typename ecuda::matrix<T>::const_column_type::size_type i = 0; i < column.size(); ++i ) array[i] = column[i];
-}
-
-template<typename T,std::size_t U>
-__global__
-void fetchAll( const ecuda::matrix<T> matrix, ecuda::array<T,U> array ) {
-	unsigned index = 0;
-	//for( T x : matrix ) { array[index] = x; ++index; }
-	for( typename ecuda::matrix<T>::const_reverse_iterator iter = matrix.rbegin(); iter != matrix.rend(); ++iter, ++index ) array[index] = *iter;
-}
-
-
 template<typename T> __global__
 void kernel_checkMatrixProperties(
 	const ecuda::matrix<T> constMatrix,
@@ -69,6 +45,28 @@ void kernel_checkMatrixProperties(
 	}
 }
 
+template<typename T> __global__
+void kernel_checkMatrixAccessors(
+	const ecuda::matrix<T> srcMatrix,
+	ecuda::matrix<T> srcMatrixNonConst,
+	ecuda::matrix<T> destMatrix,
+	ecuda::vector<T> srcFronts,
+	ecuda::vector<T> srcBacks,
+	ecuda::vector<T> srcFrontsNonConst,
+	ecuda::vector<T> srcBacksNonConst
+)
+{
+	const int row = blockIdx.x;
+	const int column = threadIdx.x;
+	if( row < srcMatrix.number_rows() and column < srcMatrix.number_columns() ) {
+		const int index = row*srcMatrix.number_columns()+column;
+		destMatrix[row][column] = destMatrix[row][column];
+		srcFronts[index] = srcMatrix.front();
+		srcBacks[index] = srcMatrix.back();
+		srcFrontsNonConst[index] = srcMatrixNonConst.front();
+		srcBacksNonConst[index] = srcMatrixNonConst.back();
+	}
+}
 
 int main( int argc, char* argv[] ) {
 
@@ -141,77 +139,69 @@ int main( int argc, char* argv[] ) {
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
-	estd::matrix<Coordinate> hostMatrix( 5, 10 );
-	for( estd::matrix<Coordinate>::row_index_type i = 0; i < hostMatrix.row_size(); ++i ) {
-		for( estd::matrix<Coordinate>::column_index_type j = 0; j < hostMatrix.column_size(); ++j ) {
-			hostMatrix[i][j] = Coordinate( i, j );
-		}
-	}
-
-	for( estd::matrix<Coordinate>::row_index_type i = 0; i < hostMatrix.row_size(); ++i ) {
-		std::cout << "HOST ";
-		for( estd::matrix<Coordinate>::column_index_type j = 0; j < hostMatrix.column_size(); ++j ) {
-			std::cout << " " << hostMatrix[i][j];
-		}
-		std::cout << std::endl;
-	}
-
-	ecuda::matrix<Coordinate> deviceMatrix( 5, 10 );
-	deviceMatrix << hostMatrix;
-
+	// Test 3: C++11 assignment
+	#ifdef __CPP11_SUPPORTED__
 	{
-		std::vector<Coordinate> coordinates( deviceMatrix.number_columns() );
-		for( ecuda::matrix<Coordinate>::size_type i = 0; i < deviceMatrix.number_rows(); ++i )
-			deviceMatrix[i].assign( coordinates.begin(), coordinates.end() );
-			//deviceMatrix.assign_row( i, coordinates.begin(), coordinates.end() );
-	}
-
-	deviceMatrix >> hostMatrix;
-	for( estd::matrix<Coordinate>::row_index_type i = 0; i < hostMatrix.row_size(); ++i ) {
-		std::cout << "DEVICE";
-		for( estd::matrix<Coordinate>::column_index_type j = 0; j < hostMatrix.column_size(); ++j ) {
-			std::cout << " " << hostMatrix[i][j];
+		std::cerr << "Test 3" << std::endl;
+		ecuda::matrix<Coordinate> deviceMatrix( 2, 2 );
+		deviceMatrix.assign( { Coordinate(0,0), Coordinate(0,1), Coordinate(1,0), Coordinate(1,1) } );
+		std::vector<Coordinate> hostVector;
+		deviceMatrix >> hostVector;
+		bool passed = true;
+		std::vector<Coordinate>::size_type index = 0;
+		for( std::vector<Coordinate>::size_type i = 0; i < 2; ++i ) {
+			for( std::vector<Coordinate>::size_type j = 0; j < 2; ++j, ++index ) {
+				if( hostVector[index] != Coordinate(i,j) ) passed = false;
+			}
 		}
-		std::cout << std::endl;
+		testResults.push_back( passed ? 1 : 0 );
 	}
+	#else
+	std::cerr << "Test 3 (skipped)" << std::endl;
+	testResults.push_back( -1 );
+	#endif
 
-	ecuda::array<Coordinate,10> deviceRow;
+	// Test 4: index accessors, front(), and back()
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::vector<Coordinate> deviceFronts( 10*20, -1 );
+		ecuda::vector<Coordinate> deviceBacks( 10*20, -1 );
+		ecuda::vector<Coordinate> deviceFrontsNonConst( 10*20, -1 );
+		ecuda::vector<Coordinate> deviceBacksNonConst( 10*20, -1 );
+		kernel_checkMatrixAccessors<<<10,20>>>( deviceMatrix, deviceMatrix, destDeviceMatrix, deviceFronts, deviceBacks, deviceFrontsNonConst, deviceBacksNonConst );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
 
-	fetchRow<<<1,1>>>( deviceMatrix, deviceRow );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
+		bool passed = true;
+		std::vector<Coordinate> hostResults;
 
-	std::vector<Coordinate> hostRow;
-	deviceRow >> hostRow;
+		destDeviceMatrix >> hostResults;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(i/20,i%20) ) passed = false;
 
-	std::cout << "ROW";
-	for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
-	std::cout << std::endl;
+		deviceFronts >> hostResults;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
 
-	ecuda::array<Coordinate,5> deviceColumn;
+		deviceBacks >> hostResults;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
 
-	fetchColumn<<<1,1>>>( deviceMatrix, deviceColumn );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
+		deviceFrontsNonConst >> hostResults;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
 
-	std::vector<Coordinate> hostColumn;
-	deviceColumn >> hostColumn;
+		deviceBacksNonConst >> hostResults;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
 
-	std::cout << "COLUMN";
-	for( std::vector<Coordinate>::size_type i = 0; i < hostColumn.size(); ++i ) std::cout << hostColumn[i];
-	std::cout << std::endl;
+		testResults.push_back( passed ? 1 : 0 );
 
-	ecuda::array<Coordinate,50> deviceLinearMatrix;
-	fetchAll<<<1,1>>>( deviceMatrix, deviceLinearMatrix );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
-
-	std::vector<Coordinate> hostLinearMatrix;
-	deviceLinearMatrix >> hostLinearMatrix;
-
-	std::cout << "LINEARIZED" << std::endl;
-	for( std::vector<Coordinate>::size_type i = 0; i < hostLinearMatrix.size(); ++i ) std::cout << hostLinearMatrix[i] << std::endl;
-
+	}
 
 	return EXIT_SUCCESS;
 

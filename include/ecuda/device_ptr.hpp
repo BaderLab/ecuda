@@ -110,6 +110,7 @@ public:
 	/// \brief Move constructor.
 	///
 	/// Constructs the device pointer using move semantics.
+	/// This constructor is only available if the compiler is configured to allow C++11.
 	///
 	/// \param src Another device pointer whose contents are to be moved.
 	///
@@ -243,11 +244,34 @@ public:
 	template<typename U> HOST DEVICE inline bool operator>=( const device_ptr<U>& other ) const { return ptr >= other.get(); }
 
 	#ifdef __CPP11_SUPPORTED__
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator==( std::nullptr_t other ) const { return ptr == other; }
+
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator!=( std::nullptr_t other ) const { return ptr != other; }
+
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator< ( std::nullptr_t other ) const { return ptr <  other; }
+
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator> ( std::nullptr_t other ) const { return ptr >  other; }
+
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator<=( std::nullptr_t other ) const { return ptr <= other; }
+
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST DEVICE inline bool operator>=( std::nullptr_t other ) const { return ptr >= other; }
 	#endif
 
@@ -290,6 +314,7 @@ public:
 
 } // namespace ecuda
 
+/// \cond DEVELOPER_DOCUMENTATION
 #ifdef __CPP11_SUPPORTED__
 //
 // C++ hash support for device_ptr.
@@ -301,5 +326,6 @@ struct hash< ecuda::device_ptr<T> > {
 };
 } // namespace std
 #endif
+/// \endcond
 
 #endif

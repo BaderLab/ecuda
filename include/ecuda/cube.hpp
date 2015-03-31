@@ -221,6 +221,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	///
+	/// This constructor is only available if the compiler is configured to allow C++11.
+	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
 	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
@@ -261,7 +264,7 @@ public:
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const __NOEXCEPT__ { return allocator; }
+	HOST inline allocator_type get_allocator() const { return allocator; }
 
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).

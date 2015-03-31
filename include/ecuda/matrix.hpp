@@ -201,6 +201,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
 	HOST matrix( matrix<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
@@ -253,7 +256,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() { return iterator( padded_ptr<value_type,pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -262,7 +265,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -271,7 +274,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -280,7 +283,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -289,7 +292,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -299,7 +302,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -308,7 +311,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -318,14 +321,14 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns the number of elements in the container (numberRows*numberColumns).
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE inline size_type size() const { return number_rows()*number_columns(); }
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return number_rows()*number_columns(); }
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
@@ -333,28 +336,28 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Returns the number of rows in the container.
 	///
 	/// \returns The number of rows in the container.
 	///
-	HOST DEVICE inline size_type number_rows() const { return numberRows; }
+	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 
 	///
 	/// \brief Returns the number of columns in the container.
 	///
 	/// \returns The number of columns in the container.
 	///
-	HOST DEVICE inline size_type number_columns() const { return numberColumns; }
+	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }
 
 	///
 	/// \brief Returns the pitch of the underlying 2D device memory.
 	///
 	/// \returns THe pitch of the underlying 2D device memory (in bytes).
 	///
-	HOST DEVICE inline size_type get_pitch() const { return pitch; }
+	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns.
@@ -547,6 +550,19 @@ public:
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
 		}
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Replaces the contents of the container with copies of those in the initializer list.
+	/// \throws std::length_error if the number of elements in the initializer list does not match the number of elements in this container
+	/// \param il initializer list to initialize the elements of the container with
+	///
+	HOST void assign( std::initializer_list<T> il ) {
+		if( il.size() != size() ) throw std::length_error( "ecuda::matrix::assign(initializer_list) the number of elements in the initializer list does not match the size of the matrix" );
+		std::vector< value_type, host_allocator<value_type> > v( il );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), get_pitch(), &v.front(), v.size()*sizeof(value_type), number_columns(), number_rows(), cudaMemcpyHostToDevice ) );
+	}
+	#endif
 
 	///
 	/// \brief Assigns a given value to all elements in the container.

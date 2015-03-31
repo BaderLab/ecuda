@@ -122,6 +122,28 @@ Besides being more compact and readable, there are no naked pointers, allocation
 for( double x : matrix.get_column( threadNum ) ) columnSum += x;
 \endcode
 
+\section installation Installation
+
+The library is header only, so the <tt>include</tt> subdirectory can be placed anywhere and made visible to the compiler (e.g. <tt>-I/some/path/include</tt>).  A <tt>Makefile</tt> is included that simply copies the <tt>include/ecuda</tt> directory to <tt>/usr/local/include</tt> by issuing the command:
+
+\code
+sudo make install
+\endcode
+
+The required containers can be declared in your CUDA code with, for example:
+
+\code{.cpp}
+#include <ecuda/vector.hpp>
+#include <ecuda/matrix.hpp>
+\endcode
+
+If you have <a href="http://www.doxygen.org">Doxygen</a> installed, you can create a local copy of this documentation with:
+
+\code
+make docs
+\endcode
+
+
 \section overview Overview
 
 \subsection overview_containers Containers
@@ -247,7 +269,7 @@ ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_ma
 
 \ref ecuda::device_ptr is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when the reference count reaches zero.  It's quite similar to a std::shared_ptr.  All \em ecuda containers use a \ref ecuda::device_ptr to interface with any underlying device memory.
 
-\ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used to create efficient views and iterators.
+\ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used internally to create efficient views and iterators.
 
 \section optimizing_threads Optimizing Thread Operations
 
@@ -312,7 +334,7 @@ There are hooks within the \ref ecuda::matrix and \ref ecuda::cube containers to
 
 Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is minute (a constant sub-millisecond).  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.
 
-For example, the program <tt>benchmarks/matrix</tt> performing a simple, brute-force matrix multiplication of two matrices A(5000x5000) and B(5000x5000) to get AB(5000x5000) takes about 4.86s on an NVIDIA Tesla M2090.  Run times vary, but \em ecuda code is typically slower by <0.1ms.  The same problem solved the same way with an Intel Xeon E5-2620 CPU on the test machine takes ~18 minutes (~200X acceleration).
+For example, the program <tt>benchmarks/matrix_multiply</tt> performs a simple, brute-force matrix multiplication of two matrices A(5000x5000) and B(5000x5000) to get AB(5000x5000) and takes about 4.86s on an NVIDIA Tesla M2090.  Run times vary, but \em ecuda code is typically slower by <0.1ms.  The same problem solved the same way with the Intel Xeon E5-2620 CPU on the test machine takes ~18 minutes (~200X acceleration).
 
 \section compatibility Tool Chain Compatibility
 

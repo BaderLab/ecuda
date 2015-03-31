@@ -165,11 +165,11 @@ public:
 	/// \param src Another vector object of the same type, whose contents are copied.
 	///
 	HOST vector( const vector<value_type>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory),
-		#ifdef __CPP11_SUPPORTED__
-		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+		//#else
 		allocator(src.allocator)
-		#endif
+		//#endif
 	{
 	}
 
@@ -187,6 +187,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	///
+	/// This constructor is only available if the compiler is configured to allow C++11.
+	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
 	HOST DEVICE vector( vector&& src ) : n(std::move(src.n)), m(std::move(src.m)), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
@@ -453,6 +456,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Replaces the contents with the elements from the initializer list il.
+	///
+	/// This method is only available if the compiler is configured to allow C++11.
+	///
 	/// \param il initializer list to copy the values from
 	///
 	HOST void assign( std::initializer_list<value_type> il ) {
@@ -486,6 +492,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Appends the given element value to the end of the container.
+	///
+	/// This method is only available if the compiler is configured to allow C++11.
+	///
 	/// \param value the value of the element to append
 	///
 	HOST void push_back( value_type&& value );
@@ -603,6 +612,8 @@ public:
 	/// Otherwise, only the iterators and references before the insertion point remain valid.
 	/// The past-the-end iterator is also invalidated.
 	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	/// \param position iterator before which the content will be inserted. position may be the end() iterator
 	/// \param il initializer list to insert values from
 	///
@@ -693,7 +704,7 @@ public:
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const __NOEXCEPT__ { return allocator; }
+	HOST inline allocator_type get_allocator() const { return allocator; }
 
 	///
 	/// \brief Requests the removal of unused capacity.

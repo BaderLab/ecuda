@@ -126,6 +126,8 @@ public:
 	/// the length of the initializer list is less than N, the initializer list is repeated from the start until all
 	/// N elements are assigned a value.
 	///
+	/// This constructor is only available if the compiler is configured to allow C++11.
+	///
 	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
 	////          declarators.
 	///
@@ -173,6 +175,9 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	///
+	/// This constructor is only available if the compiler is configured to allow C++11.
+	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
 	HOST array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
@@ -508,6 +513,8 @@ public:
 	///
 	/// \brief Copies the contents of this device array to a host STL array.
 	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
 	HOST const array<T,N>& operator>>( std::array<value_type,N>& arr ) const {
 		CUDA_CALL( cudaMemcpy<value_type>( &arr.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
@@ -517,6 +524,8 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Copies the contents of a host STL array to this device array.
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
 	///
 	HOST array<T,N>& operator<<( std::array<value_type,N>& arr ) {
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &arr.front(), N, cudaMemcpyHostToDevice ) );
