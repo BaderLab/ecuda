@@ -236,7 +236,7 @@ public:
 	/// \param src Another cube object of the same type, whose contents are copied.
 	///
 	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
+	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.number_rows()), numberColumns(src.number_columns()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
 			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
 			std::vector< value_type, host_allocator<value_type> > v( numberDepths );
@@ -780,10 +780,10 @@ public:
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
 		//TODO: this can be optimized
-		resize( src.row_size(), src.column_size(), src.depth_size() );
+		resize( src.number_rows(), src.number_columns(), src.depth_size() );
 		std::vector< value_type, host_allocator<value_type> > tmp( src.depth_size() );
-		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.row_size(); ++i ) {
-			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.column_size(); ++j ) {
+		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.number_rows(); ++i ) {
+			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.number_columns(); ++j ) {
 				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];
 				CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), &tmp.front(), numberDepths, cudaMemcpyHostToDevice ) );
 			}

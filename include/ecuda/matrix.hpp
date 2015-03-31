@@ -875,7 +875,7 @@ public:
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V>
 	HOST matrix<T,Alloc>& operator<<( const estd::matrix<T,U,V>& src ) {
-		resize( src.row_size(), src.column_size() );
+		resize( src.number_rows(), src.number_columns() );
 		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
