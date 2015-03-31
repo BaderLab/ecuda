@@ -32,7 +32,7 @@ int main( int argc, char* argv[] ) {
 	std::vector<double> pool( n*m + m*p );
 	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 
-	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p, &pool.front() ) << " ms" << std::endl;
+	//std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p, &pool.front() ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION CUDA : " << std::fixed <<  cudaMatrixMultiply( THREADS, n, m, p, &pool.front() ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION ECUDA: " << std::fixed << ecudaMatrixMultiply( THREADS, n, m, p, &pool.front() ) << " ms" << std::endl;
 
@@ -59,9 +59,13 @@ template<typename T>
 __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T> B,	ecuda::matrix<T> AB ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
+	//const ecuda::matrix<A>::size_type n = A.number_rows();
+	//const ecuda::matrix<A>::size_type m = A.number_columns();
+	//const ecuda::matrix<B>::size_type p = B.number_rows();
+	//if( x < n and y < p ) {
 	if( x < A.number_rows() and y < B.number_columns() ) {
 		T result = 0;
-		for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A[x][i] * B[i][y];
+		for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A.at(x,i) * B.at(i,y); //[x][i] * B[i][y];
 		AB.at( x, y ) = result;
 		//AB[x][y] = result;
 	}
