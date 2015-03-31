@@ -60,7 +60,7 @@ void kernel_checkMatrixAccessors(
 	const int column = threadIdx.x;
 	if( row < srcMatrix.number_rows() and column < srcMatrix.number_columns() ) {
 		const int index = row*srcMatrix.number_columns()+column;
-		destMatrix[row][column] = destMatrix[row][column];
+		destMatrix[row][column] = srcMatrix[row][column];
 		srcFronts[index] = srcMatrix.front();
 		srcBacks[index] = srcMatrix.back();
 		srcFrontsNonConst[index] = srcMatrixNonConst.front();
@@ -133,7 +133,7 @@ int main( int argc, char* argv[] ) {
 		deviceConstPointers >> hostConstPointers;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
-		for( std::vector<ecuda::vector<int>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
+		for( std::vector<ecuda::vector<int>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 200 ) passed = false;
 		for( std::vector<ecuda::vector<int>::pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceMatrix.data() ) passed = false;
 		for( std::vector<ecuda::vector<int>::const_pointer>::size_type i = 0; i < hostConstPointers.size(); ++i ) if( hostConstPointers[i] != deviceMatrix.data() ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
@@ -172,8 +172,8 @@ int main( int argc, char* argv[] ) {
 			}
 		}
 		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
-		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
 		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
 		ecuda::vector<Coordinate> deviceFronts( 10*20, -1 );
 		ecuda::vector<Coordinate> deviceBacks( 10*20, -1 );
 		ecuda::vector<Coordinate> deviceFrontsNonConst( 10*20, -1 );
@@ -186,19 +186,27 @@ int main( int argc, char* argv[] ) {
 		std::vector<Coordinate> hostResults;
 
 		destDeviceMatrix >> hostResults;
+for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) {
+	std::cout << "[" << i << "] COORDINATE ( " << hostResults[i].x << "," << hostResults[i].y << " )" << std::endl;
+}
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(i/20,i%20) ) passed = false;
+std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceFronts >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
+std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceBacks >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
+std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceFrontsNonConst >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(0,0) ) passed = false;
+std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		deviceBacksNonConst >> hostResults;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != Coordinate(9,19) ) passed = false;
+std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 
 		testResults.push_back( passed ? 1 : 0 );
 
