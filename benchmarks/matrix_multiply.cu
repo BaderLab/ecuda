@@ -25,9 +25,9 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 int main( int argc, char* argv[] ) {
 
 	const std::size_t THREADS = 480;
-	const std::size_t n = 20; //1000;
-	const std::size_t m = 20; //1000;
-	const std::size_t p = 20; //1000;
+	const std::size_t n = 1000;
+	const std::size_t m = 1000;
+	const std::size_t p = 1000;
 
 	std::vector<double> pool( n*m + m*p );
 	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
