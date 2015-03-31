@@ -254,6 +254,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test 5: check device iterators
+	std::cerr << "Test 5" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -276,6 +277,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test 6: check host iterators
+	std::cerr << "Test 6" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -298,6 +300,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test 7: check device reverse iterators
+	std::cerr << "Test 7" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -320,6 +323,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test 8: check host reverse iterators
+	std::cerr << "Test 8" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -338,6 +342,32 @@ int main( int argc, char* argv[] ) {
 		destDeviceMatrix >> hostVector;
 		bool passed = true;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test 9: host swap and fill
+	//
+	std::cerr << "Test 9" << std::endl;
+	{
+		ecuda::matrix<int> deviceMatrix1( 10, 20, 3 );
+		ecuda::matrix<int> deviceMatrix2( 10, 20, 5 );
+		deviceMatrix1.swap( deviceMatrix2 );
+		std::vector<int> hostVector1( 10*20 );
+		std::vector<int> hostVector2( 10*20 );
+		deviceMatrix1 >> hostVector1;
+		deviceMatrix2 >> hostVector2;
+		bool passed = true;
+		if( hostVector1.size() != 200 ) passed = false;
+		if( hostVector2.size() != 200 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
+		deviceMatrix1.fill(0);
+		deviceMatrix2.fill(99);
+		deviceMatrix1 >> hostVector1;
+		deviceMatrix2 >> hostVector2;
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 0 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 99 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
