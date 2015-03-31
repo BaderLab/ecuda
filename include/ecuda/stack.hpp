@@ -83,6 +83,6 @@ public:
 
 } // namespace ecuda
 
-\endcond
+/// \endcond
 
 #endif

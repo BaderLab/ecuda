@@ -236,7 +236,7 @@ public:
 	/// \param src Another cube object of the same type, whose contents are copied.
 	///
 	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.row_size()), numberColumns(src.column_size()), numberDepths(src.depth_size()) {
+	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.number_rows()), numberColumns(src.number_columns()), numberDepths(src.depth_size()) {
 		if( numberRows and numberColumns and numberDepths ) {
 			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
 			std::vector< value_type, host_allocator<value_type> > v( numberDepths );
@@ -587,6 +587,78 @@ public:
 	}
 
 	///
+	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
+	/// \param rowIndex index of the YZ-slice to isolate
+	/// \returns view object for the specified row
+	///
+	HOST DEVICE inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
+
+	///
+	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
+	/// \param rowIndex index of the YZ-slice to isolate
+	/// \returns view object for the specified row
+	///
+	HOST DEVICE inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
+
+	///
+	/// \brief Returns a reference to the element at the specified cube location.
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
+	/// // within kernel
+	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
+	/// double& value = deviceCube[10][10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a YZ-slice view, then the second
+	/// operator[] creating a view of a single row within the slice, and then finally
+	/// a third access to a single column within it.  Modern compilers can be pretty
+	/// crafty at seeing through these these types of situations, and it may resolve to
+	/// an identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \param depthIndex index of the depth to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
+	/// // within kernel
+	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
+	/// double& value = deviceCube[10][10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a YZ-slice view, then the second
+	/// operator[] creating a view of a single row within the slice, and then finally
+	/// a third access to a single column within it.  Modern compilers can be pretty
+	/// crafty at seeing through these these types of situations, and it may resolve to
+	/// an identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \param depthIndex index of the depth to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+
+	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
 	///
 	/// If the current size is greater in any dimension, the existing elements are truncated.
@@ -708,10 +780,10 @@ public:
 	template<typename U,typename V,typename W>
 	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
 		//TODO: this can be optimized
-		resize( src.row_size(), src.column_size(), src.depth_size() );
+		resize( src.number_rows(), src.number_columns(), src.depth_size() );
 		std::vector< value_type, host_allocator<value_type> > tmp( src.depth_size() );
-		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.row_size(); ++i ) {
-			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.column_size(); ++j ) {
+		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.number_rows(); ++i ) {
+			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.number_columns(); ++j ) {
 				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];
 				CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), &tmp.front(), numberDepths, cudaMemcpyHostToDevice ) );
 			}

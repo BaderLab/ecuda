@@ -134,7 +134,7 @@ The library features four containers:
   -# 2D \b matrix
   -# 3D \b cube
 
-The \ref ecuda:array array and \ref ecuda::vector vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
+The \ref ecuda::array and \ref ecuda::vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
 
 \code{.cpp}
 ecuda::array<double,100> deviceArray( 66 ); // create fixed 100 element array filled with value 66
@@ -223,7 +223,7 @@ deviceArray.assign( row.rbegin(), row.rend() ); // won't compile, elements in th
 deviceArray.assign( column.begin(), column.end() ); // won't compile, elements not in contiguous memory
 \endcode
 
-\subsection overview_views Container Views
+\subsection overview_views Views
 
 \image html views.png ""
 
