@@ -449,7 +449,7 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
 
 		deviceOutputMatrix2 >> hostVector;
-		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%20,i/20) ) passed = false;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%10,i/10) ) passed = false;
 
 		testResults.push_back( passed ? 1 : 0 );
 
