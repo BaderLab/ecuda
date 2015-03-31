@@ -80,6 +80,41 @@ void kernel_checkDeviceIterators(
 	for( ; srcIterator != srcMatrix.end() and destIterator != destMatrix.end(); ++srcIterator, ++destIterator ) *destIterator = *srcIterator;
 }
 
+template<typename T> __global__
+void kernel_checkHostIterators(
+	typename ecuda::matrix<T>::const_iterator srcBegin,
+	typename ecuda::matrix<T>::const_iterator srcEnd,
+	typename ecuda::matrix<T>::iterator destBegin,
+	typename ecuda::matrix<T>::iterator destEnd
+)
+{
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin )
+		*destBegin = *srcBegin;
+}
+
+template<typename T> __global__
+void kernel_checkDeviceReverseIterators(
+	const ecuda::matrix<T> srcMatrix,
+	ecuda::matrix<T> destMatrix
+)
+{
+	typename ecuda::matrix<T>::const_reverse_iterator srcIterator = srcMatrix.rbegin();
+	typename ecuda::matrix<T>::reverse_iterator destIterator = destMatrix.rbegin();
+	for( ; srcIterator != srcMatrix.rend() and destIterator != destMatrix.rend(); ++srcIterator, ++destIterator ) *destIterator = *srcIterator;
+}
+
+template<typename T> __global__
+void kernel_checkHostReverseIterators(
+	typename ecuda::matrix<T>::const_reverse_iterator srcBegin,
+	typename ecuda::matrix<T>::const_reverse_iterator srcEnd,
+	typename ecuda::matrix<T>::reverse_iterator destBegin,
+	typename ecuda::matrix<T>::reverse_iterator destEnd
+)
+{
+	for( ; srcBegin != srcEnd and destBegin != destEnd; ++srcBegin, ++destBegin )
+		*destBegin = *srcBegin;
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -240,7 +275,75 @@ int main( int argc, char* argv[] ) {
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
+	// Test 6: check host iterators
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> srcDeviceMatrix( 10, 20 );
+		srcDeviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
+		kernel_checkHostIterators<Coordinate><<<1,1>>>( srcDeviceMatrix.begin(), srcDeviceMatrix.end(), destDeviceMatrix.begin(), destDeviceMatrix.end() );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::fill( hostVector.begin(), hostVector.end(), Coordinate(9000,9000) );
+		destDeviceMatrix >> hostVector;
+		bool passed = true;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	// Test 7: check device reverse iterators
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> srcDeviceMatrix( 10, 20 );
+		srcDeviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
+		kernel_checkDeviceReverseIterators<<<1,1>>>( srcDeviceMatrix, destDeviceMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::fill( hostVector.begin(), hostVector.end(), Coordinate(9000,9000) );
+		destDeviceMatrix >> hostVector;
+		bool passed = true;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	// Test 8: check host reverse iterators
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> srcDeviceMatrix( 10, 20 );
+		srcDeviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> destDeviceMatrix( 10, 20 );
+		kernel_checkHostReverseIterators<Coordinate><<<1,1>>>( srcDeviceMatrix.rbegin(), srcDeviceMatrix.rend(), destDeviceMatrix.rbegin(), destDeviceMatrix.rend() );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::fill( hostVector.begin(), hostVector.end(), Coordinate(9000,9000) );
+		destDeviceMatrix >> hostVector;
+		bool passed = true;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+
 	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
+	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 

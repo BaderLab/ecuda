@@ -141,10 +141,15 @@ public:
 	///
 	HOST DEVICE padded_ptr( const padded_ptr<T,PointerType,PaddingUnitBytes>& src ) : ptr(src.ptr), data_length(src.data_length), padding_length(src.padding_length), distance_to_padding(src.distance_to_padding) {}
 
+	template<typename T2,typename PointerType2>
+	HOST DEVICE padded_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& src ) :	ptr(src.get()),	data_length(src.get_data_length()), padding_length(src.get_padding_length()), distance_to_padding(src.get_distance_to_padding()) {}
+
+	/*
 	///
 	/// \brief Destructor.
 	///
 	HOST DEVICE ~padded_ptr() {}
+	*/
 
 	///
 	/// \brief Gets the size of the contiguous data block in units of sizeof(T).
