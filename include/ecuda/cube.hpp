@@ -587,6 +587,78 @@ public:
 	}
 
 	///
+	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
+	/// \param rowIndex index of the YZ-slice to isolate
+	/// \returns view object for the specified row
+	///
+	HOST DEVICE inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
+
+	///
+	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
+	/// \param rowIndex index of the YZ-slice to isolate
+	/// \returns view object for the specified row
+	///
+	HOST DEVICE inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
+
+	///
+	/// \brief Returns a reference to the element at the specified cube location.
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
+	/// // within kernel
+	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
+	/// double& value = deviceCube[10][10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a YZ-slice view, then the second
+	/// operator[] creating a view of a single row within the slice, and then finally
+	/// a third access to a single column within it.  Modern compilers can be pretty
+	/// crafty at seeing through these these types of situations, and it may resolve to
+	/// an identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \param depthIndex index of the depth to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
+	/// // within kernel
+	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
+	/// double& value = deviceCube[10][10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a YZ-slice view, then the second
+	/// operator[] creating a view of a single row within the slice, and then finally
+	/// a third access to a single column within it.  Modern compilers can be pretty
+	/// crafty at seeing through these these types of situations, and it may resolve to
+	/// an identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \param depthIndex index of the depth to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+
+	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
 	///
 	/// If the current size is greater in any dimension, the existing elements are truncated.

@@ -713,6 +713,62 @@ public:
 	template<class Alloc2>
 	HOST DEVICE inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return !operator<(other); }
 
+	///
+	/// \brief Returns a reference to the element at the specified matrix location.
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::matrix<double> deviceMatrix( 100, 100 );
+	/// // within kernel
+	/// double& value = deviceMatrix.at( 10, 10 ); // slightly faster
+	/// double& value = deviceMatrix[10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a row view, and then performing an
+	/// additional access to a column within it.  Modern compilers can be pretty crafty
+	/// at seeing through these these types of situations, and it may resolve to an
+	/// identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+
+	///
+	/// \brief Returns a reference to the element at the specified matrix location.
+	///
+	/// This method in STL containers like vector is differentiated from operator[]
+	/// because it includes range checking.  In this case, no range checking is performed,
+	/// but if a thread only accesses a single element, this accessor may be slightly faster.
+	/// For example:
+	///
+	/// \code{.cpp}
+	/// // host code
+	/// ecuda::matrix<double> deviceMatrix( 100, 100 );
+	/// // within kernel
+	/// double& value = deviceMatrix.at( 10, 10 ); // slightly faster
+	/// double& value = deviceMatrix[10][10]; // slightly slower
+	/// \endcode
+	///
+	/// This is due to the operator[] first creating a row view, and then performing an
+	/// additional access to a column within it.  Modern compilers can be pretty crafty
+	/// at seeing through these these types of situations, and it may resolve to an
+	/// identical set of instructions, but the direct accessor method is included here
+	/// for completeness.
+	///
+	/// \param rowIndex index of the row to get an element reference from
+	/// \param columnIndex index of the column to get an element reference from
+	/// \returns reference to the specified element
+	///
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
 	 * must implement range checking that throws an exception on failure.  Since exceptions are
@@ -849,10 +905,6 @@ public:
 		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
-
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
-
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
 
 };
 
