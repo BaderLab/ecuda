@@ -1,14 +1,11 @@
-#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-//#include <estd/matrix.hpp>
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/event.hpp"
 
 template<typename T> __global__ void matrixTranspose( T* matrix, const std::size_t pitch, const std::size_t n );
 template<typename T> __global__ void matrixTranspose( ecuda::matrix<T> matrix );
-
 
 float cpuMatrixTranspose( const std::size_t n );
 float cudaMatrixTranspose( const int numberThreads, const std::size_t n = 100 );

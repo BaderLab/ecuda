@@ -1,8 +1,6 @@
-#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-//#include <estd/matrix.hpp>
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/event.hpp"
 
