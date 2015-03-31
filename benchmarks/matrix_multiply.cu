@@ -18,7 +18,7 @@ __global__ void matrixMultiply(
 template<typename T> __global__ void matrixMultiply( const ecuda::matrix<T> A, const ecuda::matrix<T> B, ecuda::matrix<T> AB );
 
 
-float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::size_t p );
+float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::size_t p, const double* pool );
 float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::size_t m, const std::size_t p, const double* pool );
 float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std::size_t m, const std::size_t p, const double* pool );
 
@@ -30,9 +30,9 @@ int main( int argc, char* argv[] ) {
 	const std::size_t p = 20; //1000;
 
 	std::vector<double> pool( n*m + m*p );
-	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = rand() / static_cast<double>(RAND_MAX);
+	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 
-//	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p ) << " ms" << std::endl;
+	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p, &pool.front() ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION CUDA : " << std::fixed <<  cudaMatrixMultiply( THREADS, n, m, p, &pool.front() ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION ECUDA: " << std::fixed << ecudaMatrixMultiply( THREADS, n, m, p, &pool.front() ) << " ms" << std::endl;
 
@@ -145,7 +145,7 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 
 }
 
-float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::size_t p ) {
+float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::size_t p, const double* pool ) {
 
 	ecuda::event start, stop;
 	start.record();
@@ -153,6 +153,9 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 	std::vector<double> A( n*m );
 	std::vector<double> B( m*p );
 	std::vector<double> AB( n*p );
+
+	for( std::vector<double>::size_type i = 0; i < A.size(); ++i ) A[i] = *(pool+i);
+	for( std::vector<double>::size_type i = 0; i < B.size(); ++i ) B[i] = *(pool+(n*m+i));
 
 	for( std::size_t i = 0; i < n; ++i ) {
 		for( std::size_t j = 0; j < p; ++j ) {
@@ -163,6 +166,12 @@ float cpuMatrixMultiply( const std::size_t n, const std::size_t m, const std::si
 	}
 
 	stop.record();
+
+	for( std::size_t i = 0; i < n; ++i ) {
+		std::cout << "ROW[" << i << "]";
+		for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << AB[i*p+j];
+		std::cout << std::endl;
+	}
 
 	return ( stop - start );
 
