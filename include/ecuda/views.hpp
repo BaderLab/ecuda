@@ -174,7 +174,7 @@ public:
 public:
 	HOST DEVICE contiguous_sequence_view() : sequence_view<T,T*>() {}
 	template<typename T2>
-	HOST DEVICE contiguous_sequence_view( const contiguous_sequence_view<T2>& src ) : sequence_view<T2,T2*>( src ) {}
+	HOST DEVICE contiguous_sequence_view( const contiguous_sequence_view<T2>& src ) : sequence_view<T,T*>( src ) {}
 	HOST DEVICE contiguous_sequence_view( pointer ptr, size_type length ) : sequence_view<T,T*>( ptr, length ) {}
 	HOST DEVICE ~contiguous_sequence_view() {}
 
@@ -195,7 +195,7 @@ public:
 		#else
 		const difference_type n = end-begin;
 		if( n < 0 ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin, std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin.operator->(), std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
 		#endif
 	}
 
