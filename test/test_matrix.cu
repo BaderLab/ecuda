@@ -149,7 +149,7 @@ void kernel_testDeviceRowsAndColumns(
 
 template<typename T> __global__
 void kernel_testRowView(
-	typename ecuda::matrix<T>::const_row_type row
+	typename ecuda::matrix<T>::row_type row
 )
 {
 	row.fill(Coordinate(99,99));

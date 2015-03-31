@@ -133,8 +133,8 @@ public:
 
 	typedef contiguous_sequence_view<value_type> row_type; //!< matrix row container type
 	typedef sequence_view< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	typedef contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
-	typedef sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
+	typedef const contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
+	typedef const sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
 	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
 	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type

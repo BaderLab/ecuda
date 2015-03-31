@@ -218,7 +218,7 @@ public:
 
 	HOST DEVICE void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) {} //*iter = value;
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
 		CUDA_CALL( cudaMemset<value_type>( base_type::data(), value, base_type::size() ) );
 		#endif
