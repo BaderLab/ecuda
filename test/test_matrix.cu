@@ -162,6 +162,7 @@ int main( int argc, char* argv[] ) {
 	#endif
 
 	// Test 4: index accessors, front(), and back()
+	std::cerr << "Test 4" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -202,6 +203,8 @@ int main( int argc, char* argv[] ) {
 		testResults.push_back( passed ? 1 : 0 );
 
 	}
+
+	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
 
 	return EXIT_SUCCESS;
 
