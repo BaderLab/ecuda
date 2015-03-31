@@ -84,7 +84,7 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 	cudaMallocPitch( &AB, &pitchAB, p*sizeof(double), n );
 
 	cudaMemcpy2D( A, pitchA, pool, sizeof(double)*m, sizeof(double)*m, n, cudaMemcpyHostToDevice );
-	cudaMemcpy2D( B, pitchB, pool+(sizeof(double)*m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
+	cudaMemcpy2D( B, pitchB, pool+(m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
 	cudaMemset( AB, 0, n*p*sizeof(double) );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
@@ -121,7 +121,7 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	ecuda::matrix<double> AB( n, p );
 
 	cudaMemcpy2D( A.data(), A.get_pitch(), pool, sizeof(double)*m, sizeof(double)*m, n, cudaMemcpyHostToDevice );
-	cudaMemcpy2D( B.data(), B.get_pitch(), pool+(sizeof(double)*m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
+	cudaMemcpy2D( B.data(), B.get_pitch(), pool+(m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
 	cudaMemset( AB.data(), 0, n*p*sizeof(double) );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
