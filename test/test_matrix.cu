@@ -427,6 +427,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test B: device rows and columns
+	std::cerr << "Test B" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -456,6 +457,7 @@ int main( int argc, char* argv[] ) {
 	}
 
 	// Test C: host rows and columns
+	std::cerr << "Test C" << std::endl;
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -469,23 +471,26 @@ int main( int argc, char* argv[] ) {
 		ecuda::matrix<Coordinate> deviceOutputMatrix1( 10, 20 );
 		ecuda::matrix<Coordinate> deviceOutputMatrix2( 20, 10 );
 
+std::cerr << "CP1" << std::endl;
 		for( typename ecuda::matrix<Coordinate>::size_type i = 0; i < deviceMatrix.number_rows(); ++i ) {
 			typename ecuda::matrix<Coordinate>::const_row_type row = deviceMatrix[i];
 			deviceOutputMatrix1[i].assign( row.begin(), row.end() );
 		}
+std::cerr << "CP2" << std::endl;
 		for( typename ecuda::matrix<Coordinate>::size_type i = 0; i < deviceMatrix.number_columns(); ++i ) {
 			typename ecuda::matrix<Coordinate>::const_column_type column = deviceMatrix.get_column(i);
 			deviceOutputMatrix2[i].assign( column.begin(), column.end() );
 		}
+std::cerr << "CP3" << std::endl;
 
 		bool passed = true;
 
 		deviceOutputMatrix1 >> hostVector;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
-
+std::cerr << "cp1" << std::endl;
 		deviceOutputMatrix2 >> hostVector;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%10,i/10) ) passed = false;
-
+std::cerr << "cp2" << std::endl;
 		testResults.push_back( passed ? 1 : 0 );
 
 	}
