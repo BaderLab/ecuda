@@ -62,7 +62,8 @@ __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T>
 	if( x < A.number_rows() and y < B.number_columns() ) {
 		T result = 0;
 		for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A[x][i] * B[i][y];
-		AB[x][y] = result;
+		AB.at( x, y ) = result;
+		//AB[x][y] = result;
 	}
 }
 
