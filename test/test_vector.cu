@@ -427,49 +427,49 @@ int main( int argc, char* argv[] ) {
 
 	const std::string outputText =
 "\
-........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
-........................................................|1|2|3|4|5|6|7|8|9|A|B|C|D|\n\
-........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
-array( const value_type& )                     H        |X|X| |X| | | | |X|X| |X| |eol\n\
-template array( InputIterator, InputIterator ) H        | |X| |X|X|X|X|X| | |X|X| |eol\n\
-array( std::initializer_list<T> il )           H  C++11 | | |X| | | | | | | | | | |eol\n\
-template array( const array<T,N2>& )           H        | | | | | | | | | | |X| | |eol\n\
-array( array<T,N>&& )                          HD C++11 | | | | | | | | | | | | |X|eol\n\
-~array()                                       HD       |X|X|X|X|X|X|X|X|X|X| | | |eol\n\
-operator[]( size_type )                        D        | | | |X| | | | | | | |X| |eol\n\
-operator[]( size_type ) const                  D        | | | |X| | | | | | | | | |eol\n\
-front()                                        D        | | | |X| | | | | | | | | |eol\n\
-back()                                         D        | | | |X| | | | | | | | | |eol\n\
-front() const                                  D        | | | |X| | | | | | | | | |eol\n\
-back() const                                   D        | | | |X| | | | | | | | | |eol\n\
-empty() const                                  HD       |H|D| | | | | | | | | | | |eol\n\
-size() const                                   HD       |H|D| | | | | | | | | | | |eol\n\
-max_size() const                               H        |X| | | | | | | | | | | | |eol\n\
-data()                                         HD       |H| | | | | | | | | | | | |eol\n\
-data() const                                   HD       | |D| | | | | | | | | | | |eol\n\
-begin()                                        HD       | | | | |D|H| | | | | | | |eol\n\
-end()                                          HD       | | | | |D|H| | | | | | | |eol\n\
-begin() const                                  HD       | | | | |D|H| | | | | | | |eol\n\
-end() const                                    HD       | | | | |D|H| | | | | | | |eol\n\
-rbegin()                                       HD       | | | | | | |D|H| | | | | |eol\n\
-rend()                                         HD       | | | | | | |D|H| | | | | |eol\n\
-rbegin() const                                 HD       | | | | | | |D|H| | | | | |eol\n\
-rend() const                                   HD       | | | | | | |D|H| | | | | |eol\n\
-fill( const value_type& )                      HD       | | | | | | | | |H|D| | | |eol\n\
-swap( array<T,N>& )                            HD       | | | | | | | | |H|D| | | |eol\n\
-operator==( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
-operator!=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
-operator<( const array<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
-operator>( const array<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
-operator<=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
-operator>=( const array<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
-operator>>( std::vector<value_type>& ) const   H        |X|X| |X|X|X|X|X|X|X| |X| |eol\n\
-operator<<( std::vector<value_type>& )         H        | |X| | | | | | | | |X|X| |eol\n\
-operator>>( std::array<value_type,N>& ) const  H  C++11 | | |X| | | | | | | | | | |eol\n\
-operator<<( std::array<value_type,N>& )        H  C++11 | | |X| | | | | | | | | | |eol\n\
-array<T,N>& operator=( const array<T,N>& )     D        | |X| | |X|X|X|X|X|X| | | |eol\n\
-........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
-........................................................|";
+.........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+.........................................................|1|2|3|4|5|6|7|8|9|A|B|C|D|\n\
+.........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+vector( const value_type& )                     H        |X|X| |X| | | | |X|X| |X| |eol\n\
+template vector( InputIterator, InputIterator ) H        | |X| |X|X|X|X|X| | |X|X| |eol\n\
+vector( std::initializer_list<T> il )           H  C++11 | | |X| | | | | | | | | | |eol\n\
+template vector( const array<T,N2>& )           H        | | | | | | | | | | |X| | |eol\n\
+vector( vector<T,N>&& )                         HD C++11 | | | | | | | | | | | | |X|eol\n\
+~vector()                                       HD       |X|X|X|X|X|X|X|X|X|X| | | |eol\n\
+operator[]( size_type )                         D        | | | |X| | | | | | | |X| |eol\n\
+operator[]( size_type ) const                   D        | | | |X| | | | | | | | | |eol\n\
+front()                                         D        | | | |X| | | | | | | | | |eol\n\
+back()                                          D        | | | |X| | | | | | | | | |eol\n\
+front() const                                   D        | | | |X| | | | | | | | | |eol\n\
+back() const                                    D        | | | |X| | | | | | | | | |eol\n\
+empty() const                                   HD       |H|D| | | | | | | | | | | |eol\n\
+size() const                                    HD       |H|D| | | | | | | | | | | |eol\n\
+max_size() const                                H        |X| | | | | | | | | | | | |eol\n\
+data()                                          HD       |H| | | | | | | | | | | | |eol\n\
+data() const                                    HD       | |D| | | | | | | | | | | |eol\n\
+begin()                                         HD       | | | | |D|H| | | | | | | |eol\n\
+end()                                           HD       | | | | |D|H| | | | | | | |eol\n\
+begin() const                                   HD       | | | | |D|H| | | | | | | |eol\n\
+end() const                                     HD       | | | | |D|H| | | | | | | |eol\n\
+rbegin()                                        HD       | | | | | | |D|H| | | | | |eol\n\
+rend()                                          HD       | | | | | | |D|H| | | | | |eol\n\
+rbegin() const                                  HD       | | | | | | |D|H| | | | | |eol\n\
+rend() const                                    HD       | | | | | | |D|H| | | | | |eol\n\
+fill( const value_type& )                       HD       | | | | | | | | |H|D| | | |eol\n\
+swap( vector<T,N>& )                            HD       | | | | | | | | |H|D| | | |eol\n\
+operator==( const vector<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator!=( const vector<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator<( const vector<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
+operator>( const vector<T,N>& ) const           HD       | | | | | | | | | | |H|D| |eol\n\
+operator<=( const vector<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator>=( const vector<T,N>& ) const          HD       | | | | | | | | | | |H|D| |eol\n\
+operator>>( std::vector<value_type>& ) const    H        |X|X| |X|X|X|X|X|X|X| |X| |eol\n\
+operator<<( std::vector<value_type>& )          H        | |X| | | | | | | | |X|X| |eol\n\
+operator>>( std::array<value_type,N>& ) const   H  C++11 | | |X| | | | | | | | | | |eol\n\
+operator<<( std::array<value_type,N>& )         H  C++11 | | |X| | | | | | | | | | |eol\n\
+vector<T,N>& operator=( const vector<T,N>& )    D        | |X| | |X|X|X|X|X|X| | | |eol\n\
+.........................................................+-+-+-+-+-+-+-+-+-+-+-+-+-+\n\
+.........................................................|";
 
 	std::cout << outputText;
 	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
