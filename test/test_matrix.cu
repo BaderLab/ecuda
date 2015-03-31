@@ -115,6 +115,17 @@ void kernel_checkHostReverseIterators(
 		*destBegin = *srcBegin;
 }
 
+template<typename T> __global__
+void kernel_testSwapAndFill(
+	ecuda::matrix<T> matrix1,
+	ecuda::matrix<T> matrix2,
+	ecuda::matrix<T> dummyMatrix
+)
+{
+	dummyMatrix.fill( 99 );
+	matrix1.swap( matrix2 );
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -368,6 +379,27 @@ int main( int argc, char* argv[] ) {
 		deviceMatrix2 >> hostVector2;
 		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 0 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 99 ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+	}
+
+	//
+	// Test A: device swap and fill
+	//
+	std::cerr << "Test A" << std::endl;
+	{
+		ecuda::matrix<int> deviceMatrix1( 10, 20, 3 );
+		ecuda::matrix<int> deviceMatrix2( 10, 20, 5 );
+		ecuda::matrix<int> deviceDummyMatrix( 10, 20 );
+		kernel_testSwapAndFill<<<1,1>>>( deviceMatrix1, deviceMatrix2, deviceDummyMatrix );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<int> hostVector1; deviceMatrix1 >> hostVector1;
+		std::vector<int> hostVector2; deviceMatrix2 >> hostVector2;
+		std::vector<int> hostDummyVector3; deviceDummyMatrix >> hostDummyVector3;
+		bool passed = true;
+		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostDummyVector3.size(); ++i ) if( hostDummyVector3[i] != 99 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
