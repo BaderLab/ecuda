@@ -27,7 +27,7 @@ int main( int argc, char* argv[] ) {
 	const std::size_t n = 1000;
 	const std::size_t m = 1000;
 	const std::size_t p = 1000;
-	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p ) << " ms" << std::endl;
+//	std::cout << "MATRIX MULTIPLICATION CPU  : " << std::fixed <<   cpuMatrixMultiply(          n, m, p ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION CUDA : " << std::fixed <<  cudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
 	std::cout << "MATRIX MULTIPLICATION ECUDA: " << std::fixed << ecudaMatrixMultiply( THREADS, n, m, p ) << " ms" << std::endl;
 
@@ -46,7 +46,13 @@ __global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std:
 			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*y) )+i);
 			result += A_ik * B_kj;
 		}
-		*(reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*x) )+y) = result;
+//		char* ptr = reinterpret_cast<char*>(AB);
+//		ptr += pitchAB*y;
+//		*reinterpret_cast<char*>(
+//		T* ptr2 = reinterpret_cast<T*>(ptr);
+//		*ptr2 = result;
+		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*y+x*sizeof(T)) ) = result;
+//		*(reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*y) )+x) = result;
 	}
 }
 
