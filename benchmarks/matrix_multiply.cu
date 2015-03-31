@@ -44,13 +44,15 @@ template<typename T>
 __global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std::size_t pitchB,	std::size_t n, std::size_t m, std::size_t p, T* AB,	std::size_t pitchAB ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
+//	printf( "CUDA x=%i y=%i cond1=%i cond2=%i\n", x, y, n, p ); 
 	if( x < n and y < p ) {
 		T result = 0;
 		for( std::size_t i = 0; i < m; ++i ) {
-			const T A_ik = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(A)+(pitchA*i) )+x);
-			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*y) )+i);
+			const T A_ik = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(A)+(pitchA*x) )+i);
+			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*i) )+y);
 			result += A_ik * B_kj;
 		}
+//		printf( "CUDA RESULT %i %i %0.5f\n", x, y, result );
 //		char* ptr = reinterpret_cast<char*>(AB);
 //		ptr += pitchAB*y;
 //		*reinterpret_cast<char*>(
@@ -65,9 +67,11 @@ template<typename T>
 __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T> B,	ecuda::matrix<T> AB ) {
 	const int x = blockIdx.x*blockDim.x+threadIdx.x; // row
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
+//	printf( "ECUDA x=%i y=%i cond1=%i cond2=%i\n", x, y, A.number_rows(), B.number_columns() );
 	if( x < A.number_rows() and y < B.number_columns() ) {
 		T result = 0;
 		for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A[x][i] * B[i][y];
+//		printf( "ECUDA RESULT %i %i %0.5f\n", x, y, result );
 		AB[x][y] = result;
 	}
 }
