@@ -199,6 +199,12 @@ public:
 		#endif
 	}
 
+	template<typename U,typename Q>
+	DEVICE void assign( device_iterator<U,Q> begin, device_iterator<U,Q> end ) {
+		iterator dest = this->begin();
+		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
+	}
+
 	template<class InputIterator>
 	HOST DEVICE void assign( InputIterator begin, InputIterator end ) {
 		#ifdef __CUDA_ARCH__
