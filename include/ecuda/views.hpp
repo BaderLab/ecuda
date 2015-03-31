@@ -110,13 +110,28 @@ public:
 
 	// element access:
 	DEVICE inline reference operator[]( size_type index ) { return *(ptr+static_cast<int>(index)); }
-	DEVICE inline reference at( size_type index ) { return operator[]( index ); }
+	//DEVICE inline reference at( size_type index ) { return operator[]( index ); }
 	DEVICE inline reference front() { return operator[](0); }
 	DEVICE inline reference back() { return operator[](size()-1); }
 	DEVICE inline const_reference operator[]( size_type index ) const {	return *(ptr+static_cast<int>(index)); }
-	DEVICE inline const_reference at( size_type index ) const { return operator[]( index ); }
+	//DEVICE inline const_reference at( size_type index ) const { return operator[]( index ); }
 	DEVICE inline const_reference front() const { return operator[](0); }
 	DEVICE inline const_reference back() const { return operator[](size()-1); }
+
+	template<class InputIterator>
+	DEVICE void assign( InputIterator begin, InputIterator end ) {
+		iterator iter = begin();
+		while( begin != end and iter != end() ) {
+			*iter = *begin;
+			++iter;
+			++begin;
+		}
+	}
+
+	DEVICE void fill( const value_type& value ) {
+		iterator iter = begin();
+		while( iter != end() ) { *iter = value; ++iter; }
+	}
 
 	HOST DEVICE sequence_view& operator=( const sequence_view& other ) {
 		ptr = other.ptr;
@@ -163,17 +178,52 @@ public:
 	HOST DEVICE contiguous_sequence_view( pointer ptr, size_type length ) : sequence_view<T,T*>( ptr, length ) {}
 	HOST DEVICE ~contiguous_sequence_view() {}
 
-	HOST void assign( contiguous_device_iterator<const T> begin, contiguous_device_iterator<const T> end ) {
-		const std::ptrdiff_t n = end-begin;
+	// iterators:
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::data()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(base_type::data()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data())); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
+
+	HOST DEVICE void assign( contiguous_device_iterator<const T> begin, contiguous_device_iterator<const T> end ) {
+		#ifdef __CUDA_ARCH__
+		iterator dest = this->begin();
+		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
+		#else
+		const difference_type n = end-begin;
 		if( n < 0 ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin, std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
+		#endif
 	}
 
 	template<class InputIterator>
-	HOST void assign( InputIterator begin, InputIterator end ) {
+	HOST DEVICE void assign( InputIterator begin, InputIterator end ) {
+		#ifdef __CUDA_ARCH__
+		iterator dest = this->begin();
+		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
+		#else
 		std::vector< value_type, host_allocator<value_type> > v( begin, end );
 		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(sequence_view<T,T*>::data()), &v.front(), std::min(v.size(),sequence_view<T,T*>::size()), cudaMemcpyHostToDevice ) );
+		#endif
 	}
+
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		iterator iter = begin();
+		while( iter != end() ) { *begin = value; ++iter; }
+		#else
+		CUDA_CALL( cudaMemset<value_type>( base_type::data(), value, base_type::size() ) );
+		#endif
+	}
+
+	HOST DEVICE contiguous_sequence_view& operator=( const contiguous_sequence_view& other ) {
+		base_type::operator=( other );
+		return *this;
+	}
+
 
 };
 
@@ -225,6 +275,16 @@ public:
 	HOST DEVICE inline size_type get_width() const { return base_type::size()/height; }
 	HOST DEVICE inline size_type get_height() const { return height; }
 
+	// iterators:
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::data()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(base_type::data()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data())); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
+
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
@@ -251,6 +311,22 @@ public:
 		ptr += columnIndex;
 		return const_column_type( striding_ptr<const value_type,const pointer>( ptr, get_width() ), get_height() );
 	}
+
+	template<class InputIterator>
+	DEVICE void assign( InputIterator begin, InputIterator end ) {
+		iterator iter = begin();
+		while( begin != end and iter != end() ) {
+			*iter = *begin;
+			++iter;
+			++begin;
+		}
+	}
+
+	DEVICE void fill( const value_type& value ) {
+		iterator iter = begin();
+		while( iter != end() ) { *iter = value; ++iter; }
+	}
+
 
 	HOST DEVICE matrix_view& operator=( const matrix_view& other ) {
 		base_type::operator=( other );
@@ -288,6 +364,8 @@ public:
 	typedef typename base_type::column_type column_type;
 	typedef typename base_type::const_column_type const_column_type;
 
+	typedef contiguous_device_iterator<const T> ContiguousDeviceIterator;
+
 public:
 	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
@@ -298,6 +376,21 @@ public:
 
 	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
 	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
+	HOST DEVICE inline size_type get_pitch() const {
+		padded_ptr<T,T*,1> ptr = base_type::data();
+		const typename base_type::size_type pitch = ptr.get_data_length()*sizeof(value_type) + ptr.get_padding_length()*ptr.get_pad_length_units();
+		return pitch;
+	}
+
+	// iterators:
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::data()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(base_type::data()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(base_type::data()+static_cast<int>(base_type::size())); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(iterator(base_type::data())); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data()+static_cast<int>(base_type::size()))); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
 
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer p = base_type::data();
@@ -318,6 +411,29 @@ public:
 
 	HOST DEVICE inline column_type get_column( size_type columnIndex ) { return base_type::get_column(); }
 	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const { return base_type::get_column(); }
+
+	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
+		const std::ptrdiff_t n = end-begin;
+		if( n != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
+		if( n < 0 ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), begin.operator->(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
+	}
+
+	template<class InputIterator>
+	HOST void assign( InputIterator begin, InputIterator end ) {
+		std::vector< value_type, host_allocator<value_type> > v( begin, end );
+		if( v.size() != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
+		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), &v.front(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
+	}
+
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		iterator iter = begin();
+		while( iter != end() ) { *begin = value; ++iter; }
+		#else
+		CUDA_CALL( cudaMemset2D<value_type>( base_type::data(), get_pitch(), value, get_width(), get_height() ) );
+		#endif
+	}
 
 	HOST DEVICE contiguous_matrix_view& operator=( const contiguous_matrix_view& other ) {
 		base_type::operator=( other );

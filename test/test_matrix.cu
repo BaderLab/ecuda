@@ -130,6 +130,23 @@ void kernel_testSwapAndFill(
 	if( matrix2.front() == oldStart1 and matrix1.front() == oldStart2 ) swapResult.front() = 1;
 }
 
+template<typename T> __global__
+void kernel_testDeviceRowsAndColumns(
+	const ecuda::matrix<T> matrixIn,
+	ecuda::matrix<T> matrixOut1,
+	ecuda::matrix<T> matrixOut2
+)
+{
+	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_rows(); ++i ) {
+		typename ecuda::matrix<T>::const_row_type row = matrixIn[i];
+		matrixOut1[i].assign( row.begin(), row.end() );
+	}
+	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_columns(); ++i ) {
+		typename ecuda::matrix<T>::const_column_type column = matrixIn.get_column(i);
+		matrixOut2[i].assign( column.begin(), column.end() );
+	}
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -409,6 +426,34 @@ int main( int argc, char* argv[] ) {
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
+	// Test B: device rows and columns
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> deviceOutputMatrix1( 10, 20 );
+		ecuda::matrix<Coordinate> deviceOutputMatrix2( 20, 10 );
+		kernel_testDeviceRowsAndColumns<<<1,1>>>( deviceMatrix, deviceOutputMatrix1, deviceOutputMatrix2 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		bool passed = true;
+
+		deviceOutputMatrix1 >> hostVector;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+
+		deviceOutputMatrix2 >> hostVector;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%20,i/20) ) passed = false;
+
+		testResults.push_back( passed ? 1 : 0 );
+
+	}
 
 	for( std::vector<bool>::size_type i = 0; i < testResults.size(); ++i ) std::cout << ( testResults[i] == 1 ? "P" : ( testResults[i] == -1 ? "?" : "F" ) ) << "|";
 	std::cout << std::endl;
