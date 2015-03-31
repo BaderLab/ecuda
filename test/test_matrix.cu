@@ -119,11 +119,15 @@ template<typename T> __global__
 void kernel_testSwapAndFill(
 	ecuda::matrix<T> matrix1,
 	ecuda::matrix<T> matrix2,
-	ecuda::matrix<T> dummyMatrix
+	ecuda::matrix<T> dummyMatrix,
+	ecuda::array<int,1> swapResult
 )
 {
 	dummyMatrix.fill( 99 );
+	T oldStart1 = matrix1.front();
+	T oldStart2 = matrix2.front();
 	matrix1.swap( matrix2 );
+	if( matrix2.front() == oldStart1 and matrix1.front() == oldStart2 ) swapResult.front() = 1;
 }
 
 
@@ -390,16 +394,18 @@ int main( int argc, char* argv[] ) {
 		ecuda::matrix<int> deviceMatrix1( 10, 20, 3 );
 		ecuda::matrix<int> deviceMatrix2( 10, 20, 5 );
 		ecuda::matrix<int> deviceDummyMatrix( 10, 20 );
-		kernel_testSwapAndFill<<<1,1>>>( deviceMatrix1, deviceMatrix2, deviceDummyMatrix );
+		ecuda::array<int,1> deviceArray( 0 );
+		kernel_testSwapAndFill<<<1,1>>>( deviceMatrix1, deviceMatrix2, deviceDummyMatrix, deviceArray );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<int> hostVector1; deviceMatrix1 >> hostVector1;
-		std::vector<int> hostVector2; deviceMatrix2 >> hostVector2;
-		std::vector<int> hostDummyVector3; deviceDummyMatrix >> hostDummyVector3;
-		bool passed = true;
-		for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
-		for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
-		for( std::vector<int>::size_type i = 0; i < hostDummyVector3.size(); ++i ) if( hostDummyVector3[i] != 99 ) passed = false;
+		//std::vector<int> hostVector1; deviceMatrix1 >> hostVector1;
+		//std::vector<int> hostVector2; deviceMatrix2 >> hostVector2;
+		std::vector<int> hostArray; deviceArray >> hostArray;
+		std::vector<int> hostDummyVector; deviceDummyMatrix >> hostDummyVector;
+		bool passed = hostArray.size() == 1 and hostArray.front() == 1;
+		//for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
+		//for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostDummyVector.size(); ++i ) if( hostDummyVector[i] != 99 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
