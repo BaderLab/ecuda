@@ -11,7 +11,7 @@
 template<typename T>
 struct coord_t {
 	T x, y;
-	coord_t( const T& x = T(), const T& y = T() ) : x(x), y(y) {}
+	HOST DEVICE coord_t( const T& x = T(), const T& y = T() ) : x(x), y(y) {}
 	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y; }
 	bool operator!=( const coord_t& other ) const { return !operator==(other); }
 	friend std::ostream& operator<<( std::ostream& out, const coord_t& coord ) {
@@ -145,6 +145,14 @@ void kernel_testDeviceRowsAndColumns(
 		typename ecuda::matrix<T>::const_column_type column = matrixIn.get_column(i);
 		matrixOut2[i].assign( column.begin(), column.end() );
 	}
+}
+
+template<typename T> __global__
+void kernel_testRowView(
+	typename ecuda::matrix<T>::const_row_type row
+)
+{
+	row.fill(Coordinate(99,99));
 }
 
 
@@ -487,6 +495,36 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
 		//deviceOutputMatrix2 >> hostVector;
 		//for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%10,i/10) ) passed = false;
+		testResults.push_back( passed ? 1 : 0 );
+
+	}
+
+	// Test D: views
+	std::cerr << "Test D" << std::endl;
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate>::row_type row = deviceMatrix[1];
+		kernel_testRowView<Coordinate><<<1,1>>>( row );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		bool passed = true;
+		deviceMatrix >> hostVector;
+		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) {
+			if( i/20 == 1 ) {
+				if( hostVector[i] != Coordinate(99,99) ) passed = false;
+				continue;
+			}
+			if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
+		}
 		testResults.push_back( passed ? 1 : 0 );
 
 	}
