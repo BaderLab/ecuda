@@ -152,22 +152,22 @@ public:
 		//}
 	}
 
+	HOST vector( HostVectorIterator first, HostVectorIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
 	///
 	/// \brief Constructs the container with the contents of the range [begin,end).
 	/// \param first,last the range to copy the elements from
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-//	template<class InputIterator>
-//	HOST vector( InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-//		assign( first, last );
+	template<class InputIterator>
+	HOST vector( InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
 		//std::vector< value_type, host_allocator<value_type> > v( begin, end );
 		//growMemory( v.size() );
 		//CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
 		//n = v.size();
-//	}
-
-	HOST vector( HostVectorIterator first, HostVectorIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-		assign( first, last );
 	}
 
 	///
