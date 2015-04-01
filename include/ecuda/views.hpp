@@ -175,9 +175,7 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
-	typedef typename std::vector<T>::const_iterator HostVectorIterator;
-	typedef const_iterator DeviceContiguousIterator;
-	//typedef typename std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*,T&> HostRandomAccessIterator;
+	typedef typename std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*,T&> HostRandomAccessIterator;
 
 private:
 	typedef std::vector< value_type, host_allocator<value_type> > StagingVector;
@@ -207,27 +205,21 @@ public:
 	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
-	HOST DEVICE void assign( DeviceContiguousIterator first, DeviceContiguousIterator last ) {
+	HOST DEVICE void assign( contiguous_device_iterator<const T> first, contiguous_device_iterator<const T> last ) {
 		#ifdef __CUDA_ARCH__
 		iterator dest = begin();
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
 		#else
 		const difference_type n = last-first;
 		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(n,base_type::size()), cudaMemcpyDeviceToDevice ) );
 		#endif
 	}
 
-	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
+	HOST void assign( HostRandomAccessIterator first, HostRandomAccessIterator last ) {
 		const difference_type n = last-first;
 		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyHostToDevice ) );
-	}
-
-	template<class InputIterator>
-	HOST void assign( InputIterator first, InputIterator last ) {
-		StagingVector v( first, last );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(v.size(),base_type::size()), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(n,base_type::size()), cudaMemcpyHostToDevice ) );
 	}
 
 	HOST DEVICE bool operator==( const device_contiguous_memory_sequence& other ) const {

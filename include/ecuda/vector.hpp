@@ -104,7 +104,7 @@ public:
 	//typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
-	typedef typename base_type::HostVectorIterator HostVectorIterator;
+	typedef typename base_type::HostRandomAccessIterator ContiguousHostIterator;
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -157,16 +157,16 @@ public:
 	/// \param first,last the range to copy the elements from
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-//	template<class InputIterator>
-//	HOST vector( InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-//		assign( first, last );
+	template<class InputIterator>
+	HOST vector( InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
 		//std::vector< value_type, host_allocator<value_type> > v( begin, end );
 		//growMemory( v.size() );
 		//CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
 		//n = v.size();
-//	}
+	}
 
-	HOST vector( HostVectorIterator first, HostVectorIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+	HOST vector( ContiguousHostIterator first, ContiguousHostIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
 		assign( first, last );
 	}
 
@@ -459,9 +459,9 @@ std::cerr << "CALLING ASSIGN FLAVOUR 1" << std::endl;
 		n = newSize;
 	}
 
-	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
+	HOST void assign( ContiguousHostIterator first, ContiguousHostIterator last ) {
 std::cerr << "CALLING ASSIGN FLAVOUR 2" << std::endl;
-		typename HostVectorIterator::difference_type newSize = last-first;
+		typename ContiguousHostIterator::difference_type newSize = last-first;
 		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( static_cast<size_type>(newSize) );
 		base_type::assign( first, last );
