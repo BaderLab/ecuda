@@ -105,7 +105,6 @@ public:
 
 	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
 	typedef typename base_type::HostVectorIterator HostVectorIterator;
-	typedef typename base_type::HostVectorConstIterator HostVectorConstIterator;
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -151,10 +150,6 @@ public:
 		//	std::vector< value_type, host_allocator<value_type> > v( n );
 		//	CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
 		//}
-	}
-
-	HOST vector( HostVectorConstIterator first, HostVectorConstIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-		assign( first, last );
 	}
 
 	HOST vector( HostVectorIterator first, HostVectorIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
@@ -464,18 +459,9 @@ std::cerr << "CALLING ASSIGN FLAVOUR 1" << std::endl;
 		n = newSize;
 	}
 
-	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 2A" << std::endl;
-		typename HostVectorConstIterator::difference_type newSize = last-first;
-		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		growMemory( static_cast<size_type>(newSize) );
-		base_type::assign( first, last );
-		n = newSize;
-	}
-
 	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 2B" << std::endl;
-		typename HostVectorConstIterator::difference_type newSize = last-first;
+std::cerr << "CALLING ASSIGN FLAVOUR 2" << std::endl;
+		typename HostVectorIterator::difference_type newSize = last-first;
 		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( static_cast<size_type>(newSize) );
 		base_type::assign( first, last );
