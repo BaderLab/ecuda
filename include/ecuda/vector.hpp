@@ -161,6 +161,10 @@ public:
 		assign( first, last );
 	}
 
+	HOST vector( ContiguousDeviceIterator first, ContiguousDeviceIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
 	///
 	/// \brief Constructs the container with the contents of the range [begin,end).
 	/// \param first,last the range to copy the elements from
@@ -457,15 +461,12 @@ public:
 	/// \param value the value to initialize elements of the container with
 	///
 	HOST void assign( size_type newSize, const value_type& value = value_type() ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 1" << std::endl;
 		growMemory(newSize); // make sure enough device memory is allocated
-		std::vector< value_type, host_allocator<value_type> > v( newSize, value );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemset<value_type>( base_type::data(), value, size() ) );
 		n = newSize;
 	}
 
 	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 2A" << std::endl;
 		typename HostVectorConstIterator::difference_type newSize = last-first;
 		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( static_cast<size_type>(newSize) );
@@ -474,7 +475,6 @@ std::cerr << "CALLING ASSIGN FLAVOUR 2A" << std::endl;
 	}
 
 	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 2B" << std::endl;
 		typename HostVectorConstIterator::difference_type newSize = last-first;
 		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( static_cast<size_type>(newSize) );
@@ -488,7 +488,6 @@ std::cerr << "CALLING ASSIGN FLAVOUR 2B" << std::endl;
 	///
 	template<class InputIterator>
 	HOST void assign( InputIterator first, InputIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 3" << std::endl;
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
 		growMemory( v.size() ); // make sure enough device memory is allocated
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
@@ -512,7 +511,6 @@ std::cerr << "CALLING ASSIGN FLAVOUR 3" << std::endl;
 	#endif
 
 	HOST void assign( ContiguousDeviceIterator first, ContiguousDeviceIterator last ) {
-std::cerr << "CALLING ASSIGN FLAVOUR 4" << std::endl;
 		growMemory( last-first ); // make sure enough device memory is allocated
 		base_type::assign( first, last );
 	}

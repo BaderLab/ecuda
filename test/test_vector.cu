@@ -139,7 +139,6 @@ int main( int argc, char* argv[] ) {
 			ecuda::vector<int> deviceVector;
 			if( deviceVector.size() ) passed = false;
 			if( !deviceVector.empty() ) passed = false;
-std::cerr << "CP1" << std::endl;
 		}
 		{
 			const ecuda::vector<int> deviceVector( 100 );
@@ -150,19 +149,20 @@ std::cerr << "CP1" << std::endl;
 			deviceVector >> hostVector;
 			if( hostVector.size() != 100 ) passed = false;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
-std::cerr << "CP2" << std::endl;
 		}
 		ecuda::vector<int> deviceVector( 100, 3 );
-std::cerr << "CP3" << std::endl;
 		if( deviceVector.size() != 100 ) passed = false;
 		if( deviceVector.empty() ) passed = false;
 		if( !deviceVector.data() ) passed = false;
 		std::vector<int> hostVector;
-std::cerr << "CP4" << std::endl;
 		deviceVector >> hostVector;
 		if( hostVector.size() != 100 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
-std::cerr << "CP5" << std::endl;
+		ecuda::vector<int> deviceVector2( deviceVector.begin(), deviceVector.end() );
+		hostVector.clear();
+		deviceVector2 >> hostVector;
+		if( hostVector.size() != 100 ) passed = false;
+		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
