@@ -104,6 +104,7 @@ public:
 	//typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
+	typedef typename base_type::HostRandomAccessIterator ContiguousHostIterator;
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -447,9 +448,19 @@ public:
 	/// \param value the value to initialize elements of the container with
 	///
 	HOST void assign( size_type newSize, const value_type& value = value_type() ) {
+std::cerr << "CALLING ASSIGN FLAVOUR 1" << std::endl;
 		growMemory(newSize); // make sure enough device memory is allocated
 		std::vector< value_type, host_allocator<value_type> > v( newSize, value );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = newSize;
+	}
+
+	HOST void assign( ContiguousHostIterator first, ContiguousHostIterator last ) {
+std::cerr << "CALLING ASSIGN FLAVOUR 2" << std::endl;
+		typename ContiguousHostIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		growMemory( static_cast<size_type>(newSize) );
+		base_type::assign( first, last );
 		n = newSize;
 	}
 
@@ -459,6 +470,7 @@ public:
 	///
 	template<class InputIterator>
 	HOST void assign( InputIterator first, InputIterator last ) {
+std::cerr << "CALLING ASSIGN FLAVOUR 3" << std::endl;
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
 		growMemory( v.size() ); // make sure enough device memory is allocated
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
@@ -481,10 +493,10 @@ public:
 	}
 	#endif
 
-	HOST void assign( contiguous_device_iterator<const T> first, contiguous_device_iterator<const T> last ) {
+	HOST void assign( ContiguousDeviceIterator first, ContiguousDeviceIterator last ) {
+std::cerr << "CALLING ASSIGN FLAVOUR 4" << std::endl;
 		growMemory( last-first ); // make sure enough device memory is allocated
 		base_type::assign( first, last );
-		//CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), begin, end-begin, cudaMemcpyDeviceToDevice ) );
 	}
 
 	///
