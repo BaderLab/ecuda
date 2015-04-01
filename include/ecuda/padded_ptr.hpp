@@ -179,8 +179,6 @@ public:
 
 	HOST DEVICE inline operator pointer() const { return ptr; }
 
-	HOST DEVICE inline operator typename ::estd::reference<element_type>::pointer_type() const { return ptr; }
-
 	HOST DEVICE inline padded_ptr& operator++() {
 		++ptr;
 		--distance_to_padding;

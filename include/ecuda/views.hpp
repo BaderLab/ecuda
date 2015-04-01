@@ -56,96 +56,6 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-template<typename T>
-class __device_memory
-{
-public:
-	typedef T value_type; //!< element data type
-	typedef T* pointer; //!< memory pointer type
-	typedef value_type& reference; //!< element reference type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-
-private:
-	pointer ptr;
-	size_type length;
-
-public:
-	HOST DEVICE __device_memory( pointer ptr, const size_type length ) : ptr(ptr), length(length) {}
-	template<typename U>
-	HOST DEVICE __device_memory( const __device_memory<U>& src ) : ptr(src.data()), length(src.size()) {}
-
-	HOST DEVICE inline pointer data() const { return ptr; }
-	HOST DEVICE inline size_type size() const { return length; }
-
-};
-
-template<typename T>
-class __device_memory2d
-{
-public:
-	typedef T value_type; //!< element data type
-	typedef T* pointer; //!< memory pointer type
-	typedef value_type& reference; //!< element reference type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-
-private:
-	pointer ptr;
-	size_type width;
-	size_type height;
-	size_type pitch;
-
-public:
-	HOST DEVICE __device_memory2d( pointer ptr, const size_type width, const size_type height, const size_type pitch ) : ptr(ptr), width(width), height(height), pitch(pitch) {}
-	template<typename U>
-	HOST DEVICE __device_memory2d( const __device_memory2d<U>& src ) : ptr(src.data()), width(src.get_width()), height(src.get_height()), pitch(src.get_pitch()) {}
-
-	HOST DEVICE inline pointer data() const { return ptr; }
-	HOST DEVICE inline size_type size() const { return width*height; }
-	HOST DEVICE inline size_type get_width() const { return width; }
-	HOST DEVICE inline size_type get_height() const { return height; }
-	HOST DEVICE inline size_type get_pitch() const { return pitch; }
-
-};
-
-
-/*
-struct __contiguous_sequence_tag {};
-struct __padded_sequence_tag {};
-struct __strided_sequence_tag {};
-
-template<typename T,typename PointerType,class Category>
-class __sequence
-{
-public:
-	typedef T value_type; //!< element data type
-	typedef PointerType pointer; //!< memory pointer type
-	typedef value_type& reference; //!< element reference type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-
-private:
-	pointer ptr; //!< pointer to start of sequence
-	size_type length; //!< number of elements in the sequence
-
-public:
-	HOST DEVICE __sequence() : ptr(), length(0) {}
-	HOST DEVICE __sequence( pointer ptr, const size_type length ) : ptr(ptr), length(length) {}
-	template<typename T2,typename PointerType2>
-	HOST DEVICE __sequence( const __sequence<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
-	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE __sequence( __sequence&& src ) : ptr(std::move(ptr)), length(std::move(src.length)) {}
-	#endif
-
-	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return length == 0; }
-
-};
-*/
-
-
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class device_memory_sequence
 {
@@ -281,8 +191,8 @@ private:
 
 public:
 	HOST DEVICE device_contiguous_memory_sequence() : device_memory_sequence<T,PointerType>() {}
-	template<typename T2,typename PointerType2>
-	HOST DEVICE device_contiguous_memory_sequence( const device_contiguous_memory_sequence<T2,PointerType2>& src ) : device_memory_sequence<T,PointerType>( src ) {}
+	template<typename T2>
+	HOST DEVICE device_contiguous_memory_sequence( const device_contiguous_memory_sequence<T2>& src ) : device_memory_sequence<T,PointerType>( src ) {}
 	HOST DEVICE device_contiguous_memory_sequence( pointer ptr, const size_type length ) : device_memory_sequence<T,PointerType>( ptr, length ) {}
 	//HOST DEVICE ~device_contiguous_memory_sequence() {}
 
@@ -430,8 +340,6 @@ protected:
 		numberRows = newNumberRows;
 	}
 
-	HOST DEVICE inline pointer& get_pointer() { return base_type::get_pointer(); }
-
 public:
 	HOST DEVICE device_memory_2D() : base_type(), numberRows(0) {}
 	template<typename T2,typename PointerType2>
@@ -460,10 +368,10 @@ public:
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/numberRows; }
 
-	HOST DEVICE inline row_type get_row( const size_type index ) { return row_type( base_type::data()+static_cast<int>(index*number_columns()), number_columns() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type index ) const { return const_row_type( base_type::data()+static_cast<int>(index*number_columns()), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type index ) { return column_type( base_type::data()+static_cast<int>(index), number_rows() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type index ) const { return const_column_type( base_type::data()+static_cast<int>(index), number_rows() ); }
+	HOST DEVICE inline row_type get_row( const size_type index ) { return row_type( base_type::data()+(index*number_columns()), number_columns() ); }
+	HOST DEVICE inline const_row_type get_row( const size_type index ) const { return const_row_type( base_type::data()+(index*number_columns()), number_columns() ); }
+	HOST DEVICE inline column_type get_column( const size_type index ) { return column_type( base_type::data()+index, number_rows() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type index ) const { return const_column_type( base_type::data()+index, number_rows() ); }
 
 	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
@@ -539,15 +447,12 @@ public:
 	typedef       device_memory_sequence<      value_type,pointer> column_type; //!< column type
 	typedef const device_memory_sequence<const value_type,pointer> const_column_type; //!< const column type
 
-	//typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
-	//typedef typename std::vector<T>::iterator HostVectorIterator;
-	//typedef typename std::vector< T, host_allocator<T> >::const_iterator HostVectorConstIterator2;
-	//typedef typename std::vector< T, host_allocator<T> >::iterator HostVectorIterator2;
+	typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
+	typedef typename std::vector<T>::iterator HostVectorIterator;
+	typedef typename std::vector< T, host_allocator<T> >::const_iterator HostVectorConstIterator2;
+	typedef typename std::vector< T, host_allocator<T> >::iterator HostVectorIterator2;
 	//typedef const_iterator DeviceContiguousConstIterator;
 	//typedef iterator DeviceContiguousIterator;
-
-protected:
-	HOST DEVICE inline pointer& get_pointer() { return base_type::get_pointer(); }
 
 private:
 	typedef std::vector< value_type, host_allocator<value_type> > StagingVector;
@@ -599,38 +504,36 @@ public:
 	//	#endif
 	//}
 
-private:
-
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n = std::distance( first, last );
+	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
+		const difference_type n = last-first;
 		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_2D::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		column_type column = get_column(0);
-		typename column_type::iterator destBegin = column.begin();
-		typename column_type::iterator destEnd   = column.end();
-		for( Iterator iter = first; iter < last and destBegin != destEnd; iter += number_columns(), ++destBegin ) {
-			const size_type n2 = std::min( static_cast<size_type>(std::distance(iter,last)), number_columns() );
-			CUDA_CALL( cudaMemcpy<value_type>( destBegin.operator->(), iter.operator->(), n2, cudaMemcpyHostToDevice ) );
+		// copy row-by-row
+		typename base_type::column_type column = base_type::get_column(0);
+		typename base_type::column_type::iterator destBegin = column.begin();
+		typename base_type::column_type::iterator destEnd = column.end();
+		for( HostVectorIterator iter = first; iter < last and destBegin != destEnd; iter += base_type::number_columns(), ++destBegin ) {
+			const size_type n2 = std::min( last-iter, base_type::number_columns() );
+			CUDA_CALL( cudaMemcpy<value_type>( destBegin.operator->(), iter.operator->(), std::min(last-iter,base_type::number_columns()), cudaMemcpyHostToDevice ) );
 		}
 	}
 
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
-		StagingVector v( first, last );
-		assign( v.begin(), v.end() );
+	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
+		const difference_type n = last-first;
+		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_2D::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		// copy row-by-row
+		typename base_type::column_type column = base_type::get_column(0);
+		typename base_type::column_type::iterator destBegin = column.begin();
+		typename base_type::column_type::iterator destEnd = column.end();
+		for( HostVectorIterator iter = first; iter < last and destBegin != destEnd; iter += base_type::number_columns(), ++destBegin ) {
+			const size_type n2 = std::min( last-iter, base_type::number_columns() );
+			CUDA_CALL( cudaMemcpy<value_type>( destBegin.operator->(), iter.operator->(), std::min(last-iter,base_type::number_columns()), cudaMemcpyHostToDevice ) );
+		}
 	}
 
-
-public:
-
-	template<class Iterator>
-	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, std::iterator_traits<Iterator>::iterator_category() ); }
-
-	HOST DEVICE void fill( const value_type& value ) {
-		#ifdef __CUDA_ARCH__
-
-		#else
-		#endif
+	template<class InputIterator>
+	HOST void assign( InputIterator first, InputIterator last ) {
+		StagingVector v( first, last );
+		assign( v.begin(), v.end() );
 	}
 
 	HOST DEVICE bool operator==( const device_contiguous_memory_2D& other ) const {

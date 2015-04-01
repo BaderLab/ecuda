@@ -190,11 +190,11 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), const Alloc& allocator = Alloc() ) : base_type( padded_ptr<T,device_ptr<T>,1>(), numberRows, numberColumns ), allocator(allocator) {
+	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), const Alloc& allocator = Alloc() ) : base_type( nullptr, numberRows, numberColumns ), allocator(allocator) {
 		if( numberRows and numberColumns ) {
 			size_type pitch;
 			device_ptr<value_type> devicePtr( this->allocator.allocate( numberColumns, numberRows, pitch ) );
-			base_type::get_pointer() = padded_ptr<value_type,device_ptr<value_type>,1>( devicePtr, numberColumns, pitch-numberColumns*sizeof(value_type) );
+			base_type::get_pointer() = padded_ptr<device_ptr<value_type>,1>( devicePtr, numberColumns, pitch-numberColumns*sizeof(value_type) );
 			CUDA_CALL( cudaMemset2D<value_type>( devicePtr, pitch, value, numberColumns, numberRows ) );
 		}
 		//numberRows(numberRows), numberColumns(numberColumns), allocator(allocator) {
@@ -593,7 +593,7 @@ public:
 	/// \param begin,end the range to copy the elements from
 	///
 	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last ) { base_type::assign( first, last ); }
+	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) { base_type::assign( first, last ); }
 
 //	template<class RandomAccessIterator>
 //	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
@@ -624,7 +624,7 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE inline void fill( const value_type& value ) { base_type::fill( value ); }
+//	HOST DEVICE void fill( const value_type& value ) {
 //		#ifdef __CUDA_ARCH__
 //		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 //		#else
