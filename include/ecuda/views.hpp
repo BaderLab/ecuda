@@ -177,8 +177,7 @@ public:
 
 	typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
 	typedef typename std::vector<T>::iterator HostVectorIterator;
-	typedef const_iterator DeviceContiguousConstIterator;
-	typedef iterator DeviceContiguousIterator;
+	typedef const_iterator DeviceContiguousIterator;
 	//typedef typename std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*,T&> HostRandomAccessIterator;
 
 private:
@@ -210,17 +209,6 @@ public:
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
 	HOST DEVICE void assign( DeviceContiguousIterator first, DeviceContiguousIterator last ) {
-		#ifdef __CUDA_ARCH__
-		iterator dest = begin();
-		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
-		#else
-		const difference_type n = last-first;
-		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
-		#endif
-	}
-
-	HOST DEVICE void assign( DeviceContiguousConstIterator first, DeviceContiguousConstIterator last ) {
 		#ifdef __CUDA_ARCH__
 		iterator dest = begin();
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;

@@ -103,8 +103,7 @@ public:
 	//typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	//typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
-	typedef contiguous_device_iterator<value_type> ContiguousDeviceIterator;
-	typedef contiguous_device_iterator<const value_type> ContiguousDeviceConstIterator;
+	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
 	typedef typename base_type::HostVectorIterator HostVectorIterator;
 	typedef typename base_type::HostVectorConstIterator HostVectorConstIterator;
 
@@ -163,10 +162,6 @@ public:
 	}
 
 	HOST vector( ContiguousDeviceIterator first, ContiguousDeviceIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-		assign( first, last );
-	}
-
-	HOST vector( ContiguousDeviceConstIterator first, ContiguousDeviceConstIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
 		assign( first, last );
 	}
 
