@@ -516,8 +516,19 @@ public:
 	#endif
 
 	HOST void assign( ContiguousDeviceIterator first, ContiguousDeviceIterator last ) {
+		typename ContiguousDeviceIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( last-first ); // make sure enough device memory is allocated
 		base_type::assign( first, last );
+		n = newSize;
+	}
+
+	HOST void assign( ContiguousDeviceConstIterator first, ContiguousDeviceConstIterator last ) {
+		typename ContiguousDeviceIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		growMemory( last-first ); // make sure enough device memory is allocated
+		base_type::assign( first, last );
+		n = newSize;
 	}
 
 	///
