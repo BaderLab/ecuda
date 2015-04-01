@@ -441,17 +441,43 @@ public:
 		n = newSize;
 	}
 
-	///
-	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
-	/// \param first,last the range to copy the elements from
-	///
-	template<class InputIterator>
-	HOST void assign( InputIterator first, InputIterator last ) {
+private:
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type newSize = std::distance( first, last );
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
+		growMemory( newSize );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), newSize, cudaMemcpyHostToDevice ) );
+		n = newSize;
+	}
+
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
 		growMemory( v.size() ); // make sure enough device memory is allocated
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
 		n = v.size();
 	}
+
+	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::forward_iterator_tag ) { assign( first, last, std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::input_iterator_tag ) { assign( first, last, std::bidirectional_iterator_tag() ); }
+
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type newSize = std::distance( first, last );
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
+		growMemory( newSize );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), newSize, cudaMemcpyDeviceToDevice ) );
+		n = newSize;
+	}
+
+public:
+	///
+	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
+	/// \param first,last the range to copy the elements from
+	///
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -468,12 +494,6 @@ public:
 		n = v.size();
 	}
 	#endif
-
-	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
-		//contiguous_device_iterator<const value_type> begin, contiguous_device_iterator<const value_type> end ) {
-		growMemory( end-begin ); // make sure enough device memory is allocated
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), begin, end-begin, cudaMemcpyDeviceToDevice ) );
-	}
 
 	///
 	/// \brief Appends the given element value to the end of the container.

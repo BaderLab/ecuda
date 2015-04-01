@@ -535,21 +535,30 @@ public:
 	///
 	HOST inline void assign( size_type newNumberRows, size_type newNumberColumns, const value_type& value = value_type() ) { resize( newNumberRows, newNumberColumns, value ); }
 
+private:
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		const std::size_t n = last-first;
+		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
+		// can assume [first,last) are contiguous, so a direct memory transfer is fine
+		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), first.operator->(), number_columns(), cudaMemcpyHostToDevice ) );
+		}
+		//std::vector< value_type, host_allocator<value_type> > v( number_columns() );
+		//for( std::size_t i = 0; i < number_rows(); ++i, first += number_columns() ) {
+		//	v.assign( first, first+number_columns() );
+		//	CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
+		//}
+	}
+
+public:
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
 	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
 	/// \param begin,end the range to copy the elements from
 	///
-	template<class RandomAccessIterator>
-	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
-		const std::size_t n = end-begin;
-		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
-		std::vector< value_type, host_allocator<value_type> > v( number_columns() );
-		for( std::size_t i = 0; i < number_rows(); ++i, begin += number_columns() ) {
-			v.assign( begin, begin+number_columns() );
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
-		}
-	}
+	template<class Iterator>
+	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
