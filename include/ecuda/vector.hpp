@@ -103,10 +103,10 @@ public:
 	//typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	//typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
-	//typedef contiguous_device_iterator<value_type> DeviceContiguousIterator;
-	//typedef contiguous_device_iterator<const value_type> DeviceContiguousConstIterator;
-	//typedef typename base_type::HostVectorIterator HostVectorIterator;
-	//typedef typename base_type::HostVectorConstIterator HostVectorConstIterator;
+	typedef contiguous_device_iterator<value_type> ContiguousDeviceIterator;
+	typedef contiguous_device_iterator<const value_type> ContiguousDeviceConstIterator;
+	typedef typename base_type::HostVectorIterator HostVectorIterator;
+	typedef typename base_type::HostVectorConstIterator HostVectorConstIterator;
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
@@ -124,21 +124,7 @@ private:
 	}
 
 private:
-	HOST void growMemory( const size_type minimum ) {
-		if( capacity() >= minimum ) return; // no growth neccessary
-		size_type m2 = capacity();
-		if( !m2 ) m2 = 1; // in case no memory is currently allocated
-		while( m2 < minimum ) m2 <<= 1;
-		// allocate larger chunk
-		device_ptr<value_type> newMemory( allocator.allocate( m2 ) );
-		base_type bt( newMemory, m2 );
-		base_type::operator=( bt );
-	}
-
-	HOST void init( const size_type n, const value_type& value, std::__true_type ) { assign( n, value ); }
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::__false_type ) { assign( first, last );	}
+	HOST void growMemory( size_type minimum );
 
 public:
 	///
@@ -153,9 +139,8 @@ public:
 	/// \param value the value to initialize elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST explicit vector( const size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type(), n(n), allocator(allocator) {
-		init( n, value, std::__true_type() );
-		////assign( n, value );
+	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type(), n(n), allocator(allocator) {
+		assign( n, value );
 		//growMemory( n );
 		//if( n ) {
 		//	std::vector< value_type, host_allocator<value_type> > v( n, value );
@@ -176,16 +161,30 @@ public:
 		//}
 	}
 
+	HOST vector( HostVectorConstIterator first, HostVectorConstIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
+	HOST vector( HostVectorIterator first, HostVectorIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
+	HOST vector( ContiguousDeviceIterator first, ContiguousDeviceIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
+	HOST vector( ContiguousDeviceConstIterator first, ContiguousDeviceConstIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
+	}
+
 	///
 	/// \brief Constructs the container with the contents of the range [begin,end).
 	/// \param first,last the range to copy the elements from
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	template<class Iterator>
-	HOST vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {
-		typedef typename std::__is_integer<Iterator>::__type _Integral;
-		init( first, last, _Integral() );
-		////assign( first, last );
+	template<class InputIterator>
+	HOST vector( InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		assign( first, last );
 		//std::vector< value_type, host_allocator<value_type> > v( begin, end );
 		//growMemory( v.size() );
 		//CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
@@ -479,40 +478,33 @@ public:
 		n = newSize;
 	}
 
-private:
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		typename std::iterator_traits<Iterator>::difference_type newSize = last-first;
+	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
+		typename HostVectorConstIterator::difference_type newSize = last-first;
 		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		growMemory( static_cast<size_type>(newSize) );
 		base_type::assign( first, last );
 		n = newSize;
 	}
 
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::input_iterator_tag ) {
+	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
+		typename HostVectorConstIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		growMemory( static_cast<size_type>(newSize) );
+		base_type::assign( first, last );
+		n = newSize;
+	}
+
+	///
+	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
+	/// \param first,last the range to copy the elements from
+	///
+	template<class InputIterator>
+	HOST void assign( InputIterator first, InputIterator last ) {
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
 		growMemory( v.size() ); // make sure enough device memory is allocated
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
 		n = v.size();
 	}
-
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, random_access_device_iterator_tag ) {
-		typename std::iterator_traits<Iterator>::difference_type newSize = last-first;
-		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		growMemory( last-first ); // make sure enough device memory is allocated
-		base_type::assign( first, last );
-		n = newSize;
-	}
-
-public:
-	///
-	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
-	/// \param first,last the range to copy the elements from
-	///
-	template<class Iterator>
-	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -529,6 +521,22 @@ public:
 		n = v.size();
 	}
 	#endif
+
+	HOST void assign( ContiguousDeviceIterator first, ContiguousDeviceIterator last ) {
+		typename ContiguousDeviceIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		growMemory( last-first ); // make sure enough device memory is allocated
+		base_type::assign( first, last );
+		n = newSize;
+	}
+
+	HOST void assign( ContiguousDeviceConstIterator first, ContiguousDeviceConstIterator last ) {
+		typename ContiguousDeviceIterator::difference_type newSize = last-first;
+		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		growMemory( last-first ); // make sure enough device memory is allocated
+		base_type::assign( first, last );
+		n = newSize;
+	}
 
 	///
 	/// \brief Appends the given element value to the end of the container.
@@ -909,6 +917,18 @@ public:
 
 
 };
+
+template<typename T,class Alloc>
+HOST void vector<T,Alloc>::growMemory( size_type minimum ) {
+	if( capacity() >= minimum ) return; // no growth neccessary
+	size_type m2 = capacity();
+	if( !m2 ) m2 = 1; // in case no memory is currently allocated
+	while( m2 < minimum ) m2 <<= 1;
+	// allocate larger chunk
+	device_ptr<value_type> newMemory( allocator.allocate( m2 ) );
+	base_type bt( newMemory, m2 );
+	base_type::operator=( bt );
+}
 
 } // namespace ecuda
 

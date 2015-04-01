@@ -175,10 +175,10 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
-	//typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
-	//typedef typename std::vector<T>::iterator HostVectorIterator;
-	//typedef const_iterator DeviceContiguousConstIterator;
-	//typedef iterator DeviceContiguousIterator;
+	typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
+	typedef typename std::vector<T>::iterator HostVectorIterator;
+	typedef const_iterator DeviceContiguousConstIterator;
+	typedef iterator DeviceContiguousIterator;
 	//typedef typename std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*,T&> HostRandomAccessIterator;
 
 private:
@@ -209,9 +209,7 @@ public:
 	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
-private:
-	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, random_access_device_iterator_tag ) {
+	HOST DEVICE void assign( DeviceContiguousIterator first, DeviceContiguousIterator last ) {
 		#ifdef __CUDA_ARCH__
 		iterator dest = begin();
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
@@ -220,28 +218,36 @@ private:
 		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
 		#endif
-
 	}
 
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+	HOST DEVICE void assign( DeviceContiguousConstIterator first, DeviceContiguousConstIterator last ) {
+		#ifdef __CUDA_ARCH__
+		iterator dest = begin();
+		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
+		#else
+		const difference_type n = last-first;
+		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
+		#endif
+	}
+
+	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
 		const difference_type n = last-first;
 		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyHostToDevice ) );
 	}
 
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::input_iterator_tag ) {
+	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
+		const difference_type n = last-first;
+		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
+		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyHostToDevice ) );
+	}
+
+	template<class InputIterator>
+	HOST void assign( InputIterator first, InputIterator last ) {
 		StagingVector v( first, last );
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(v.size(),base_type::size()), cudaMemcpyHostToDevice ) );
 	}
-
-	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::forward_iterator_tag ) { assign( first, last, std::input_iterator_tag() ); }
-	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) { assign( first, last, std::input_iterator_tag() ); }
-
-public:
-	template<class Iterator>
-	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	HOST DEVICE bool operator==( const device_contiguous_memory_sequence& other ) const {
 		#ifdef __CUDA_ARCH__
@@ -294,7 +300,7 @@ public:
 	}
 
 	template<class Alloc>
-	HOST device_contiguous_memory_sequence& operator<<( const std::vector<value_type,Alloc>& vector ) {
+	HOST device_contiguous_memory_sequence& operator<<( std::vector<value_type,Alloc>& vector ) {
 		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), &vector.front(), std::min(base_type::size(),vector.size()), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
@@ -305,310 +311,6 @@ public:
 	}
 
 };
-
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class device_memory_2D : private device_memory_sequence<T,PointerType>
-{
-private:
-	typedef device_memory_sequence<T,PointerType> base_type;
-
-public:
-	typedef typename base_type::value_type value_type; //!< element data type
-	typedef typename base_type::pointer pointer; //!< element pointer type
-	typedef typename base_type::reference reference; //!< element reference type
-	typedef typename base_type::const_reference const_reference; //!< const element reference type
-	typedef typename base_type::size_type size_type; //!< unsigned integral type
-	typedef typename base_type::difference_type difference_type; //!< signed integral type
-
-	typedef device_iterator<      value_type,pointer> iterator; //!< iterator type
-	typedef device_iterator<const value_type,pointer> const_iterator; //!< iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
-
-	typedef       device_memory_sequence<      value_type,pointer> row_type; //!< row type
-	typedef const device_memory_sequence<const value_type,pointer> const_row_type; //!< const row type
-	typedef       device_memory_sequence<      value_type,pointer> column_type; //!< column type
-	typedef const device_memory_sequence<const value_type,pointer> const_column_type; //!< const column type
-
-private:
-	size_type numberRows; //!< number of matrix rows
-
-public:
-	HOST DEVICE device_memory_2D() : base_type(), numberRows(0) {}
-	template<typename T2,typename PointerType2>
-	HOST DEVICE device_memory_2D( const device_memory_2D<T2,PointerType2>& src ) : base_type(src), numberRows(src.numberRows) {}
-	HOST DEVICE device_memory_2D( pointer ptr, const size_type numberRows, const size_type numberColumns ) : base_type(ptr,numberRows*numberColumns), numberRows(numberRows) {}
-	//HOST DEVICE ~device_memory_2D() {}
-
-	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE device_memory_2D( device_memory_2D&& src ) : base_type(src), numberRows(std::move(src.numberRows)) {}
-	#endif
-
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::data()); }
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(base_type::data()+base_type::size()); }
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(base_type::data()); }
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(base_type::data()+base_type::size()); }
-
-	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
-	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
-	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
-	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
-
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
-	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return base_type::max_size(); }
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return base_type::empty(); }
-
-	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/numberRows; }
-
-	HOST DEVICE inline row_type get_row( const size_type index ) { return row_type( base_type::data()+(index*number_columns()), number_columns() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type index ) const { return const_row_type( base_type::data()+(index*number_columns()), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type index ) { return column_type( base_type::data()+index, number_rows() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type index ) const { return const_column_type( base_type::data()+index, number_rows() ); }
-
-	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
-	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
-
-	DEVICE inline reference front() { return base_type::front(); }
-	DEVICE inline reference back() { return base_type::back(); }
-	DEVICE inline const_reference front() const { return base_type::front(); }
-	DEVICE inline const_reference back() const { return base_type::back(); }
-
-	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
-
-	template<class DeviceIterator>
-	DEVICE void assign( DeviceIterator first, DeviceIterator last ) {
-		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
-	}
-
-	HOST DEVICE void swap( device_memory_2D& other ) {
-		base_type::swap( other );
-		#ifdef __CUDA_ARCH__
-		ecuda::swap( numberRows, other.numberRows );
-		#else
-		std::swap( numberRows, other.numberRows );
-		#endif
-	}
-
-	DEVICE bool operator==( const device_memory_2D& other ) const {
-		if( size() != other.size() ) return false;
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !(*iter1 == *iter2) ) return false;
-		return true;
-	}
-
-	DEVICE inline bool operator!=( const device_memory_2D& other ) const { return !operator==( other ); }
-
-	DEVICE inline bool operator<( const device_memory_2D& other ) const { return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
-
-	DEVICE inline bool operator>( const device_memory_2D& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
-
-	DEVICE inline bool operator<=( const device_memory_2D& other ) const { return !operator>(other); }
-
-	DEVICE inline bool operator>=( const device_memory_2D& other ) const { return !operator<(other); }
-
-	DEVICE HOST device_memory_2D& operator=( device_memory_2D& src ) {
-		base_type::operator=( src );
-		numberRows = src.numberRows;
-		return *this;
-	}
-
-};
-
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
-class device_contiguous_memory_2D : public device_memory_2D<T,PointerType>
-{
-private:
-	typedef device_memory_2D<T,PointerType> base_type;
-
-public:
-	typedef typename base_type::value_type value_type; //!< element data type
-	typedef typename base_type::pointer pointer; //!< element pointer type
-	typedef typename base_type::reference reference; //!< element reference type
-	typedef typename base_type::const_reference const_reference; //!< const element reference type
-	typedef typename base_type::size_type size_type; //!< unsigned integral type
-	typedef typename base_type::difference_type difference_type; //!< signed integral type
-
-	typedef typename base_type::iterator iterator; //!< iterator type
-	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
-	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
-	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
-
-	typedef       device_contiguous_memory_sequence<      value_type,pointer> row_type; //!< row type
-	typedef const device_contiguous_memory_sequence<const value_type,pointer> const_row_type; //!< const row type
-	typedef       device_memory_sequence<      value_type,pointer> column_type; //!< column type
-	typedef const device_memory_sequence<const value_type,pointer> const_column_type; //!< const column type
-
-	typedef typename std::vector<T>::const_iterator HostVectorConstIterator;
-	typedef typename std::vector<T>::iterator HostVectorIterator;
-	typedef typename std::vector< T, host_allocator<T> >::const_iterator HostVectorConstIterator2;
-	typedef typename std::vector< T, host_allocator<T> >::iterator HostVectorIterator2;
-	//typedef const_iterator DeviceContiguousConstIterator;
-	//typedef iterator DeviceContiguousIterator;
-
-private:
-	typedef std::vector< value_type, host_allocator<value_type> > StagingVector;
-	inline void copy_row_to_staging( const size_type rowIndex, StagingVector& v ) const {
-		v.resize( base_type::number_columns() );
-		CUDA_CALL( cudaMemcpy<value_type>( &v.front(), base_type::data()+(base_type::number_columns()*rowIndex), base_type::number_columns(), cudaMemcpyDeviceToHost ) );
-	}
-
-public:
-	HOST DEVICE device_contiguous_memory_2D() : base_type() {}
-	template<typename T2>
-	HOST DEVICE device_contiguous_memory_2D( const device_contiguous_memory_2D<T2>& src ) : base_type(src) {}
-	HOST DEVICE device_contiguous_memory_2D( pointer ptr, const size_type numberRows, const size_type numberColumns ) : base_type( ptr, numberRows, numberColumns ) {}
-	//HOST DEVICE ~device_contiguous_memory_2D() {}
-
-	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE device_contiguous_memory_2D( device_contiguous_memory_2D&& src ) : base_type( src ) {}
-	#endif
-
-	//HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::get_pointer()); }
-	//HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(base_type::get_pointer()+base_type::size()); }
-	//HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(base_type::get_pointer()); }
-	//HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(base_type::get_pointer()+base_type::size()); }
-
-	//HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
-	//HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
-	//HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
-	//HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
-
-	//HOST DEVICE void assign( DeviceContiguousIterator first, DeviceContiguousIterator last ) {
-	//	#ifdef __CUDA_ARCH__
-	//	iterator dest = begin();
-	//	for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
-	//	#else
-	//	const difference_type n = last-first;
-	//	if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-	//	CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
-	//	#endif
-	//}
-
-	//HOST DEVICE void assign( DeviceContiguousConstIterator first, DeviceContiguousConstIterator last ) {
-	//	#ifdef __CUDA_ARCH__
-	//	iterator dest = begin();
-	//	for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
-	//	#else
-	//	const difference_type n = last-first;
-	//	if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_sequence::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-	//	CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), first.operator->(), std::min(static_cast<size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
-	//	#endif
-	//}
-
-	HOST void assign( HostVectorIterator first, HostVectorIterator last ) {
-		const difference_type n = last-first;
-		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_2D::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		// copy row-by-row
-		typename base_type::column_type column = base_type::get_column(0);
-		typename base_type::column_type::iterator destBegin = column.begin();
-		typename base_type::column_type::iterator destEnd = column.end();
-		for( HostVectorIterator iter = first; iter < last and destBegin != destEnd; iter += base_type::number_columns(), ++destBegin ) {
-			const size_type n2 = std::min( last-iter, base_type::number_columns() );
-			CUDA_CALL( cudaMemcpy<value_type>( destBegin.operator->(), iter.operator->(), std::min(last-iter,base_type::number_columns()), cudaMemcpyHostToDevice ) );
-		}
-	}
-
-	HOST void assign( HostVectorConstIterator first, HostVectorConstIterator last ) {
-		const difference_type n = last-first;
-		if( n < 0 ) throw std::length_error( "ecuda::device_contiguous_memory_2D::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		// copy row-by-row
-		typename base_type::column_type column = base_type::get_column(0);
-		typename base_type::column_type::iterator destBegin = column.begin();
-		typename base_type::column_type::iterator destEnd = column.end();
-		for( HostVectorIterator iter = first; iter < last and destBegin != destEnd; iter += base_type::number_columns(), ++destBegin ) {
-			const size_type n2 = std::min( last-iter, base_type::number_columns() );
-			CUDA_CALL( cudaMemcpy<value_type>( destBegin.operator->(), iter.operator->(), std::min(last-iter,base_type::number_columns()), cudaMemcpyHostToDevice ) );
-		}
-	}
-
-	template<class InputIterator>
-	HOST void assign( InputIterator first, InputIterator last ) {
-		StagingVector v( first, last );
-		assign( v.begin(), v.end() );
-	}
-
-	HOST DEVICE bool operator==( const device_contiguous_memory_2D& other ) const {
-		#ifdef __CUDA_ARCH__
-		if( base_type::size() != other.size() ) return false;
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !(*iter1 == *iter2) ) return false;
-		return true;
-		#else
-		for( size_type i = 0; i < base_type::number_rows(); ++i ) {
-			if( !(get_row(i) == other.get_row(i)) ) return false;
-		}
-		return true;
-		#endif
-	}
-
-	HOST DEVICE inline bool operator!=( const device_contiguous_memory_2D& other ) const { return !operator==(other); }
-
-	HOST DEVICE inline bool operator<( const device_contiguous_memory_2D& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		for( size_type i = 0; i < base_type::number_rows(); ++i ) {
-			if( !(get_row(i) < other.get_row(i)) ) return false;
-		}
-		return true;
-		#endif
-	}
-
-	HOST DEVICE inline bool operator>( const device_contiguous_memory_2D& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		#else
-		for( size_type i = 0; i < base_type::number_rows(); ++i ) {
-			if( !(get_row(i) > other.get_row(i)) ) return false;
-		}
-		return true;
-		#endif
-	}
-
-	HOST DEVICE inline bool operator<=( const device_contiguous_memory_2D& other ) const { return !operator>(other); }
-
-	HOST DEVICE inline bool operator>=( const device_contiguous_memory_2D& other ) const { return !operator<(other); }
-
-	template<class Alloc>
-	HOST const device_contiguous_memory_2D& operator>>( std::vector<value_type,Alloc>& vector ) const {
-		vector.resize( base_type::size() );
-		value_type* dest = &vector.front();
-		for( size_type i = 0; i < base_type::number_rows(); ++i, dest += base_type::number_columns() ) {
-			CUDA_CALL( cudaMemcpy<value_type>( dest, get_row(i).data(), base_type::number_columns(), cudaMemcpyDeviceToHost ) );
-		}
-		return *this;
-	}
-
-	template<class Alloc>
-	HOST device_contiguous_memory_2D& operator<<( const std::vector<value_type,Alloc>& vector ) {
-		const value_type* first = vector.begin().operator->();
-		const value_type* last  = vector.end().operator->();
-		for( size_type i = 0; i < base_type::number_rows() and first < last; ++i, first += base_type::number_columns() ) {
-			CUDA_CALL( cudaMemcpy<value_type>( get_row(i).data(), first, std::min(base_type::number_columns(),last-first), cudaMemcpyHostToDevice ) );
-		}
-		return *this;
-	}
-
-	DEVICE HOST device_contiguous_memory_2D& operator=( device_contiguous_memory_2D& src ) {
-		base_type::operator=( src );
-		return *this;
-	}
-
-};
-
-
-
-
-
-
-
-
-
-
-
 
 
 ///
