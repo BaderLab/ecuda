@@ -158,10 +158,15 @@ int main( int argc, char* argv[] ) {
 		deviceVector >> hostVector;
 		if( hostVector.size() != 100 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
+std::cerr << "CP1" << std::endl;
 		ecuda::vector<int> deviceVector2( deviceVector.begin(), deviceVector.end() );
+		CUDA_CHECK_ERRORS();
 		hostVector.clear();
+std::cerr << "CP2" << std::endl;
 		deviceVector2 >> hostVector;
+		CUDA_CHECK_ERRORS();
 		if( hostVector.size() != 100 ) passed = false;
+std::cerr << "CP3" << std::endl;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
