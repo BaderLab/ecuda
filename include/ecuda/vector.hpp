@@ -60,6 +60,38 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/******************************************************************
+ * STL has the same issue with ctor overload resolution between
+ * vector( size, value ) and vector( first, last ) and it is dealt
+ * with by SFINAE. Since I can't find firm information
+ * on whether the GNU STL internal structure __is_integer<T> is
+ * portable, I'm just redeclaring it here and using it the same
+ * way.
+ ******************************************************************/
+
+struct __true_type {};
+struct __false_type {};
+
+template<typename T> struct __is_integer { typedef __false_type __type; };
+template<> struct __is_integer<bool> { typedef __true_type __type; };
+template<> struct __is_integer<char> { typedef __true_type __type; };
+template<> struct __is_integer<signed char> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned char> { typedef __true_type __type; };
+#ifdef _GLIBCXX_USE_WCHAR_T
+template<> struct __is_integer<wchar_t> { typedef __true_type __type; };
+#endif
+#ifdef __CPP11_SUPPORTED__
+template<> struct __is_integer<char16_t> { typedef __true_type __type; };
+template<> struct __is_integer<char32_t> { typedef __true_type __type; };
+#endif
+template<> struct __is_integer<short> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned short> { typedef __true_type __type; };
+template<> struct __is_integer<int> { typedef __true_type __type; };
+template<> struct __is_integer<long> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned long> { typedef __true_type __type; };
+template<> struct __is_integer<long long> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned long long> { typedef __true_type __type; };
+
 ///
 /// \brief A resizable vector stored in device memory.
 ///
@@ -67,7 +99,7 @@ namespace ecuda {
 ///
 ///
 template< typename T, class Alloc=device_allocator<T> >
-class vector : public device_contiguous_memory_sequence< T, device_ptr<T> > {
+class vector : private device_contiguous_memory_sequence< T, device_ptr<T> > {
 
 private:
 	typedef device_contiguous_memory_sequence< T, device_ptr<T> > base_type;
@@ -135,10 +167,9 @@ private:
 		base_type::operator=( bt );
 	}
 
-	HOST void init( const size_type n, const value_type& value, std::__true_type ) { assign( n, value ); }
+	HOST void init( const size_type n, const value_type& value, __true_type ) { assign( n, value ); }
 
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::__false_type ) { assign( first, last );	}
+	template<class Iterator> HOST void init( Iterator first, Iterator last, __false_type ) { assign( first, last ); }
 
 public:
 	///
@@ -155,12 +186,6 @@ public:
 	///
 	HOST explicit vector( const size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type(), n(n), allocator(allocator) {
 		init( n, value, std::__true_type() );
-		////assign( n, value );
-		//growMemory( n );
-		//if( n ) {
-		//	std::vector< value_type, host_allocator<value_type> > v( n, value );
-		//	CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
-		//}
 	}
 
 	///
@@ -169,11 +194,6 @@ public:
 	///
 	HOST explicit vector( size_type n ) : base_type(), n(n) {
 		assign( n, value_type() );
-		//if( n ) {
-		//	growMemory( n );
-		//	std::vector< value_type, host_allocator<value_type> > v( n );
-		//	CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
-		//}
 	}
 
 	///
@@ -183,13 +203,9 @@ public:
 	///
 	template<class Iterator>
 	HOST vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {
-		typedef typename std::__is_integer<Iterator>::__type _Integral;
+		// is first,last an integer?
+		typedef typename __is_integer<Iterator>::__type _Integral;
 		init( first, last, _Integral() );
-		////assign( first, last );
-		//std::vector< value_type, host_allocator<value_type> > v( begin, end );
-		//growMemory( v.size() );
-		//CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		//n = v.size();
 	}
 
 	///
@@ -475,7 +491,7 @@ public:
 	///
 	HOST void assign( size_type newSize, const value_type& value = value_type() ) {
 		growMemory(newSize); // make sure enough device memory is allocated
-		CUDA_CALL( cudaMemset<value_type>( base_type::data(), value, size() ) );
+		CUDA_CALL( cudaMemset<value_type>( base_type::data(), value, newSize ) );
 		n = newSize;
 	}
 

@@ -171,6 +171,7 @@ public:
 	///
 	HOST DEVICE inline size_type get_distance_to_padding() const { return distance_to_padding; }
 
+	HOST DEVICE inline size_type get_pitch() const { return get_padding_length()*get_pad_length_units()+get_data_length()*sizeof(element_type);	}
 
 	HOST DEVICE inline pointer get() const { return ptr; }
 
