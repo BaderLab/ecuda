@@ -218,11 +218,6 @@ public:
 	///
 	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != nullptr; }
 
-	HOST DEVICE inline operator pointer() const __NOEXCEPT__ { return ptr; }
-
-	HOST DEVICE inline pointer operator+( const std::size_t n ) const { return ptr+n; }
-	HOST DEVICE inline pointer operator-( const std::size_t n ) const { return ptr-n; }
-
 	///
 	/// \brief Checks whether this device_ptr precedes other in implementation defined owner-based (as opposed to value-based) order.
 	///
