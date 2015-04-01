@@ -79,7 +79,6 @@ private:
 protected:
 	HOST DEVICE inline pointer& get_pointer() { return ptr; }
 	HOST DEVICE inline const pointer& get_pointer() const { return ptr; }
-	HOST inline void set_length( const size_type newLength ) { length = newLength; }
 
 public:
 	HOST DEVICE device_memory_sequence() : ptr(nullptr), length(0) {}
@@ -333,12 +332,6 @@ public:
 
 private:
 	size_type numberRows; //!< number of matrix rows
-
-protected:
-	inline void set_dimensions( const size_type newNumberRows, const size_type newNumberColumns ) {
-		base_type::set_length( newNumberRows*newNumberColumns );
-		numberRows = newNumberRows;
-	}
 
 public:
 	HOST DEVICE device_memory_2D() : base_type(), numberRows(0) {}

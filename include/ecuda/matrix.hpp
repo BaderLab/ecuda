@@ -119,66 +119,37 @@ namespace ecuda {
 /// next row, and so on...).
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix : private device_contiguous_memory_2D< T, padded_ptr<T,device_ptr<T>,1> > {
-
-private:
-	typedef device_contiguous_memory_2D< T, padded_ptr<T,device_ptr<T>,1> > base_type;
+class matrix {
 
 public:
-	typedef typename base_type::value_type value_type; //!< cell data type
-	typedef typename base_type::size_type size_type; //!< unsigned integral type
-	typedef typename base_type::difference_type difference_type; //!< signed integral type
+	typedef T value_type; //!< cell data type
 	typedef Alloc allocator_type; //!< allocator type
-	#ifdef __CPP11_SUPPORTED__
+	typedef std::size_t size_type; //!< unsigned integral type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
 	typedef value_type& reference; //!< cell reference type
 	typedef const value_type& const_reference; //!< cell const reference type
-	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
-	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
-	#else
-	typedef typename Alloc::reference reference; //!< cell reference type
-	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
-	typedef typename Alloc::pointer pointer; //!< cell pointer type
-	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
-	#endif
+	typedef value_type* pointer; //!< cell pointer type
+	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	//typedef T value_type; //!< cell data type
-	//typedef Alloc allocator_type; //!< allocator type
-	//typedef std::size_t size_type; //!< unsigned integral type
-	//typedef std::ptrdiff_t difference_type; //!< signed integral type
-	//typedef value_type& reference; //!< cell reference type
-	//typedef const value_type& const_reference; //!< cell const reference type
-	//typedef value_type* pointer; //!< cell pointer type
-	//typedef const value_type* const_pointer; //!< cell const pointer type
+	typedef contiguous_sequence_view<value_type> row_type; //!< matrix row container type
+	typedef sequence_view< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
+	typedef const contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
+	typedef const sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
 
-	typedef typename base_type::row_type row_type; //!< matrix row container type
-	typedef typename base_type::const_row_type const_row_type; //!< matrix const row container type
-	typedef typename base_type::column_type column_type; //!< matrix column container type
-	typedef typename base_type::const_column_type const_column_type; //!< matrix const column container type
-
-	typedef typename base_type::iterator iterator; //!< iterator type
-	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
-	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
-	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
-
-	//typedef contiguous_sequence_view<value_type> row_type; //!< matrix row container type
-	//typedef sequence_view< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	//typedef const contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
-	//typedef const sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
-
-	//typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	//typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	//typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	//typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
+	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 
 private:
 	// REMEMBER: numberRows, numberColumns, and pitch altered on device memory won't be
 	//           reflected on the host object. Don't allow the device to perform any operations that
 	//           change their value.
-//	size_type numberRows; //!< number of matrix rows
-//	size_type numberColumns; //!< number of matrix columns
-//	size_type pitch; //!< the padded width of the 2D memory allocation in bytes
-//	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
+	size_type numberRows; //!< number of matrix rows
+	size_type numberColumns; //!< number of matrix columns
+	size_type pitch; //!< the padded width of the 2D memory allocation in bytes
+	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 	allocator_type allocator;
 
 public:
@@ -190,19 +161,12 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), const Alloc& allocator = Alloc() ) : base_type( nullptr, numberRows, numberColumns ), allocator(allocator) {
+	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), allocator(allocator) {
 		if( numberRows and numberColumns ) {
-			size_type pitch;
-			device_ptr<value_type> devicePtr( this->allocator.allocate( numberColumns, numberRows, pitch ) );
-			base_type::get_pointer() = padded_ptr<device_ptr<value_type>,1>( devicePtr, numberColumns, pitch-numberColumns*sizeof(value_type) );
-			CUDA_CALL( cudaMemset2D<value_type>( devicePtr, pitch, value, numberColumns, numberRows ) );
+			deviceMemory = device_ptr<value_type>( this->allocator.allocate( numberColumns, numberRows, pitch ) );
+			std::vector< value_type, host_allocator<value_type> > v( numberRows*numberColumns, value );
+			CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		}
-		//numberRows(numberRows), numberColumns(numberColumns), allocator(allocator) {
-		//if( numberRows and numberColumns ) {
-		//	deviceMemory = device_ptr<value_type>( this->allocator.allocate( numberColumns, numberRows, pitch ) );
-		//	std::vector< value_type, host_allocator<value_type> > v( numberRows*numberColumns, value );
-		//	CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, &v.front(), numberColumns*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
-		//}
 	}
 
 	///
@@ -221,18 +185,18 @@ public:
 	///
 	/// \param src Another matrix object of the same type, whose contents are copied.
 	///
-	HOST DEVICE matrix( const matrix<T,Alloc>& src ) : base_type(src), allocator(src.allocator) {}
-	//	numberRows(src.numberRows),
-	//	numberColumns(src.numberColumns),
-	//	pitch(src.pitch),
-	//	deviceMemory(src.deviceMemory),
+	HOST DEVICE matrix( const matrix<T,Alloc>& src ) :
+		numberRows(src.numberRows),
+		numberColumns(src.numberColumns),
+		pitch(src.pitch),
+		deviceMemory(src.deviceMemory),
 		//#ifdef __CPP11_SUPPORTED__
 		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 		//#else
-	//	allocator(src.allocator)
+		allocator(src.allocator)
 		//#endif
-	//{
-	//}
+	{
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -242,8 +206,7 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST matrix( matrix<T>&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
-	// numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
+	HOST matrix( matrix<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
 	#endif
 
 	#if HAVE_ESTD_LIBRARY > 0
@@ -293,7 +256,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return base_type::begin(); } //return iterator( padded_ptr<value_type,pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -302,7 +265,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return base_type::end(); } // iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -311,7 +274,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); } //return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -320,7 +283,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return base_type::end(); } //return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -329,7 +292,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return base_type::rbegin(); } //reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -339,7 +302,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); } //reverse_iterator(begin()); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -348,7 +311,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); } //const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -358,14 +321,14 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); } // const_reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns the number of elements in the container (numberRows*numberColumns).
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); } //number_rows()*number_columns(); }
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return number_rows()*number_columns(); }
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
@@ -373,28 +336,28 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return base_type::max_size(); } //return std::numeric_limits<size_type>::max(); }
+	HOST DEVICE __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Returns the number of rows in the container.
 	///
 	/// \returns The number of rows in the container.
 	///
-	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return base_type::number_rows(); } //return numberRows; }
+	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 
 	///
 	/// \brief Returns the number of columns in the container.
 	///
 	/// \returns The number of columns in the container.
 	///
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_columns(); } //numberColumns; }
+	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }
 
 	///
 	/// \brief Returns the pitch of the underlying 2D device memory.
 	///
 	/// \returns THe pitch of the underlying 2D device memory (in bytes).
 	///
-//	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
+	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns.
@@ -410,36 +373,21 @@ public:
 		// allocate memory
 		size_type newPitch;
 		device_ptr<value_type> newDeviceMemory( allocator.allocate( newNumberColumns, newNumberRows, newPitch ) );
-		CUDA_CALL( cudaMemset2D<value_type>( newDeviceMemory, newPitch, value, newNumberColumns, newNumberRows ) );
-		const size_type oldPitch = data().get_pitch();
+		CUDA_CALL( cudaMemset2D<value_type>( newDeviceMemory.get(), newPitch, value, newNumberColumns, newNumberRows ) );
 		for( size_type i = 0; i < std::min(numberRows,newNumberRows); ++i ) {
 			CUDA_CALL(
 				cudaMemcpy<value_type>(
-					allocator.address( newDeviceMemory, i, 0, newPitch ),
-					allocator.address( deviceMemory, i, 0, oldPitch ),
-					std::min(number_columns(),newNumberColumns),
+					allocator.address( newDeviceMemory.get(), i, 0, newPitch ),
+					allocator.address( deviceMemory.get(), i, 0, pitch ),
+					std::min(numberColumns,newNumberColumns),
 					cudaMemcpyDeviceToDevice
 				)
 			);
 		}
-		base_type::get_pointer() = padded_ptr<device_ptr<value_type>,1>( newDeviceMemory, newNumberColumns, newPitch-newNumberColumns*sizeof(value_type) );
-//		size_type newPitch;
-//		device_ptr<value_type> newDeviceMemory( allocator.allocate( newNumberColumns, newNumberRows, newPitch ) );
-//		CUDA_CALL( cudaMemset2D<value_type>( newDeviceMemory.get(), newPitch, value, newNumberColumns, newNumberRows ) );
-//		for( size_type i = 0; i < std::min(numberRows,newNumberRows); ++i ) {
-//			CUDA_CALL(
-//				cudaMemcpy<value_type>(
-//					allocator.address( newDeviceMemory.get(), i, 0, newPitch ),
-//					allocator.address( deviceMemory.get(), i, 0, newPitch ),
-//					std::min(numberColumns,newNumberColumns),
-//					cudaMemcpyDeviceToDevice
-//				)
-//			);
-//		}
-//		numberRows = newNumberRows;
-//		numberColumns = newNumberColumns;
-//		newPitch = newPitch;
-//		deviceMemory = newDeviceMemory;
+		numberRows = newNumberRows;
+		numberColumns = newNumberColumns;
+		pitch = newPitch;
+		deviceMemory = newDeviceMemory;
 	}
 
 	///
@@ -447,7 +395,7 @@ public:
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return base_type::empty(); } // !number_rows() or !number_columns(); }
+	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !number_rows() or !number_columns(); }
 
 	///
 	/// \brief Gets a view object of a single row of the matrix.
@@ -459,7 +407,7 @@ public:
 	/// \param rowIndex of the row to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return base_type::get_row(rowIndex); } //return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
+	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
 
 	///
 	/// \brief Gets a view object of a single row of the matrix.
@@ -472,7 +420,7 @@ public:
 	/// \param rowIndex of the row to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return base_type::get_row(rowIndex); } //return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
+	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( allocator.address( data(), rowIndex, 0, pitch ), number_columns() ); }
 
 	///
 	/// \brief Gets a view object of a single column of the matrix.
@@ -484,12 +432,12 @@ public:
 	/// \param columnIndex index of the column to isolate
 	/// \returns view object for the specified column
 	///
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return base_type::get_column(columnIndex); }
-//		pointer p = allocator.address( data(), 0, columnIndex, pitch );
-//		striding_ptr<value_type> sp( p, number_columns() );
-//		padded_ptr< value_type, striding_ptr<value_type>, 1 > pp( sp, 1, pitch-numberColumns*sizeof(value_type), 0 );
-//		return column_type( pp, number_rows() );
-//	}
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) {
+		pointer p = allocator.address( data(), 0, columnIndex, pitch );
+		striding_ptr<value_type> sp( p, number_columns() );
+		padded_ptr< value_type, striding_ptr<value_type>, 1 > pp( sp, 1, pitch-numberColumns*sizeof(value_type), 0 );
+		return column_type( pp, number_rows() );
+	}
 
 	///
 	/// \brief Gets a view object of a single column of the matrix.
@@ -502,26 +450,26 @@ public:
 	/// \param columnIndex index of the column to isolate
 	/// \returns view object for the specified column
 	///
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return base_type::get_column(columnIndex); }
-//		const_pointer p = allocator.address( data(), 0, columnIndex, pitch );
-//		striding_ptr<const value_type> sp( p, number_columns() );
-//		padded_ptr< const value_type, striding_ptr<const value_type>, 1 > pp( sp, 1, pitch-numberColumns*sizeof(value_type), 0 );
-//		return const_column_type( pp, number_rows() );
-//	}
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const {
+		const_pointer p = allocator.address( data(), 0, columnIndex, pitch );
+		striding_ptr<const value_type> sp( p, number_columns() );
+		padded_ptr< const value_type, striding_ptr<const value_type>, 1 > pp( sp, 1, pitch-numberColumns*sizeof(value_type), 0 );
+		return const_column_type( pp, number_rows() );
+	}
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
 	/// \param rowIndex index of the row to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return base_type::operator[](rowIndex); } //get_row(rowIndex); }
+	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
 	/// \param rowIndex index of the row to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return base_type::operator[](rowIndex); } //return get_row(rowIndex); }
+	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -530,7 +478,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline reference front() { return base_type::front(); } // *data(); }
+	DEVICE inline reference front() { return *data(); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -539,7 +487,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline reference back() { return base_type::back(); } // *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
+	DEVICE inline reference back() { return *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -548,7 +496,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline const_reference front() const { return base_type::front(); } //*data(); }
+	DEVICE inline const_reference front() const { return *data(); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -557,7 +505,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline const_reference back() const { return base_type::back(); } // *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
+	DEVICE inline const_reference back() const { return *allocator.address( data(), number_rows()-1, number_columns()-1, pitch ); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -567,7 +515,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() __NOEXCEPT__ { return base_type::data(); } //deviceMemory.get(); }
+	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -577,7 +525,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return base_type::data(); } //deviceMemory.get(); }
+	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
 	///
 	/// \brief Replaces the contents of the container.
@@ -592,19 +540,16 @@ public:
 	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
 	/// \param begin,end the range to copy the elements from
 	///
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) { base_type::assign( first, last ); }
-
-//	template<class RandomAccessIterator>
-//	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
-//		const std::size_t n = end-begin;
-//		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
-//		std::vector< value_type, host_allocator<value_type> > v( number_columns() );
-//		for( std::size_t i = 0; i < number_rows(); ++i, begin += number_columns() ) {
-//			v.assign( begin, begin+number_columns() );
-//			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
-//		}
-//	}
+	template<class RandomAccessIterator>
+	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
+		const std::size_t n = end-begin;
+		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
+		std::vector< value_type, host_allocator<value_type> > v( number_columns() );
+		for( std::size_t i = 0; i < number_rows(); ++i, begin += number_columns() ) {
+			v.assign( begin, begin+number_columns() );
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
+		}
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -612,11 +557,11 @@ public:
 	/// \throws std::length_error if the number of elements in the initializer list does not match the number of elements in this container
 	/// \param il initializer list to initialize the elements of the container with
 	///
-	HOST void assign( std::initializer_list<T> il ) { base_type::assign( il ); }
-//		if( il.size() != size() ) throw std::length_error( "ecuda::matrix::assign(initializer_list) the number of elements in the initializer list does not match the size of the matrix" );
-//		std::vector< value_type, host_allocator<value_type> > v( il );
-//		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), get_pitch(), &v.front(), v.size()*sizeof(value_type), number_columns(), number_rows(), cudaMemcpyHostToDevice ) );
-//	}
+	HOST void assign( std::initializer_list<T> il ) {
+		if( il.size() != size() ) throw std::length_error( "ecuda::matrix::assign(initializer_list) the number of elements in the initializer list does not match the size of the matrix" );
+		std::vector< value_type, host_allocator<value_type> > v( il );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), get_pitch(), &v.front(), v.size()*sizeof(value_type), number_columns(), number_rows(), cudaMemcpyHostToDevice ) );
+	}
 	#endif
 
 	///
@@ -624,15 +569,15 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-//	HOST DEVICE void fill( const value_type& value ) {
-//		#ifdef __CUDA_ARCH__
-//		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-//		#else
-//		std::vector< value_type, host_allocator<value_type> > v( number_columns(), value );
-//		for( size_type i = 0; i < number_rows(); ++i )
-//			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
-//		#endif
-//	}
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector< value_type, host_allocator<value_type> > v( number_columns(), value );
+		for( size_type i = 0; i < number_rows(); ++i )
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), &v.front(), number_columns(), cudaMemcpyHostToDevice ) );
+		#endif
+	}
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -645,20 +590,20 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE inline void swap( matrix& other ) { base_type::swap( other ); }
-//		// just swap all members
-//		#ifdef __CUDA_ARCH__
-//		ecuda::swap( numberRows, other.numberRows );
-//		ecuda::swap( numberColumns, other.numberColumns );
-//		ecuda::swap( pitch, other.pitch );
-//		ecuda::swap( deviceMemory, other.deviceMemory );
-//		#else
-//		std::swap( numberRows, other.numberRows );
-//		std::swap( numberColumns, other.numberColumns );
-//		std::swap( pitch, other.pitch );
-//		std::swap( deviceMemory, other.deviceMemory );
-//		#endif
-//	}
+	HOST DEVICE void swap( matrix& other ) {
+		// just swap all members
+		#ifdef __CUDA_ARCH__
+		ecuda::swap( numberRows, other.numberRows );
+		ecuda::swap( numberColumns, other.numberColumns );
+		ecuda::swap( pitch, other.pitch );
+		ecuda::swap( deviceMemory, other.deviceMemory );
+		#else
+		std::swap( numberRows, other.numberRows );
+		std::swap( numberColumns, other.numberColumns );
+		std::swap( pitch, other.pitch );
+		std::swap( deviceMemory, other.deviceMemory );
+		#endif
+	}
 
 	///
 	/// \brief Returns the allocator associated with the container.
@@ -676,8 +621,7 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator==( const matrix<value_type,Alloc2>& other ) const { return base_type::operator==(other); }
-	/*
+	HOST DEVICE bool operator==( const matrix<value_type,Alloc2>& other ) const {
 		if( number_rows() != other.number_rows() ) return false;
 		if( number_columns() != other.number_columns() ) return false;
 		#ifdef __CUDA_ARCH__
@@ -697,7 +641,6 @@ public:
 		return true;
 		#endif
 	}
-	*/
 
 	///
 	/// \brief Checks if the contents of two matrices are not equal.
@@ -710,7 +653,7 @@ public:
 	/// \returns true if the contents are not equal, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator!=( const matrix<value_type,Alloc2>& other ) const { return base_type::operator!=(other); } //return !operator==(other); }
+	HOST DEVICE inline bool operator!=( const matrix<value_type,Alloc2>& other ) const { return !operator==(other); }
 
 	///
 	/// \brief Compares the contents of two matrices lexicographically.
@@ -722,20 +665,20 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically less than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator<( const matrix<value_type,Alloc2>& other ) const { return base_type::operator<(other); }
-//		#ifdef __CUDA_ARCH__
-//		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-//		#else
-//		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-//		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
-//		for( size_type i = 0; i < number_rows(); ++i ) {
-//			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
-//			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
-//			if( v1 < v2 ) return true;
-//		}
-//		return false;
-//		#endif
-//	}
+	HOST DEVICE bool operator<( const matrix<value_type,Alloc2>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
+		#else
+		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
+			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
+			if( v1 < v2 ) return true;
+		}
+		return false;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two matrices lexicographically.
@@ -747,20 +690,20 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically greater than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE bool operator>( const matrix<value_type,Alloc2>& other ) const { return base_type::operator>(other); }
-//		#ifdef __CUDA_ARCH__
-//		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-//		#else
-//		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-//		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
-//		for( size_type i = 0; i < number_rows(); ++i ) {
-//			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
-//			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
-//			if( v1 > v2 ) return true;
-//		}
-//		return false;
-//		#endif
-//	}
+	HOST DEVICE bool operator>( const matrix<value_type,Alloc2>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
+		#else
+		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
+		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			CUDA_CALL( cudaMemcpy( &v1.front(), allocator.address( deviceMemory.get(), i, 0, pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
+			CUDA_CALL( cudaMemcpy( &v2.front(), other.allocator.address( other.deviceMemory.get(), i, 0, other.pitch ), number_columns(), cudaMemcpyDeviceToHost ) );
+			if( v1 > v2 ) return true;
+		}
+		return false;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two matrices lexicographically.
@@ -772,7 +715,7 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically less than or equal to the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator<=( const matrix<value_type,Alloc2>& other ) const { return base_type::operator<=(other); } //return !operator>(other); }
+	HOST DEVICE inline bool operator<=( const matrix<value_type,Alloc2>& other ) const { return !operator>(other); }
 
 	///
 	/// \brief Compares the contents of two matrices lexicographically.
@@ -784,7 +727,7 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically greater than or equal to the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return base_type::operator>=(other); } // !operator<(other); }
+	HOST DEVICE inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return !operator<(other); }
 
 	///
 	/// \brief Returns a reference to the element at the specified matrix location.
@@ -812,7 +755,7 @@ public:
 	/// \param columnIndex index of the column to get an element reference from
 	/// \returns reference to the specified element
 	///
-//	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
 
 	///
 	/// \brief Returns a reference to the element at the specified matrix location.
@@ -840,7 +783,7 @@ public:
 	/// \param columnIndex index of the column to get an element reference from
 	/// \returns reference to the specified element
 	///
-//	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex, columnIndex, pitch ); }
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
@@ -879,20 +822,19 @@ public:
 	///
 	template<class Alloc2>
 	HOST DEVICE matrix<value_type,allocator_type>& operator=( const matrix<value_type,Alloc2>& src ) {
-		base_type::operator=( src );
-//		#ifdef __CUDA_ARCH__
-//		// shallow copy if called from device
-//		numberRows = src.numberRows;
-//		numberColumns = src.numberColumns;
-//		pitch = src.pitch;
-//		deviceMemory = src.deviceMemory;
-//		#else
-//		// deep copy if called from host
-//		numberRows = src.numberRows;
-//		numberColumns = src.numberColumns;
-//		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
-//		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberColumns, numberRows, cudaMemcpyDeviceToDevice ) );
-//		#endif
+		#ifdef __CUDA_ARCH__
+		// shallow copy if called from device
+		numberRows = src.numberRows;
+		numberColumns = src.numberColumns;
+		pitch = src.pitch;
+		deviceMemory = src.deviceMemory;
+		#else
+		// deep copy if called from host
+		numberRows = src.numberRows;
+		numberColumns = src.numberColumns;
+		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
+		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberColumns, numberRows, cudaMemcpyDeviceToDevice ) );
+		#endif
 		return *this;
 	}
 
@@ -928,9 +870,8 @@ public:
 	///
 	template<class OtherAlloc>
 	HOST const matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) const {
-		base_type::operator>>(other);
-//		other.resize( size() );
-//		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		other.resize( size() );
+		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
@@ -940,13 +881,12 @@ public:
 	/// The matrix is converted into a row-major linearized form (all columns
 	/// of the first row, then all columns of the second row, ...).
 	///
-//	template<class OtherAlloc>
-//	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
-//		base_type::operator>>(other);
-//		other.resize( size() );
-//		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
-//		return *this;
-//	}
+	template<class OtherAlloc>
+	HOST matrix<T,Alloc>& operator>>( std::vector<T,OtherAlloc>& other ) {
+		other.resize( size() );
+		CUDA_CALL( cudaMemcpy2D<value_type>( &other.front(), numberColumns*sizeof(T), data(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
 
 	#if HAVE_ESTD_LIBRARY > 0
 	template<typename U,typename V>
@@ -976,10 +916,9 @@ public:
 	/// columns of the second row, ...).
 	///
 	template<class OtherAlloc>
-	HOST matrix<T,Alloc>& operator<<( const std::vector<T,OtherAlloc>& other ) {
-		base_type::operator<<(other);
-//		if( other.size() != size() ) throw std::length_error( "ecuda::operator<<(std::vector) provided with vector of non-matching size" );
-//		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
+	HOST matrix<T,Alloc>& operator<<( std::vector<T,OtherAlloc>& other ) {
+		if( other.size() != size() ) throw std::length_error( "ecuda::operator<<(std::vector) provided with vector of non-matching size" );
+		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, &other.front(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
 		return *this;
 	}
 
