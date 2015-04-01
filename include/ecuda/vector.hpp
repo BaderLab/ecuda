@@ -117,13 +117,6 @@ private:
 	allocator_type allocator;
 
 private:
-	typedef std::vector< value_type, host_allocator<value_type> > StagingVector;
-	inline void copy_to_staging( StagingVector& v ) const {
-		v.resize( size() );
-		CUDA_CALL( cudaMemcpy<value_type>( &v.front(), base_type::data(), size(), cudaMemcpyDeviceToHost ) );
-	}
-
-private:
 	HOST void growMemory( size_type minimum );
 
 public:
@@ -792,20 +785,7 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator==( const vector<T,Alloc2>& other ) const {
-		#ifdef __CUDA_ARCH__
-		if( size() != other.size() ) return false;
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !(*iter1 == *iter2) ) return false;
-		return true;
-		#else
-		StagingVector v1, v2;
-		copy_to_staging( v1 );
-		other.copy_to_staging( v2 );
-		return v1 == v2;
-		#endif
-	}
+	HOST DEVICE inline bool operator==( const vector<T,Alloc2>& other ) const { return base_type::operator==( other ); }
 
 	///
 	/// \brief Checks if the contents of two arrays are not equal.
@@ -817,7 +797,7 @@ public:
 	/// \returns true if the contents are not equal, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator!=( const vector<T,Alloc2>& other ) const { return !operator==( other ); }
+	HOST DEVICE inline bool operator!=( const vector<T,Alloc2>& other ) const { return base_type::operator!=( other ); }
 
 	///
 	/// \brief Compares the contents of two vectors lexicographically.
@@ -826,16 +806,7 @@ public:
 	/// \returns true if the contents of this vector are lexicographically less than the other vector, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE bool operator<( const vector<T,Alloc2>& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		StagingVector v1, v2;
-		copy_to_staging( v1 );
-		other.copy_to_staging( v2 );
-		return v1 < v2;
-		#endif
-	}
+	HOST DEVICE inline bool operator<( const vector<T,Alloc2>& other ) const { return base_type::operator<( other ); }
 
 	///
 	/// \brief Compares the contents of two vectors lexicographically.
@@ -844,16 +815,7 @@ public:
 	/// \returns true if the contents of this vector are lexicographically greater than the other vector, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE bool operator>( const vector<T,Alloc2>& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		#else
-		StagingVector v1, v2;
-		copy_to_staging( v1 );
-		other.copy_to_staging( v2 );
-		return v1 > v2;
-		#endif
-	}
+	HOST DEVICE inline bool operator>( const vector<T,Alloc2>& other ) const { return base_type::operator>( other ); }
 
 	///
 	/// \brief Compares the contents of two vectors lexicographically.
@@ -862,7 +824,7 @@ public:
 	/// \returns true if the contents of this vector are lexicographically less than or equal to the other vector, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator<=( const vector<T,Alloc2>& other ) const { return !operator>( other ); }
+	HOST DEVICE inline bool operator<=( const vector<T,Alloc2>& other ) const { return base_type::operator<=( other ); }
 
 	///
 	/// \brief Compares the contents of two vectors lexicographically.
@@ -871,7 +833,7 @@ public:
 	/// \returns true if the contents of this vector are lexicographically greater than or equal to the other vector, false otherwise
 	///
 	template<class Alloc2>
-	HOST DEVICE inline bool operator>=( const vector<T,Alloc2>& other ) const { return !operator<( other ); }
+	HOST DEVICE inline bool operator>=( const vector<T,Alloc2>& other ) const { return base_type::operator>=( other ); }
 
 	///
 	/// \brief Copies the contents of this device vector to a host STL vector.
