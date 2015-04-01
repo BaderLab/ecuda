@@ -114,6 +114,15 @@ namespace ecuda {
 	};
 } // namespace ecuda
 
+#ifndef __CPP11_SUPPORTED__
+namespace std {
+
+template<bool B,class T=void> struct enable_if { typedef T type; };
+template<class T> struct enable_if<false,T> {};
+
+} // namespace std
+#endif
+
 /// \endcond
 
 #endif

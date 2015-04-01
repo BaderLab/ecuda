@@ -44,6 +44,9 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+struct bidirectional_device_iterator_tag {};
+struct random_access_device_iterator_tag {};
+
 ///
 /// \brief Iterator template compatible with pointers to device memory.
 ///
@@ -61,7 +64,7 @@ namespace ecuda {
 /// fact that 2D device memory allocations often include padding to align the
 /// memory for optimal read/write operations.
 ///
-template<typename T,typename PointerType,class Category=std::bidirectional_iterator_tag>
+template<typename T,typename PointerType,class Category=bidirectional_device_iterator_tag> //std::bidirectional_iterator_tag>
 class device_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
 {
 private:
@@ -220,11 +223,12 @@ public:
 /// \brief Iterator template for use with naked pointers to contiguous device memory.
 ///
 template<typename T>
-class contiguous_device_iterator : public device_iterator<T,T*,std::random_access_iterator_tag>
+class contiguous_device_iterator : public device_iterator<T,T*,random_access_device_iterator_tag> //std::random_access_iterator_tag>
 {
 
 private:
-	typedef device_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
+	//typedef device_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
+	typedef device_iterator<T,T*,random_access_device_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
 
 public:
 	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
