@@ -166,10 +166,6 @@ public:
 		//n = v.size();
 	}
 
-	HOST vector( ContiguousHostIterator first, ContiguousHostIterator last, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
-		assign( first, last );
-	}
-
 	///
 	/// \brief Constructs a vector with a shallow copy of each of the elements in src.
 	///
