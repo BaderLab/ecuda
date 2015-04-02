@@ -426,7 +426,8 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	HOST pointer allocate( size_type w, size_type h/*, size_type& pitch*/, std::allocator<void>::const_pointer hint = 0 ) {
+	HOST pointer allocate( size_type w, size_type h = 1/*, size_type& pitch*/, std::allocator<void>::const_pointer hint = 0 ) {
+		if( !h ) h = 1; // height must be at least 1
 		value_type* nakedPtr;
 		std::size_t pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&nakedPtr), &pitch, w*sizeof(value_type), h );
