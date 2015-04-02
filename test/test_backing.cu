@@ -42,6 +42,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::padded_ptr<double,double*,1> paddedPtr1( devicePtr1.get(), w, pitch-w*sizeof(double) );
 		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( paddedPtr1, w, h );
 
+std::cerr << "paddedPtr1( " << devicePtr1.get() << ", " << w << ", pitch=" << pitch << ", " << (pitch-w*sizeof(double)) << ")" << std::endl;
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
 
