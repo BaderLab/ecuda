@@ -58,6 +58,33 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
+
+struct __false_type {};
+struct __true_type {};
+template<typename T> struct __is_integer { typedef __false_type __type; };
+template<> struct __is_integer<bool> { typedef __true_type __type; };
+template<> struct __is_integer<char> { typedef __true_type __type; };
+template<> struct __is_integer<signed char> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned char> { typedef __true_type __type; };
+#ifdef _GLIBCXX_USE_WCHAR_T
+template<> struct __is_integer<wchar_t> { typedef __true_type __type; };
+#endif
+#ifdef __CPP11_SUPPORTED__
+template<> struct __is_integer<char16_t> { typedef __true_type __type; };
+template<> struct __is_integer<char32_t> { typedef __true_type __type; };
+#endif
+template<> struct __is_integer<short> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned short> { typedef __true_type __type; };
+template<> struct __is_integer<int> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned int> { typedef __true_type __type; };
+template<> struct __is_integer<long> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned long> { typedef __true_type __type; };
+template<> struct __is_integer<long long> { typedef __true_type __type; };
+template<> struct __is_integer<unsigned long long> { typedef __true_type __type; };
+
+/// \endcond
+
 ///
 /// \brief A resizable vector stored in device memory.
 ///
@@ -89,8 +116,6 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
-	typedef contiguous_device_iterator<const value_type> ContiguousDeviceIterator;
-
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
 	//           the device to perform any operations that change their value.
@@ -101,6 +126,48 @@ private:
 
 private:
 	HOST void growMemory( size_type minimum );
+
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n2 = std::distance(first,last);
+		if( n2 < 0 ) return;
+		growMemory( static_cast<size_type>(n) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyHostToDevice ) );
+		n = static_cast<size_type>(n2);
+	}
+
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+		std::vector< value_type, host_allocator<value_type> > v( first, last );
+		growMemory( v.size() );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		n = v.size();
+	}
+
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::input_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n2 = last-first;
+		if( n2 < 0 ) return;
+		growMemory( static_cast<size_type>(n) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyDeviceToDevice ) );
+		n = static_cast<size_type>(n2);
+	}
+
+	template<class Iterator>
+	inline HOST void init( Iterator first, Iterator last, __false_type ) {
+		init( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+	}
+
+	HOST void init( size_type n, const value_type& value, __true_type ) {
+		growMemory( n );
+		if( n ) {
+			std::vector< value_type, host_allocator<value_type> > v( n, value );
+			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
+		}
+	}
 
 public:
 	///
@@ -116,11 +183,7 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : n(n), m(0), allocator(allocator) {
-		growMemory( n );
-		if( n ) {
-			std::vector< value_type, host_allocator<value_type> > v( n, value );
-			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
-		}
+		init( n, value, __true_type() );
 	}
 
 	///
@@ -136,16 +199,14 @@ public:
 	}
 
 	///
-	/// \brief Constructs the container with the contents of the range [begin,end).
-	/// \param begin,end the range to copy the elements from
+	/// \brief Constructs the container with the contents of the range [first,last).
+	/// \param first,last the range to copy the elements from
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	template<class InputIterator>
-	HOST vector( InputIterator begin, InputIterator end, const allocator_type& allocator = allocator_type() ) : m(0), allocator(allocator) {
-		std::vector< value_type, host_allocator<value_type> > v( begin, end );
-		growMemory( v.size() );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = v.size();
+	template<class Iterator>
+	HOST vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : m(0), allocator(allocator) {
+		typedef typename __is_integer<Iterator>::__type _Integral;
+		init( first, last, _Integral() );
 	}
 
 	///
@@ -600,6 +661,52 @@ public:
 	#endif
 	*/
 
+private:
+	template<class Iterator>
+	HOST void insert( const_iterator position, Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type newElements = std::distance(first,last);
+		if( newElements < 0 ) return;
+		growMemory( n+newElements );
+		// copy trailing elements to temporary memory
+		vector<value_type,allocator_type> v( position, end() );
+		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
+		// put new elements in place
+		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), first.operator->(), static_cast<size_type>(newElements), cudaMemcpyHostToDevice ) );
+		// put trailing elements back
+		CUDA_CALL( cudaMemcpy<value_type>( (position+static_cast<size_type>(newElements)).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+	}
+
+	template<class Iterator>
+	HOST void insert( const_iterator position, Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+		vector< value_type, host_allocator<value_type> > newElements( first, last );
+		growMemory( n+newElements.size() );
+		// copy trailing elements to temporary memory
+		vector<value_type,allocator_type> v( position, end() );
+		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
+		// put new elements in place
+		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), &newElements.front(), static_cast<size_type>(newElements.size()), cudaMemcpyHostToDevice ) );
+		// put trailing elements back
+		CUDA_CALL( cudaMemcpy<value_type>( (position+newElements.size()).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+	}
+
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::forward_iterator_tag ) { insert( first, last, std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::input_iterator_tag ) { insert( first, last, std::bidirectional_iterator_tag() ); }
+
+	template<class Iterator>
+	HOST void insert( const_iterator position, Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type newElements = last-first;
+		if( newElements < 0 ) return;
+		growMemory( n+newElements );
+		// copy trailing elements to temporary memory
+		vector<value_type,allocator_type> v( position, end() );
+		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
+		// put new elements in place
+		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), first.operator->(), static_cast<size_type>(newElements), cudaMemcpyDeviceToDevice ) );
+		// put trailing elements back
+		CUDA_CALL( cudaMemcpy<value_type>( (position+static_cast<size_type>(newElements)).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+	}
+
+public:
 	///
 	/// \brief Inserts elements from range [first,last) before position.
 	///
@@ -611,17 +718,8 @@ public:
 	/// \param position iterator before which the content will be inserted. position may be the end() iterator
 	/// \param first,last the range of elements to insert, can't be iterators into container for which insert is called
 	///
-	template<class InputIterator>
-	HOST void insert( const_iterator position, InputIterator first, InputIterator last ) {
-		const std::vector< value_type, host_allocator<value_type> > x( first, last );
-		growMemory(n+x.size());
-		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v( n-index+x.size(), value_type() ); // allocate pinned memory to transfer post-insertion region to host
-		if( v.size() > x.size() ) CUDA_CALL( cudaMemcpy<value_type>( &v[x.size()], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
-		for( size_type i = 0; i < x.size(); ++i ) v[i] = x[i]; // fill in start region with new values
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +x.size() inserted data back onto device
-		n += x.size();
-	}
+	template<class Iterator>
+	HOST void insert( const_iterator position, Iterator first, Iterator last ) { insert( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///

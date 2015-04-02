@@ -266,14 +266,37 @@ public:
 	///
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
+private:
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
+		if( n < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
+		if( static_cast<size_type>(n) != size() ) throw std::length_error( "ecuda::cube::assign(first,last) iterator range [begin,end) does not have correct length" );
+		for( size_type i = 0; i < number_rows()*number_columns(); ++i, first += number_depths() ) {
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), first.operator->(), number_depths(), cudaMemcpyHostToDevice ) );
+		}
+	}
+
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
+		if( n < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
+		if( static_cast<size_type>(n) != size() ) throw std::length_error( "ecuda::cube::assign(first,last) iterator range [begin,end) does not have correct length" );
+		for( size_type i = 0; i < number_rows()*number_columns(); ++i, first += number_depths() ) {
+			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), first.operator->(), number_depths(), cudaMemcpyDeviceToDevice ) );
+		}
+	}
+
+public:
 	///
-	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
+	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
 	///
-	/// The provided iterators must have STL random access capabilities (specifically,
-	/// end.operator-(begin) so that the length of the sequence can be determined). The number of
-	/// elements in [begin,end) must equal the size of this cube (i.e. rows*columns*depths). In
-	/// addition, the orientation of the elements is assumed to be ordered depth->column->row
-	/// (the same orientation as the elements stored in this container).
+	/// The provided iterator must be at least an STL Random Access iterator type, or an \em ecuda
+	/// contiguous device iterator (contiguous_device_iterator).  It assumed the underlying data
+	/// resides in contiguous memory so it can be copied directly to the appropriate region of device
+	/// memory. The number of elements in [first,last) must equal the size of this cube
+	/// (i.e. rows*columns*depths). In addition, the orientation of the elements is assumed to be ordered
+	/// depth->column->row (the same orientation as the elements stored in this container).
 	///
 	/// Note that a potentially more clear way of assigning values is to use the get_depth()
 	/// method, which returns a structure that also has an assign() method.  For example:
@@ -286,19 +309,10 @@ public:
 	///       cube[i][j].assign( vec.begin(), vec.end() );
 	/// \endcode
 	///
-	/// \param begin,end the range to copy the elements from
+	/// \param first,last the range to copy the elements from
 	///
-	template<class RandomAccessIterator>
-	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
-		if( (end-begin) != size() ) throw std::length_error( "ecuda::cube::assign(begin,end) iterator range [begin,end) does not have correct length" );
-		const size_type rc = number_rows()*number_columns();
-		std::vector< value_type, host_allocator<value_type> > v( number_depths() );
-		for( std::size_t i = 0; i < rc; ++i, begin += number_depths() ) {
-			v.assign( begin, begin+number_depths() );
-			//std::vector<value_type> v( begin, begin+number_depths() );
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), &v.begin(), number_depths(), cudaMemcpyHostToDevice ) );
-		}
-	}
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	///
 	/// \brief Returns the number of rows in the container.

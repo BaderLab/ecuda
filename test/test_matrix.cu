@@ -137,14 +137,15 @@ void kernel_testDeviceRowsAndColumns(
 	ecuda::matrix<T> matrixOut2
 )
 {
-	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_rows(); ++i ) {
-		typename ecuda::matrix<T>::const_row_type row = matrixIn[i];
-		matrixOut1[i].assign( row.begin(), row.end() );
-	}
-	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_columns(); ++i ) {
-		typename ecuda::matrix<T>::const_column_type column = matrixIn.get_column(i);
-		matrixOut2[i].assign( column.begin(), column.end() );
-	}
+// removed temporarily from spec
+//	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_rows(); ++i ) {
+//		typename ecuda::matrix<T>::const_row_type row = matrixIn[i];
+//		matrixOut1[i].assign( row.begin(), row.end() );
+//	}
+//	for( typename ecuda::matrix<T>::size_type i = 0; i < matrixIn.number_columns(); ++i ) {
+//		typename ecuda::matrix<T>::const_column_type column = matrixIn.get_column(i);
+//		matrixOut2[i].assign( column.begin(), column.end() );
+//	}
 }
 
 template<typename T> __global__

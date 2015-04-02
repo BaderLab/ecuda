@@ -87,6 +87,32 @@ public:
 private:
 	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 
+private:
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		typename std::iterator_traits<Iterator>::difference_type n = std::distance( first, last );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), std::min(static_cast<size_type>(n),N), cudaMemcpyHostToDevice ) );
+	}
+
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+		typename std::iterator_traits<Iterator>::difference_type n = std::distance( first, last );
+		std::vector< value_type, host_allocator<value_type> > v;
+		v.reserve( N );
+		for( size_type i = 0; i < N and first != last; ++i, ++first ) v.push_back( *first );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+	}
+
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::input_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+
+	template<class Iterator>
+	HOST void init( Iterator first, Iterator last, ecuda::contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
+		if( n <= 0 ) return;
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), std::min(static_cast<size_type>(n),N), cudaMemcpyDeviceToDevice ) );
+	}
+
 public:
 	///
 	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
@@ -104,18 +130,13 @@ public:
 	/// the length of the sequence is less than N, the sequence is repeated from the start until all
 	/// N elements are assigned a value.
 	///
-	/// \param begin, end Input iterators to the initial and final positions in a range.  The range
-	///                   used is [begin,end).
+	/// \param first,last Iterators to the initial and final positions in a range.  The range
+	///                   used is [first,last).
 	///
-	template<class InputIterator>
-	HOST array( InputIterator begin, InputIterator end ) {
+	template<class Iterator>
+	HOST array( Iterator first, Iterator last ) {
 		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		std::vector< value_type, host_allocator<value_type> > v( N );
-		typename std::vector<value_type>::size_type index = 0;
-		while( index < N ) {
-			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
-		}
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+		init( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
 	}
 
 	#ifdef __CPP11_SUPPORTED__

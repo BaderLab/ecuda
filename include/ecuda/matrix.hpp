@@ -539,7 +539,7 @@ private:
 	template<class Iterator>
 	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
 		const std::size_t n = last-first;
-		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(begin,end) the number of elements to assign does not match the size of this matrix" );
+		if( n != size() ) throw std::length_error( "ecuda::matrix::assign(first,last) the number of elements to assign does not match the size of this matrix" );
 		// can assume [first,last) are contiguous, so a direct memory transfer is fine
 		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, get_pitch() ), first.operator->(), number_columns(), cudaMemcpyHostToDevice ) );
