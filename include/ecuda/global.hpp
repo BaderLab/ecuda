@@ -75,7 +75,7 @@ public:
 #define S(x)
 #define S_(x) S(X)
 #define S__LINE__ S_(__LINE__)
-#define EXCEPTION_MSG(x) std::string(__FILE__)+std::string(":")+std::string(S__LINE__)+std::string(" ")+std::string(x)
+#define EXCEPTION_MSG(x) std::string(__FILE__ ":" S__LINE__)+std::string(" ")+std::string(x)
 
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
