@@ -73,9 +73,10 @@ public:
 /// String wrapper that adds the source file and line to a given error message.
 ///
 #define S(x)
-#define S_(x) S(X)
+#define S_(x) S(x)
 #define S__LINE__ S_(__LINE__)
-#define EXCEPTION_MSG(x) std::string(__FILE__ ":" S__LINE__)+std::string(" ")+std::string(x)
+#define EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
+//std::string(__FILE__ ":" S__LINE__)+std::string(" ")+std::string(x)
 
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
