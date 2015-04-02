@@ -215,18 +215,32 @@ public:
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(ptr); }
 	HOST DEVICE inline iterator end() __NOEXCEPT__  {
-		typename iterator::pointer p = ptr;
-		p += static_cast<int>(length);
-		return iterator(p);
+		// NOTE: Important to get end pointer wrt. pointer type of the iterator
+		//       not this __device_sequence. For example, if this is a padded_ptr
+		//       and the iterator is a regular pointer because we accept
+		//       responsbility for ensuring the the range does not cross the
+		//       padding region, then failure to pre-cast to the iterator pointer
+		//       type will cause the pointer increment to set the location
+		//       at the start of the next row _after_ the padding.
+		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
+		//typename iterator::pointer p = ptr;
+		//p += static_cast<int>(length);
+		//return iterator(p);
 	}
-//return iterator(ptr+static_cast<int>(length)); }
 	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(ptr); }
 	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ {
-		typename iterator::pointer p = ptr;
-		p += static_cast<int>(length);
-		return const_iterator(p);
+		// NOTE: Important to get end pointer wrt. pointer type of the iterator
+		//       not this __device_sequence. For example, if this is a padded_ptr
+		//       and the iterator is a regular pointer because we accept
+		//       responsbility for ensuring the the range does not cross the
+		//       padding region, then failure to pre-cast to the iterator pointer
+		//       type will cause the pointer increment to set the location
+		//       at the start of the next row _after_ the padding.
+		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
+		//typename iterator::pointer p = ptr;
+		//p += static_cast<int>(length);
+		//return const_iterator(p);
 	}
-//return const_iterator(ptr+static_cast<int>(length)); }
 
 	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
 	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
@@ -400,20 +414,12 @@ private:
 
 	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2>
 	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>& grid, contiguous_sequence_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
-std::cerr << "performing device grid to device grid transfer" << std::endl;
 		if( grid.number_rows() != number_rows() or grid.number_columns() != number_columns() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target __device_grid does not match the size of source __target_grid") );
-std::cerr << "cp1" << std::endl;
 		for( size_type i = 0; i < number_rows(); ++i ) {
-std::cerr << "PRCESSING row " << i << std::endl;
 			typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>::row_type dest = grid.get_row(i);
-std::cerr << "dest.size()=" << dest.size() << std::endl;
 			const_row_type src = get_row(i);
-std::cerr << "src.size()=" << src.size() << std::endl;
-std::cerr << "iterdiff=" << ( src.end()-src.begin() ) << std::endl;
 			dest.assign( src.begin(), src.end() );
-std::cerr << "FINISHED row " << i << std::endl;
 		}
-std::cerr << "cp2" << std::endl;
 	}
 
 public:
