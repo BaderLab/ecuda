@@ -131,7 +131,7 @@ private:
 	HOST void init( Iterator first, Iterator last, std::random_access_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n2 = std::distance(first,last);
 		if( n2 < 0 ) return;
-		growMemory( static_cast<size_type>(n) );
+		growMemory( static_cast<size_type>(n2) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyHostToDevice ) );
 		n = static_cast<size_type>(n2);
 	}
@@ -151,7 +151,7 @@ private:
 	HOST void init( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n2 = last-first;
 		if( n2 < 0 ) return;
-		growMemory( static_cast<size_type>(n) );
+		growMemory( static_cast<size_type>(n2) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyDeviceToDevice ) );
 		n = static_cast<size_type>(n2);
 	}
@@ -165,8 +165,9 @@ private:
 		growMemory( n );
 		if( n ) {
 			std::vector< value_type, host_allocator<value_type> > v( n, value );
-			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), m, cudaMemcpyHostToDevice ) );
+			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
 		}
+		this->n = n;
 	}
 
 public:
@@ -939,7 +940,7 @@ public:
 	/// \brief Copies the contents of a host STL vector to this device vector.
 	///
 	template<class OtherAlloc>
-	HOST vector<value_type,allocator_type>& operator<<( std::vector<value_type,OtherAlloc>& vector ) {
+	HOST vector<value_type,allocator_type>& operator<<( const std::vector<value_type,OtherAlloc>& vector ) {
 		growMemory( vector.size() );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		n = vector.size();

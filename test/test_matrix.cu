@@ -438,6 +438,7 @@ int main( int argc, char* argv[] ) {
 	// Test B: device rows and columns
 	std::cerr << "Test B" << std::endl;
 	{
+/** removing this test for now
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
 		for( unsigned i = 0; i < 10; ++i ) {
@@ -460,8 +461,9 @@ int main( int argc, char* argv[] ) {
 
 		deviceOutputMatrix2 >> hostVector;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%10,i/10) ) passed = false;
-
 		testResults.push_back( passed ? 1 : 0 );
+***/
+		testResults.push_back( -1 );
 
 	}
 
