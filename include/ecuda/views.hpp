@@ -102,7 +102,7 @@ private:
 		// will never be called
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
-		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( "__device_sequence::assign first,last does not span the correct number of elements" );
+		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( EXCEPTION_MSG("__device_sequence::assign first,last does not span the correct number of elements") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( ptr, first.operator->(), length, cudaMemcpyHostToDevice ) );
 		#endif
 	}
@@ -113,7 +113,7 @@ private:
 		// will never be called
 		#else
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		if( v.size() != length ) throw std::length_error( "__device_sequence::assign first,last does not span the correct number of elements" );
+		if( v.size() != length ) throw std::length_error( EXCEPTION_MSG("__device_sequence::assign first,last does not span the correct number of elements") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( ptr, &v.front(), length, cudaMemcpyHostToDevice ) );
 		#endif
 	}
@@ -128,7 +128,7 @@ private:
 		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
 		for( pointer p = ptr; first != last; ++p, ++first ) *p = *first;
 		#else
-		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( "__device_sequence::assign first,last does not span the correct number of elements" );
+		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( EXCEPTION_MSG("__device_sequence::assign first,last does not span the correct number of elements") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( ptr, first.operator->(), length, cudaMemcpyDeviceToDevice ) );
 		#endif
 
@@ -141,7 +141,7 @@ private:
 		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
 		for( iterator dest = begin(); dest != end(); ++dest, ++first ) *dest = *first;
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range to noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::assign cannot assign range to noncontiguous memory") );
 		#endif
 	}
 
@@ -150,7 +150,7 @@ private:
 		#ifdef __CUDA_ARCH__
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range from noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::assign cannot assign range from noncontiguous memory") );
 		#endif
 	}
 
@@ -159,7 +159,7 @@ private:
 		#ifdef __CUDA_ARCH__
 		assign( first, last, contiguous_sequence_tag(), device_iterator_tag() );
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range to and from noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::assign cannot assign range to and from noncontiguous memory") );
 		#endif
 	}
 
@@ -175,20 +175,20 @@ private:
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::fill cannot fill non-contiguous device memory from host" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::fill cannot fill non-contiguous device memory from host") );
 		#endif
 	}
 
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, std::random_access_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
-		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_sequence::operator>> target container does not have sufficient space" );
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToHost ) );
 	}
 
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, std::bidirectional_iterator_tag ) const {
-		if( container.size() != size() ) throw std::length_error( "__device_sequence::operator>> target container does not have sufficient space" );
+		if( container.size() != size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		std::vector< value_type, host_allocator<value_type> > v( size() );
 		operator>>( v );
 		typename Container::iterator dest = container.begin();
@@ -201,7 +201,7 @@ private:
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, contiguous_device_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = container.end()-container.begin();
-		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_sequence::operator>> target container does not have sufficient space" );
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToDevice ) );
 	}
 
@@ -274,7 +274,7 @@ private:
 		// will never be called
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
-		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( "__device_grid::assign first,last does not span the correct number of elements" );
+		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::assign first,last does not span the correct number of elements") );
 		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) get_row(i).assign( first, first+number_columns() );
 		#endif
 	}
@@ -285,7 +285,7 @@ private:
 		// will never be called
 		#else
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		if( v.size() != size() ) throw std::length_error( "__device_grid::assign first,last does not span the correct number of elements" );
+		if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::assign first,last does not span the correct number of elements") );
 		size_type i = 0;
 		for( typename std::vector< value_type, host_allocator<value_type> >::const_iterator iter = v.begin(); iter != v.end(); iter += number_columns(), ++i ) get_row(i).assign( iter, iter+number_columns() );
 		#endif
@@ -302,7 +302,7 @@ private:
 		for( size_type i = 0; i < number_rows(); ++i ) get_row(i).assign( first, first+number_columns() );
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
-		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( "__device_grid::assign first,last does not span the correct number of elements" );
+		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::assign first,last does not span the correct number of elements") );
 		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) get_row(i).assign( first, first+number_columns() );
 		#endif
 	}
@@ -314,7 +314,7 @@ private:
 		if( n < 0 or static_cast<n> != size() ) return; // nothing happens
 		for( size_type i = 0; i < number_rows(); ++i ) get_row(i).assign( first, first+number_columns() );
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_grid::assign cannot assign range to noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_grid::assign cannot assign range to noncontiguous memory") );
 		#endif
 	}
 
@@ -323,7 +323,7 @@ private:
 		#ifdef __CUDA_ARCH__
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_grid::assign cannot assign range from noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_grid::assign cannot assign range from noncontiguous memory") );
 		#endif
 	}
 
@@ -332,7 +332,7 @@ private:
 		#ifdef __CUDA_ARCH__
 		assign( first, last, contiguous_sequence_tag(), device_iterator_tag() );
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_grid::assign cannot assign range to and from noncontiguous memory" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_grid::assign cannot assign range to and from noncontiguous memory") );
 		#endif
 	}
 
@@ -348,14 +348,14 @@ private:
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
-		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_grid::fill cannot fill non-contiguous device memory from host" );
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_grid::fill cannot fill non-contiguous device memory from host") );
 		#endif
 	}
 
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, std::random_access_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
-		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_grid::operator>> target container does not have sufficient space" );
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		typename Container::iterator dest = container.begin();
 		//TODO: should be able to optimize this, so that transfer occurs without staging vector v
 		std::vector< value_type, host_allocator<value_type> > v( number_columns() );
@@ -367,7 +367,7 @@ private:
 
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, std::bidirectional_iterator_tag ) const {
-		if( container.size() != size() ) throw std::length_error( "__device_grid::operator>> target container does not have sufficient space" );
+		if( container.size() != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		std::vector< value_type, host_allocator<value_type> > v( size() );
 		operator>>( v );
 		typename Container::iterator dest = container.begin();
@@ -380,7 +380,7 @@ private:
 	template<class Container>
 	HOST void copy_to( Container& container, contiguous_sequence_tag, contiguous_device_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = container.end()-container.begin();
-		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_grid::operator>> target container does not have sufficient space" );
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		typename Container::iterator dest = container.begin();
 		for( const_iterator src = begin(); src != end(); src += number_columns(), dest += number_columns() ) {
 			CUDA_CALL( cudaMemcpy<value_type>( dest.operator->(), src.operator->(), number_columns(), cudaMemcpyDeviceToDevice ) );
@@ -389,7 +389,7 @@ private:
 
 	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2>
 	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>& grid, contiguous_sequence_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
-		if( grid.number_rows() != number_rows() or grid.number_columns() != number_columns() ) throw std::length_error( "__device_grid::operator>> target __device_grid does not match the size of source __target_grid" );
+		if( grid.number_rows() != number_rows() or grid.number_columns() != number_columns() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target __device_grid does not match the size of source __target_grid") );
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>::row_type dest = grid.get_row(i);
 			const_row_type src = get_row(i);

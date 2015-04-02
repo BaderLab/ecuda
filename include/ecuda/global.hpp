@@ -38,8 +38,9 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_GLOBAL_HPP
 #define ECUDA_GLOBAL_HPP
 
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
@@ -67,6 +68,14 @@ public:
 /// to functions in the CUDA API that return an error code should use this.
 ///
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
+
+///
+/// String wrapper that adds the source file and line to a given error message.
+///
+#define S(x)
+#define S_(x) S(X)
+#define S__LINE__ S_(__LINE__)
+#define EXCEPTION_MSG(x) std::string(__FILE__)+std::string(":")+std::string(S__LINE__)+std::string(" ")+std::string(x)
 
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
