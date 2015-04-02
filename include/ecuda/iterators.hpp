@@ -81,7 +81,8 @@ private:
 	pointer ptr;
 
 protected:
-	HOST DEVICE inline pointer& get_pointer_ref() const { return ptr; }
+	HOST DEVICE inline const pointer& get_pointer_ref() const { return ptr; }
+	HOST DEVICE inline pointer& get_pointer_ref() { return ptr; }
 
 public:
 	///
