@@ -43,6 +43,11 @@ int main( int argc, char* argv[] ) {
 		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( paddedPtr1, w, h );
 
 std::cerr << "paddedPtr1( " << devicePtr1.get() << ", " << w << ", pitch=" << pitch << ", " << (pitch-w*sizeof(double)) << ")" << std::endl;
+//for( std::size_t i = 0; i < h; ++i ) {
+//	for( std::size_t j = 0; j < w; ++j ) {
+//		std::cerr << " " << i << "," << j << " = " << (paddedPtr1+static_cast<int>(i*w+j)) << std::endl;
+//	}
+//}
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
 

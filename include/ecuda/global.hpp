@@ -94,6 +94,16 @@ public:
 
 /// \cond DEVELOPER_DOCUMENTATION
 
+
+#ifndef __CPP11_SUPPORTED__
+namespace std {
+	template<typename T> struct remove_const          { typedef T type; };
+	template<typename T> struct remove_const<const T> { typedef T type; };
+} // namespace std
+#else
+#include <type_traits>
+#endif
+
 namespace ecuda {
 
 	///
