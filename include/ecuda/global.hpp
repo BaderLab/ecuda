@@ -94,16 +94,17 @@ public:
 
 /// \cond DEVELOPER_DOCUMENTATION
 
-///
-/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
-/// for implementing the strategy required to make const/non-const iterators.
-/// C++11 type_traits would allow this to be done inline, but nvcc currently
-/// lacks C++11 support. Example:
-///
-///   typedef int* pointer;
-///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
-///
 namespace ecuda {
+
+	///
+	/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
+	/// for implementing the strategy required to make const/non-const iterators.
+	/// C++11 type_traits would allow this to be done inline, but nvcc currently
+	/// lacks C++11 support. Example:
+	///
+	///   typedef int* pointer;
+	///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
+	///
 	template<typename T> struct dereference;
 	template<typename T> struct dereference<T*> { typedef T& type; };
 	template<typename T> struct dereference<T* const> { typedef const T& type; };
@@ -112,6 +113,19 @@ namespace ecuda {
 		typedef T& reference_type;
 		typedef T element_type;
 	};
+
+	///
+	/// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.
+	/// Since we don't know if the pointer provided to padded_ptr is const or not, whether to
+	/// convert to const char* or char* is not implicit.
+	///
+	/// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
+	///       this is a less elegant method that works with C98 and later.
+	///
+	template<typename T> struct cast_to_char;
+	template<typename T> struct cast_to_char<T*> { typedef char* type; };
+	template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
+
 } // namespace ecuda
 
 /// \endcond

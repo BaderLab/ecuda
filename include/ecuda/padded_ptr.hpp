@@ -45,22 +45,6 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-/// \cond DEVELOPER_DOCUMENTATION
-
-///
-/// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.
-/// Since we don't know if the pointer provided to padded_ptr is const or not, whether to
-/// convert to const char* or char* is not implicit.
-///
-/// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
-///       this is a less elegant method that works with C98 and later.
-///
-template<typename T> struct cast_to_char;
-template<typename T> struct cast_to_char<T*> { typedef char* type; };
-template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
-
-/// \endcond
-
 ///
 /// \brief A specialized pointer to memory with padding after a fixed-size sequence of data.
 ///
