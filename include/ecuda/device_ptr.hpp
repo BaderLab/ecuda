@@ -314,6 +314,9 @@ public:
 
 	HOST DEVICE inline operator naked_pointer() const { return ptr; }
 
+	HOST DEVICE inline pointer operator+( int x ) { return ptr+x; }
+	HOST DEVICE inline pointer operator-( int x ) { return ptr-x; }
+
 };
 
 } // namespace ecuda

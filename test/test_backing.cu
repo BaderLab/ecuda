@@ -11,8 +11,8 @@ int main( int argc, char* argv[] ) {
 
 		ecuda::device_allocator<double> allocator;
 
-		ecuda::device_ptr<double> devicePtr1( allocator.allocate( n ) );
-		ecuda::__device_sequence< double, ecuda::device_ptr<double> > sequence1( devicePtr1, n );
+		//ecuda::device_ptr<double> devicePtr1( allocator.allocate( n ) );
+		ecuda::__device_sequence< double, ecuda::device_ptr<double> > sequence1( ecuda::device_ptr<double>( allocator.allocate(n) ), n );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( n, 99 );
 		sequence1.assign( hostVector.begin(), hostVector.end() );
@@ -23,8 +23,7 @@ int main( int argc, char* argv[] ) {
 
 		std::cout << "hostVector ="; for( std::size_t i = 0; i < n; ++i ) std::cout << " " << hostVector[i]; std::cout << std::endl;
 
-		ecuda::device_ptr<double> devicePtr2( allocator.allocate( n ) );
-		ecuda::__device_sequence<double> sequence2( devicePtr2.get(), n );
+		ecuda::__device_sequence< double, ecuda::device_ptr<double> > sequence2( ecuda::device_ptr<double>( allocator.allocate(n) ), n );
 		sequence1 >> sequence2;
 
 		hostVector.assign( n, 0 );
@@ -37,11 +36,9 @@ int main( int argc, char* argv[] ) {
 		const std::size_t w = 20;
 		const std::size_t h = 10;
 		ecuda::device_pitch_allocator<double> allocator;
-		//std::size_t pitch;
-		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
-		//ecuda::device_ptr<double> devicePtr1( allocator.allocate( w, h, pitch ) );
-		//ecuda::padded_ptr<double,double*,1> paddedPtr1( devicePtr1.get(), w, pitch-w*sizeof(double) );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
+		//ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
+		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
+		ecuda::__device_grid< double, ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> > > grid1( allocator.allocate( w, h ), w, h );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
