@@ -37,17 +37,12 @@ int main( int argc, char* argv[] ) {
 		const std::size_t w = 20;
 		const std::size_t h = 10;
 		ecuda::device_pitch_allocator<double> allocator;
-		std::size_t pitch;
-		ecuda::device_ptr<double> devicePtr1( allocator.allocate( w, h, pitch ) );
-		ecuda::padded_ptr<double,double*,1> paddedPtr1( devicePtr1.get(), w, pitch-w*sizeof(double) );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( paddedPtr1, w, h );
+		//std::size_t pitch;
+		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
+		//ecuda::device_ptr<double> devicePtr1( allocator.allocate( w, h, pitch ) );
+		//ecuda::padded_ptr<double,double*,1> paddedPtr1( devicePtr1.get(), w, pitch-w*sizeof(double) );
+		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
 
-std::cerr << "paddedPtr1( " << devicePtr1.get() << ", " << w << ", pitch=" << pitch << ", " << (pitch-w*sizeof(double)) << ")" << std::endl;
-//for( std::size_t i = 0; i < h; ++i ) {
-//	for( std::size_t j = 0; j < w; ++j ) {
-//		std::cerr << " " << i << "," << j << " = " << (paddedPtr1+static_cast<int>(i*w+j)) << std::endl;
-//	}
-//}
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
 
@@ -67,9 +62,8 @@ std::cerr << "paddedPtr1( " << devicePtr1.get() << ", " << w << ", pitch=" << pi
 		}
 		std::cout << std::endl;
 
-		ecuda::device_ptr<double> devicePtr2( allocator.allocate( w, h, pitch ) );
-		ecuda::padded_ptr<double,double*,1> paddedPtr2( devicePtr2.get(), w, pitch-w*sizeof(double) );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( paddedPtr2, w, h );
+		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr2( allocator.allocate( w, h ) );
+		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), w, h );
 		grid1 >> grid2;
 
 		hostVector.assign( w*h, 0 );

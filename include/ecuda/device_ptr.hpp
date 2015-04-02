@@ -62,12 +62,13 @@ namespace ecuda {
 /// is performed elsewhere and the pointer to the allocated memory location is
 /// passed to the constructor.
 ///
-template<typename T>
+template<typename T,typename PointerType=typename reference<T>::pointer_type>
 class device_ptr {
 
 public:
 	typedef T element_type; //!< data type represented in allocated memory
-	typedef T* pointer; //!< data type pointer
+	typedef PointerType pointer; //!< data type pointer
+	//typedef T* pointer; //!< data type pointer
 	typedef T& reference; //!< data type reference
 	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
 	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
@@ -114,8 +115,8 @@ public:
 	///
 	/// \param src Another device pointer whose contents are to be moved.
 	///
-	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), reference_count(src.reference_count) {
-		src.ptr = nullptr;
+	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(std::move(src.ptr)), reference_count(src.reference_count) {
+		src.ptr = pointer(); //nullptr;
 		#ifndef __CUDA_ARCH__
 		src.reference_count = new size_type;
 		*(src.reference_count) = 1;
@@ -170,7 +171,7 @@ public:
 	///
 	/// U must be a complete type and implicitly convertible to T.
 	///
-	template<typename U> HOST DEVICE inline void reset( U* p ) __NOEXCEPT__ { device_ptr<T>(p).swap(*this); }
+	template<typename U> HOST DEVICE inline void reset( U* p ) __NOEXCEPT__ { device_ptr<T,PointerType>(p).swap(*this); }
 
 	///
 	/// \brief Returns the managed pointer to device memory.
@@ -216,7 +217,7 @@ public:
 	///
 	/// \returns true if *this stores a pointer, false otherwise.
 	///
-	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != nullptr; }
+	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != pointer(); } //nullptr; }
 
 	///
 	/// \brief Checks whether this device_ptr precedes other in implementation defined owner-based (as opposed to value-based) order.
@@ -236,43 +237,43 @@ public:
 		return ptr < other.ptr;
 	}
 
-	template<typename U> HOST DEVICE inline bool operator==( const device_ptr<U>& other ) const { return ptr == other.get(); }
-	template<typename U> HOST DEVICE inline bool operator!=( const device_ptr<U>& other ) const { return ptr != other.get(); }
-	template<typename U> HOST DEVICE inline bool operator< ( const device_ptr<U>& other ) const { return ptr <  other.get(); }
-	template<typename U> HOST DEVICE inline bool operator> ( const device_ptr<U>& other ) const { return ptr >  other.get(); }
-	template<typename U> HOST DEVICE inline bool operator<=( const device_ptr<U>& other ) const { return ptr <= other.get(); }
-	template<typename U> HOST DEVICE inline bool operator>=( const device_ptr<U>& other ) const { return ptr >= other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator==( const device_ptr<U,PointerType2>& other ) const { return ptr == other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator!=( const device_ptr<U,PointerType2>& other ) const { return ptr != other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator< ( const device_ptr<U,PointerType2>& other ) const { return ptr <  other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator> ( const device_ptr<U,PointerType2>& other ) const { return ptr >  other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator<=( const device_ptr<U,PointerType2>& other ) const { return ptr <= other.get(); }
+	template<typename U,typename PointerType2> HOST DEVICE inline bool operator>=( const device_ptr<U,PointerType2>& other ) const { return ptr >= other.get(); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator==( std::nullptr_t other ) const { return ptr == other; }
+	HOST DEVICE inline bool operator==( std::nullptr_t other ) const { return ptr == pointer(); } //other; }
 
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator!=( std::nullptr_t other ) const { return ptr != other; }
+	HOST DEVICE inline bool operator!=( std::nullptr_t other ) const { return ptr != pointer(); } //other; }
 
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator< ( std::nullptr_t other ) const { return ptr <  other; }
+	HOST DEVICE inline bool operator< ( std::nullptr_t other ) const { return ptr <  pointer(); } //other; }
 
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator> ( std::nullptr_t other ) const { return ptr >  other; }
+	HOST DEVICE inline bool operator> ( std::nullptr_t other ) const { return ptr >  pointer(); } //other; }
 
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator<=( std::nullptr_t other ) const { return ptr <= other; }
+	HOST DEVICE inline bool operator<=( std::nullptr_t other ) const { return ptr <= pointer(); } //other; }
 
 	///
 	/// This operator is only available if the compiler is configured to allow C++11.
 	///
-	HOST DEVICE inline bool operator>=( std::nullptr_t other ) const { return ptr >= other; }
+	HOST DEVICE inline bool operator>=( std::nullptr_t other ) const { return ptr >= pointer(); } //other; }
 	#endif
 
 	template<typename U,typename V>
@@ -289,7 +290,7 @@ public:
 		return *this;
 	}
 
-	HOST DEVICE device_ptr<T>& operator=( const device_ptr<T>& other ) {
+	HOST DEVICE device_ptr& operator=( const device_ptr& other ) {
 		#ifndef __CUDA_ARCH__
 		~device_ptr();
 		#endif

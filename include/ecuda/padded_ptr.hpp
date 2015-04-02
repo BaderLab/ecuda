@@ -158,7 +158,7 @@ public:
 
 	HOST DEVICE inline pointer get() const { return ptr; }
 
-	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+	HOST DEVICE inline operator bool() const { return ptr != pointer(); } //nullptr; }
 
 	HOST DEVICE inline operator pointer() const { return ptr; }
 
