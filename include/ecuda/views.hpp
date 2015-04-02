@@ -114,6 +114,35 @@ private:
 
 	}
 
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_sequence_tag, contiguous_device_iterator_tag ) {
+		#ifdef __CUDA_ARCH__
+		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
+		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
+		for( iterator dest = begin(); dest != end(); ++dest, ++first ) *dest = *first;
+		#else
+		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range to noncontiguous memory" );
+		#endif
+	}
+
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_sequence_tag, device_iterator_tag ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
+		#else
+		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range from noncontiguous memory" );
+		#endif
+	}
+
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_sequence_tag, device_iterator_tag ) {
+		#ifdef __CUDA_ARCH__
+		assign( first, last, contiguous_sequence_tag(), device_iterator_tag() );
+		#else
+		throw cuda_error( cudaErrorInvalidDevicePointer, "__device_sequence::assign cannot assign range to and from noncontiguous memory" );
+		#endif
+	}
+
 public:
 	HOST DEVICE __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
 	HOST DEVICE __device_sequence( const __device_sequence<T>& src ) : ptr(src.ptr), length(src.length) {}
@@ -166,7 +195,6 @@ public:
 private:
 	size_type numberRows;
 	size_type numberColumns;
-	//size_type pitch;
 
 private:
 	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return base_type::size()/numberRows; }
@@ -199,6 +227,11 @@ public:
 		return const_column_type( pp, number_rows() );
 	}
 
+	DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
+	DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
+
+	template<Iterator>
+	HOST DEVICE inline assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 };
 
