@@ -54,6 +54,17 @@ namespace ecuda {
 struct contiguous_sequence_tag {};
 struct noncontiguous_sequence_tag {};
 
+template<typename T,typename PointerType,typename Category> struct sequence_iterator;
+template<typename T,typename PointerType> struct sequence_iterator<T,PointerType,contiguous_sequence_tag> {
+	typedef contiguous_device_iterator<T> iterator;
+	typedef contiguous_device_iterator<const T> const_iterator;
+};
+template<typename T,typename PointerType> struct sequence_iterator<T,PointerType,noncontiguous_sequence_tag> {
+	typedef device_iterator<T,PointerType> iterator;
+	typedef device_iterator<const T,const PointerType> const_iterator;
+};
+
+
 template<typename T,typename PointerType=typename reference<T>::pointer_type,typename Category=contiguous_sequence_tag>
 class __device_sequence
 {
@@ -66,8 +77,8 @@ public:
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
-	typedef contiguous_device_iterator<value_type> iterator;
-	typedef contiguous_device_iterator<const value_type> const_iterator;
+	typedef typename sequence_iterator<value_type,pointer,category>::iterator iterator;
+	typedef typename sequence_iterator<value_type,pointer,category>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
@@ -143,6 +154,20 @@ private:
 		#endif
 	}
 
+	template<class Container>
+	HOST void copy_to( Container& container, contiguous_sequence_tag, std::random_access_iterator_tag ) const {
+		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_sequence::operator>> target container does not have sufficient space" );
+		CUDA_CALL( cudaMemcpy<value_type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToHost ) );
+	}
+
+	template<class Container>
+	HOST void copy_to( Container& container, contiguous_sequence_tag, contiguous_device_iterator_tag ) const {
+		const typename std::iterator_traits<typename Container::iterator>::difference_type n = container.end()-container.begin();
+		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_sequence::operator>> target container does not have sufficient space" );
+		CUDA_CALL( cudaMemcpy<value_type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToDevice ) );
+	}
+
 public:
 	HOST DEVICE __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
 	HOST DEVICE __device_sequence( const __device_sequence<T>& src ) : ptr(src.ptr), length(src.length) {}
@@ -166,72 +191,67 @@ public:
 	template<class Iterator>
 	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, category(), typename std::iterator_traits<Iterator>::iterator_category() ); }
 
+	template<class Container>
+	HOST const __device_sequence& operator>>( Container& container ) const {
+		copy_to( container, category(), typename std::iterator_traits<typename Container::iterator>::iterator_category() );
+		return *this;
+	}
+
 };
 
-template<typename T>
-class __device_grid : private __device_sequence<typename cast_to_char<T>::type>
+template<typename T,typename PointerType=typename reference<T>::pointer_type,class CategoryRow=contiguous_sequence_tag,class CategoryColumn=noncontiguous_sequence_tag>
+class __device_grid : private __device_sequence<T,PointerType,CategoryRow>
 {
 private:
-	typedef __device_sequence<typename cast_to_char<T>::type> base_type;
+	typedef __device_sequence<T,PointerType,CategoryRow> base_type;
 
 public:
 	typedef T value_type;
-	typedef value_type* pointer;
+	typedef PointerType pointer;
+	typedef CategoryRow row_category;
+	typedef CategoryColumn column_category;
 	typedef value_type& reference;
 	typedef const value_type& const_reference;
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
-	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator;
-	typedef device_iterator< const value_type, padded_ptr<const value_type,const pointer,1> > const_iterator;
+	typedef typename sequence_iterator<value_type,pointer,row_category>::iterator iterator;
+	typedef typename sequence_iterator<value_type,pointer,row_category>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_sequence<value_type> row_type;
-	typedef const __device_sequence<const value_type> const_row_type;
-	typedef __device_sequence<value_type,padded_ptr<value_type,striding_ptr<value_type>,1>,noncontiguous_sequence_tag> column_type;
-	typedef const __device_sequence<const value_type,padded_ptr<const value_type,striding_ptr<const value_type>,1>,noncontiguous_sequence_tag> const_column_type;
+	typedef __device_sequence<value_type,pointer,row_category> row_type;
+	typedef const __device_sequence<const value_type,pointer,row_category> const_row_type;
+	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,column_category> column_type;
+	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,column_category> const_column_type;
 
 private:
 	size_type numberRows;
-	size_type numberColumns;
-
-private:
-	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return base_type::size()/numberRows; }
 
 public:
-	HOST DEVICE __device_grid( pointer ptr, size_type numberRows, size_type numberColumns, size_type pitch ) :
-		base_type( reinterpret_cast<typename base_type::pointer>(ptr), pitch*numberRows ), numberRows(numberRows), numberColumns(numberColumns) {}
-	HOST DEVICE __device_grid( const __device_grid<T>& src ) : base_type(src), numberRows(src.numberRows), numberColumns(src.numberColumns) {}
+	HOST DEVICE __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
+	HOST DEVICE __device_grid( const __device_grid<T>& src ) : base_type(src), numberRows(src.numberRows) {}
 
-	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return reinterpret_cast<pointer>(base_type::data()); }
+	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return numberRows*numberColumns; }
+	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/number_rows(); }
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
 
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( data(), number_columns(), get_pitch()-sizeof(value_type)*number_columns() ) ); }
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( reinterpret_cast<value_type>(base_type::end().operator->()), number_columns(), get_pitch()-sizeof(value_type)*number_columns() ) ); }
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const pointer,1>( data(), number_columns(), get_pitch()-sizeof(value_type)*number_columns() ) ); }
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const pointer,1>( reinterpret_cast<value_type>(base_type::end().operator->()), number_columns(), get_pitch()-sizeof(value_type)*number_columns() ) ); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(data()+size()); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(data()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(data()+size()); }
 
-	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( reinterpret_cast<pointer>( base_type::data()+(get_pitch()*rowIndex) ), number_columns() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( reinterpret_cast<pointer>( base_type::data()+(get_pitch()*rowIndex) ), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) {
-		striding_ptr<value_type> sp( data(), number_columns() );
-		padded_ptr<value_type,striding_ptr<value_type>,1> pp( sp, 1, get_pitch()-sizeof(value_type)*number_columns() );
-		return column_type( pp, number_rows() );
-	}
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const {
-		striding_ptr<const value_type> sp( data(), number_columns() );
-		padded_ptr<const value_type,striding_ptr<const value_type>,1> pp( sp, 1, get_pitch()-sizeof(value_type)*number_columns() );
-		return const_column_type( pp, number_rows() );
-	}
+	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( data()+(number_columns()*rowIndex), number_columns() ); }
+	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( data()+(number_columns()*rowIndex), number_columns() ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,pointer>( data()+columnIndex, number_columns() ), number_rows() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,pointer>( data()+columnIndex, number_columns() ), number_rows() ); }
 
 	DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
 
-	template<Iterator>
-	HOST DEVICE inline assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
+	template<class Iterator>
+	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 };
 

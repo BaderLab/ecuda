@@ -555,7 +555,7 @@ public:
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
 	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
-	/// \param begin,end the range to copy the elements from
+	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
 	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
