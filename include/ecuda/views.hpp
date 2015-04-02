@@ -348,10 +348,13 @@ private:
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_grid::operator>> target container does not have sufficient space" );
 		typename Container::iterator dest = container.begin();
+unsigned count = 0;
 		for( const_iterator src = begin(); src != end(); src += number_columns(), dest += number_columns() ) {
+++count;
 std::cerr << "dest=" << dest.operator->() << " src=" << src.operator->() << std::endl;
 			CUDA_CALL( cudaMemcpy<value_type>( dest.operator->(), src.operator->(), number_columns(), cudaMemcpyDeviceToHost ) );
 		}
+std::cerr << "sanity count=" << count << std::endl;
 	}
 
 	template<class Container>
