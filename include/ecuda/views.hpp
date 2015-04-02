@@ -128,7 +128,6 @@ private:
 		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
 		for( pointer p = ptr; first != last; ++p, ++first ) *p = *first;
 		#else
-std::cerr << "assign() n=" << n << " vs length=" << length << std::endl;
 		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( EXCEPTION_MSG("__device_sequence::assign first,last does not span the correct number of elements") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( ptr, first.operator->(), length, cudaMemcpyDeviceToDevice ) );
 		#endif
@@ -215,31 +214,29 @@ public:
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(ptr); }
 	HOST DEVICE inline iterator end() __NOEXCEPT__  {
-		// NOTE: Important to get end pointer wrt. pointer type of the iterator
-		//       not this __device_sequence. For example, if this is a padded_ptr
-		//       and the iterator is a regular pointer because we accept
-		//       responsbility for ensuring the the range does not cross the
-		//       padding region, then failure to pre-cast to the iterator pointer
+		// NOTE: Important to pre-cast this __device_sequence's pointer to the
+		//       pointer type of the iterator BEFORE applying the addition of
+		//       the length value.  For example, if this is a padded_ptr
+		//       and the iterator is a regular pointer (because we accept
+		//       responsibility for ensuring the the range does not cross the
+		//       padding region), then failure to pre-cast to the iterator pointer
 		//       type will cause the pointer increment to set the location
-		//       at the start of the next row _after_ the padding.
+		//       at the start of the next row _after_ the padding.  This will
+		//       screw up iter.operator-(otheriter).
 		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
-		//typename iterator::pointer p = ptr;
-		//p += static_cast<int>(length);
-		//return iterator(p);
 	}
 	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(ptr); }
 	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ {
-		// NOTE: Important to get end pointer wrt. pointer type of the iterator
-		//       not this __device_sequence. For example, if this is a padded_ptr
-		//       and the iterator is a regular pointer because we accept
-		//       responsbility for ensuring the the range does not cross the
-		//       padding region, then failure to pre-cast to the iterator pointer
+		// NOTE: Important to pre-cast this __device_sequence's pointer to the
+		//       pointer type of the iterator BEFORE applying the addition of
+		//       the length value.  For example, if this is a padded_ptr
+		//       and the iterator is a regular pointer (because we accept
+		//       responsibility for ensuring the the range does not cross the
+		//       padding region), then failure to pre-cast to the iterator pointer
 		//       type will cause the pointer increment to set the location
-		//       at the start of the next row _after_ the padding.
-		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
-		//typename iterator::pointer p = ptr;
-		//p += static_cast<int>(length);
-		//return const_iterator(p);
+		//       at the start of the next row _after_ the padding.  This will
+		//       screw up iter.operator-(otheriter).
+		return const_iterator( static_cast<typename const_iterator::pointer>(ptr)+static_cast<int>(length) );
 	}
 
 	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
