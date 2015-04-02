@@ -349,6 +349,7 @@ private:
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( "__device_grid::operator>> target container does not have sufficient space" );
 		typename Container::iterator dest = container.begin();
 unsigned count = 0;
+std::cerr << "first=" << container.begin().operator->() << " last=" << container.end().operator->() << std::endl;
 		for( const_iterator src = begin(); src != end(); src += number_columns(), dest += number_columns() ) {
 ++count;
 std::cerr << "dest=" << dest.operator->() << " src=" << src.operator->() << std::endl;
