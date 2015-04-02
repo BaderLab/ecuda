@@ -72,6 +72,7 @@ public:
 	typedef T& reference; //!< data type reference
 	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
 	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
+	typedef T* naked_pointer;
 
 private:
 	pointer ptr; //!< pointer to device memory
@@ -310,6 +311,8 @@ public:
 	//HOST DEVICE inline operator pointer() const { return ptr; }
 	//DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 	//HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
+
+	HOST DEVICE inline operator naked_pointer() const { return ptr; }
 
 };
 

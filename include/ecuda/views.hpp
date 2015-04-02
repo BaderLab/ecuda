@@ -220,7 +220,7 @@ public:
 		//       and the iterator is a regular pointer (because we accept
 		//       responsibility for ensuring the the range does not cross the
 		//       padding region), then failure to pre-cast to the iterator pointer
-		//       type will cause the pointer increment to set the location
+		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
 		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
@@ -233,7 +233,7 @@ public:
 		//       and the iterator is a regular pointer (because we accept
 		//       responsibility for ensuring the the range does not cross the
 		//       padding region), then failure to pre-cast to the iterator pointer
-		//       type will cause the pointer increment to set the location
+		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
 		return const_iterator( static_cast<typename const_iterator::pointer>(ptr)+static_cast<int>(length) );

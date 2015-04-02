@@ -12,7 +12,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::device_allocator<double> allocator;
 
 		ecuda::device_ptr<double> devicePtr1( allocator.allocate( n ) );
-		ecuda::__device_sequence<double> sequence1( devicePtr1.get(), n );
+		ecuda::__device_sequence< double, ecuda::device_ptr<double> > sequence1( devicePtr1, n );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( n, 99 );
 		sequence1.assign( hostVector.begin(), hostVector.end() );
