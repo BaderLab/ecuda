@@ -88,7 +88,6 @@ public:
 		#ifndef __CUDA_ARCH__
 		reference_count = new size_type;
 		*reference_count = 1;
-std::cerr << "device_ptr.ctor() " << reference_count << std::endl;
 		#else
 		reference_count = nullptr;
 		#endif
@@ -104,7 +103,6 @@ std::cerr << "device_ptr.ctor() " << reference_count << std::endl;
 	///
 	HOST DEVICE device_ptr( const device_ptr<T,PointerType>& src ) : ptr(src.ptr), reference_count(src.reference_count) {
 		#ifndef __CUDA_ARCH__
-std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 		++(*reference_count);
 		#endif
 	}
@@ -287,7 +285,7 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 		return out;
 	}
 
-	HOST device_ptr<T>& operator=( pointer p ) {
+	HOST device_ptr<T,PointerType>& operator=( pointer p ) {
 		std::cerr << "device_ptr.operator=(pointer)" << std::endl;
 		~device_ptr();
 		ptr = p;
@@ -333,9 +331,9 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 // C++ hash support for device_ptr.
 //
 namespace std {
-template<typename T>
-struct hash< ecuda::device_ptr<T> > {
-	size_t operator()( const ecuda::device_ptr<T>& dp ) const { return hash<typename ecuda::device_ptr<T>::pointer>()( dp.get() ); }
+template<typename T,typename PointerType>
+struct hash< ecuda::device_ptr<T,PointerType> > {
+	size_t operator()( const ecuda::device_ptr<T,PointerType>& dp ) const { return hash<typename ecuda::device_ptr<T,PointerType>::pointer>()( dp.get() ); }
 };
 } // namespace std
 #endif

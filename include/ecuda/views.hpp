@@ -206,16 +206,8 @@ private:
 	}
 
 public:
-	HOST DEVICE explicit __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {
-		#ifndef __CUDA_ARCH__
-		std::cerr << "__device_sequence.ctor() = " << ptr << " | " << this->ptr << std::endl;
-		#endif
-	}
-	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {
-		#ifndef __CUDA_ARCH__
-		std::cerr << "__device_sequence.copyctor()" << std::endl;
-		#endif
-	}
+	HOST DEVICE explicit __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
+	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
@@ -428,16 +420,8 @@ private:
 	}
 
 public:
-	HOST DEVICE explicit __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {
-		#ifndef __CUDA_ARCH__
-		std::cerr << "__device_grid.ctor()" << " = " << ptr << std::endl;
-		#endif
-	}
-	HOST DEVICE __device_grid( const __device_grid<T,PointerType,CategoryRow,CategoryColumn>& src ) : base_type(src), numberRows(src.numberRows) {
-		#ifndef __CUDA_ARCH__
-		std::cerr << "__device_grid.copyctor()" << std::endl;
-		#endif
-	}
+	HOST DEVICE explicit __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
+	HOST DEVICE __device_grid( const __device_grid<T,PointerType,CategoryRow,CategoryColumn>& src ) : base_type(src), numberRows(src.numberRows) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
