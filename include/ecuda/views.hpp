@@ -428,7 +428,7 @@ private:
 	}
 
 public:
-	HOST DEVICE __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {
+	HOST DEVICE explicit __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {
 		#ifndef __CUDA_ARCH__
 		std::cerr << "__device_grid.ctor()" << " = " << ptr << std::endl;
 		#endif
