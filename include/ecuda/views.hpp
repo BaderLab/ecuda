@@ -477,8 +477,8 @@ public:
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
 	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
 
-	DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
-	DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
+	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
+	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
 
 	template<class Iterator>
 	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, column_category(), typename std::iterator_traits<Iterator>::iterator_category() ); }

@@ -91,6 +91,12 @@ int main( int argc, char* argv[] ) {
 		}
 		std::cout << std::endl;
 
+		hostVector.resize( grid2.number_columns() );
+		grid2[3] >> hostVector;
+		std::cout << "hostVector(row=3)";
+		for( std::size_t i = 0; i < hostVector.size(); ++i ) std::cout << " " << hostVector[i];
+		std::cout << std::endl;
+
 	}
 
 	return EXIT_SUCCESS;
