@@ -136,8 +136,6 @@ public:
 	///
 	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
-		std::cerr << "reference_count=" << reference_count << std::endl;
-		std::cerr << "*reference_count=" << (*reference_count) << std::endl;
 		--(*reference_count);
 		if( !(*reference_count) ) {
 			if( ptr ) CUDA_CALL( cudaFree( ptr ) );
@@ -286,7 +284,6 @@ public:
 	}
 
 	HOST device_ptr<T,PointerType>& operator=( pointer p ) {
-		std::cerr << "device_ptr.operator=(pointer)" << std::endl;
 		~device_ptr();
 		ptr = p;
 		reference_count = new size_type;
@@ -296,7 +293,6 @@ public:
 
 	HOST DEVICE device_ptr& operator=( const device_ptr& other ) {
 		#ifndef __CUDA_ARCH__
-		std::cerr << "device_ptr.operator=(device_ptr)" << std::endl;
 		~device_ptr();
 		#endif
 		ptr = other.ptr;
