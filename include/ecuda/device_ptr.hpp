@@ -136,6 +136,8 @@ public:
 	///
 	HOST DEVICE ~device_ptr() {
 		#ifndef __CUDA_ARCH__
+		std::cerr << "reference_count=" << reference_count << std::endl;
+		std::cerr << "*reference_count=" << (*reference_count) << std::endl;
 		--(*reference_count);
 		if( !(*reference_count) ) {
 			if( ptr ) CUDA_CALL( cudaFree( ptr ) );
