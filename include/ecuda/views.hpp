@@ -208,7 +208,7 @@ private:
 public:
 	HOST DEVICE explicit __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {
 		#ifndef __CUDA_ARCH__
-		std::cerr << "__device_sequence.ctor() = " << ptr << std::endl;
+		std::cerr << "__device_sequence.ctor() = " << ptr << " | " << this->ptr << std::endl;
 		#endif
 	}
 	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {
