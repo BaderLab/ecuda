@@ -41,7 +41,7 @@ std::cerr << "cp2" << std::endl;
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
 std::cerr << "cp3" << std::endl;
 		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
-		ecuda::__device_grid< double, ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> > > grid1(
+		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid1(
 			devicePtr1,
 			//ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> >( allocator.allocate( w, h ) ),
 			w,

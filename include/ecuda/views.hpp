@@ -206,12 +206,12 @@ private:
 	}
 
 public:
-	HOST DEVICE __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {
+	HOST DEVICE explicit __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {
 		#ifndef __CUDA_ARCH__
 		std::cerr << "__device_sequence.ctor()" << std::endl;
 		#endif
 	}
-	HOST DEVICE __device_sequence( const __device_sequence<T>& src ) : ptr(src.ptr), length(src.length) {}
+	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
