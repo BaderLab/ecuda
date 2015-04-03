@@ -43,7 +43,6 @@ int main( int argc, char* argv[] ) {
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
-std::cerr << "cp1" << std::endl;
 
 		hostVector.assign( w*h, 0 );
 		for( std::size_t i = 0; i < h; ++i ) {
@@ -53,7 +52,6 @@ std::cerr << "cp1" << std::endl;
 		}
 		std::cout << std::endl;
 
-std::cerr << "cp2" << std::endl;
 		grid1 >> hostVector;
 		for( std::size_t i = 0; i < h; ++i ) {
 			std::cout << "hostVector[" << i << "]";
