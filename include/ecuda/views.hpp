@@ -474,8 +474,8 @@ public:
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
 	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
 
 	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
