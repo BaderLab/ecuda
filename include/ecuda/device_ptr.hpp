@@ -283,7 +283,7 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const device_ptr& ptr ) {
-		out << ptr.get();
+		out << ptr.reference_count << " " << ptr.get();
 		return out;
 	}
 
