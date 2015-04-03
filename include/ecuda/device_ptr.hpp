@@ -102,7 +102,7 @@ std::cerr << "device_ptr.ctor() " << reference_count << std::endl;
 	///
 	/// \param src Another device pointer to be used as source to initialize with.
 	///
-	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), reference_count(src.reference_count) {
+	HOST DEVICE device_ptr( const device_ptr<T,PointerType>& src ) : ptr(src.ptr), reference_count(src.reference_count) {
 		#ifndef __CUDA_ARCH__
 std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 		++(*reference_count);
@@ -118,7 +118,7 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 	///
 	/// \param src Another device pointer whose contents are to be moved.
 	///
-	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(std::move(src.ptr)), reference_count(src.reference_count) {
+	HOST DEVICE device_ptr( device_ptr<T,PointerType>&& src ) : ptr(std::move(src.ptr)), reference_count(src.reference_count) {
 		src.ptr = pointer(); //nullptr;
 		#ifndef __CUDA_ARCH__
 		src.reference_count = new size_type;
