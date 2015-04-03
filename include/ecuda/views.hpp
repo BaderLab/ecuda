@@ -206,7 +206,11 @@ private:
 	}
 
 public:
-	HOST DEVICE __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
+	HOST DEVICE __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {
+		#ifndef __CUDA_ARCH__
+		std::cerr << "__device_sequence.ctor()" << std::endl;
+		#endif
+	}
 	HOST DEVICE __device_sequence( const __device_sequence<T>& src ) : ptr(src.ptr), length(src.length) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
@@ -420,7 +424,11 @@ private:
 	}
 
 public:
-	HOST DEVICE __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
+	HOST DEVICE __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {
+		#ifndef __CUDA_ARCH__
+		std::cerr << "__device_grid.ctor()" << std::endl;
+		#endif
+	}
 	HOST DEVICE __device_grid( const __device_grid<T>& src ) : base_type(src), numberRows(src.numberRows) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
