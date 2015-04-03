@@ -57,7 +57,7 @@ int main( int argc, char* argv[] ) {
 
 		std::vector< Coordinate, ecuda::host_allocator<Coordinate> > hostVector( w*h );
 		for( std::size_t i = 0; i < h; ++i )
-			for( std::size_t j = 0; j < w; ++j ) hostVector[i*w+j] = Coordinate(j,i);
+			for( std::size_t j = 0; j < w; ++j ) hostVector[i*w+j] = Coordinate(i,j);
 		grid1.assign( hostVector.begin(), hostVector.end() );
 
 		hostVector.assign( w*h, 0 );
