@@ -54,21 +54,21 @@ namespace ecuda {
 struct contiguous_memory_tag {};
 struct noncontiguous_memory_tag {};
 
-template<typename T,typename PointerType,typename Category> struct sequence_iterator;
-template<typename T,typename PointerType> struct sequence_iterator<T,PointerType,contiguous_memory_tag> {
+template<typename T,typename PointerType,typename Category> struct __device_sequence_iterator_traits;
+template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,contiguous_memory_tag> {
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
-template<typename T,typename PointerType> struct sequence_iterator<T,PointerType,noncontiguous_memory_tag> {
+template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,noncontiguous_memory_tag> {
 	typedef device_iterator<T,PointerType> iterator;
-	typedef device_iterator<const T,const PointerType> const_iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
 };
 
-template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct grid_iterator {
+template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_iterator_traits {
 	typedef device_iterator<T,PointerType> iterator;
-	typedef device_iterator<const T,const PointerType> const_iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
 };
-template<typename T,typename PointerType> struct grid_iterator<T,PointerType,contiguous_memory_tag,contiguous_memory_tag> {
+template<typename T,typename PointerType> struct __device_grid_iterator_traits<T,PointerType,contiguous_memory_tag,contiguous_memory_tag> {
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
@@ -76,12 +76,29 @@ template<typename T,typename PointerType> struct grid_iterator<T,PointerType,con
 struct root_container_tag {};
 struct child_container_tag {};
 
-template<typename T,typename PointerType,typename Category,typename ContainerType> struct __device_container_traits;
-template<typename T,typename PointerType,typename Category> struct __device_container_traits<T,PointerType,Category,root_container_tag> {
-	typedef typename PointerType::pointer data_pointer;
+template<typename T,typename PointerType,typename Category,typename ContainerType> struct __device_sequence_traits;
+template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,root_container_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::iterator iterator;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::const_iterator const_iterator;
 };
-template<typename T,typename PointerType,typename Category> struct __device_container_traits<T,PointerType,Category,child_container_tag> {
-	typedef PointerType data_pointer;
+template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,child_container_tag> {
+	typedef PointerType pointer;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::iterator iterator;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::const_iterator const_iterator;
+};
+
+template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn,typename ContainerType> struct __device_grid_traits;
+template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,root_container_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::iterator iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::const_iterator const_iterator;
+};
+
+template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,child_container_tag> {
+	typedef PointerType pointer;
+	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::iterator iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::const_iterator const_iterator;
 };
 
 template<typename T,typename PointerType=typename reference<T>::pointer_type,typename Category=contiguous_memory_tag,typename ContainerType=root_container_tag>
@@ -89,7 +106,7 @@ class __device_sequence
 {
 public:
 	typedef T value_type;
-	typedef PointerType pointer;
+	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::pointer pointer;
 	typedef Category category;
 	typedef value_type& reference;
 	typedef const value_type& const_reference;
@@ -97,16 +114,16 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 private:
-	typedef typename __device_container_traits<T,PointerType,Category,ContainerType>::data_pointer data_pointer;
+	typedef PointerType managed_pointer;
 
 public:
-	typedef typename sequence_iterator<value_type,data_pointer,category>::iterator iterator;
-	typedef typename sequence_iterator<const value_type,data_pointer,category>::const_iterator const_iterator;
+	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::iterator iterator;
+	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 private:
-	pointer ptr;
+	managed_pointer ptr;
 	size_type length;
 
 private:
@@ -222,7 +239,7 @@ private:
 	}
 
 public:
-	HOST DEVICE explicit __device_sequence( pointer ptr, size_type length ) : ptr(ptr), length(length) {}
+	HOST DEVICE explicit __device_sequence( managed_pointer ptr, size_type length ) : ptr(ptr), length(length) {}
 	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
@@ -284,7 +301,7 @@ private:
 
 public:
 	typedef T value_type;
-	typedef PointerType pointer;
+	typedef typename __device_sequence_traits<T,PointerType,CategoryColumn,ContainerType>::pointer pointer;
 	typedef CategoryRow row_category;
 	typedef CategoryColumn column_category;
 	typedef value_type& reference;
@@ -293,18 +310,20 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 private:
-	typedef typename __device_container_traits<T,PointerType,CategoryColumn,ContainerType>::data_pointer data_pointer;
+	typedef PointerType managed_pointer;
 
 public:
-	typedef typename grid_iterator<value_type,data_pointer,row_category,column_category>::iterator iterator;
-	typedef typename grid_iterator<value_type,data_pointer,row_category,column_category>::const_iterator const_iterator;
+	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::iterator iterator;
+	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::const_iterator const_iterator;
+	//typedef typename __device_grid_iterator_traits<value_type,pointer,row_category,column_category>::iterator iterator;
+	//typedef typename __device_grid_iterator_traits<value_type,pointer,row_category,column_category>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_sequence<value_type,data_pointer,column_category> row_type;
-	typedef const __device_sequence<const value_type,data_pointer,column_category> const_row_type;
-	typedef __device_sequence<value_type,striding_ptr<value_type,data_pointer>,row_category> column_type;
-	typedef const __device_sequence<const value_type,striding_ptr<value_type,data_pointer>,row_category> const_column_type;
+	typedef __device_sequence<value_type,pointer,column_category,child_container_tag> row_type;
+	typedef const __device_sequence<const value_type,pointer,column_category,child_container_tag> const_row_type;
+	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,row_category,child_container_tag> column_type;
+	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,row_category,child_container_tag> const_column_type;
 
 private:
 	size_type numberRows;
@@ -440,7 +459,7 @@ private:
 	}
 
 public:
-	HOST DEVICE explicit __device_grid( pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
+	HOST DEVICE explicit __device_grid( managed_pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
 	HOST DEVICE __device_grid( const __device_grid<T,PointerType,CategoryRow,CategoryColumn>& src ) : base_type(src), numberRows(src.numberRows) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
@@ -455,8 +474,8 @@ public:
 
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
 	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
-	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
-	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
+	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return column_type( striding_ptr<value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
+	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return const_column_type( striding_ptr<const value_type,managed_pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() ); }
 
 	DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }

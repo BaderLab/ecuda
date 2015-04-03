@@ -312,7 +312,11 @@ public:
 	//DEVICE inline reference operator[]( size_type index ) const { return *(ptr+index); }
 	//HOST DEVICE inline difference_type operator-( const device_ptr<T>& other ) const { return ptr - other.ptr; }
 
-	HOST DEVICE inline operator naked_pointer() const { return ptr; }
+	//HOST DEVICE inline operator naked_pointer() const { return ptr; }
+	///
+	/// \brief Provides implicit conversion to underlying pointer.
+	///
+	HOST DEVICE inline operator pointer() const { return ptr; }
 
 	HOST DEVICE inline pointer operator+( int x ) { return ptr+x; }
 	HOST DEVICE inline pointer operator-( int x ) { return ptr-x; }
