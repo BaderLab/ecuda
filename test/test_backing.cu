@@ -15,6 +15,16 @@ struct coord_t {
 	}
 };
 
+template<typename ColumnType>
+__global__ void fillColumn(
+	ColumnType column,
+	typename ColumnType::value_type value
+)
+{
+	//const int threadNum = threadIdx.x;
+	for( typename ColumnType::iterator iter = column.begin(); iter != column.end(); ++iter ) *iter = value;
+}
+
 int main( int argc, char* argv[] ) {
 
 	{
@@ -82,6 +92,10 @@ int main( int argc, char* argv[] ) {
 		ecuda::__device_grid< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1>, ecuda::noncontiguous_memory_tag, ecuda::contiguous_memory_tag, ecuda::child_container_tag > grid2( devicePtr2.get(), h, w );
 		grid1 >> grid2;
 
+		fillColumn<<<1,1>>>( grid2.get_column(3), 66 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
 		hostVector.assign( w*h, 0 );
 		grid2 >> hostVector;
 		for( std::size_t i = 0; i < h; ++i ) {
@@ -92,6 +106,7 @@ int main( int argc, char* argv[] ) {
 		std::cout << std::endl;
 
 		hostVector.resize( grid2.number_columns() );
+		//grid2.get_column(3) >> hostVector; // properly results in compiler error
 		grid2[3] >> hostVector;
 		std::cout << "hostVector(row=3)";
 		for( std::size_t i = 0; i < hostVector.size(); ++i ) std::cout << " " << hostVector[i];
