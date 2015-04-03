@@ -103,6 +103,7 @@ public:
 	///
 	HOST DEVICE device_ptr( const device_ptr<T>& src ) : ptr(src.ptr), reference_count(src.reference_count) {
 		#ifndef __CUDA_ARCH__
+std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 		++(*reference_count);
 		#endif
 	}
