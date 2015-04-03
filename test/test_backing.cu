@@ -39,7 +39,8 @@ int main( int argc, char* argv[] ) {
 		ecuda::device_pitch_allocator<double> allocator;
 		ecuda::padded_ptr<double,double*,1> paddedPtr( allocator.allocate( w, h ) );
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( paddedPtr );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), h, w );
+		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), h, w );
+		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid1( devicePtr1, h, w );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
 		grid1.assign( hostVector.begin(), hostVector.end() );
@@ -61,7 +62,8 @@ int main( int argc, char* argv[] ) {
 		std::cout << std::endl;
 
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr2( allocator.allocate( w, h ) );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), h, w );
+		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), h, w );
+		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid2( devicePtr2, h, w );
 		grid1 >> grid2;
 
 		hostVector.assign( w*h, 0 );

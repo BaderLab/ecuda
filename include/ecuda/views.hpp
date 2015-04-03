@@ -76,11 +76,11 @@ template<typename T,typename PointerType> struct grid_iterator<T,PointerType,con
 struct root_container_tag {};
 struct child_container_tag {};
 
-template<typename T,typename PointerType,typename Category,typename ContainerType> struct __device_sequence_traits;
-template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,root_container_tag> {
+template<typename T,typename PointerType,typename Category,typename ContainerType> struct __device_container_traits;
+template<typename T,typename PointerType,typename Category> struct __device_container_traits<T,PointerType,Category,root_container_tag> {
 	typedef typename PointerType::pointer data_pointer;
 };
-template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,child_container_tag> {
+template<typename T,typename PointerType,typename Category> struct __device_container_traits<T,PointerType,Category,child_container_tag> {
 	typedef PointerType data_pointer;
 };
 
@@ -97,7 +97,7 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 private:
-	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::data_pointer data_pointer;
+	typedef typename __device_container_traits<T,PointerType,Category,ContainerType>::data_pointer data_pointer;
 
 public:
 	typedef typename sequence_iterator<value_type,data_pointer,category>::iterator iterator;
@@ -276,11 +276,11 @@ public:
 
 };
 
-template<typename T,typename PointerType=typename reference<T>::pointer_type,class CategoryRow=noncontiguous_memory_tag,class CategoryColumn=contiguous_memory_tag>
-class __device_grid : private __device_sequence<T,PointerType,CategoryColumn>
+template<typename T,typename PointerType=typename reference<T>::pointer_type,class CategoryRow=noncontiguous_memory_tag,class CategoryColumn=contiguous_memory_tag,class ContainerType=root_container_tag>
+class __device_grid : private __device_sequence<T,PointerType,CategoryColumn,ContainerType>
 {
 private:
-	typedef __device_sequence<T,PointerType,CategoryColumn> base_type;
+	typedef __device_sequence<T,PointerType,CategoryColumn,ContainerType> base_type;
 
 public:
 	typedef T value_type;
@@ -292,15 +292,19 @@ public:
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
-	typedef typename grid_iterator<value_type,pointer,row_category,column_category>::iterator iterator;
-	typedef typename grid_iterator<value_type,pointer,row_category,column_category>::const_iterator const_iterator;
+private:
+	typedef typename __device_container_traits<T,PointerType,CategoryColumn,ContainerType>::data_pointer data_pointer;
+
+public:
+	typedef typename grid_iterator<value_type,data_pointer,row_category,column_category>::iterator iterator;
+	typedef typename grid_iterator<value_type,data_pointer,row_category,column_category>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_sequence<value_type,pointer,column_category> row_type;
-	typedef const __device_sequence<const value_type,pointer,column_category> const_row_type;
-	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,row_category> column_type;
-	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,row_category> const_column_type;
+	typedef __device_sequence<value_type,data_pointer,column_category> row_type;
+	typedef const __device_sequence<const value_type,data_pointer,column_category> const_row_type;
+	typedef __device_sequence<value_type,striding_ptr<value_type,data_pointer>,row_category> column_type;
+	typedef const __device_sequence<const value_type,striding_ptr<value_type,data_pointer>,row_category> const_column_type;
 
 private:
 	size_type numberRows;
