@@ -86,6 +86,7 @@ public:
 	///
 	HOST DEVICE device_ptr( pointer ptr = pointer() ) : ptr(ptr) {
 		#ifndef __CUDA_ARCH__
+std::cerr << "device_ptr.ctor()" << std::endl;
 		reference_count = new size_type;
 		*reference_count = 1;
 		#else
