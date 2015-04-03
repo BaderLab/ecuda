@@ -265,6 +265,12 @@ public:
 		return *this;
 	}
 
+	template<typename U,typename V>
+	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr ) {
+		out << ptr.get();
+		return out;
+	}
+
 };
 
 } // namespace ecuda
