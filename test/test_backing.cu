@@ -63,7 +63,8 @@ int main( int argc, char* argv[] ) {
 
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr2( allocator.allocate( w, h ) );
 		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), h, w );
-		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid2( devicePtr2, h, w );
+		//ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid2( devicePtr2, h, w );
+		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1>, ecuda::noncontiguous_memory_tag, ecuda::contiguous_memory_tag, ecuda::child_container_tag > grid2( devicePtr2.get(), h, w );
 		grid1 >> grid2;
 
 		hostVector.assign( w*h, 0 );

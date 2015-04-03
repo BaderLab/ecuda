@@ -429,11 +429,11 @@ private:
 		}
 	}
 
-	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2>
-	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>& grid, contiguous_memory_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
+	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2,typename ContainerType2>
+	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>& grid, contiguous_memory_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
 		if( grid.number_rows() != number_rows() or grid.number_columns() != number_columns() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target __device_grid does not match the size of source __target_grid") );
 		for( size_type i = 0; i < number_rows(); ++i ) {
-			typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>::row_type dest = grid.get_row(i);
+			typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::row_type dest = grid.get_row(i);
 			const_row_type src = get_row(i);
 			dest.assign( src.begin(), src.end() );
 		}
@@ -472,13 +472,13 @@ public:
 		return *this;
 	}
 
-	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2>
-	HOST inline const __device_grid& operator>>( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>& container ) const {
+	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2,typename ContainerType2>
+	HOST inline const __device_grid& operator>>( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>& container ) const {
 		copy_to(
 			container,
 			column_category(),
-			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>::row_type::iterator>::iterator_category(),
-			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2>::column_type::iterator>::iterator_category()
+			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::row_type::iterator>::iterator_category(),
+			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::column_type::iterator>::iterator_category()
 		);
 		return *this;
 	}
