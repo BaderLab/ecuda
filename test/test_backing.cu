@@ -35,25 +35,15 @@ int main( int argc, char* argv[] ) {
 	{
 		const std::size_t w = 20;
 		const std::size_t h = 10;
-std::cerr << "cp1" << std::endl;
+
 		ecuda::device_pitch_allocator<double> allocator;
-std::cerr << "cp2" << std::endl;
 		ecuda::padded_ptr<double,double*,1> paddedPtr( allocator.allocate( w, h ) );
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( paddedPtr );
-std::cerr << "cp3" << std::endl;
-		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
-		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid1(
-			devicePtr1,
-			//ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> >( allocator.allocate( w, h ) ),
-			w,
-			h
-		);
-std::cerr << "cp4" << std::endl;
+		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), h, w );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( w*h, 99 );
-std::cerr << "cp5" << std::endl;
 		grid1.assign( hostVector.begin(), hostVector.end() );
-std::cerr << "cp6" << std::endl;
+std::cerr << "cp1" << std::endl;
 
 		hostVector.assign( w*h, 0 );
 		for( std::size_t i = 0; i < h; ++i ) {
@@ -63,6 +53,7 @@ std::cerr << "cp6" << std::endl;
 		}
 		std::cout << std::endl;
 
+std::cerr << "cp2" << std::endl;
 		grid1 >> hostVector;
 		for( std::size_t i = 0; i < h; ++i ) {
 			std::cout << "hostVector[" << i << "]";
@@ -72,7 +63,7 @@ std::cerr << "cp6" << std::endl;
 		std::cout << std::endl;
 
 		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr2( allocator.allocate( w, h ) );
-		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), w, h );
+		ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), h, w );
 		grid1 >> grid2;
 
 		hostVector.assign( w*h, 0 );

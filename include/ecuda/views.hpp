@@ -103,7 +103,13 @@ private:
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
 		if( n < 0 or static_cast<size_type>(n) != length ) throw std::length_error( EXCEPTION_MSG("__device_sequence::assign first,last does not span the correct number of elements") );
-		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( ptr, first.operator->(), length, cudaMemcpyHostToDevice ) );
+std::cerr << "ptr=" << ptr << std::endl;
+std::cerr << "first.operator->()=" << first.operator->() << std::endl;
+std::cerr << "length=" << length << std::endl;
+		typename std::remove_const<value_type>::type* p = ptr;
+std::cerr << "p=" << p << std::endl;
+		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( p, first.operator->(), length, cudaMemcpyHostToDevice ) );
+		CUDA_CHECK_ERRORS();
 		#endif
 	}
 
@@ -297,7 +303,10 @@ private:
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
 		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::assign first,last does not span the correct number of elements") );
-		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) get_row(i).assign( first, first+number_columns() );
+		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
+std::cerr << "get_row(" << i << ").assign()" << std::endl;
+			get_row(i).assign( first, first+number_columns() );
+		}
 		#endif
 	}
 
