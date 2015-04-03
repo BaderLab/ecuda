@@ -106,6 +106,8 @@ std::cerr << "device_ptr.ctor() " << reference_count << std::endl;
 		#ifndef __CUDA_ARCH__
 std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 		++(*reference_count);
+		#else
+std::cerr << "shallow copying " << src.ptr << " " << src.reference_count << std::endl;
 		#endif
 	}
 
