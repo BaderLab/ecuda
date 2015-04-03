@@ -36,10 +36,11 @@ int main( int argc, char* argv[] ) {
 		const std::size_t w = 20;
 		const std::size_t h = 10;
 		ecuda::device_pitch_allocator<double> allocator;
-		//ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
+		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
 		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
 		ecuda::__device_grid< double, ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> > > grid1(
-			ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> >( allocator.allocate( w, h ) ),
+			devicePtr1,
+			//ecuda::device_ptr< double,ecuda::padded_ptr<double,double*,1> >( allocator.allocate( w, h ) ),
 			w,
 			h
 		);
