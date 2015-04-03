@@ -288,6 +288,7 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 	}
 
 	HOST device_ptr<T>& operator=( pointer p ) {
+		std::cerr << "device_ptr.operator=(pointer)" << std::endl;
 		~device_ptr();
 		ptr = p;
 		reference_count = new size_type;
@@ -297,6 +298,7 @@ std::cerr << "copying " << src.ptr << " " << src.reference_count << std::endl;
 
 	HOST DEVICE device_ptr& operator=( const device_ptr& other ) {
 		#ifndef __CUDA_ARCH__
+		std::cerr << "device_ptr.operator=(device_ptr)" << std::endl;
 		~device_ptr();
 		#endif
 		ptr = other.ptr;
