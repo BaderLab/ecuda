@@ -38,7 +38,8 @@ int main( int argc, char* argv[] ) {
 std::cerr << "cp1" << std::endl;
 		ecuda::device_pitch_allocator<double> allocator;
 std::cerr << "cp2" << std::endl;
-		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( allocator.allocate( w, h ) );
+		ecuda::padded_ptr<double,double*,1> paddedPtr( allocator.allocate( w, h ) );
+		ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > devicePtr1( paddedPtr );
 std::cerr << "cp3" << std::endl;
 		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid1( devicePtr1.get(), w, h );
 		ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid1(
