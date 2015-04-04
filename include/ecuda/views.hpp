@@ -51,63 +51,112 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-struct contiguous_memory_tag {};
-struct noncontiguous_memory_tag {};
+struct __dimension_contiguous_tag {};
+struct __dimension_noncontiguous_tag {};
 
-template<typename T,typename PointerType,typename Category> struct __device_sequence_iterator_traits;
-template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,contiguous_memory_tag> {
+/*
+template<typename T,typename PointerType,typename DimensionType> struct __device_sequence_iterator_traits;
+template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,__dimension_contiguous_tag> {
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
-template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,noncontiguous_memory_tag> {
+template<typename T,typename PointerType> struct __device_sequence_iterator_traits<T,PointerType,__dimension_noncontiguous_tag> {
+	typedef device_iterator<T,PointerType> iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
+};
+*/
+/*
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_iterator_traits {
+	typedef device_iterator<T,PointerType> iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
+};
+template<typename T,typename PointerType> struct __device_grid_iterator_traits<T,PointerType,__dimension_contiguous_tag,__dimension_contiguous_tag> {
+	typedef contiguous_device_iterator<T> iterator;
+	typedef contiguous_device_iterator<const T> const_iterator;
+};
+*/
+
+struct __container_type_base_tag {};
+struct __container_type_derived_tag {};
+
+template<typename T,typename PointerType,typename DimensionType,typename ContainerType> struct __device_sequence_traits;
+template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_contiguous_tag,__container_type_base_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef contiguous_device_iterator<T> iterator;
+	typedef contiguous_device_iterator<const T> const_iterator;
+};
+template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_noncontiguous_tag,__container_type_base_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef device_iterator<T,PointerType> iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
+};
+template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_contiguous_tag,__container_type_derived_tag> {
+	typedef PointerType pointer;
+	typedef contiguous_device_iterator<T> iterator;
+	typedef contiguous_device_iterator<const T> const_iterator;
+};
+template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_noncontiguous_tag,__container_type_derived_tag> {
+	typedef PointerType pointer;
 	typedef device_iterator<T,PointerType> iterator;
 	typedef device_iterator<const T,PointerType> const_iterator;
 };
 
-template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_iterator_traits {
+/*
+template<typename T,typename PointerType,typename DimensionType> struct __device_sequence_traits<T,PointerType,DimensionType,__container_type_base_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,DimensionType>::iterator iterator;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,DimensionType>::const_iterator const_iterator;
+};
+template<typename T,typename PointerType,typename DimensionType> struct __device_sequence_traits<T,PointerType,DimensionType,__container_type_derived_tag> {
+	typedef PointerType pointer;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,DimensionType>::iterator iterator;
+	typedef typename __device_sequence_iterator_traits<T,PointerType,DimensionType>::const_iterator const_iterator;
+};
+*/
+
+
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType,typename ContainerType> struct __device_grid_traits;
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_base_tag> {
+	typedef typename PointerType::pointer pointer;
 	typedef device_iterator<T,PointerType> iterator;
 	typedef device_iterator<const T,PointerType> const_iterator;
 };
-template<typename T,typename PointerType> struct __device_grid_iterator_traits<T,PointerType,contiguous_memory_tag,contiguous_memory_tag> {
+template<typename T,typename PointerType> struct __device_grid_traits<T,PointerType,__dimension_contiguous_tag,__dimension_contiguous_tag,__container_type_base_tag> {
+	typedef typename PointerType::pointer pointer;
+	typedef contiguous_device_iterator<T> iterator;
+	typedef contiguous_device_iterator<const T> const_iterator;
+};
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_derived_tag> {
+	typedef PointerType pointer;
+	typedef device_iterator<T,PointerType> iterator;
+	typedef device_iterator<const T,PointerType> const_iterator;
+};
+template<typename T,typename PointerType> struct __device_grid_traits<T,PointerType,__dimension_contiguous_tag,__dimension_contiguous_tag,__container_type_derived_tag> {
+	typedef PointerType pointer;
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
 
-struct root_container_tag {};
-struct child_container_tag {};
-
-template<typename T,typename PointerType,typename Category,typename ContainerType> struct __device_sequence_traits;
-template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,root_container_tag> {
+/*
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_base_tag> {
 	typedef typename PointerType::pointer pointer;
-	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::iterator iterator;
-	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::const_iterator const_iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,RowDimensionType,ColumnDimensionType>::iterator iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,RowDimensionType,ColumnDimensionType>::const_iterator const_iterator;
 };
-template<typename T,typename PointerType,typename Category> struct __device_sequence_traits<T,PointerType,Category,child_container_tag> {
+
+template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_derived_tag> {
 	typedef PointerType pointer;
-	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::iterator iterator;
-	typedef typename __device_sequence_iterator_traits<T,PointerType,Category>::const_iterator const_iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,RowDimensionType,ColumnDimensionType>::iterator iterator;
+	typedef typename __device_grid_iterator_traits<T,PointerType,RowDimensionType,ColumnDimensionType>::const_iterator const_iterator;
 };
+*/
 
-template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn,typename ContainerType> struct __device_grid_traits;
-template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,root_container_tag> {
-	typedef typename PointerType::pointer pointer;
-	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::iterator iterator;
-	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::const_iterator const_iterator;
-};
-
-template<typename T,typename PointerType,typename CategoryRow,typename CategoryColumn> struct __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,child_container_tag> {
-	typedef PointerType pointer;
-	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::iterator iterator;
-	typedef typename __device_grid_iterator_traits<T,PointerType,CategoryRow,CategoryColumn>::const_iterator const_iterator;
-};
-
-template<typename T,typename PointerType=typename reference<T>::pointer_type,typename Category=contiguous_memory_tag,typename ContainerType=root_container_tag>
+template<typename T,typename PointerType=typename reference<T>::pointer_type,typename DimensionType=__dimension_contiguous_tag,typename ContainerType=__container_type_base_tag>
 class __device_sequence
 {
 public:
 	typedef T value_type;
-	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::pointer pointer;
-	typedef Category category;
+	typedef typename __device_sequence_traits<T,PointerType,DimensionType,ContainerType>::pointer pointer;
 	typedef value_type& reference;
 	typedef const value_type& const_reference;
 	typedef std::size_t size_type;
@@ -115,10 +164,11 @@ public:
 
 private:
 	typedef PointerType managed_pointer;
+	typedef DimensionType dimension_type;
 
 public:
-	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::iterator iterator;
-	typedef typename __device_sequence_traits<T,PointerType,Category,ContainerType>::const_iterator const_iterator;
+	typedef typename __device_sequence_traits<T,PointerType,DimensionType,ContainerType>::iterator iterator;
+	typedef typename __device_sequence_traits<T,PointerType,DimensionType,ContainerType>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
@@ -128,7 +178,7 @@ private:
 
 private:
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, std::random_access_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::random_access_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		// will never be called
 		#else
@@ -141,7 +191,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, std::bidirectional_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::bidirectional_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		// will never be called
 		#else
@@ -151,11 +201,11 @@ private:
 		#endif
 	}
 
-	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, contiguous_memory_tag, std::forward_iterator_tag ) { assign( first, last, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, contiguous_memory_tag, std::input_iterator_tag ) { assign( first, last, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::forward_iterator_tag ) { assign( first, last, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::input_iterator_tag ) { assign( first, last, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, contiguous_device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 		#ifdef __CUDA_ARCH__
 		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
@@ -168,7 +218,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_memory_tag, contiguous_device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_noncontiguous_tag, contiguous_device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 		if( n < 0 or static_cast<size_type>(n) != length ) return; // nothing happens
@@ -179,7 +229,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
 		#else
@@ -188,7 +238,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_memory_tag, device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_noncontiguous_tag, device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		assign( first, last, contiguous_sequence_tag(), device_iterator_tag() );
 		#else
@@ -196,7 +246,7 @@ private:
 		#endif
 	}
 
-	HOST DEVICE void fill( const value_type& value, contiguous_memory_tag ) {
+	HOST DEVICE void fill( const value_type& value, __dimension_contiguous_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
@@ -204,7 +254,7 @@ private:
 		#endif
 	}
 
-	HOST DEVICE void fill( const value_type& value, noncontiguous_memory_tag ) {
+	HOST DEVICE void fill( const value_type& value, __dimension_noncontiguous_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
@@ -213,14 +263,14 @@ private:
 	}
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, std::random_access_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, std::random_access_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToHost ) );
 	}
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, std::bidirectional_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, std::bidirectional_iterator_tag ) const {
 		if( container.size() != size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		std::vector< value_type, host_allocator<value_type> > v( size() );
 		operator>>( v );
@@ -228,11 +278,11 @@ private:
 		for( typename std::vector< value_type, host_allocator<value_type> >::const_iterator src = v.begin(); src != v.end(); ++src, ++dest ) *dest = *src;
 	}
 
-	template<class Container> HOST inline void copy_to( Container& container, contiguous_memory_tag, std::forward_iterator_tag ) const { copy_to( container, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
-	template<class Container> HOST inline void copy_to( Container& container, contiguous_memory_tag, std::output_iterator_tag ) const { copy_to( container, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Container> HOST inline void copy_to( Container& container, __dimension_contiguous_tag, std::forward_iterator_tag ) const { copy_to( container, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Container> HOST inline void copy_to( Container& container, __dimension_contiguous_tag, std::output_iterator_tag ) const { copy_to( container, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, contiguous_device_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, contiguous_device_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = container.end()-container.begin();
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_sequence::operator>> target container does not have sufficient space") );
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( container.begin().operator->(), data(), size(), cudaMemcpyDeviceToDevice ) );
@@ -240,7 +290,7 @@ private:
 
 public:
 	HOST DEVICE explicit __device_sequence( managed_pointer ptr, size_type length ) : ptr(ptr), length(length) {}
-	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,Category>& src ) : ptr(src.ptr), length(src.length) {}
+	HOST DEVICE __device_sequence( const __device_sequence<T,PointerType,DimensionType>& src ) : ptr(src.ptr), length(src.length) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
@@ -281,29 +331,27 @@ public:
 	DEVICE inline const_reference operator[]( const size_type index ) const { return *(data()+static_cast<int>(index)); }
 
 	template<class Iterator>
-	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, category(), typename std::iterator_traits<Iterator>::iterator_category() ); }
+	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, dimension_type(), typename std::iterator_traits<Iterator>::iterator_category() ); }
 
-	HOST DEVICE inline void fill( const value_type& value ) { fill( value, category() ); }
+	HOST DEVICE inline void fill( const value_type& value ) { fill( value, dimension_type() ); }
 
 	template<class Container>
 	HOST inline const __device_sequence& operator>>( Container& container ) const {
-		copy_to( container, category(), typename std::iterator_traits<typename Container::iterator>::iterator_category() );
+		copy_to( container, dimension_type(), typename std::iterator_traits<typename Container::iterator>::iterator_category() );
 		return *this;
 	}
 
 };
 
-template<typename T,typename PointerType=typename reference<T>::pointer_type,class CategoryRow=noncontiguous_memory_tag,class CategoryColumn=contiguous_memory_tag,class ContainerType=root_container_tag>
-class __device_grid : private __device_sequence<T,PointerType,CategoryColumn,ContainerType>
+template<typename T,typename PointerType=typename reference<T>::pointer_type,class RowDimensionType=__dimension_noncontiguous_tag,class ColumnDimensionType=__dimension_contiguous_tag,class ContainerType=__container_type_base_tag>
+class __device_grid : private __device_sequence<T,PointerType,ColumnDimensionType,ContainerType>
 {
 private:
-	typedef __device_sequence<T,PointerType,CategoryColumn,ContainerType> base_type;
+	typedef __device_sequence<T,PointerType,ColumnDimensionType,ContainerType> base_type;
 
 public:
 	typedef T value_type;
-	typedef typename __device_sequence_traits<T,PointerType,CategoryColumn,ContainerType>::pointer pointer;
-	typedef CategoryRow row_category;
-	typedef CategoryColumn column_category;
+	typedef typename __device_sequence_traits<T,PointerType,ColumnDimensionType,ContainerType>::pointer pointer;
 	typedef value_type& reference;
 	typedef const value_type& const_reference;
 	typedef std::size_t size_type;
@@ -311,24 +359,26 @@ public:
 
 private:
 	typedef PointerType managed_pointer;
+	typedef RowDimensionType row_dimension_type;
+	typedef ColumnDimensionType column_dimension_type;
 
 public:
-	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::iterator iterator;
-	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::const_iterator const_iterator;
+	typedef typename __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,ContainerType>::iterator iterator;
+	typedef typename __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,ContainerType>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_sequence<value_type,pointer,column_category,child_container_tag> row_type;
-	typedef const __device_sequence<const value_type,pointer,column_category,child_container_tag> const_row_type;
-	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,row_category,child_container_tag> column_type;
-	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,row_category,child_container_tag> const_column_type;
+	typedef __device_sequence<value_type,pointer,column_dimension_type,__container_type_derived_tag> row_type;
+	typedef const __device_sequence<const value_type,pointer,column_dimension_type,__container_type_derived_tag> const_row_type;
+	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,row_dimension_type,__container_type_derived_tag> column_type;
+	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,row_dimension_type,__container_type_derived_tag> const_column_type;
 
 private:
 	size_type numberRows;
 
 private:
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, std::random_access_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::random_access_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		// will never be called
 		#else
@@ -339,7 +389,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, std::bidirectional_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::bidirectional_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		// will never be called
 		#else
@@ -350,11 +400,11 @@ private:
 		#endif
 	}
 
-	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, contiguous_memory_tag, std::forward_iterator_tag ) { assign( first, last, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, contiguous_memory_tag, std::input_iterator_tag ) { assign( first, last, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::forward_iterator_tag ) { assign( first, last, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST DEVICE inline void assign( Iterator first, Iterator last, __dimension_contiguous_tag, std::input_iterator_tag ) { assign( first, last, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, contiguous_device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, contiguous_device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 		if( n < 0 or static_cast<n> != size() ) return; // nothing happens
@@ -367,7 +417,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_memory_tag, contiguous_device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_noncontiguous_tag, contiguous_device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 		if( n < 0 or static_cast<n> != size() ) return; // nothing happens
@@ -378,7 +428,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, contiguous_memory_tag, device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_contiguous_tag, device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator dest = begin(); dest != end() and first != last; ++dest, ++first ) *dest = *first;
 		#else
@@ -387,7 +437,7 @@ private:
 	}
 
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last, noncontiguous_memory_tag, device_iterator_tag ) {
+	HOST DEVICE void assign( Iterator first, Iterator last, __dimension_noncontiguous_tag, device_iterator_tag ) {
 		#ifdef __CUDA_ARCH__
 		assign( first, last, contiguous_sequence_tag(), device_iterator_tag() );
 		#else
@@ -395,7 +445,7 @@ private:
 		#endif
 	}
 
-	HOST DEVICE void fill( const value_type& value, contiguous_memory_tag ) {
+	HOST DEVICE void fill( const value_type& value, __dimension_contiguous_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
@@ -403,7 +453,7 @@ private:
 		#endif
 	}
 
-	HOST DEVICE void fill( const value_type& value, noncontiguous_memory_tag ) {
+	HOST DEVICE void fill( const value_type& value, __dimension_noncontiguous_tag ) {
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
@@ -412,7 +462,7 @@ private:
 	}
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, std::random_access_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, std::random_access_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = std::distance( container.begin(), container.end() );
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		typename Container::iterator dest = container.begin();
@@ -425,7 +475,7 @@ private:
 	}
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, std::bidirectional_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, std::bidirectional_iterator_tag ) const {
 		if( container.size() != size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		std::vector< value_type, host_allocator<value_type> > v( size() );
 		operator>>( v );
@@ -433,11 +483,11 @@ private:
 		for( typename std::vector< value_type, host_allocator<value_type> >::const_iterator src = v.begin(); src != v.end(); ++src, ++dest ) *dest = *src;
 	}
 
-	template<class Container> HOST inline void copy_to( Container& container, contiguous_memory_tag, std::forward_iterator_tag ) const { copy_to( container, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
-	template<class Container> HOST inline void copy_to( Container& container, contiguous_memory_tag, std::output_iterator_tag ) const { copy_to( container, contiguous_memory_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Container> HOST inline void copy_to( Container& container, __dimension_contiguous_tag, std::forward_iterator_tag ) const { copy_to( container, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
+	template<class Container> HOST inline void copy_to( Container& container, __dimension_contiguous_tag, std::output_iterator_tag ) const { copy_to( container, __dimension_contiguous_tag(), std::bidirectional_iterator_tag() ); }
 
 	template<class Container>
-	HOST void copy_to( Container& container, contiguous_memory_tag, contiguous_device_iterator_tag ) const {
+	HOST void copy_to( Container& container, __dimension_contiguous_tag, contiguous_device_iterator_tag ) const {
 		const typename std::iterator_traits<typename Container::iterator>::difference_type n = container.end()-container.begin();
 		if( n < 0 or static_cast<size_type>(n) < size() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target container does not have sufficient space") );
 		typename Container::iterator dest = container.begin();
@@ -447,7 +497,7 @@ private:
 	}
 
 	template<typename T2,typename PointerType2,typename RowCategory2,typename ColumnCategory2,typename ContainerType2>
-	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>& grid, contiguous_memory_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
+	HOST void copy_to( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>& grid, __dimension_contiguous_tag, contiguous_device_iterator_tag, device_iterator_tag ) const {
 		if( grid.number_rows() != number_rows() or grid.number_columns() != number_columns() ) throw std::length_error( EXCEPTION_MSG("__device_grid::operator>> target __device_grid does not match the size of source __target_grid") );
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::row_type dest = grid.get_row(i);
@@ -458,7 +508,7 @@ private:
 
 public:
 	HOST DEVICE explicit __device_grid( managed_pointer ptr, size_type numberRows, size_type numberColumns ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
-	HOST DEVICE __device_grid( const __device_grid<T,PointerType,CategoryRow,CategoryColumn>& src ) : base_type(src), numberRows(src.numberRows) {}
+	HOST DEVICE __device_grid( const __device_grid<T,PointerType,RowDimensionType,ColumnDimensionType>& src ) : base_type(src), numberRows(src.numberRows) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
@@ -482,13 +532,13 @@ public:
 	HOST DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return *(data()+(number_columns()*rowIndex+columnIndex)); }
 
 	template<class Iterator>
-	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, column_category(), typename std::iterator_traits<Iterator>::iterator_category() ); }
+	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, column_dimension_type(), typename std::iterator_traits<Iterator>::iterator_category() ); }
 
-	HOST DEVICE inline void fill( const value_type& value ) { fill( value, column_category() ); }
+	HOST DEVICE inline void fill( const value_type& value ) { fill( value, column_dimension_type() ); }
 
 	template<class Container>
 	HOST inline const __device_grid& operator>>( Container& container ) const {
-		copy_to( container, column_category(), typename std::iterator_traits<typename Container::iterator>::iterator_category() );
+		copy_to( container, column_dimension_type(), typename std::iterator_traits<typename Container::iterator>::iterator_category() );
 		return *this;
 	}
 
@@ -496,7 +546,7 @@ public:
 	HOST inline const __device_grid& operator>>( __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>& container ) const {
 		copy_to(
 			container,
-			column_category(),
+			column_dimension_type(),
 			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::row_type::iterator>::iterator_category(),
 			typename std::iterator_traits<typename __device_grid<T2,PointerType2,RowCategory2,ColumnCategory2,ContainerType2>::column_type::iterator>::iterator_category()
 		);

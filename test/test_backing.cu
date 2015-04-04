@@ -54,6 +54,38 @@ int main( int argc, char* argv[] ) {
 	}
 
 	{
+		// define element type
+		typedef coord_t<double> Coordinate;
+
+		// create allocator
+		ecuda::device_pitch_allocator<Coordinate> allocator;
+
+		// create device grid using device_ptr
+		ecuda::__device_grid<
+			Coordinate,
+			ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> >,
+			ecuda::__dimension_noncontiguous_tag,
+			ecuda::__dimension_contiguous_tag,
+			ecuda::__container_type_base_tag
+		> grid1(
+			ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> >( allocator.allocate( 20, 10 ) ), 10, 20
+		);
+
+		// create device grid using padded_ptr
+		ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> > devicePtr( allocator.allocate( 20, 10 ) );
+		ecuda::__device_grid<
+			Coordinate,
+			ecuda::padded_ptr<Coordinate,Coordinate*,1>,
+			ecuda::__dimension_noncontiguous_tag,
+			ecuda::__dimension_contiguous_tag,
+			ecuda::__container_type_derived_tag
+		> grid2(
+			devicePtr.get(), 10, 20
+		);
+
+	}
+
+	{
 		const std::size_t w = 20;
 		const std::size_t h = 10;
 
@@ -89,7 +121,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> > devicePtr2( allocator.allocate( w, h ) );
 		//ecuda::__device_grid< double, ecuda::padded_ptr<double,double*,1> > grid2( devicePtr2.get(), h, w );
 		//ecuda::__device_grid< double, ecuda::device_ptr< double, ecuda::padded_ptr<double,double*,1> > > grid2( devicePtr2, h, w );
-		ecuda::__device_grid< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1>, ecuda::noncontiguous_memory_tag, ecuda::contiguous_memory_tag, ecuda::child_container_tag > grid2( devicePtr2.get(), h, w );
+		ecuda::__device_grid< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1>, ecuda::__dimension_noncontiguous_tag, ecuda::__dimension_contiguous_tag, ecuda::__container_type_derived_tag > grid2( devicePtr2.get(), h, w );
 		grid1 >> grid2;
 
 		fillColumn<<<1,1>>>( grid2.get_column(3), 66 );
