@@ -54,12 +54,14 @@ int main( int argc, char* argv[] ) {
 	}
 
 	{
+		std::cerr << "SET #1" << std::endl;
 		// define element type
 		typedef coord_t<double> Coordinate;
 
 		// create allocator
 		ecuda::device_pitch_allocator<Coordinate> allocator;
 
+		std::cerr << "cp1" << std::endl;
 		// create device grid using device_ptr
 		ecuda::__device_grid<
 			Coordinate,
@@ -71,6 +73,7 @@ int main( int argc, char* argv[] ) {
 			ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> >( allocator.allocate( 20, 10 ) ), 10, 20
 		);
 
+		std::cerr << "cp2" << std::endl;
 		// create device grid using padded_ptr
 		ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> > devicePtr( allocator.allocate( 20, 10 ) );
 		ecuda::__device_grid<
