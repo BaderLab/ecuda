@@ -156,6 +156,24 @@ public:
 	}
 
 	///
+	/// \brief Increments the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
+	HOST DEVICE inline device_iterator& operator+=( int x ) { ptr += x; return *this; } //base_iterator_type::get_pointer_ref() += x; return *this; }
+
+	///
+	/// \brief Decrements the position of this iterator by some amount.
+	///
+	/// This ability is required of random access STL iterators.
+	///
+	/// \param x The number of positions to increment this iterator by.
+	///
+	HOST DEVICE inline device_iterator& operator-=( int x ) { ptr -= x; return *this; } //base_iterator_type::get_pointer_ref() -= x; return *this; }
+
+	///
 	/// \brief Equality comparison of this iterator with another.
 	///
 	/// This ability is required of input STL iterators.
@@ -327,24 +345,6 @@ public:
 	/// \returns true if the element pointed at by this iterator is equal to or comes after the element pointed at by other.
 	///
 	HOST DEVICE bool operator>=( const contiguous_device_iterator& other ) const { return operator>(other) or operator==(other); }
-
-	///
-	/// \brief Increments the position of this iterator by some amount.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions to increment this iterator by.
-	///
-	HOST DEVICE inline contiguous_device_iterator& operator+=( int x ) { base_iterator_type::get_pointer_ref() += x; return *this; }
-
-	///
-	/// \brief Decrements the position of this iterator by some amount.
-	///
-	/// This ability is required of random access STL iterators.
-	///
-	/// \param x The number of positions to increment this iterator by.
-	///
-	HOST DEVICE inline contiguous_device_iterator& operator-=( int x ) { base_iterator_type::get_pointer_ref() -= x; return *this; }
 
 	///
 	/// \brief Gets a reference to an element whose position is offset by a specified amount from this iterator's element.

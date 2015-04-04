@@ -36,7 +36,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::__device_sequence< double, ecuda::device_ptr<double> > sequence1( ecuda::device_ptr<double>( allocator.allocate(n) ), n );
 
 		std::vector< double, ecuda::host_allocator<double> > hostVector( n, 99 );
-		sequence1.assign( hostVector.begin(), hostVector.end() );
+		sequence1.copy_range_from( hostVector.begin(), hostVector.end(), sequence1.begin() );
 
 		hostVector.assign( n, 0 );
 		std::cout << "hostVector ="; for( std::size_t i = 0; i < n; ++i ) std::cout << " " << hostVector[i]; std::cout << std::endl;
@@ -98,9 +98,12 @@ int main( int argc, char* argv[] ) {
 		ecuda::__device_grid< Coordinate, ecuda::device_ptr< Coordinate, ecuda::padded_ptr<Coordinate,Coordinate*,1> > > grid1( devicePtr1, h, w );
 
 		std::vector< Coordinate, ecuda::host_allocator<Coordinate> > hostVector( w*h );
-		for( std::size_t i = 0; i < h; ++i )
-			for( std::size_t j = 0; j < w; ++j ) hostVector[i*w+j] = Coordinate(i,j);
-		grid1.assign( hostVector.begin(), hostVector.end() );
+		for( std::size_t i = 0; i < h; ++i ) {
+			for( std::size_t j = 0; j < w; ++j ) {
+				hostVector[i*w+j] = Coordinate(i,j);
+				grid1.get_row(i).copy_range_from( hostVector.begin()+(i*w+j), hostVector.begin()+((i+1)*w+j), grid1.get_row(i).begin() );
+			}
+		}
 
 		hostVector.assign( w*h, 0 );
 		for( std::size_t i = 0; i < h; ++i ) {

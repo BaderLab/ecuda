@@ -56,6 +56,8 @@ either expressed or implied, of the FreeBSD Project.
 #include "iterators.hpp"
 #include "global.hpp"
 
+#include "views.hpp" //TODO: change this
+
 namespace ecuda {
 
 /// \cond DEVELOPER_DOCUMENTATION
@@ -92,80 +94,74 @@ template<> struct __is_integer<unsigned long long> { typedef __true_type __type;
 ///
 ///
 template< typename T, class Alloc=device_allocator<T> >
-class vector {
+class vector :
+	private __device_sequence<
+		T,
+		device_ptr<
+			T,
+			#ifdef __CPP11_SUPPORTED__
+			typename std::allocator_traits<Alloc>::pointer
+			#else
+			typename Alloc::pointer
+			#endif
+		>,
+		__dimension_contiguous_tag,
+		__container_type_base_tag
+	>
+{
+
+private:
+	typedef __device_sequence<T,device_ptr<T,T*>,__dimension_contiguous_tag,__container_type_base_tag> base_type;
+	typedef __device_sequence<T,device_ptr<T,T*>,__dimension_contiguous_tag,__container_type_derived_tag> derived_type;
 
 public:
-	typedef T value_type; //!< cell data type
+	typedef typename base_type::value_type value_type; //!< element data type
 	typedef Alloc allocator_type; //!< allocator type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-	#ifdef __CPP11_SUPPORTED__
-	typedef value_type& reference; //!< cell reference type
-	typedef const value_type& const_reference; //!< cell const reference type
-	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
-	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
-	#else
-	typedef typename Alloc::reference reference; //!< cell reference type
-	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
-	typedef typename Alloc::pointer pointer; //!< cell pointer type
-	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
-	#endif
+	typedef typename base_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_type::difference_type difference_type; //!< signed integral type
+	typedef typename base_type::pointer pointer; //!< element pointer type
+	typedef typename base_type::reference reference; //!< element reference type
+	typedef typename base_type::const_reference const_reference; //!< element const reference type
 
-	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef device_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+	typedef typename base_type::iterator iterator; //!< iterator type
+	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
+	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
 private:
 	// REMEMBER: n and m altered on device memory won't be reflected on the host object. Don't allow
 	//           the device to perform any operations that change their value.
 	size_type n; //!< number of elements currently stored
-	size_type m; //!< number of elements worth of memory allocated
-	device_ptr<value_type> deviceMemory; //!< smart point to video card memory
+	//size_type m; //!< number of elements worth of memory allocated
+	//device_ptr<value_type> deviceMemory; //!< smart point to video card memory
 	allocator_type allocator;
 
 private:
-	HOST void growMemory( size_type minimum );
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n2 = std::distance(first,last);
-		if( n2 < 0 ) return;
-		growMemory( static_cast<size_type>(n2) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyHostToDevice ) );
-		n = static_cast<size_type>(n2);
-	}
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
-		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		growMemory( v.size() );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = v.size();
-	}
-
-	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::input_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n2 = last-first;
-		if( n2 < 0 ) return;
-		growMemory( static_cast<size_type>(n2) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), static_cast<size_type>(n2), cudaMemcpyDeviceToDevice ) );
-		n = static_cast<size_type>(n2);
+	HOST void growMemory( const size_type minimum ) {
+		if( base_type::size() >= minimum ) return; // no growth neccessary
+		size_type m2 = base_type::size();
+		if( !m2 ) m2 = 1; // in case no memory is currently allocated
+		while( m2 < minimum ) m2 <<= 1;
+		// allocate larger chunk
+		device_ptr<value_type> newMemory( allocator.allocate( m2 ) );
+		base_type newBase( newMemory, m2 );
+		// copy old data to new chunk
+		if( base_type::data() ) newBase.assign( begin(), end() );
+		operator=( newBase );
 	}
 
 	template<class Iterator>
 	inline HOST void init( Iterator first, Iterator last, __false_type ) {
-		init( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		base_type temp( first, last );
+		base_type::assign( temp.begin(), temp.end() );
+		n = temp.size();
 	}
 
 	HOST void init( size_type n, const value_type& value, __true_type ) {
 		growMemory( n );
 		if( n ) {
 			std::vector< value_type, host_allocator<value_type> > v( n, value );
-			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
+			base_type::assign( v.begin(), v.end() );
 		}
 		this->n = n;
 	}
@@ -175,7 +171,7 @@ public:
 	/// \brief Default constructor. Constructs empty container.
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST explicit vector( const allocator_type& allocator = allocator_type() ) : n(0), m(0), allocator(allocator) {}
+	HOST explicit vector( const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {}
 
 	///
 	/// \brief Constructs the container with n copies of elements with value value.
@@ -183,7 +179,7 @@ public:
 	/// \param value the value to initialize elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : n(n), m(0), allocator(allocator) {
+	HOST explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {
 		init( n, value, __true_type() );
 	}
 
@@ -191,12 +187,8 @@ public:
 	/// \brief Constructs the container with n default-inserted instances of T. No copies are made.
 	/// \param n the size of the container
 	///
-	HOST explicit vector( size_type n ) : n(n), m(0) {
-		if( n ) {
-			growMemory( n );
-			std::vector< value_type, host_allocator<value_type> > v( n );
-			CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), n, cudaMemcpyHostToDevice ) );
-		}
+	HOST explicit vector( size_type n ) : base_type(), n(0) {
+		init( n, value_type(), __true_type() );
 	}
 
 	///
@@ -205,7 +197,7 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	template<class Iterator>
-	HOST vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : m(0), allocator(allocator) {
+	HOST vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), allocator(allocator) {
 		typedef typename __is_integer<Iterator>::__type _Integral;
 		init( first, last, _Integral() );
 	}
@@ -226,14 +218,7 @@ public:
 	///
 	/// \param src Another vector object of the same type, whose contents are copied.
 	///
-	HOST vector( const vector<value_type>& src ) : n(src.n), m(src.m), deviceMemory(src.deviceMemory),
-		//#ifdef __CPP11_SUPPORTED__
-		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		//#else
-		allocator(src.allocator)
-		//#endif
-	{
-	}
+	HOST vector( const vector<value_type,allocator_type>& src ) : base_type(src), n(src.n), allocator(src.allocator) {}
 
 	///
 	/// \brief Copy constructor. Constructs the container with the copy of the contents of the other.
@@ -241,10 +226,7 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	template<class Alloc2>
-	HOST vector( const vector<value_type,Alloc2>& src, const allocator_type& allocator ) : n(src.n), m(src.m), allocator(allocator) {
-		deviceMemory = device_ptr<value_type>( this->allocator.allocate(m) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
-	}
+	HOST vector( const vector<value_type,Alloc2>& src, const allocator_type& allocator ) : base_type(src), n(src.size()), allocator(allocator) {}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -254,24 +236,22 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST DEVICE vector( vector&& src ) : n(std::move(src.n)), m(std::move(src.m)), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
+	HOST DEVICE vector( vector&& src ) : base_type(std::move(src)), n(std::move(src.n)) {}
 
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
 	/// \param src another container to be used as source to initialize the elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST DEVICE vector( vector&& src, const allocator_type& allocator ) : n(std::move(src.n)), m(std::move(src.m)), deviceMemory(std::move(src.deviceMemory)), allocator(allocator) {}
+	HOST DEVICE vector( vector&& src, const allocator_type& allocator ) : base_type(std::move(src)), n(std::move(src.n)), allocator(allocator) {}
 
 	///
 	/// \brief Constructs the container with the contents of the initializer list il.
 	/// \param il initializer list to initialize the elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	HOST vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : n(0), m(0), allocator(allocator) {
-		std::vector< value_type, host_allocator<value_type> > v( il );
-		growMemory( v.size() );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), v.data(), v.size(), cudaMemcpyHostToDevice ) );
+	HOST vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : n(0), allocator(allocator) {
+		init( il.begin(), il.end(), __false_type() );
 	}
 	#endif
 
@@ -284,7 +264,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(deviceMemory.get()); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -293,7 +273,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return base_type::begin()+size(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -302,7 +282,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -311,7 +291,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return base_type::begin()+size(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -378,24 +358,23 @@ public:
 	HOST void resize( size_type newSize, const value_type& value = value_type() ) {
 		if( size() == newSize ) return;
 		if( size() > newSize ) { n = newSize; return; }
-		growMemory( newSize ); // make sure enough device memory is allocated
-		std::vector< value_type, host_allocator<value_type> > v( newSize-n, value );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+n, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = newSize;
+		base_type oldContent( *this );
+		init( newSize, value, __true_type() );
+		base_type::assign( oldContent.begin(), oldContent.end() );
 	}
 
 	///
 	/// \brief Returns the number of elements that the container has currently allocated space for.
 	/// \return Capacity of the currently allocated storage.
 	///
-	HOST DEVICE inline size_type capacity() const __NOEXCEPT__ { return m; }
+	HOST DEVICE inline size_type capacity() const __NOEXCEPT__ { return base_type::size(); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !n; }
+	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
 
 	///
 	/// \brief Increase the capacity of the container to a value that's greater or equal to newCapacity.
@@ -416,7 +395,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( const size_type index ) { return *(deviceMemory.get()+index); }
+	DEVICE inline reference operator[]( const size_type index ) { return base_type::operator[]( index ); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -424,7 +403,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( const size_type index ) const { return *(deviceMemory.get()+index); }
+	DEVICE inline const_reference operator[]( const size_type index ) const { return base_type::operator[]( index ); }
 
 	/*
 	 * Deprecating these functions since the STL standard seems to specify that at() accessors
@@ -442,7 +421,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline reference front() { return *deviceMemory; }
+	DEVICE inline reference front() { return operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -451,7 +430,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline reference back() { return operator[]( size()-1 ); }
+	DEVICE inline reference back() { return operator[](size()-1); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -460,7 +439,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline const_reference front() const { return *deviceMemory; }
+	DEVICE inline const_reference front() const { return operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -469,7 +448,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
+	DEVICE inline const_reference back() const { return operator[](size()-1); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -479,7 +458,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
+	HOST DEVICE inline pointer data() __NOEXCEPT__ { return base_type::data(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -489,7 +468,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+	HOST DEVICE inline const pointer data() const __NOEXCEPT__ { return base_type::data(); }
 
 	///
 	/// \brief Replaces the contents of the container.
@@ -498,48 +477,15 @@ public:
 	///
 	HOST void assign( size_type newSize, const value_type& value = value_type() ) {
 		growMemory(newSize); // make sure enough device memory is allocated
-		std::vector< value_type, host_allocator<value_type> > v( newSize, value );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = newSize;
+		init( newSize, value, __true_type() );
 	}
 
-private:
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type newSize = std::distance( first, last );
-		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
-		growMemory( newSize );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), newSize, cudaMemcpyHostToDevice ) );
-		n = newSize;
-	}
-
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
-		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		growMemory( v.size() ); // make sure enough device memory is allocated
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = v.size();
-	}
-
-	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::forward_iterator_tag ) { assign( first, last, std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::input_iterator_tag ) { assign( first, last, std::bidirectional_iterator_tag() ); }
-
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type newSize = std::distance( first, last );
-		if( newSize < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
-		growMemory( newSize );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), newSize, cudaMemcpyDeviceToDevice ) );
-		n = newSize;
-	}
-
-public:
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
 	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
+	HOST void assign( Iterator first, Iterator last ) { base_type::assign( first, last ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -549,12 +495,7 @@ public:
 	///
 	/// \param il initializer list to copy the values from
 	///
-	HOST void assign( std::initializer_list<value_type> il ) {
-		std::vector< value_type, host_allocator<value_type> > v( il );
-		growMemory( v.size() ); // make sure enough device memory is allocated
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n = v.size();
-	}
+	HOST void assign( std::initializer_list<value_type> il ) { base_type::assign( il.begin(), il.end() ); }
 	#endif
 
 	///
@@ -563,7 +504,7 @@ public:
 	///
 	HOST void push_back( const value_type& value ) {
 		growMemory(n+1);
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+n, &value, 1, cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<value_type>( data()+static_cast<int>(n), &value, 1, cudaMemcpyHostToDevice ) );
 		++n;
 	}
 
@@ -607,14 +548,14 @@ public:
 	/// \return iterator pointing to the inserted value
 	///
 	HOST iterator insert( const_iterator position, const value_type& value ) {
-		growMemory(n+1); // make sure enough device memory is allocated
 		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v( n-index+1, T() ); // allocate pinned memory to transfer post-insertion region to host
-		if( v.size() > 1 ) CUDA_CALL( cudaMemcpy<value_type>( &v[1], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +1 in host vector
-		v.front() = value; // add new value to position 0
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +1 inserted data back onto device
+		std::vector< value_type, host_allocator<value_type> > v( size(), value_type() );
+		base_type::operator>>( v );
+		v.insert( v.begin()+index, value );
+		growMemory(size()+1); // make sure enough device memory is allocated
+		base_type::assign( v.begin(), v.end() );
 		++n;
-		return position; // since iterators are index based, the return iterator is the same as the one provided
+		return begin()+index;
 	}
 
 	///
@@ -631,14 +572,14 @@ public:
 	/// \return iterator pointing to the inserted value
 	///
 	HOST iterator insert( const_iterator position, const size_type count, const value_type& value ) {
-		growMemory(n+count); // make sure enough device memory is allocated
 		const size_type index = position-begin();
-		std::vector< T, host_allocator<value_type> > v( n-index+count, T(), host_allocator<value_type>() ); // allocate pinned memory to transfer post-insertion region to host
-		if( v.size() > count ) CUDA_CALL( cudaMemcpy<value_type>( &v[count], deviceMemory.get()+index, (n-index), cudaMemcpyDeviceToHost ) ); // copy post-insertion region to +span in host vector
-		for( size_type i = 0; i < count; ++i ) v[i] = value; // fill in start region with new value
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) ); // copy +span inserted data back onto device
+		std::vector< value_type, host_allocator<value_type> > v( size(), value_type() );
+		base_type::operator>>( v );
+		v.insert( v.begin()+index, count, value );
+		growMemory(size()+count); // make sure enough device memory is allocated
+		base_type::assign( v.begin(), v.end() );
 		n += count;
-		return position; // since iterators are index based, the return iterator is the same as the one provided
+		return begin()+index;
 	}
 
 	/*
@@ -666,28 +607,27 @@ private:
 	template<class Iterator>
 	HOST void insert( const_iterator position, Iterator first, Iterator last, std::random_access_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type newElements = std::distance(first,last);
-		if( newElements < 0 ) return;
-		growMemory( n+newElements );
-		// copy trailing elements to temporary memory
-		vector<value_type,allocator_type> v( position, end() );
-		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
-		// put new elements in place
-		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), first.operator->(), static_cast<size_type>(newElements), cudaMemcpyHostToDevice ) );
-		// put trailing elements back
-		CUDA_CALL( cudaMemcpy<value_type>( (position+static_cast<size_type>(newElements)).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+		if( newElements <= 0 ) return;
+		const size_type index = position-begin();
+		std::vector< value_type, host_allocator<value_type> > v( size() );
+		base_type::operator>>( v );
+		v.insert( v.begin()+index, first, last );
+		growMemory( size()+newElements );
+		base_type::assign( v.begin(), v.end() );
+		n += newElements;
 	}
 
 	template<class Iterator>
 	HOST void insert( const_iterator position, Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
 		vector< value_type, host_allocator<value_type> > newElements( first, last );
-		growMemory( n+newElements.size() );
-		// copy trailing elements to temporary memory
-		vector<value_type,allocator_type> v( position, end() );
-		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
-		// put new elements in place
-		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), &newElements.front(), static_cast<size_type>(newElements.size()), cudaMemcpyHostToDevice ) );
-		// put trailing elements back
-		CUDA_CALL( cudaMemcpy<value_type>( (position+newElements.size()).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+		if( newElements.empty() ) return;
+		const size_type index = position-begin();
+		std::vector< value_type, host_allocator<value_type> > v( size() );
+		base_type::operator>>( v );
+		v.insert( v.begin()+index, newElements.begin(), newElements.end() );
+		growMemory( size()+newElements.size() );
+		base_type::assign( v.begin(), v.end() );
+		n += newElements.size();
 	}
 
 	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::forward_iterator_tag ) { insert( first, last, std::bidirectional_iterator_tag() ); }
@@ -696,15 +636,17 @@ private:
 	template<class Iterator>
 	HOST void insert( const_iterator position, Iterator first, Iterator last, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type newElements = last-first;
-		if( newElements < 0 ) return;
-		growMemory( n+newElements );
-		// copy trailing elements to temporary memory
-		vector<value_type,allocator_type> v( position, end() );
-		CUDA_CALL( cudaMemcpy<value_type>( v.deviceMemory.get(), position.operator->(), end()-position, cudaMemcpyDeviceToDevice ) );
-		// put new elements in place
-		CUDA_CALL( cudaMemcpy<value_type>( position.operator->(), first.operator->(), static_cast<size_type>(newElements), cudaMemcpyDeviceToDevice ) );
-		// put trailing elements back
-		CUDA_CALL( cudaMemcpy<value_type>( (position+static_cast<size_type>(newElements)).operator->(), v.begin().operator->(), v.size(), cudaMemcpyDeviceToDevice ) );
+		if( newElements <= 0 ) return;
+		const size_type index = position-begin();
+		std::vector< value_type, host_allocator<value_type> > v1( size() );
+		base_type::operator>>( v1 );
+		vector dv( first, last, allocator );
+		std::vector< value_type, host_allocator<value_type> > v2( dv.size() );
+		dv.operator>>( v2 );
+		v1.insert( v1.begin()+index, v2.begin(), v2.end() );
+		growMemory( size()+newElements );
+		base_type::assign( v1.begin(), v1.end() );
+		n += newElements;
 	}
 
 public:
@@ -736,7 +678,7 @@ public:
 	/// \param position iterator before which the content will be inserted. position may be the end() iterator
 	/// \param il initializer list to insert values from
 	///
-	HOST inline void insert( const_iterator position, std::initializer_list<value_type> il ) { return insert( position, il.begin(), il.end() ); }
+	HOST inline void insert( const_iterator position, std::initializer_list<value_type> il ) { insert( position, il.begin(), il.end() ); }
 	#endif
 
 	///
@@ -753,11 +695,12 @@ public:
 	///
 	HOST iterator erase( const_iterator position ) {
 		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v( n-index-1, value_type() ); // allocate pinned memory to transfer post-erasure region to host
-		CUDA_CALL( cudaMemcpy<value_type>( &v.front(), deviceMemory.get()+(index+1), v.size(), cudaMemcpyDeviceToHost ) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+index, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
+		std::vector< value_type, host_allocator<value_type> > v( size() );
+		base_type::operator>>( v );
+		v.erase( v.begin()+index );
+		base_type::assign( v.begin(), v.end() );
 		--n;
-		return iterator(begin()+index);
+		return begin()+index;
 	}
 
 	///
@@ -776,12 +719,12 @@ public:
 	HOST iterator erase( const_iterator first, const_iterator last ) {
 		const size_type index1 = first-begin();
 		const size_type index2 = last-begin();
-		std::vector< value_type, host_allocator<value_type> > v( n-index2, value_type() ); // allocate pinned memory to transfer post-erasure region to host
-		CUDA_CALL( cudaMemcpy<value_type>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
-		CUDA_CALL( cudaMemcpy<value_type>( &v.front(), deviceMemory.get()+index2, v.size(), cudaMemcpyDeviceToHost ) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get()+index1, &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-		n -= index2-index1;
-		return iterator(begin()+index1);
+		std::vector< value_type, host_allocator<value_type> > v( size() );
+		base_type::operator>>( v );
+		v.erase( v.begin()+index1, v.begin()+index2 );
+		base_type::assign( v.begin(), v.end() );
+		n = v.size();
+		return begin()+index1;
 	}
 
 	///
@@ -797,14 +740,11 @@ public:
 	///
 	HOST DEVICE void swap( vector& other ) {
 		// just swap all members
+		base_type::swap( other );
 		#ifdef __CUDA_ARCH__
 		ecuda::swap( n, other.n );
-		ecuda::swap( m, other.m );
-		ecuda::swap( deviceMemory, other.deviceMemory );
 		#else
 		std::swap( n, other.n );
-		std::swap( m, other.m );
-		std::swap( deviceMemory, other.deviceMemory );
 		#endif
 	}
 
@@ -834,11 +774,11 @@ public:
 	/// the end iterator, are potentially invalidated.
 	///
 	HOST void shrink_to_fit() {
-		if( m == n ) return;
-		device_ptr<value_type> newMemory( allocator.allocate( n ) );
-		CUDA_CALL( cudaMemcpy<value_type>( newMemory.get(), deviceMemory.get(), n, cudaMemcpyDeviceToDevice ) );
-		deviceMemory = newMemory;
-		m = n;
+		if( size() == capacity() ) return;
+		device_ptr<value_type> newMemory( allocator.allocate(size()) );
+		base_type bt( newMemory, size() );
+		bt.assign( begin(), end() );
+		base_type::operator=( bt );
 	}
 
 	///
@@ -850,19 +790,9 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	HOST DEVICE bool operator==( const vector& other ) const {
-		if( size() != other.size() ) return false;
-		#ifdef __CUDA_ARCH__
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
-		return true;
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
-		operator>>( v1 );
-		other.operator>>( v2 );
-		return v1 == v2;
-		#endif
+	HOST DEVICE inline bool operator==( const vector& other ) const {
+		const derived_type derivedOther( other.data(), other.size() );
+		return derived_type( data(), size() ).operator==( derivedOther );
 	}
 
 	///
@@ -883,14 +813,8 @@ public:
 	/// \returns true if the contents of this vector are lexicographically less than the other vector, false otherwise
 	///
 	HOST DEVICE inline bool operator<( const vector& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
-		operator>>( v1 );
-		other.operator>>( v2 );
-		return v1 < v2;
-		#endif
+		const derived_type derivedOther( other.data(), other.size() );
+		return derived_type( data(), size() ).operator<( derivedOther );
 	}
 
 	///
@@ -900,14 +824,8 @@ public:
 	/// \returns true if the contents of this vector are lexicographically greater than the other vector, false otherwise
 	///
 	HOST DEVICE inline bool operator>( const vector& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
-		operator>>( v1 );
-		other.operator>>( v2 );
-		return v1 > v2;
-		#endif
+		const derived_type derivedOther( other.data(), other.size() );
+		return derived_type( data(), size() ).operator>( derivedOther );
 	}
 
 	///
@@ -979,20 +897,6 @@ public:
 
 
 };
-
-template<typename T,class Alloc>
-HOST void vector<T,Alloc>::growMemory( size_type minimum ) {
-	if( m >= minimum ) return; // no growth neccessary
-	size_type m2 = m;
-	if( !m2 ) m2 = 1; // in case no memory is currently allocated
-	while( m2 < minimum ) m2 <<= 1;
-	// allocate larger chunk
-	device_ptr<value_type> newMemory( allocator.allocate( m2 ) );
-	// copy old data to new chunk
-	if( deviceMemory ) CUDA_CALL( cudaMemcpy<value_type>( newMemory.get(), deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
-	deviceMemory = newMemory;
-	m = m2;
-}
 
 } // namespace ecuda
 
