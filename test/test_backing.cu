@@ -86,9 +86,12 @@ int main( int argc, char* argv[] ) {
 			devicePtr.get(), 10, 20
 		);
 
+		std::cerr << "cp3" << std::endl;
 	}
 
 	{
+		std::cerr << "SET #2" << std::endl;
+
 		const std::size_t w = 20;
 		const std::size_t h = 10;
 
@@ -104,8 +107,8 @@ int main( int argc, char* argv[] ) {
 		for( std::size_t i = 0; i < h; ++i ) {
 			for( std::size_t j = 0; j < w; ++j ) {
 				hostVector[i*w+j] = Coordinate(i,j);
-				grid1.get_row(i).copy_range_from( hostVector.begin()+(i*w+j), hostVector.begin()+((i+1)*w+j), grid1.get_row(i).begin() );
 			}
+			grid1.get_row(i).copy_range_from( hostVector.begin()+(i*w), hostVector.begin()+((i+1)*w), grid1.get_row(i).begin() );
 		}
 
 		hostVector.assign( w*h, 0 );
