@@ -245,8 +245,8 @@ public:
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return ptr; }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
 
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(ptr); }
-	HOST DEVICE inline iterator end() __NOEXCEPT__  {
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__  { return iterator(data()+static_cast<int>(size()));
 		// NOTE: Important to pre-cast this __device_sequence's pointer to the
 		//       pointer type of the iterator BEFORE applying the addition of
 		//       the length value.  For example, if this is a padded_ptr
@@ -256,10 +256,10 @@ public:
 		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
-		return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
+		//return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
 	}
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(ptr); }
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ {
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(data()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(data()+static_cast<int>(size()));
 		// NOTE: Important to pre-cast this __device_sequence's pointer to the
 		//       pointer type of the iterator BEFORE applying the addition of
 		//       the length value.  For example, if this is a padded_ptr
@@ -269,7 +269,7 @@ public:
 		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
-		return const_iterator( static_cast<typename const_iterator::pointer>(ptr)+static_cast<int>(length) );
+		//return const_iterator( static_cast<typename const_iterator::pointer>(ptr)+static_cast<int>(length) );
 	}
 
 	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
@@ -277,8 +277,8 @@ public:
 	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
-	DEVICE inline reference operator[]( const size_type index ) { return *(ptr+index); }
-	DEVICE inline const_reference operator[]( const size_type index ) const { return *(ptr+index); }
+	DEVICE inline reference operator[]( const size_type index ) { return *(data()+static_cast<int>(index)); }
+	DEVICE inline const_reference operator[]( const size_type index ) const { return *(data()+static_cast<int>(index)); }
 
 	template<class Iterator>
 	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, category(), typename std::iterator_traits<Iterator>::iterator_category() ); }
@@ -315,8 +315,6 @@ private:
 public:
 	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::iterator iterator;
 	typedef typename __device_grid_traits<T,PointerType,CategoryRow,CategoryColumn,ContainerType>::const_iterator const_iterator;
-	//typedef typename __device_grid_iterator_traits<value_type,pointer,row_category,column_category>::iterator iterator;
-	//typedef typename __device_grid_iterator_traits<value_type,pointer,row_category,column_category>::const_iterator const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
@@ -479,6 +477,9 @@ public:
 
 	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
+
+	HOST DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex ) { return *(data()+(number_columns()*rowIndex+columnIndex)); }
+	HOST DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return *(data()+(number_columns()*rowIndex+columnIndex)); }
 
 	template<class Iterator>
 	HOST DEVICE inline void assign( Iterator first, Iterator last ) { assign( first, last, column_category(), typename std::iterator_traits<Iterator>::iterator_category() ); }
