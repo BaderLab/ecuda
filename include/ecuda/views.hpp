@@ -175,6 +175,9 @@ private:
 	template<class Iterator>
 	HOST void copy_range_from( Iterator first, Iterator last, iterator output, std::random_access_iterator_tag, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
+		std::cerr << "first.operator->()=" << first.operator->() << std::endl;
+		std::cerr << "output.operator->()=" << output.operator->() << std::endl;
+		std::cerr << "n=" << n << std::endl;
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), n, cudaMemcpyHostToDevice ) );
 	}
 
