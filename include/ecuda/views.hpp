@@ -246,7 +246,7 @@ public:
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return length; }
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
-	HOST DEVICE inline iterator end() __NOEXCEPT__  { return iterator(data()+static_cast<int>(size()));
+	HOST DEVICE inline iterator end() __NOEXCEPT__  {
 		// NOTE: Important to pre-cast this __device_sequence's pointer to the
 		//       pointer type of the iterator BEFORE applying the addition of
 		//       the length value.  For example, if this is a padded_ptr
@@ -256,10 +256,10 @@ public:
 		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
-		//return iterator( static_cast<typename iterator::pointer>(ptr)+static_cast<int>(length) );
+		return iterator( static_cast<typename iterator::pointer>(data())+static_cast<int>(size()) );
 	}
 	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(data()); }
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(data()+static_cast<int>(size()));
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ {
 		// NOTE: Important to pre-cast this __device_sequence's pointer to the
 		//       pointer type of the iterator BEFORE applying the addition of
 		//       the length value.  For example, if this is a padded_ptr
@@ -269,7 +269,7 @@ public:
 		//       type will cause the pointer operator+() to set the location
 		//       at the start of the next row _after_ the padding.  This will
 		//       screw up iter.operator-(otheriter).
-		//return const_iterator( static_cast<typename const_iterator::pointer>(ptr)+static_cast<int>(length) );
+		return const_iterator( static_cast<typename const_iterator::pointer>(data())+static_cast<int>(size()) );
 	}
 
 	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
