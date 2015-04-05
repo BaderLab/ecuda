@@ -381,6 +381,7 @@ int main( int argc, char* argv[] ) {
 	//
 	std::cerr << "Test B" << std::endl;
 	{
+		/*
 		std::vector<int> hostVector( 100 );
 std::cerr << "cp1" << std::endl;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
@@ -407,6 +408,7 @@ std::cerr << "cp8" << std::endl;
 		if( !deviceVector2.operator> (deviceVector1) ) passed = false;
 		if(  deviceVector2.operator<=(deviceVector1) ) passed = false;
 		if( !deviceVector2.operator>=(deviceVector1) ) passed = false;
+		*/
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
