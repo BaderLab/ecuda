@@ -55,6 +55,11 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+template<class IteratorCategory> struct iterator_category_traits { enum { is_contiguous = false }; enum { is_device = false }; };
+template<> struct iterator_category_traits<std::random_access_iterator_tag> { enum { is_contiguous = true }; enum { is_device = false }; };
+template<> struct iterator_category_traits<contiguous_device_iterator_tag> { enum { is_contiguous = true }; enum { is_device = true }; };
+template<> struct iterator_category_traits<device_iterator_tag> { enum { is_contiguous = false }; enum { is_device = true }; };
+
 struct __dimension_contiguous_tag {};
 struct __dimension_noncontiguous_tag {};
 
@@ -175,9 +180,6 @@ private:
 	template<class Iterator>
 	HOST void copy_range_from( Iterator first, Iterator last, iterator output, std::random_access_iterator_tag, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
-		std::cerr << "first.operator->()=" << first.operator->() << std::endl;
-		std::cerr << "output.operator->()=" << output.operator->() << std::endl;
-		std::cerr << "n=" << n << std::endl;
 		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), n, cudaMemcpyHostToDevice ) );
 	}
 
@@ -409,6 +411,23 @@ private:
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest.get_pitch(), src, src.get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
 	}
 
+	HOST void fill( const value_type& value, padded_ptr<value_type,value_type*,1>& dest, __dimension_contiguous_tag ) {
+		// this fill method is called iff. the underlying memory is a contiguous pitched memory block
+		CUDA_CALL( cudaMemset2D<value_type>( dest, dest.get_pitch(), value, number_columns(), number_rows() ) );
+	}
+
+	HOST void fill( const value_type& value, value_type*, __dimension_contiguous_tag ) {
+		// this fill method is called iff. the underlying memory is a contiguous linear memory sequence
+		// so it delegates the task to the base linear sequence container class
+		base_type::fill( value );
+	}
+
+	template<class IrrelevantArgument1,class IrrelevantArgument2>
+	HOST void fill( const value_type& value, IrrelevantArgument1, IrrelevantArgument2 ) {
+		// this is the default by-row fill method
+		for( size_type i = 0; i < number_rows(); ++i ) get_row(i).fill( value );
+	}
+
 public:
 	HOST DEVICE explicit __device_grid( managed_pointer ptr = managed_pointer(), size_type numberRows = 0, size_type numberColumns = 0 ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
 	HOST DEVICE __device_grid( const __device_grid<T,PointerType,RowDimensionType,ColumnDimensionType,ContainerType>& src ) : base_type(src), numberRows(src.numberRows) {}
@@ -434,10 +453,7 @@ public:
 	HOST DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex ) { return *(data()+(number_columns()*rowIndex+columnIndex)); }
 	HOST DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return *(data()+(number_columns()*rowIndex+columnIndex)); }
 
-	HOST DEVICE void fill( const value_type& value ) {
-		//TODO: utilize cudaMemset2D when appropriate
-		for( size_type i = 0; i < number_rows(); ++i ) get_row(i).fill( value );
-	}
+	HOST DEVICE inline void fill( const value_type& value ) { fill( value, data(), column_dimension_type() ); }
 
 	template<class Container>
 	HOST inline const __device_grid& operator>>( Container& container ) const {
