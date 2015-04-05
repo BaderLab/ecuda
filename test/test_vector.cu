@@ -382,15 +382,23 @@ int main( int argc, char* argv[] ) {
 	std::cerr << "Test B" << std::endl;
 	{
 		std::vector<int> hostVector( 100 );
+std::cerr << "cp1" << std::endl;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+std::cerr << "cp2" << std::endl;
 		ecuda::vector<int> deviceVector1( hostVector.begin(), hostVector.end() );
+std::cerr << "cp3" << std::endl;
 		ecuda::vector<int> deviceVector2( hostVector.begin(), hostVector.end() );
 
 		bool passed = true;
+std::cerr << "cp4" << std::endl;
 		if( !deviceVector1.operator==(deviceVector2) ) passed = false;
+std::cerr << "cp5" << std::endl;
 		if( deviceVector1.operator!=(deviceVector2) ) passed = false;
+std::cerr << "cp6" << std::endl;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i+10;
+std::cerr << "cp7" << std::endl;
 		deviceVector2 << hostVector;
+std::cerr << "cp8" << std::endl;
 		if( !deviceVector1.operator< (deviceVector2) ) passed = false;
 		if(  deviceVector1.operator> (deviceVector2) ) passed = false;
 		if( !deviceVector1.operator<=(deviceVector2) ) passed = false;
