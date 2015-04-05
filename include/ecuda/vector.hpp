@@ -807,7 +807,7 @@ public:
 		if( size() == capacity() ) return;
 		device_ptr<value_type> newMemory( allocator.allocate(size()) );
 		base_container_type bt( newMemory, size() );
-		bt.assign( begin(), end() );
+		bt.copy_range_from( begin(), end(), bt.begin() );
 		base_container_type::operator=( bt );
 	}
 
