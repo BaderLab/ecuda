@@ -112,7 +112,7 @@ class vector :
 
 private:
 	typedef __device_sequence<T,device_ptr<T,T*>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type;
-	typedef __device_sequence<T,device_ptr<T,T*>,__dimension_contiguous_tag,__container_type_derived_tag> derived_container_type;
+	typedef __device_sequence<T,T*,              __dimension_contiguous_tag,__container_type_derived_tag> derived_container_type;
 
 public:
 	typedef typename base_container_type::value_type value_type; //!< element data type
