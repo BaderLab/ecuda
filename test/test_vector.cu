@@ -145,7 +145,7 @@ int main( int argc, char* argv[] ) {
 			if( deviceVector.size() != 100 ) passed = false;
 			if( deviceVector.empty() ) passed = false;
 			if( !deviceVector.data() ) passed = false;
-			std::vector<int> hostVector;
+			std::vector<int> hostVector( deviceVector.size() );
 			deviceVector >> hostVector;
 			if( hostVector.size() != 100 ) passed = false;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
@@ -154,7 +154,7 @@ int main( int argc, char* argv[] ) {
 		if( deviceVector.size() != 100 ) passed = false;
 		if( deviceVector.empty() ) passed = false;
 		if( !deviceVector.data() ) passed = false;
-		std::vector<int> hostVector;
+		std::vector<int> hostVector( deviceVector.size() );
 		deviceVector >> hostVector;
 		if( hostVector.size() != 100 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
