@@ -98,8 +98,8 @@ void kernel_testFillAndSwap(
 	ecuda::array<T,U> array2
 )
 {
-	array1.fill( 3 );
 	array1.swap( array2 );
+	array1.fill( 3 );
 }
 
 template<typename T,std::size_t U> __global__
