@@ -161,6 +161,8 @@ int main( int argc, char* argv[] ) {
 			std::cerr << "size=" << deviceVector.size() << std::endl;
 			std::cerr << "capacity=" << deviceVector.capacity() << std::endl;
 			deviceVector.resize( deviceVector.capacity()+1 );
+			std::cerr << "size=" << deviceVector.size() << std::endl;
+			std::cerr << "capacity=" << deviceVector.capacity() << std::endl;
 			std::vector<int> hostVector2( deviceVector.size() );
 			deviceVector >> hostVector2;
 			std::cerr << "ORIGINAL"; for( unsigned i = 0; i < hostVector.size(); ++i ) std::cerr << " " << hostVector[i]; std::cerr << std::endl;
