@@ -230,7 +230,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 
 		bool passed = true;
-		std::vector<int> hostResults;
+		std::vector<int> hostResults( destDeviceVector.size() );
 
 		destDeviceVector >> hostResults;
 		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != i ) passed = false;
