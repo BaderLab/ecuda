@@ -400,7 +400,7 @@ std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		std::vector<int> hostResults( 100 );
+		std::vector<int> hostResults( 10 );
 		deviceResults >> hostResults;
 		bool passed = true;
 		for( std::vector<bool>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 1 ) passed = false;
