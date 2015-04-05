@@ -821,15 +821,7 @@ public:
 	///
 	HOST DEVICE inline bool operator==( const vector& other ) const {
 		const derived_container_type derivedOther( other.data(), other.size() );
-		const derived_container_type tmp( data(), size() );
-#ifndef __CUDA_ARCH__
-		std::cerr << data() << std::endl;
-		std::cerr << other.data() << std::endl;
-		std::cerr << "D\t" << tmp.data() << std::endl;
-		std::cerr << "D\t" << derivedOther.data() << std::endl;
-#endif
-		return tmp == derivedOther;
-		//return derived_container_type( data(), size() ).operator==( derivedOther );
+		return derived_container_type( data(), size() ).operator==( derivedOther );
 	}
 
 	///
