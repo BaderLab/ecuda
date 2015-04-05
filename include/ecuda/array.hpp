@@ -53,6 +53,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "apiwrappers.hpp"
 #include "iterators.hpp"
 #include "device_ptr.hpp"
+#include "views.hpp"
 
 namespace ecuda {
 
@@ -68,58 +69,32 @@ namespace ecuda {
 /// are device only, and general information can be accessed by both.
 ///
 template<typename T,std::size_t N>
-class array {
+class array : private __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> {
+
+private:
+	typedef __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type;
+	typedef __device_sequence<T,T*,           __dimension_contiguous_tag,__container_type_derived_tag> derived_container_type;
 
 public:
-	typedef T value_type; //!< cell data type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-	typedef value_type& reference; //!< cell reference type
-	typedef const value_type& const_reference; //!< cell const reference type
-	typedef value_type* pointer; //!< cell pointer type
-	typedef const value_type* const_pointer; //!< cell const pointer type
+	typedef typename base_container_type::value_type value_type; //!< element data type
+	typedef typename base_container_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_container_type::difference_type difference_type; //!< signed integral type
+	typedef typename base_container_type::reference reference; //!< element reference type
+	typedef typename base_container_type::const_reference const_reference; //!< element const reference type
+	typedef typename base_container_type::pointer pointer; //!< element pointer type
+	typedef const typename base_container_type::pointer const_pointer; //!< element const pointer type
 
-	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef device_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
-
-private:
-	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
-
-private:
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		typename std::iterator_traits<Iterator>::difference_type n = std::distance( first, last );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), std::min(static_cast<size_type>(n),N), cudaMemcpyHostToDevice ) );
-	}
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
-		typename std::iterator_traits<Iterator>::difference_type n = std::distance( first, last );
-		std::vector< value_type, host_allocator<value_type> > v;
-		v.reserve( N );
-		for( size_type i = 0; i < N and first != last; ++i, ++first ) v.push_back( *first );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), v.size(), cudaMemcpyHostToDevice ) );
-	}
-
-	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::input_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
-
-	template<class Iterator>
-	HOST void init( Iterator first, Iterator last, ecuda::contiguous_device_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
-		if( n <= 0 ) return;
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), first.operator->(), std::min(static_cast<size_type>(n),N), cudaMemcpyDeviceToDevice ) );
-	}
+	typedef typename base_container_type::iterator iterator; //!< iterator type
+	typedef typename base_container_type::const_iterator const_iterator; //!< const iterator type
+	typedef typename base_container_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_container_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
 public:
 	///
 	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
 	/// \param value Value to fill the container with.
 	///
-	HOST array( const T& value = T() ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+	HOST array( const T& value = T() ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
 		fill( value );
 	}
 
@@ -134,9 +109,9 @@ public:
 	///                   used is [first,last).
 	///
 	template<class Iterator>
-	HOST array( Iterator first, Iterator last ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		init( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+	HOST array( Iterator first, Iterator last ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
+		fill( value_type() );
+		base_container_type::copy_range_from( first, last, begin() );
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -152,10 +127,9 @@ public:
 	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
 	////          declarators.
 	///
-	HOST array( std::initializer_list<T> il ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		std::vector< value_type, host_allocator<value_type> > v( il );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
+	HOST array( std::initializer_list<T> il ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
+		fill( value_type() );
+		base_container_type::copy_range_from( il.begin(), il.end(), begin() );
 	}
 	#endif
 
@@ -175,7 +149,7 @@ public:
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST DEVICE array( const array& src ) : deviceMemory(src.deviceMemory) {}
+	HOST DEVICE array( const array& src ) : base_container_type(src) {}
 	
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
@@ -188,9 +162,8 @@ public:
 	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
 	///
 	template<std::size_t N2>
-	HOST array( const array<T,N2>& src ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
+	HOST array( const array<T,N2>& src ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
+		base_container_type::copy_range_from( src.begin(), src.begin()+(std::min(N,N2)), begin() );
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -201,7 +174,7 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
+	HOST array( array<T,N>&& src ) : base_container_type(std::move(src)) {}
 	#endif
 
 	/*
@@ -217,7 +190,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( size_type index ) { return *(deviceMemory.get()+index); }
+	DEVICE inline reference operator[]( size_type index ) { return base_container_type::operator[]( index ); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -225,7 +198,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( size_type index ) const { return *(deviceMemory.get()+index); }
+	DEVICE inline const_reference operator[]( size_type index ) const { return base_container_type::operator[]( index ); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -234,7 +207,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline reference front() { return *deviceMemory; }
+	DEVICE inline reference front() { return base_container_type::operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -243,7 +216,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline reference back() { return operator[]( size()-1 ); }
+	DEVICE inline reference back() { return base_container_type::operator[](size()-1); }
 	///
 	/// \brief Returns a reference to the first element in the container.
 	///
@@ -251,7 +224,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline const_reference front() const { return *deviceMemory; }
+	DEVICE inline const_reference front() const { return base_container_type::operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -260,7 +233,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
+	DEVICE inline const_reference back() const { return base_container_type::operator[](size()-1); }
 
 	///
 	/// \brief Checks if the container has no elements.
@@ -292,7 +265,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() { return deviceMemory.get(); }
+	HOST DEVICE inline pointer data() { return base_container_type::data(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -302,7 +275,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const { return deviceMemory.get(); }
+	HOST DEVICE inline const_pointer data() const { return base_container_type::data(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -311,7 +284,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() { return iterator(deviceMemory.get()); }
+	HOST DEVICE inline iterator begin() { return base_container_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -320,7 +293,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() { return iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline iterator end() { return base_container_type::end(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -328,7 +301,7 @@ public:
 	/// If the container is empty, the returned iterator will be equal to end().
 	///
 	/// \returns Iterator to the first element.
-	HOST DEVICE inline const_iterator begin() const { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator begin() const { return base_container_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -337,7 +310,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_iterator end() const { return base_container_type::end(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -346,7 +319,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rbegin() { return base_container_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -356,7 +329,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
+	HOST DEVICE inline reverse_iterator rend() { return base_container_type::rend(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -365,7 +338,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const { return base_container_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -375,21 +348,14 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rend() const { return base_container_type::rend(); }
 
 	///
 	/// \brief Assigns a given value to all elements in the container.
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE void fill( const value_type& value ) {
-		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-		#else
-		std::vector< value_type, host_allocator<value_type> > v( size(), value );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), size(), cudaMemcpyHostToDevice ) );
-		#endif
-	}
+	HOST DEVICE inline void fill( const value_type& value ) { base_container_type::fill( value ); }
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -398,18 +364,7 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE void swap( array<T,N>& other ) {
-		#ifdef __CUDA_ARCH__
-		iterator iter1 = begin();
-		iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
-		#else
-		std::vector< value_type, host_allocator<value_type> > host1; operator>>( host1 );
-		std::vector< value_type, host_allocator<value_type> > host2; other.operator>>( host2 );
-		operator<<( host2 );
-		other.operator<<( host1 );
-		#endif
-	}
+	HOST DEVICE inline void swap( array<T,N>& other ) { base_container_type::swap( other ); }
 
 	///
 	/// \brief Checks if the contents of two arrays are equal.
@@ -420,23 +375,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	HOST DEVICE bool operator==( const array<T,N>& other ) const {
-		#ifdef __CUDA_ARCH__
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
-		return true;
-		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
-		#endif
-		operator>>( arr1 );
-		other.operator>>( arr2 );
-		return arr1 == arr2;
-		#endif
-	}
+	HOST DEVICE bool operator==( const array<T,N>& other ) const { return base_container_type::operator==( other ); }
 
 	///
 	/// \brief Checks if the contents of two arrays are not equal.
@@ -447,7 +386,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are not equal, false otherwise
 	///
-	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
+	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return base_container_type::operator!=( other ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -455,20 +394,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<( const array<T,N>& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
-		#endif
-		operator>>( arr1 );
-		other.operator>>( arr2 );
-		return arr1 < arr2;
-		#endif
-	}
+	HOST DEVICE inline bool operator<( const array<T,N>& other ) const { return base_container_type::operator<( other ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -476,20 +402,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>( const array<T,N>& other ) const {
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
-		#endif
-		operator>>( arr1 );
-		other.operator>>( arr2 );
-		return arr1 > arr2;
-		#endif
-	}
+	HOST DEVICE inline bool operator>( const array<T,N>& other ) const { return base_container_type::operator>( other ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -497,7 +410,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
+	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return base_container_type::operator<=( other ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -505,15 +418,14 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
+	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return base_container_type::operator>=( other ); }
 
 	///
-	/// \brief Copies the contents of this device array to a host STL vector.
+	/// \brief Copies the contents of this device array to another container.
 	///
-	template<class Alloc>
-	HOST const array<T,N>& operator>>( std::vector<value_type,Alloc>& vector ) const {
-		vector.resize( N );
-		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
+	template<class Container>
+	HOST const array<T,N>& operator>>( Container& container ) const {
+		base_container_type::operator>>( container );
 		return *this;
 	}
 
@@ -523,36 +435,11 @@ public:
 	/// \param vector std::vector to copy the contents from
 	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
-	template<class Alloc>
-	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
-		if( size() < vector.size() ) throw std::length_error( "ecuda::array is not large enough to fit contents of provided std::vector" );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
+	template<class Container>
+	HOST array<T,N>& operator<<( Container& container ) {
+		base_container_type::copy_range_from( container.begin(), container.end(), begin() );
 		return *this;
 	}
-
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Copies the contents of this device array to a host STL array.
-	///
-	/// This operator is only available if the compiler is configured to allow C++11.
-	///
-	HOST const array<T,N>& operator>>( std::array<value_type,N>& arr ) const {
-		CUDA_CALL( cudaMemcpy<value_type>( &arr.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
-		return *this;
-	}
-	#endif
-
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Copies the contents of a host STL array to this device array.
-	///
-	/// This operator is only available if the compiler is configured to allow C++11.
-	///
-	HOST array<T,N>& operator<<( std::array<value_type,N>& arr ) {
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &arr.front(), N, cudaMemcpyHostToDevice ) );
-		return *this;
-	}
-	#endif
 
 	///
 	/// \brief Assignment operator.
@@ -569,15 +456,8 @@ public:
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
-	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		deviceMemory = other.deviceMemory;
-		#else
-		// deep copy if called from host
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
-		#endif
+	HOST DEVICE inline array<T,N>& operator=( const array<T,N>& other ) {
+		base_container_type::operator=( other );
 		return *this;
 	}
 

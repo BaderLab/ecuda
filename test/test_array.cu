@@ -13,7 +13,7 @@ void kernel_checkArrayProperties(
 	const ecuda::array<T,U> array,
 	ecuda::array<int,U> empties,
 	ecuda::array<typename ecuda::array<T,U>::size_type,U> sizes,
-	ecuda::array<typename ecuda::array<T,U>::const_pointer,U> pointers
+	ecuda::array<typename ecuda::array<T,U>::pointer,U> pointers
 )
 {
 	const int threadNumber = threadIdx.x;
@@ -156,20 +156,20 @@ int main( int argc, char* argv[] ) {
 		ecuda::array<int,100> deviceArray( hostVector.begin(), hostVector.end() );
 		ecuda::array<int,100> deviceEmpties( -1 );
 		ecuda::array<ecuda::array<int,100>::size_type,100> deviceSizes;
-		ecuda::array<ecuda::array<int,100>::const_pointer,100> devicePointers;
+		ecuda::array<ecuda::array<int,100>::pointer,100> devicePointers;
 		kernel_checkArrayProperties<<<1,100>>>( deviceArray, deviceEmpties, deviceSizes, devicePointers );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 		std::vector<int> hostEmpties( 100, -1 );
 		std::vector<ecuda::array<int,100>::size_type> hostSizes( 100 );
-		std::vector<ecuda::array<int,100>::const_pointer> hostPointers( 100 );
+		std::vector<ecuda::array<int,100>::pointer> hostPointers( 100 );
 		deviceEmpties >> hostEmpties;
 		deviceSizes >> hostSizes;
 		devicePointers >> hostPointers;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
 		for( std::vector<ecuda::array<int,100>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
-		for( std::vector<ecuda::array<int,100>::const_pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceArray.data() ) passed = false;
+		for( std::vector<ecuda::array<int,100>::pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceArray.data() ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 

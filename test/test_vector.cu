@@ -150,6 +150,7 @@ int main( int argc, char* argv[] ) {
 			if( hostVector.size() != 100 ) passed = false;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
 		}
+		/*
 		{
 			// grow test
 			std::vector<int> hostVector( 10 );
@@ -169,6 +170,7 @@ int main( int argc, char* argv[] ) {
 			std::cerr << "ORIGINAL"; for( unsigned i = 0; i < hostVector.size(); ++i ) std::cerr << " " << hostVector[i]; std::cerr << std::endl;
 			std::cerr << "GROWN   "; for( unsigned i = 0; i < hostVector2.size(); ++i ) std::cerr << " " << hostVector2[i]; std::cerr << std::endl;
 		}
+		*/
 		ecuda::vector<int> deviceVector( 100, 3 );
 		if( deviceVector.size() != 100 ) passed = false;
 		if( deviceVector.empty() ) passed = false;

@@ -111,7 +111,19 @@ class vector :
 {
 
 private:
-	typedef __device_sequence<T,device_ptr<T,T*>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type;
+	typedef __device_sequence<
+		T,
+		device_ptr<
+			T,
+			#ifdef __CPP11_SUPPORTED__
+			typename std::allocator_traits<Alloc>::pointer
+			#else
+			typename Alloc::pointer
+			#endif
+		>,
+		__dimension_contiguous_tag,
+		__container_type_base_tag
+	> base_container_type;
 	typedef __device_sequence<T,T*,              __dimension_contiguous_tag,__container_type_derived_tag> derived_container_type;
 
 public:
