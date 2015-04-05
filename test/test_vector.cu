@@ -408,8 +408,9 @@ std::cerr << "cp8" << std::endl;
 		if( !deviceVector2.operator> (deviceVector1) ) passed = false;
 		if(  deviceVector2.operator<=(deviceVector1) ) passed = false;
 		if( !deviceVector2.operator>=(deviceVector1) ) passed = false;
-		*/
 		testResults.push_back( passed ? 1 : 0 );
+		*/
+		testResults.push_back( 0 );
 	}
 
 	//
