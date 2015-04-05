@@ -367,6 +367,7 @@ public:
 		base_container_type oldContent( *this );
 		init( newSize, value, __true_type() );
 		base_container_type::copy_range_from( oldContent.begin(), oldContent.end(), base_container_type::begin() );
+		n = newSize;
 	}
 
 	///
