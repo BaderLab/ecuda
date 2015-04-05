@@ -820,6 +820,10 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	HOST DEVICE inline bool operator==( const vector& other ) const {
+#ifndef __CUDA_ARCH__
+		std::cerr << data() << std::endl;
+		std::cerr << other.data() << std::endl;
+#endif
 		const derived_container_type derivedOther( other.data(), other.size() );
 		return derived_container_type( data(), size() ).operator==( derivedOther );
 	}

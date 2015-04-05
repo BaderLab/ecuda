@@ -391,7 +391,7 @@ std::cerr << "cp3" << std::endl;
 
 		bool passed = true;
 std::cerr << "cp4" << std::endl;
-//		if( !deviceVector1.operator==(deviceVector2) ) passed = false;
+		if( !deviceVector1.operator==(deviceVector2) ) passed = false;
 std::cerr << "cp5" << std::endl;
 		if( deviceVector1.operator!=(deviceVector2) ) passed = false;
 std::cerr << "cp6" << std::endl;
