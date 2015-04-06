@@ -41,10 +41,10 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 1 );
-printf( "get_width()=%i\n", sliceYZ.get_width() );
-printf( "get_height()=%i\n", sliceYZ.get_height() );
-	for( unsigned i = 0; i < sliceYZ.get_width(); ++i ) {
-		for( unsigned j = 0; j < sliceYZ.get_height(); ++j ) {
+printf( "number_rows()=%i\n", sliceYZ.number_rows() );
+printf( "number_columns()=%i\n", sliceYZ.number_columns() );
+	for( unsigned i = 0; i < sliceYZ.number_rows(); ++i ) {
+		for( unsigned j = 0; j < sliceYZ.number_columns(); ++j ) {
 			matrix[i][j] = sliceYZ[i][j];
 		}
 	}
@@ -53,10 +53,10 @@ printf( "get_height()=%i\n", sliceYZ.get_height() );
 template<typename T> __global__
 void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
-printf( "get_width()=%i\n", sliceXY.get_width() );
-printf( "get_height()=%i\n", sliceXY.get_height() );
-	for( unsigned i = 0; i < sliceXY.get_width(); ++i ) {
-		for( unsigned j = 0; j < sliceXY.get_height(); ++j ) {
+printf( "number_rows()=%i\n", sliceXY.number_rows() );
+printf( "number_columns()=%i\n", sliceXY.number_columns() );
+	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
+		for( unsigned j = 0; j < sliceXY.number_columns(); ++j ) {
 			matrix[i][j] = sliceXY[i][j];
 		}
 	}
@@ -65,10 +65,10 @@ printf( "get_height()=%i\n", sliceXY.get_height() );
 template<typename T> __global__
 void fetchSliceXZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_xz_type sliceXZ = cube.get_xz( 2 );
-printf( "get_width()=%i\n", sliceXZ.get_width() );
-printf( "get_height()=%i\n", sliceXZ.get_height() );
-	for( unsigned i = 0; i < sliceXZ.get_width(); ++i ) {
-		for( unsigned j = 0; j < sliceXZ.get_height(); ++j ) {
+printf( "number_rows()=%i\n", sliceXZ.number_rows() );
+printf( "number_columns()=%i\n", sliceXZ.number_columns() );
+	for( unsigned i = 0; i < sliceXZ.number_rows(); ++i ) {
+		for( unsigned j = 0; j < sliceXZ.number_columns(); ++j ) {
 			matrix[i][j] = sliceXZ[i][j];
 		}
 	}
@@ -100,7 +100,8 @@ int main( int argc, char* argv[] ) {
 	}
 
 	ecuda::cube<Coordinate> deviceCube( 3, 4, 5 );
-	deviceCube << hostCube;
+	deviceCube.assign( hostCube.begin(), hostCube.end() );
+	//deviceCube << hostCube;
 
 	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
 	deviceCube >> hostCube;

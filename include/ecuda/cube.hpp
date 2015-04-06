@@ -112,9 +112,46 @@ namespace ecuda {
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube {
+class cube : protected matrix<T,Alloc>
+{
+
+protected:
+	typedef matrix<T,Alloc> base_matrix_type;
+	typedef typename matrix<T,Alloc>::base_container_type base_container_type;
+	typedef typename matrix<T,Alloc>::managed_pointer managed_pointer;
 
 public:
+	typedef typename base_matrix_type::value_type value_type; //!< element data type
+	typedef typename base_matrix_type::allocator_type allocator_type; //!< allocator type
+	typedef typename base_matrix_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_matrix_type::difference_type difference_type; //!< signed integral type
+	typedef typename base_matrix_type::pointer pointer; //!< element pointer type
+	typedef typename base_matrix_type::reference reference; //!< element reference type
+	typedef typename base_matrix_type::const_reference const_reference; //!< element const reference type
+
+	typedef typename base_matrix_type::iterator iterator; //!< iterator type
+	typedef typename base_matrix_type::const_iterator const_iterator; //!< const iterator type
+	typedef typename base_matrix_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_matrix_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+
+	//typedef __device_sequence< value_type, striding_ptr<value_type,pointer>, __dimension_noncontiguous_tag, __container_type_derived_tag > row_type; //!< cube row type
+	typedef typename base_matrix_type::column_type row_type; //!< cube row type
+	typedef typename base_matrix_type::column_type column_type; //!< cube column type
+	typedef typename base_matrix_type::row_type depth_type; //!< cube depth type
+	//typedef __device_sequence< const value_type, striding_ptr<const value_type,pointer>, __dimension_noncontiguous_tag, __container_type_derived_tag > row_type; //!< cube const row type
+	typedef typename base_matrix_type::const_column_type const_row_type; //!< cube const row type
+	typedef typename base_matrix_type::const_column_type const_column_type; //!< cube const column type
+	typedef typename base_matrix_type::const_row_type const_depth_type; //!< cube const depth type
+
+	typedef __device_grid< value_type, striding_ptr<value_type,pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > slice_xy_type; //!< cube xy-slice type
+	typedef __device_grid< value_type, padded_ptr<value_type,pointer>,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_xz_type; //!< cube xz-slice type
+	typedef __device_grid< value_type, pointer,                          __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_yz_type; //!< cube yz-slice type
+
+	typedef const __device_grid< const value_type, striding_ptr<const value_type,pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > const_slice_xy_type; //!< const cube xy-slice type
+	typedef const __device_grid< const value_type, padded_ptr<const value_type,pointer>,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_xz_type; //!< const cube xz-slice type
+	typedef const __device_grid< const value_type, pointer,                                __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_yz_type; //!< const cube yz-slice type
+
+/*
 	typedef T value_type; //!< cell data type
 	typedef Alloc allocator_type; //!< allocator type
 	typedef std::size_t size_type; //!< unsigned integral type
@@ -149,17 +186,18 @@ public:
 	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
+*/
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
 	//           reflected on the host object. Don't allow the device to perform any operations that
 	//           change their value.
 	size_type numberRows; //!< number of rows
-	size_type numberColumns; //!< number of columns
-	size_type numberDepths; //!< number of depths
-	size_type pitch; //!< pitch of device memory in bytes
-	device_ptr<T> deviceMemory;
-	allocator_type allocator;
+	//size_type numberColumns; //!< number of columns
+	//size_type numberDepths; //!< number of depths
+	//size_type pitch; //!< pitch of device memory in bytes
+	//device_ptr<T> deviceMemory;
+	//allocator_type allocator;
 
 public:
 	///
@@ -171,21 +209,10 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), allocator(allocator) {
-		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector< value_type, host_allocator<value_type> > v( numberDepths, value );
-			for( size_type i = 0; i < numberRows; ++i ) {
-				for( size_type j = 0; j < numberColumns; ++j ) {
-					CUDA_CALL( cudaMemcpy<value_type>(
-						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
-						&v.front(), // src
-						numberDepths, // count
-						cudaMemcpyHostToDevice
-					) );
-				}
-			}
-		}
+	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) :
+		base_matrix_type( numberRows*numberColumns, numberDepths, value, allocator ),
+		numberRows(numberRows)
+	{
 	}
 
 	///
@@ -204,19 +231,7 @@ public:
 	///
 	/// \param src Another cube object of the same type, whose contents are copied.
 	///
-	HOST DEVICE cube( const cube<T>& src ) :
-		numberRows(src.numberRows),
-		numberColumns(src.numberColumns),
-		numberDepths(src.numberDepths),
-		pitch(src.pitch),
-		deviceMemory(src.deviceMemory),
-		//#ifdef __CPP11_SUPPORTED__
-		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		//#else
-		allocator(src.allocator)
-		//#endif
-	{
-	}
+	HOST DEVICE cube( const cube<T,Alloc>& src ) : base_matrix_type(src), numberRows(src.numberRows) {}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -226,9 +241,10 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
+	HOST cube( cube<T>&& src ) : base_matrix_type(src), numberRows(std::move(src.numberRows)) {}
 	#endif
 
+	/*
 	#if HAVE_ESTD_LIBRARY > 0
 	///
 	/// \brief Constructs a cube by copying the dimensions and elements of an estd library cube container.
@@ -257,6 +273,7 @@ public:
 		}
 	}
 	#endif
+	*/
 
 	//HOST DEVICE virtual ~cube() {}
 
@@ -264,8 +281,9 @@ public:
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const { return allocator; }
+	HOST inline allocator_type get_allocator() const { return base_matrix_type::get_allocator(); }
 
+/*
 private:
 	template<class Iterator>
 	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
@@ -286,6 +304,7 @@ private:
 			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), first.operator->(), number_depths(), cudaMemcpyDeviceToDevice ) );
 		}
 	}
+*/
 
 public:
 	///
@@ -312,7 +331,7 @@ public:
 	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
+	HOST inline void assign( Iterator first, Iterator last ) { base_matrix_type::assign( first, last ); }
 
 	///
 	/// \brief Returns the number of rows in the container.
@@ -326,21 +345,23 @@ public:
 	///
 	/// \returns The number of columns in the container.
 	///
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }
+	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return number_rows() == 0 ? 0 : (base_matrix_type::number_rows()/number_rows()); }
 
 	///
 	/// \brief Returns the number of depths in the container.
 	///
 	/// \returns The number of depths in the container.
 	///
-	HOST DEVICE inline size_type number_depths() const __NOEXCEPT__ { return numberDepths; }
+	HOST DEVICE inline size_type number_depths() const __NOEXCEPT__ { return base_matrix_type::number_columns(); }
 
+	/*
 	///
 	/// \brief Returns the pitch of the underlying 2D device memory.
 	///
 	/// \returns The pitch (in bytes) of the underlying 2D device memory.
 	///
 	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
+	*/
 
 	///
 	/// \brief Returns the number of elements in the container.
@@ -349,27 +370,27 @@ public:
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return number_rows()*number_columns()*number_depths(); }
+	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_matrix_type::size(); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
+	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return base_matrix_type::empty(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
+	HOST DEVICE inline pointer data() __NOEXCEPT__ { return base_matrix_type::data(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+	HOST DEVICE inline const pointer data() const __NOEXCEPT__ { return base_matrix_type::data(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -378,7 +399,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( data(), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return base_matrix_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -387,7 +408,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows()*number_columns(), 0, get_pitch() ), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return base_matrix_type::end(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -396,7 +417,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return base_matrix_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -405,7 +426,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows()*number_columns(), 0, get_pitch() ), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return base_matrix_type::end(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -414,7 +435,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
+	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return base_matrix_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -424,7 +445,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
+	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return base_matrix_type::rend(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -433,7 +454,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_matrix_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -443,7 +464,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
+	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_matrix_type::rend(); }
 
 	///
 	/// \brief Gets a view of the sequence of elements forming a single row.
@@ -453,10 +474,7 @@ public:
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_columns()*number_depths() );
-		return row_type( sp, number_rows() );
+		return row_type( typename row_type::pointer( data()+static_cast<int>(columnIndex*number_depths()+depthIndex), number_columns()*number_depths() ), number_rows() );
 	}
 
 	///
@@ -467,10 +485,7 @@ public:
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
 	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_depths() );
-		return column_type( sp, number_columns() );
+		return column_type( typename column_type::pointer( data()+static_cast<int>(rowIndex*number_columns()*number_depths()+depthIndex), number_depths() ), number_columns() );
 	}
 
 	///
@@ -481,8 +496,7 @@ public:
 	/// \returns A view of the elements with the specified row and column indices.
 	///
 	HOST DEVICE inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
-		return depth_type( np, number_depths() );
+		return base_matrix_type::get_row( rowIndex*number_columns()+columnIndex );
 	}
 
 	///
@@ -493,10 +507,7 @@ public:
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
 	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_columns()*number_depths() );
-		return const_row_type( sp, number_rows() );
+		return const_row_type( typename const_row_type::pointer( data()+static_cast<int>(columnIndex*number_depths()+depthIndex ), number_columns()*number_depths() ), number_rows() );
 	}
 
 	///
@@ -507,10 +518,7 @@ public:
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
 	HOST DEVICE inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_depths() );
-		return const_column_type( sp, number_columns() );
+		return const_column_type( typename const_column_type::pointer( data()+static_cast<int>(rowIndex*number_columns()*number_depths()+depthIndex), number_depths() ), number_columns() );
 	}
 
 	///
@@ -521,8 +529,7 @@ public:
 	/// \returns A view of the elements with the specified row and column indices.
 	///
 	HOST DEVICE inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
-		return const_depth_type( np, number_depths() );
+		return base_matrix_type::get_row( rowIndex*number_columns()+columnIndex );
 	}
 
 	///
@@ -532,10 +539,7 @@ public:
 	/// \returns A view of the elements at the specified row.
 	///
 	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		const size_type padding = pitch-number_depths()*sizeof(value_type);
-		return slice_yz_type( np, number_depths(), number_columns(), padding );
+		return slice_yz_type( data()+static_cast<int>(rowIndex*number_columns()*number_depths()), number_columns(), number_depths() );
 	}
 
 	///
@@ -545,10 +549,7 @@ public:
 	/// \returns A view of the elements at the specified depth.
 	///
 	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		striding_ptr<value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_depths() );
-		return slice_xy_type( sp, number_columns(), number_rows() );
+		return slice_xy_type( typename slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
 	}
 
 	///
@@ -558,10 +559,10 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
-		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), padding, 0 );
-		return slice_xz_type( np, number_depths(), number_rows(), padding );
+		return slice_xz_type( typename slice_xz_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		//pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
+		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
+		//return slice_xz_type( np, number_depths(), number_rows(), padding );
 	}
 
 	///
@@ -571,10 +572,7 @@ public:
 	/// \returns A view of the elements at the specified row.
 	///
 	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		const size_type padding = pitch-number_depths()*sizeof(value_type);
-		return const_slice_yz_type( np, number_depths(), number_columns(), padding );
+		return const_slice_yz_type( data()+static_cast<int>(rowIndex*number_columns()*number_depths()), number_columns(), number_depths() );
 	}
 
 	///
@@ -584,10 +582,7 @@ public:
 	/// \returns A view of the elements at the specified depth.
 	///
 	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		striding_ptr<const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_depths() );
-		return const_slice_xy_type( sp, number_columns(), number_rows() );
+		return const_slice_xy_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
 	}
 
 	///
@@ -597,10 +592,10 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
-		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), padding, 0 );
-		return const_slice_xz_type( np, number_depths(), number_rows(), padding );
+		return const_slice_xz_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		//const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
+		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
+		//return const_slice_xz_type( np, number_depths(), number_rows(), padding );
 	}
 
 	///
@@ -645,7 +640,7 @@ public:
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// This method in STL containers like vector is differentiated from operator[]
@@ -673,7 +668,7 @@ public:
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
+	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
@@ -686,26 +681,8 @@ public:
 	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
 	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() ) {
-		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
-		cube<value_type,allocator_type> newCube( newNumberRows, newNumberColumns, newNumberDepths, value );
-		for( size_type i = 0; i < std::min(newNumberRows,number_rows()); ++i ) {
-			for( size_type j = 0; j < std::min(newNumberColumns,number_columns()); ++j ) {
-				CUDA_CALL(
-					cudaMemcpy<value_type>(
-						newCube.allocator.address( newCube.deviceMemory.get(), i*newCube.numberColumns+j, 0, newCube.pitch ),
-						allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ),
-						std::min(newNumberDepths,number_depths()),
-						cudaMemcpyDeviceToDevice
-					)
-				);
-			}
-		}
-		// take the information from the new structure
-		deviceMemory = newCube.deviceMemory;
-		pitch = newCube.pitch;
-		numberRows = newCube.numberRows;
-		numberColumns = newCube.numberColumns;
-		numberDepths = newCube.numberDepths;
+		base_matrix_type::resize( newNumberRows*newNumberColumns, newNumberDepths, value );
+		numberRows = newNumberRows;
 	}
 
 	///
@@ -713,18 +690,7 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE void fill( const value_type& value ) {
-		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-		#else
-		std::vector< value_type, host_allocator<value_type> > v( number_depths(), value );
-		// seed the device memory
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), number_depths(), cudaMemcpyHostToDevice ) );
-		// make additional copies within the device
-		for( size_type i = 1; i < number_rows()*number_columns(); ++i )
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), deviceMemory.get(), number_depths(), cudaMemcpyDeviceToDevice ) );
-		#endif
-	}
+	HOST DEVICE inline void fill( const value_type& value ) { base_matrix_type::fill( value ); }
 
 	///
 	/// \brief Assignment operator.
@@ -743,24 +709,19 @@ public:
 	///
 	template<class Alloc2>
 	HOST DEVICE cube<value_type,allocator_type>& operator=( const cube<value_type,Alloc2>& src ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		numberDepths = src.numberDepths;
-		pitch = src.pitch;
-		deviceMemory = src.deviceMemory;
-		#else
-		// deep copy if called from host
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		numberDepths = src.numberDepths;
-		deviceMemory = device_ptr<value_type>( allocator.allocate( numberDepths, numberRows*numberColumns, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberDepths, numberRows*numberColumns, cudaMemcpyDeviceToDevice ) );
-		#endif
+		base_matrix_type::operator=( src );
+		numberRows = src.number_rows();
 		return *this;
 	}
 
+
+	template<class Container>
+	HOST const cube& operator>>( Container& container ) const {
+		base_matrix_type::operator>>( container );
+		return *this;
+	}
+
+/*
 	#if HAVE_ESTD_LIBRARY > 0
 	///
 	/// \brief Copies the contents of this device cube to an estd library cube.
@@ -808,7 +769,7 @@ public:
 		return *this;
 	}
 	#endif
-
+*/
 };
 
 } // namespace ecuda

@@ -365,10 +365,10 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_sequence<value_type,pointer,column_dimension_type,__container_type_derived_tag> row_type;
+	typedef       __device_sequence<      value_type,pointer,column_dimension_type,__container_type_derived_tag> row_type;
+	typedef       __device_sequence<      value_type,striding_ptr<value_type,pointer>,row_dimension_type,__container_type_derived_tag> column_type;
 	typedef const __device_sequence<const value_type,pointer,column_dimension_type,__container_type_derived_tag> const_row_type;
-	typedef __device_sequence<value_type,striding_ptr<value_type,pointer>,row_dimension_type,__container_type_derived_tag> column_type;
-	typedef const __device_sequence<const value_type,striding_ptr<value_type,pointer>,row_dimension_type,__container_type_derived_tag> const_column_type;
+	typedef const __device_sequence<const value_type,striding_ptr<const value_type,pointer>,row_dimension_type,__container_type_derived_tag> const_column_type;
 
 private:
 	size_type numberRows;

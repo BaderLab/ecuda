@@ -121,7 +121,7 @@ namespace ecuda {
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
 class matrix :
-	private __device_grid<
+	protected __device_grid<
 		T,
 		device_ptr<
 			T,
@@ -137,7 +137,7 @@ class matrix :
 	>
 {
 
-private:
+protected:
 	typedef __device_grid<
 		T,
 		device_ptr<
@@ -787,7 +787,7 @@ public:
 	/// of the first row, then all columns of the second row, ...).
 	///
 	template<class Container>
-	HOST const matrix<T,Alloc>& operator>>( Container& container ) const {
+	HOST const matrix& operator>>( Container& container ) const {
 		base_container_type::operator>>( container );
 		return *this;
 	}
