@@ -114,6 +114,8 @@ int main( int argc, char* argv[] ) {
 		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
 		std::cout << "deviceCube.yz_slice[1].data()=" << deviceCube.get_yz(1).data() << std::endl;
 		std::cout << "deviceCube.xz_slice[2].data()=" << deviceCube.get_xz(2).data() << std::endl;
+		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
+		std::cout << "deviceCube.end()=" << deviceCube.end().operator->() << std::endl;
 	}
 
 	{
