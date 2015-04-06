@@ -903,7 +903,7 @@ public:
 //	}
 
 	template<class Container>
-	HOST vector<value_type,allocator_type>& operator<<( Container& container ) {
+	HOST vector<value_type,allocator_type>& operator<<( const Container& container ) {
 		init( container.begin(), container.end(), __false_type() );
 		return *this;
 	}

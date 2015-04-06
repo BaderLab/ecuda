@@ -436,7 +436,7 @@ public:
 	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
 	template<class Container>
-	HOST array<T,N>& operator<<( Container& container ) {
+	HOST array<T,N>& operator<<( const Container& container ) {
 		base_container_type::copy_range_from( container.begin(), container.end(), begin() );
 		return *this;
 	}
