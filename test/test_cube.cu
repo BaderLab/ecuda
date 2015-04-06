@@ -110,6 +110,13 @@ int main( int argc, char* argv[] ) {
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
 	{
+		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
+		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
+		std::cout << "deviceCube.yz_slice[1].data()=" << deviceCube.get_yz(1).data() << std::endl;
+		std::cout << "deviceCube.xz_slice[2].data()=" << deviceCube.get_xz(2).data() << std::endl;
+	}
+
+	{
 		std::vector<Coordinate> v( 5 );
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
 		slice[0].assign( v.begin(), v.end() );

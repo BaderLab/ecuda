@@ -279,7 +279,8 @@ public:
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const device_ptr& ptr ) {
-		out << ptr.reference_count << " " << "(" << *ptr.reference_count << ") " << ptr.get();
+		out << "device_ptr(reference_count=" << (*ptr.reference_count) << ";ptr=" << ptr.ptr << ")" << std::endl;
+		//out << ptr.reference_count << " " << "(" << *ptr.reference_count << ") " << ptr.get();
 		return out;
 	}
 
