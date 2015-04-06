@@ -40,7 +40,7 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 1 );
+	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 0 ); // 1 );
 printf( "number_rows()=%i\n", sliceYZ.number_rows() );
 printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 	for( unsigned i = 0; i < sliceYZ.number_rows(); ++i ) {
@@ -106,18 +106,21 @@ void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 
 int main( int argc, char* argv[] ) {
 
+	std::vector<Coordinate> hostVector; hostVector.reserve( 3*4*5 );
 	estd::cube<Coordinate> hostCube( 3, 4, 5 );
 	for( estd::cube<Coordinate>::size_type i = 0; i < hostCube.row_size(); ++i ) {
 		for( estd::cube<Coordinate>::size_type j = 0; j < hostCube.column_size(); ++j ) {
 			for( estd::cube<Coordinate>::size_type k = 0; k < hostCube.depth_size(); ++k ) {
 				hostCube[i][j][k] = Coordinate(i,j,k);
+				hostVector.push_back( Coordinate(i,j,k) );
 			}
 		}
 	}
 
-	ecuda::cube<Coordinate> deviceCube( 3, 4, 5 );
-	ecuda::cudaMemset<char>( reinterpret_cast<char*>( (Coordinate*)deviceCube.data() ), 9, 1440 );
-	deviceCube.assign( hostCube.begin(), hostCube.end() );
+	ecuda::cube<Coordinate> deviceCube( 3, 4, 5, Coordinate(6,6,6) );
+//	ecuda::cudaMemset<char>( reinterpret_cast<char*>( (Coordinate*)deviceCube.data() ), 9, 1440 );
+//	deviceCube.assign( hostCube.begin(), hostCube.end() );
+	deviceCube.assign( hostVector.begin(), hostVector.end() );
 	//deviceCube << hostCube;
 
 	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
@@ -234,7 +237,7 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 			std::cout << std::endl;
 		}
 	}
-*/
+
 	{
 		ecuda::array<Coordinate,3> deviceArray;
 		iterateAll<<<1,1>>>( deviceCube, deviceArray );
@@ -251,8 +254,8 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 
 	{
 		ecuda::array<Coordinate,60> deviceArray;
-		fetchAll<<<1,1>>>( deviceCube, deviceArray );
-//		fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
+//		fetchAll<<<1,1>>>( deviceCube, deviceArray );
+		fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
 		CUDA_CALL( cudaDeviceSynchronize() );
 		CUDA_CHECK_ERRORS();
 		std::vector<Coordinate> hostArray( 60 );
