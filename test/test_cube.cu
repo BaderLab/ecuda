@@ -142,7 +142,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
 		slice[0].assign( v.begin(), v.end() );
 	}
-/*
+
 	{
 		ecuda::array<Coordinate,3> deviceRow;
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
@@ -216,8 +216,8 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 5 );
 		fetchSliceXZ<<<1,1>>>( deviceCube, deviceMatrix );
-		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
 		estd::matrix<Coordinate> hostMatrix( 3, 5 );
 		deviceMatrix >> hostMatrix;
 		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
@@ -242,7 +242,6 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 			std::cout << std::endl;
 		}
 	}
-*/
 
 	{
 		ecuda::array<Coordinate,60> deviceArray;
