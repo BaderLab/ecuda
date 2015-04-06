@@ -259,13 +259,24 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 	}
 
 	{
+		std::vector<Coordinate> hostVector2; hostVector2.reserve( 2*5*20 );
+		for( estd::cube<Coordinate>::size_type i = 0; i < 2; ++i ) {
+			for( estd::cube<Coordinate>::size_type j = 0; j < 5; ++j ) {
+				for( estd::cube<Coordinate>::size_type k = 0; k < 20; ++k ) {
+					hostVector2.push_back( Coordinate(i,j,k) );
+				}
+			}
+		}
+		ecuda::cube<Coordinate> deviceCube2( 2, 5, 20 );
+		deviceCube2.assign( hostVector2.begin(), hostVector2.end() );
+
 		//ecuda::array<Coordinate,60> deviceArray;
 		//fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
 		//CUDA_CALL( cudaDeviceSynchronize() );
 		//CUDA_CHECK_ERRORS();
-		ecuda::vector<Coordinate> deviceVector( 60 );
-		kernel_linearize<<<1,1>>>( deviceCube, deviceVector );
-		std::vector<Coordinate> hostVector( 60 );
+		ecuda::vector<Coordinate> deviceVector( deviceCube.size() );
+		kernel_linearize<<<1,1>>>( deviceCube2, deviceVector );
+		std::vector<Coordinate> hostVector( deviceVector.size() );
 		deviceVector >> hostVector;
 		//std::vector<Coordinate> hostArray( 60 );
 		//deviceArray >> hostArray;
