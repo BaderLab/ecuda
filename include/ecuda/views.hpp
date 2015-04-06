@@ -451,7 +451,7 @@ public:
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/number_rows(); }
+	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size() == 0 ? 0 : base_type::size()/number_rows(); }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
@@ -472,8 +472,8 @@ public:
 	HOST DEVICE inline row_type operator[]( const size_type index ) { return get_row(index); }
 	HOST DEVICE inline const_row_type operator[]( const size_type index ) const { return get_row(index); }
 
-	HOST DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex ) { return *(data()+(number_columns()*rowIndex+columnIndex)); }
-	HOST DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return *(data()+(number_columns()*rowIndex+columnIndex)); }
+	HOST DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex ) { return *(data()+static_cast<int>(number_columns()*rowIndex+columnIndex)); }
+	HOST DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return *(data()+static_cast<int>(number_columns()*rowIndex+columnIndex)); }
 
 	HOST DEVICE inline void fill( const value_type& value ) { fill( value, data(), column_dimension_type() ); }
 

@@ -169,27 +169,39 @@ int main( int argc, char* argv[] ) {
 		bool passed = true;
 		{
 			ecuda::matrix<int> deviceMatrix;
+std::cerr << "cpA" << std::endl;
 			if( deviceMatrix.size() ) passed = false;
+std::cerr << "cpB" << std::endl;
 			if( !deviceMatrix.empty() ) passed = false;
+std::cerr << "cpC" << std::endl;
 			if( deviceMatrix.number_rows() ) passed = false;
+std::cerr << "cpD" << std::endl;
 			if( deviceMatrix.number_columns() ) passed = false;
+std::cerr << "cpE" << std::endl;
 		}
 		{
 			const ecuda::matrix<int> deviceMatrix( 10, 20 );
 			if( deviceMatrix.size() != 200 ) passed = false;
 			if( deviceMatrix.empty() ) passed = false;
 			if( !deviceMatrix.data() ) passed = false;
-			std::vector<int> hostVector;
+std::cerr << "cp1" << std::endl;
+			std::vector<int> hostVector( 200 );
+std::cerr << "cp2" << std::endl;
 			deviceMatrix >> hostVector;
+std::cerr << "cp3" << std::endl;
 			if( hostVector.size() != 200 ) passed = false;
+std::cerr << "cp4" << std::endl;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
+std::cerr << "cp5" << std::endl;
 		}
 		ecuda::matrix<int> deviceMatrix( 10, 20, 3 );
+std::cerr << "cp1" << std::endl;
 		if( deviceMatrix.size() != 200 ) passed = false;
 		if( deviceMatrix.empty() ) passed = false;
 		if( !deviceMatrix.data() ) passed = false;
-		std::vector<int> hostVector;
+		std::vector<int> hostVector( 200 );
 		deviceMatrix >> hostVector;
+std::cerr << "cp1" << std::endl;
 		if( hostVector.size() != 200 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
@@ -234,7 +246,7 @@ int main( int argc, char* argv[] ) {
 		std::cerr << "Test 3" << std::endl;
 		ecuda::matrix<Coordinate> deviceMatrix( 2, 2 );
 		deviceMatrix.assign( { Coordinate(0,0), Coordinate(0,1), Coordinate(1,0), Coordinate(1,1) } );
-		std::vector<Coordinate> hostVector;
+		std::vector<Coordinate> hostVector( 4 );
 		deviceMatrix >> hostVector;
 		bool passed = true;
 		std::vector<Coordinate>::size_type index = 0;
@@ -272,7 +284,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 
 		bool passed = true;
-		std::vector<Coordinate> hostResults;
+		std::vector<Coordinate> hostResults( 200 );
 
 		destDeviceMatrix >> hostResults;
 
@@ -426,8 +438,8 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 		//std::vector<int> hostVector1; deviceMatrix1 >> hostVector1;
 		//std::vector<int> hostVector2; deviceMatrix2 >> hostVector2;
-		std::vector<int> hostArray; deviceArray >> hostArray;
-		std::vector<int> hostDummyVector; deviceDummyMatrix >> hostDummyVector;
+		std::vector<int> hostArray( 1 ); deviceArray >> hostArray;
+		std::vector<int> hostDummyVector( 200 ); deviceDummyMatrix >> hostDummyVector;
 		bool passed = hostArray.size() == 1 and hostArray.front() == 1;
 		//for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
 		//for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
