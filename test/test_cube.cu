@@ -53,6 +53,7 @@ printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 template<typename T> __global__
 void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
+printf( "data=%i\n", (T*)sliceXY.data() );
 printf( "number_rows()=%i\n", sliceXY.number_rows() );
 printf( "number_columns()=%i\n", sliceXY.number_columns() );
 	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
