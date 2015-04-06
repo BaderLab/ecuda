@@ -7,7 +7,7 @@
 template<typename T>
 struct coord_t {
 	T x, y, z;
-	coord_t( const T& x = T(), const T& y = T(), const T& z = T() ) : x(x), y(y), z(z) {}
+	HOST DEVICE coord_t( const T& x = T(), const T& y = T(), const T& z = T() ) : x(x), y(y), z(z) {}
 	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y and z == other.z; }
 	bool operator!=( const coord_t& other ) const { return !operator==(other); }
 	friend std::ostream& operator<<( std::ostream& out, const coord_t& coord ) {
@@ -76,10 +76,29 @@ printf( "number_columns()=%i\n", sliceXZ.number_columns() );
 
 template<typename T,std::size_t U> __global__
 void fetchAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
-	typename ecuda::array<T,U>::size_type index = 0;
-	for( typename ecuda::cube<T>::const_iterator iter = cube.begin(); iter != cube.end(); ++iter, ++index ) array[index] = *iter;
+//	if( threadIdx.x == 0 ) {
+		typename ecuda::array<T,U>::size_type index = 0;
+		for( typename ecuda::cube<T>::const_reverse_iterator iter = cube.rbegin(); iter != cube.rend(); ++iter, ++index ) {
+//			printf( "i=%i value=%i %i %i\n", index, iter->x, iter->y, iter->z );
+			array[index] = *iter;
+			int tmp = index;
+		}
+//	}
 }
 
+template<typename T,std::size_t U> __global__
+void fetchAll( typename ecuda::cube<T>::const_iterator first, typename ecuda::cube<T>::const_iterator last, ecuda::array<T,U> array ) {
+//	typename ecuda::array<T,U>::size_type index = 0;
+	for( unsigned i = 0; i < 60; ++i ) {
+		array[i] = *first;
+		++first;
+	}
+//	while( first != last ) {
+//		array[index] = *first;
+//		++first;
+//		index++;
+//	}
+}
 
 template<typename T,std::size_t U> __global__
 void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
@@ -123,7 +142,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
 		slice[0].assign( v.begin(), v.end() );
 	}
-
+/*
 	{
 		ecuda::array<Coordinate,3> deviceRow;
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
@@ -213,8 +232,8 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 	{
 		ecuda::array<Coordinate,3> deviceArray;
 		iterateAll<<<1,1>>>( deviceCube, deviceArray );
-		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
 		std::vector<Coordinate> hostArray( 3 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
@@ -223,12 +242,14 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 			std::cout << std::endl;
 		}
 	}
+*/
 
 	{
 		ecuda::array<Coordinate,60> deviceArray;
-		fetchAll<<<1,1>>>( deviceCube, deviceArray );
-		CUDA_CHECK_ERRORS();
+//		fetchAll<<<1,1>>>( deviceCube, deviceArray );
+		fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
 		CUDA_CALL( cudaDeviceSynchronize() );
+		CUDA_CHECK_ERRORS();
 		std::vector<Coordinate> hostArray( 60 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
