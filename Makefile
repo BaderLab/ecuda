@@ -49,6 +49,7 @@ LDLIBS = -lcudart
 ifeq ($(mode),debug)
 	CXXFLAGS += -g
 	CFLAGS += -g
+	NVCCFLAGS += -g -G
 else
 	mode = release
 	CXXFLAGS += -O3 -march=native
