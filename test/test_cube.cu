@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<Coordinate> hostRow;
+		std::vector<Coordinate> hostRow( 3 );
 		deviceRow >> hostRow;
 		std::cout << "ROW";
 		for( std::vector<Coordinate>::size_type i = 0; i < hostRow.size(); ++i ) std::cout << hostRow[i];
@@ -132,7 +132,7 @@ int main( int argc, char* argv[] ) {
 		fetchColumn<<<1,1>>>( deviceCube, deviceColumn );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<Coordinate> hostColumn;
+		std::vector<Coordinate> hostColumn( 4 );
 		deviceColumn >> hostColumn;
 		std::cout << "COLUMN";
 		for( std::vector<Coordinate>::size_type i = 0; i < hostColumn.size(); ++i ) std::cout << hostColumn[i];
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] ) {
 		fetchDepth<<<1,1>>>( deviceCube, deviceDepth );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<Coordinate> hostDepth;
+		std::vector<Coordinate> hostDepth( 5 );
 		deviceDepth >> hostDepth;
 		std::cout << "DEPTH";
 		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
@@ -204,7 +204,7 @@ int main( int argc, char* argv[] ) {
 		iterateAll<<<1,1>>>( deviceCube, deviceArray );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<Coordinate> hostArray;
+		std::vector<Coordinate> hostArray( 3 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
 			std::cout << "LINEAR";
@@ -218,7 +218,7 @@ int main( int argc, char* argv[] ) {
 		fetchAll<<<1,1>>>( deviceCube, deviceArray );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<Coordinate> hostArray;
+		std::vector<Coordinate> hostArray( 60 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
 			std::cout << "LINEAR";
