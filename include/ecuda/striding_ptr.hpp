@@ -144,6 +144,12 @@ public:
 		return *this;
 	}
 
+	template<typename U,typename V>
+	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const striding_ptr& ptr ) {
+		out << "striding_ptr(stride=" << ptr.stride << ";ptr=" << ptr.get() << ")";
+		return out;
+	}
+
 };
 
 } // namespace ecuda

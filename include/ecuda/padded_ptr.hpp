@@ -268,7 +268,7 @@ public:
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr ) {
-		out << ptr.get();
+		out << "padded_ptr(data_length=" << ptr.data_length << ";padding_length=" << ptr.padding_length << ";distance_to_padding=" << ptr.distance_to_padding << ";ptr=" << ptr.get() << ")";
 		return out;
 	}
 

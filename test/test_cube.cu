@@ -53,11 +53,9 @@ printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 template<typename T> __global__
 void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
-printf( "data=%i\n", (T*)sliceXY.data() );
 printf( "number_rows()=%i\n", sliceXY.number_rows() );
 printf( "number_columns()=%i\n", sliceXY.number_columns() );
 	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
-printf( " data[%i]=%i\n", i, (T*)matrix[i].data() );
 		for( unsigned j = 0; j < sliceXY.number_columns(); ++j ) {
 			matrix[i][j] = sliceXY[i][j];
 		}
@@ -171,6 +169,8 @@ int main( int argc, char* argv[] ) {
 
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
+ecuda::cube<Coordinate>::slice_xy_type xy_slice = deviceCube.get_xy(3);
+std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
