@@ -216,7 +216,7 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 		std::vector<Coordinate> hostArray( 3 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
-			std::cout << "LINEAR";
+			std::cout << "ITERATE_ALL";
 			std::cout << " " << hostArray[i];
 			std::cout << std::endl;
 		}
@@ -230,7 +230,7 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 		std::vector<Coordinate> hostArray( 60 );
 		deviceArray >> hostArray;
 		for( unsigned i = 0; i < hostArray.size(); ++i ) {
-			std::cout << "LINEAR";
+			std::cout << "FETCH_ALL";
 			std::cout << " " << hostArray[i];
 			std::cout << std::endl;
 		}
