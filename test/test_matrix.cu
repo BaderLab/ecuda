@@ -156,6 +156,15 @@ void kernel_testRowView(
 	row.fill(Coordinate(99,99));
 }
 
+template<typename T> __global__
+void kernel_linearize(
+	const ecuda::matrix<T> matrix, ecuda::vector<T> vector
+)
+{
+	std::size_t index = 0;
+	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -541,6 +550,29 @@ std::cerr << "cp1" << std::endl;
 			if( hostVector[i] != Coordinate(i/20,i%20) ) passed = false;
 		}
 		testResults.push_back( passed ? 1 : 0 );
+
+	}
+
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::vector<Coordinate> deviceVector( 10*20 );
+		kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		hostVector.assign( 200, Coordinate() );
+		deviceMatrix >> hostVector;
+		for( std::size_t i = 0; i < hostVector.size(); ++i ) {
+			std::cout << "LINEAR " << hostVector[i] << std::endl;
+		}
 
 	}
 
