@@ -57,6 +57,7 @@ printf( "data=%i\n", (T*)sliceXY.data() );
 printf( "number_rows()=%i\n", sliceXY.number_rows() );
 printf( "number_columns()=%i\n", sliceXY.number_columns() );
 	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
+printf( " data[%i]=%i\n", i, (T*)matrix[i].data() );
 		for( unsigned j = 0; j < sliceXY.number_columns(); ++j ) {
 			matrix[i][j] = sliceXY[i][j];
 		}
