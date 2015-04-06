@@ -97,6 +97,12 @@ void fetchAll( typename ecuda::cube<T>::const_iterator first, typename ecuda::cu
 //	}
 }
 
+template<typename T> __global__
+void kernel_linearize( const ecuda::cube<T> cube, ecuda::vector<T> vector ) {
+	std::size_t index = 0;
+	for( typename ecuda::cube<T>::const_iterator iter = cube.begin(); iter != cube.end(); ++iter, ++index ) vector[index] = *iter;
+}
+
 template<typename T,std::size_t U> __global__
 void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::array<T,U>::size_type index = 0;
@@ -253,16 +259,19 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 	}
 
 	{
-		ecuda::array<Coordinate,60> deviceArray;
-//		fetchAll<<<1,1>>>( deviceCube, deviceArray );
-		fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
-		CUDA_CALL( cudaDeviceSynchronize() );
-		CUDA_CHECK_ERRORS();
-		std::vector<Coordinate> hostArray( 60 );
-		deviceArray >> hostArray;
-		for( unsigned i = 0; i < hostArray.size(); ++i ) {
-			std::cout << "FETCH_ALL";
-			std::cout << " " << hostArray[i];
+		//ecuda::array<Coordinate,60> deviceArray;
+		//fetchAll<<<1,1>>>( deviceCube.begin(), deviceCube.end(), deviceArray );
+		//CUDA_CALL( cudaDeviceSynchronize() );
+		//CUDA_CHECK_ERRORS();
+		ecuda::vector<Coordinate> deviceVector( 60 );
+		kernel_linearize<<<1,1>>>( deviceCube, deviceVector );
+		std::vector<Coordinate> hostVector( 60 );
+		deviceVector >> hostVector;
+		//std::vector<Coordinate> hostArray( 60 );
+		//deviceArray >> hostArray;
+		for( unsigned i = 0; i < hostVector.size(); ++i ) {
+			std::cout << "LINEAR";
+			std::cout << " " << hostVector[i];
 			std::cout << std::endl;
 		}
 	}
