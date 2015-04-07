@@ -144,11 +144,11 @@ public:
 	typedef typename base_matrix_type::const_row_type const_depth_type; //!< cube const depth type
 
 	typedef __device_grid< value_type, striding_ptr<value_type,pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > slice_xy_type; //!< cube xy-slice type
-	typedef __device_grid< value_type, padded_ptr<value_type,pointer>,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_xz_type; //!< cube xz-slice type
+	typedef __device_grid< value_type, /*padded_ptr<value_type,*/pointer/*>*/,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_xz_type; //!< cube xz-slice type
 	typedef __device_grid< value_type, pointer,                          __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_yz_type; //!< cube yz-slice type
 
 	typedef const __device_grid< const value_type, striding_ptr<const value_type,pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > const_slice_xy_type; //!< const cube xy-slice type
-	typedef const __device_grid< const value_type, padded_ptr<const value_type,pointer>,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_xz_type; //!< const cube xz-slice type
+	typedef const __device_grid< const value_type, /*padded_ptr<const value_type,*/pointer/*>*/,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_xz_type; //!< const cube xz-slice type
 	typedef const __device_grid< const value_type, pointer,                                __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_yz_type; //!< const cube yz-slice type
 
 /*
@@ -559,7 +559,10 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
-		return slice_xz_type( typename slice_xz_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		pointer p = data()+static_cast<int>(columnIndex*number_depths());
+		typename slice_xz_type::pointer pp( p, number_depths(), p.get_padding_length()*(number_columns()-1)+((number_columns()-1)*number_depths()*sizeof(value_type)) );
+		return slice_xz_type( pp, number_rows(), number_depths() );
+		//return slice_xz_type( typename slice_xz_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
 		//pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
 		//return slice_xz_type( np, number_depths(), number_rows(), padding );
@@ -592,7 +595,10 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
-		return const_slice_xz_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		pointer p = data()+static_cast<int>(columnIndex*number_depths());
+		typename slice_xz_type::pointer pp( p, number_depths(), p.get_padding_length()*(number_columns()-1)+((number_columns()-1)*number_depths()*sizeof(value_type)) );
+		return slice_xz_type( pp, number_rows(), number_depths() );
+		//return const_slice_xz_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
 		//const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
 		//return const_slice_xz_type( np, number_depths(), number_rows(), padding );
