@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "../include/ecuda/vector.hpp"
+#include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/cube.hpp"
 
 struct Coordinate {
@@ -12,6 +13,11 @@ struct Coordinate {
 		return out;
 	}
 };
+
+__global__ void linearize( const ecuda::matrix<Coordinate> matrix, ecuda::vector<Coordinate> vector ) {
+	std::size_t index = 0;
+	for( ecuda::matrix<Coordinate>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
+}
 
 __global__ void linearize( const ecuda::cube<Coordinate> cube, ecuda::vector<Coordinate> vector ) {
 	std::size_t index = 0;
@@ -36,16 +42,27 @@ int main( int argc, char* argv[] ) {
 	ecuda::cube<Coordinate> deviceCube( 5, 2, 20 );
 	deviceCube.assign( hostVector.begin(), hostVector.end() );
 
-	ecuda::vector<Coordinate> deviceVector( 200 );
-	linearize<<<1,1>>>( deviceCube, deviceVector );
+	ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+	deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+
+	ecuda::vector<Coordinate> deviceVector1( 200 );
+	linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
 	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
-
 	std::vector<Coordinate> hostVector2( 200 );
-	deviceVector >> hostVector2;
-
+	deviceVector1 >> hostVector2;
 	for( std::size_t i = 0; i < hostVector2.size(); ++i ) {
-		std::cout << "LINEAR " << hostVector2[i] << std::endl;
+		std::cout << "LINEAR MATRIX " << hostVector2[i] << std::endl;
+	}
+
+	ecuda::vector<Coordinate> deviceVector2( 200 );
+	linearize<<<1,1>>>( deviceCube, deviceVector2 );
+	CUDA_CHECK_ERRORS();
+	CUDA_CALL( cudaDeviceSynchronize() );
+	std::vector<Coordinate> hostVector3( 200 );
+	deviceVector2 >> hostVector3;
+	for( std::size_t i = 0; i < hostVector3.size(); ++i ) {
+		std::cout << "LINEAR CUBE " << hostVector3[i] << std::endl;
 	}
 
 
