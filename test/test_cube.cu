@@ -20,7 +20,6 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
-/*
 template<typename T,std::size_t U> __global__
 void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
@@ -38,7 +37,6 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
 	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
 }
-*/
 
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
