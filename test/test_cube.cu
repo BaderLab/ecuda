@@ -139,8 +139,9 @@ int main( int argc, char* argv[] ) {
 		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
 		{
 			ecuda::cube<Coordinate>::iterator iter = deviceCube.begin();
-			for( unsigned i = 0; i < 30; ++i ) ++iter;
-			std::cout << "deviceCube.begin()+30.operator->()" << iter.operator->() << std::endl;
+			for( unsigned i = 0; i < 60; ++i, ++iter ) {
+				std::cout << "[" << i << "] " << hostVector[i] << " " << iter.operator->() << std::endl;
+			}
 		}
 		std::cout << "deviceCube.end().operator->()=" << deviceCube.end().operator->() << std::endl;
 		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
