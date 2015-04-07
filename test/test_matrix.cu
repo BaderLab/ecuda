@@ -33,9 +33,14 @@ int main( int argc, char* argv[] ) {
 		std::cout << "  Constructing default empty matrix..." << std::endl;
 		ecuda::matrix<Coordinate> emptyDeviceMatrix;
 		std::cout << "    Matrix evaluates as empty: " << ( emptyDeviceMatrix.empty() ? "YES" : "NO" ) << std::endl;
-		std::cout << "    Underlying pointer evaluates as NULL: " << ( emptyDeviceMatrix.data() ) << std::endl;
+		std::cout << "    Underlying pointer evaluates as NULL: " << ( (Coordinate*)emptyDeviceMatrix.data() == NULL ? "YES" : "NO" ) << std::endl;
 	}
-
+	{
+		std::cout << "  Constructing matrix of size 10x20 with default value=[66,66]..." << std::endl;
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20, Coordinate(66,66) );
+		std::cout << "    Matrix evaluates as 10x20: " << ( deviceMatrix.number_rows() == 10 and deviceMatrix.number_columns() == 20 ? "YES" : "NO" ) << std::endl;
+		std::cout << "    Underlying pointer evaluates as non-NULL: " << ( (Coordinate*)deviceMatrix.data() ? "YES" : "NO" ) << std::endl;
+	}
 
 	return EXIT_SUCCESS;
 
