@@ -138,19 +138,19 @@ int main( int argc, char* argv[] ) {
 	{
 		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
 		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
-		std::cout << "deviceCube.yz_slice[1].data()=" << deviceCube.get_yz(1).data() << std::endl;
+		std::cout << "deviceCube.yz_slice[0].data()=" << deviceCube.get_yz(0).data() << std::endl;
 		std::cout << "deviceCube.xz_slice[2].data()=" << deviceCube.get_xz(2).data() << std::endl;
 		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
 		std::cout << "deviceCube.end()=" << deviceCube.end().operator->() << std::endl;
 	}
 
-	{
+	/*{
 		std::vector<Coordinate> v( deviceCube.size() );
 		deviceCube >> v;
 		for( unsigned i = 0; i < v.size(); ++i ) {
 			std::cout << i << " " << v[i] << std::endl;
 		}
-	}
+	}*/
 
 	{
 		std::vector<Coordinate> v( 5 );
@@ -212,8 +212,6 @@ int main( int argc, char* argv[] ) {
 
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
-ecuda::cube<Coordinate>::slice_xy_type xy_slice = deviceCube.get_xy(3);
-std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
@@ -258,6 +256,7 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 		}
 	}
 
+	/*
 	{
 		std::vector<Coordinate> hostVector2; hostVector2.reserve( 2*5*20 );
 		for( estd::cube<Coordinate>::size_type i = 0; i < 2; ++i ) {
@@ -286,6 +285,7 @@ std::cout << "xy_slice.data()=" << xy_slice.data() << std::endl;
 			std::cout << std::endl;
 		}
 	}
+	*/
 
 	return EXIT_SUCCESS;
 
