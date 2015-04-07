@@ -66,6 +66,7 @@ int main( int argc, char* argv[] ) {
 		deviceMatrix.assign( hostCoordinates.begin(), hostCoordinates.end() );
 		std::cout << deviceMatrix << std::endl;
 
+		deviceMatrix.fill( Coordinate(66,66) );
 		ecuda::vector<Coordinate> deviceVector( deviceMatrix.size() );
 		deviceMatrix >> deviceVector;
 		deviceMatrix.assign( deviceVector.begin(), deviceVector.end() );
