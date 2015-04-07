@@ -559,6 +559,9 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
+		//TODO: currently a hack so that padded_ptr doesn't become parent of another padded_ptr
+		//      as it won't behave correctly - need to add feature in padded_ptr to combine rather
+		//      than make a hierarchy
 		pointer p = data()+static_cast<int>(columnIndex*number_depths());
 		typename slice_xz_type::pointer pp( p, number_depths(), p.get_pitch()*number_columns()-number_depths()*sizeof(value_type) );
 		return slice_xz_type( pp, number_rows(), number_depths() );
@@ -595,6 +598,9 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
+		//TODO: currently a hack so that padded_ptr doesn't become parent of another padded_ptr
+		//      as it won't behave correctly - need to add feature in padded_ptr to combine rather
+		//      than make a hierarchy
 		pointer p = data()+static_cast<int>(columnIndex*number_depths());
 		typename slice_xz_type::pointer pp( p, number_depths(), p.get_pitch()*number_columns()-number_depths()*sizeof(value_type) );
 		return slice_xz_type( pp, number_rows(), number_depths() );

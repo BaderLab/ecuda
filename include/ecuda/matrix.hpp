@@ -713,7 +713,7 @@ public:
 	/// \param columnIndex index of the column to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex ) { return base_container_type::at(rowIndex,columnIndex); }
+	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex ) { return base_container_type::at(rowIndex,columnIndex); }
 
 	///
 	/// \brief Returns a reference to the element at the specified matrix location.
@@ -741,7 +741,7 @@ public:
 	/// \param columnIndex index of the column to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return base_container_type::at(rowIndex,columnIndex); }
+	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const { return base_container_type::at(rowIndex,columnIndex); }
 
 	///
 	/// \brief Assignment operator.
