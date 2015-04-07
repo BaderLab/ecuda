@@ -69,6 +69,17 @@ int main( int argc, char* argv[] ) {
 
 	std::vector<Coordinate> hostVector( 200 );
 	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+
+	}
+	/*
+	{
 		std::size_t index = 0;
 		for( std::size_t i = 0; i < 5; ++i ) {
 			for( std::size_t j = 0; j < 2; ++j ) {
@@ -79,6 +90,7 @@ int main( int argc, char* argv[] ) {
 			}
 		}
 	}
+	*/
 
 //	ecuda::cube<Coordinate> deviceCube( 5, 2, 20 );
 //	deviceCube.assign( hostVector.begin(), hostVector.end() );
