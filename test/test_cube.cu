@@ -41,8 +41,8 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 0 ); // 1 );
-printf( "number_rows()=%i\n", sliceYZ.number_rows() );
-printf( "number_columns()=%i\n", sliceYZ.number_columns() );
+//printf( "number_rows()=%i\n", sliceYZ.number_rows() );
+//printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 	for( unsigned i = 0; i < sliceYZ.number_rows(); ++i ) {
 		for( unsigned j = 0; j < sliceYZ.number_columns(); ++j ) {
 			matrix[i][j] = sliceYZ[i][j];
@@ -53,13 +53,14 @@ printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 template<typename T> __global__
 void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
-printf( "number_rows()=%i\n", sliceXY.number_rows() );
-printf( "number_columns()=%i\n", sliceXY.number_columns() );
-	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
-		for( unsigned j = 0; j < sliceXY.number_columns(); ++j ) {
-			matrix[i][j] = sliceXY[i][j];
-		}
-	}
+//printf( "number_rows()=%i\n", sliceXY.number_rows() );
+//printf( "number_columns()=%i\n", sliceXY.number_columns() );
+	matrix[0][0] = sliceXY[0][0];
+//	for( unsigned i = 0; i < sliceXY.number_rows(); ++i ) {
+//		for( unsigned j = 0; j < sliceXY.number_columns(); ++j ) {
+//			matrix[i][j] = sliceXY[i][j];
+//		}
+//	}
 }
 
 template<typename T> __global__
