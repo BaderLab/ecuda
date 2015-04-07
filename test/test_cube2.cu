@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <estd/matrix.hpp>
-#include "../include/ecuda/array.hpp"
+//#include "../include/ecuda/array.hpp"
 #include "../include/ecuda/vector.hpp"
 #include "../include/ecuda/matrix.hpp"
 
@@ -18,7 +18,20 @@ struct Coordinate {
 	}
 };
 */
+template<typename T>
+struct coord_t {
+	T x, y;
+	HOST DEVICE coord_t( const T& x = T(), const T& y = T() ) : x(x), y(y) {}
+	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y; }
+	bool operator!=( const coord_t& other ) const { return !operator==(other); }
+	friend std::ostream& operator<<( std::ostream& out, const coord_t& coord ) {
+		out << "[" << coord.x << "," << coord.y << "]";
+		return out;
+	}
+};
 
+typedef coord_t<double> Coordinate;
+/*
 struct Coordinate {
 	int x, y;
 	HOST DEVICE Coordinate( const int x = 0, const int y = 0 ) : x(x), y(y) {}
@@ -27,6 +40,7 @@ struct Coordinate {
 		return out;
 	}
 };
+*/
 
 __global__ void linearize( const ecuda::matrix<Coordinate> matrix, ecuda::vector<Coordinate> vector ) {
 	std::size_t index = 0;
