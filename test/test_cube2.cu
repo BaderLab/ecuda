@@ -67,45 +67,47 @@ void kernel_linearize(
 
 int main( int argc, char* argv[] ) {
 
-	std::vector<Coordinate> hostVector( 200 );
 	{
-		std::vector<Coordinate> hostVector( 10*20 );
-		unsigned index = 0;
-		for( unsigned i = 0; i < 10; ++i ) {
-			for( unsigned j = 0; j < 20; ++j, ++index ) {
-				hostVector[index] = Coordinate(i,j);
+		std::vector<Coordinate> hostVector( 200 );
+		{
+			std::vector<Coordinate> hostVector( 10*20 );
+			unsigned index = 0;
+			for( unsigned i = 0; i < 10; ++i ) {
+				for( unsigned j = 0; j < 20; ++j, ++index ) {
+					hostVector[index] = Coordinate(i,j);
+				}
 			}
-		}
 
-	}
-	/*
-	{
-		std::size_t index = 0;
-		for( std::size_t i = 0; i < 5; ++i ) {
-			for( std::size_t j = 0; j < 2; ++j ) {
-				for( std::size_t k = 0; k < 20; ++k ) {
-					//hostVector[index++] = Coordinate(i,j,k);
-					hostVector[index++] = Coordinate(i*2+j,k);
+		}
+		/*
+		{
+			std::size_t index = 0;
+			for( std::size_t i = 0; i < 5; ++i ) {
+				for( std::size_t j = 0; j < 2; ++j ) {
+					for( std::size_t k = 0; k < 20; ++k ) {
+						//hostVector[index++] = Coordinate(i,j,k);
+						hostVector[index++] = Coordinate(i*2+j,k);
+					}
 				}
 			}
 		}
-	}
-	*/
+		*/
 
-//	ecuda::cube<Coordinate> deviceCube( 5, 2, 20 );
-//	deviceCube.assign( hostVector.begin(), hostVector.end() );
+	//	ecuda::cube<Coordinate> deviceCube( 5, 2, 20 );
+	//	deviceCube.assign( hostVector.begin(), hostVector.end() );
 
-	ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
-	deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
 
-	ecuda::vector<Coordinate> deviceVector1( 200 );
-	kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
-	CUDA_CHECK_ERRORS();
-	CUDA_CALL( cudaDeviceSynchronize() );
-	std::vector<Coordinate> hostVector2( 200 );
-	deviceVector1 >> hostVector2;
-	for( std::size_t i = 0; i < hostVector2.size(); ++i ) {
-		std::cout << "LINEAR MATRIX " << hostVector2[i] << std::endl;
+		ecuda::vector<Coordinate> deviceVector1( 200 );
+		kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+		std::vector<Coordinate> hostVector2( 200 );
+		deviceVector1 >> hostVector2;
+		for( std::size_t i = 0; i < hostVector2.size(); ++i ) {
+			std::cout << "LINEAR MATRIX " << hostVector2[i] << std::endl;
+		}
 	}
 
 //	ecuda::vector<Coordinate> deviceVector2( 200 );
