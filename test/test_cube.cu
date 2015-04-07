@@ -139,6 +139,13 @@ int main( int argc, char* argv[] ) {
 		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
 		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
 		std::cout << "deviceCube.yz_slice[0].data()=" << deviceCube.get_yz(0).data() << std::endl;
+		{
+			ecuda::cube<Coordinate>::slice_yz_type yz_slice = deviceCube.get_yz(0);
+			ecuda::cube<Coordinate>::slice_yz_type::iterator iter = yz_slice.begin();
+			for( unsigned i = 0; i < 10; ++i, ++iter ) {
+				std::cout << "YZ[" << i << "] " << iter.operator->() << std::endl;
+			}
+		}
 		std::cout << "deviceCube.xz_slice[2].data()=" << deviceCube.get_xz(2).data() << std::endl;
 		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
 		std::cout << "deviceCube.end()=" << deviceCube.end().operator->() << std::endl;
