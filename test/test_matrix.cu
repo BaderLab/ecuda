@@ -24,6 +24,20 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
+template<typename T,typename U,typename V>
+std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const ecuda::matrix<T>& matrix ) {
+	out << "MATRIX[" << matrix.number_rows() << " x " << matrix.number_columns() << "]" << std::endl;
+	std::vector<T> hostVector( matrix.size() );
+	matrix >> hostVector;
+	for( typename ecuda::matrix<T>::size_type i = 0; i < matrix.number_rows(); ++i ) {
+		for( typename ecuda::matrix<T>::size_type j = 0; j < matrix.number_columns(); ++j ) {
+			out << " " << hostVector[i*matrix.number_columns()+j];
+		}
+		out << std::endl;
+	}
+	return out;
+}
+
 int main( int argc, char* argv[] ) {
 
 	std::cout << "Testing ecuda::matrix..." << std::endl;
@@ -40,6 +54,16 @@ int main( int argc, char* argv[] ) {
 		ecuda::matrix<Coordinate> deviceMatrix( 10, 20, Coordinate(66,66) );
 		std::cout << "    Matrix evaluates as 10x20: " << ( deviceMatrix.number_rows() == 10 and deviceMatrix.number_columns() == 20 ? "YES" : "NO" ) << std::endl;
 		std::cout << "    Underlying pointer evaluates as non-NULL: " << ( (Coordinate*)deviceMatrix.data() ? "YES" : "NO" ) << std::endl;
+	}
+	{
+		std::cout << "  Constructing matrix of size 10x20 with source data from std::vector..." << std::endl;
+		std::vector<Coordinate> hostCoordinates; hostCoordinates.reserve( 10*20 );
+		for( unsigned i = 0; i < 10; ++i )
+			for( unsigned j = 0; j < 20; ++j )
+				hostCoordinates.push_back( Coordinate(i,j) );
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostCoordinates.begin(), hostCoordinates.end() );
+		std::cout << deviceMatrix << std::endl;
 	}
 
 	return EXIT_SUCCESS;
