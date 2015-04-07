@@ -432,6 +432,7 @@ private:
 
 	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
 	HOST void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, __dimension_noncontiguous_tag, __dimension_contiguous_tag ) const {
+		std::cerr << "IT'S HAPPENING" << std::endl;
 		typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator dest = other.begin();
 		for( size_type i = 0; i < number_rows(); ++i, dest += number_columns() ) {
 			const_row_type row = get_row(i);
