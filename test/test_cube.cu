@@ -158,7 +158,9 @@ int main( int argc, char* argv[] ) {
 			ecuda::cube<Coordinate>::slice_xz_type xz_slice = deviceCube.get_xz(2);
 			ecuda::cube<Coordinate>::slice_xz_type::iterator iter = xz_slice.begin();
 			for( unsigned i = 0; i < 10; ++i, ++iter ) {
-				std::cout << "XZ[" << i << "] " << iter.operator->() << std::endl;
+				Coordinate coord;
+				ecuda::cudaMemcpy( &coord, (Coordinate*)iter.operator->(), sizeof(Coordinate), cudaMemcpyDeviceToHost );
+				std::cout << "XZ[" << i << "] " << iter.operator->() << " " << coord << std::endl;
 			}
 		}
 		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
