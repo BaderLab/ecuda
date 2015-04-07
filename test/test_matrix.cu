@@ -171,7 +171,7 @@ int main( int argc, char* argv[] ) {
 	std::cout << "Testing ecuda::matrix..." << std::endl;
 
 	std::vector<int> testResults;
-
+/*
 	// Test 1: default constructor, copy to host and general info
 	std::cerr << "Test 1" << std::endl;
 	{
@@ -459,6 +459,7 @@ std::cerr << "cp1" << std::endl;
 	// Test B: device rows and columns
 	std::cerr << "Test B" << std::endl;
 	{
+	*/
 /** removing this test for now
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
@@ -484,6 +485,7 @@ std::cerr << "cp1" << std::endl;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != Coordinate(i%10,i/10) ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 ***/
+	/*
 		testResults.push_back( -1 );
 
 	}
@@ -552,7 +554,7 @@ std::cerr << "cp1" << std::endl;
 		testResults.push_back( passed ? 1 : 0 );
 
 	}
-
+*/
 	{
 		std::vector<Coordinate> hostVector( 10*20 );
 		unsigned index = 0;
