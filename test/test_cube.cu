@@ -84,7 +84,7 @@ printf( "number_columns()=%i\n", sliceXZ.number_columns() );
 		}
 	}
 }
-/*
+
 template<typename T,std::size_t U> __global__
 void fetchAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::array<T,U>::size_type index = 0;
@@ -120,7 +120,6 @@ void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row(0,0);
 	for( typename ecuda::cube<T>::const_row_type::const_iterator iter = row.begin(); iter != row.end(); ++iter, ++index ) array[index] = *iter;
 }
-*/
 
 int main( int argc, char* argv[] ) {
 
