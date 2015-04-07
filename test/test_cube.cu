@@ -20,6 +20,7 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
+/*
 template<typename T,std::size_t U> __global__
 void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
@@ -37,6 +38,7 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
 	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
 }
+*/
 
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
@@ -49,6 +51,16 @@ void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
 		}
 	}
 }
+
+template<typename T> __global__
+void fetchSliceYZ( typename ecuda::cube<T>::slice_yz_type sliceYZ, ecuda::matrix<T> matrix ) {
+	for( unsigned i = 0; i < sliceYZ.number_rows(); ++i ) {
+		for( unsigned j = 0; j < sliceYZ.number_columns(); ++j ) {
+			matrix[i][j] = sliceYZ[i][j];
+		}
+	}
+}
+
 
 template<typename T> __global__
 void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
@@ -74,7 +86,7 @@ printf( "number_columns()=%i\n", sliceXZ.number_columns() );
 		}
 	}
 }
-
+/*
 template<typename T,std::size_t U> __global__
 void fetchAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::array<T,U>::size_type index = 0;
@@ -110,6 +122,7 @@ void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row(0,0);
 	for( typename ecuda::cube<T>::const_row_type::const_iterator iter = row.begin(); iter != row.end(); ++iter, ++index ) array[index] = *iter;
 }
+*/
 
 int main( int argc, char* argv[] ) {
 
@@ -136,6 +149,7 @@ int main( int argc, char* argv[] ) {
 
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
+/*
 	{
 		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
 		{
@@ -176,7 +190,7 @@ int main( int argc, char* argv[] ) {
 		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
 		std::cout << "deviceCube.end()=" << deviceCube.end().operator->() << std::endl;
 	}
-
+*/
 	/*{
 		std::vector<Coordinate> v( deviceCube.size() );
 		deviceCube >> v;
@@ -184,7 +198,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << i << " " << v[i] << std::endl;
 		}
 	}*/
-
+/*
 	{
 		std::vector<Coordinate> v( 5 );
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
@@ -226,10 +240,11 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
 		std::cout << std::endl;
 	}
-
+*/
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 4, 5 );
 		fetchSliceYZ<<<1,1>>>( deviceCube, deviceMatrix );
+		//fetchSliceYZ<<<1,1>>>( deviceCube.get_yz(0), deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 		estd::matrix<Coordinate> hostMatrix( 4, 5 );
@@ -242,7 +257,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << std::endl;
 		}
 	}
-
+/*
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
@@ -288,7 +303,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << std::endl;
 		}
 	}
-
+*/
 	/*
 	{
 		std::vector<Coordinate> hostVector2; hostVector2.reserve( 2*5*20 );
