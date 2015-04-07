@@ -70,7 +70,6 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<Coordinate> hostVector( 200 );
 		{
-			std::vector<Coordinate> hostVector( 10*20 );
 			unsigned index = 0;
 			for( unsigned i = 0; i < 10; ++i ) {
 				for( unsigned j = 0; j < 20; ++j, ++index ) {
