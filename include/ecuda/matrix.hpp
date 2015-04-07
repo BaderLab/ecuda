@@ -552,13 +552,40 @@ public:
 		base_container_type::operator=( newContainer );
 	}
 
+private:
+	template<class Iterator>
+	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
+		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
+		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
+			row_type row = get_row(i);
+			row.copy_range_from( first, first+number_columns(), row.begin() );
+		}
+	}
+
+	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) { assign( first, last, contiguous_device_iterator_tag() ); }
+
+	template<class Iterator> HOST void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+		std::vector< value_type, host_allocator<value_type> > v( first, last );
+		if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
+		typename std::vector< value_type, host_allocator<value_type> >::const_iterator src = v.begin();
+		for( size_type i = 0; i < number_rows(); ++i, src += number_columns() ) {
+			row_type row = get_row(i);
+			row.copy_range_from( src, src+number_columns(), row.begin() );
+		}
+	}
+
+public:
+
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
 	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
 	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
-	HOST inline void assign( Iterator first, Iterator last ) {
+	HOST void assign( Iterator first, Iterator last ) {
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		/*
 		if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_contiguous ) {
 			const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 			if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
@@ -570,15 +597,15 @@ public:
 		} else if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_device ) {
 			throw cuda_error( cudaErrorInvalidDevicePointer, "ecuda::matrix::assign() cannot assign non-contiguous device elements" );
 		} else {
-//			vector<value_type> v( first, last );
-//			if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
-//			typename vector<value_type>::const_iterator iter = v.begin();
-//			for( size_type i = 0; i < number_rows(); ++i, iter += number_columns() ) {
-//				row_type row = get_row(i);
-//				row.copy_range_from( iter, iter+number_columns(), row.begin() );
-//			}
-			throw std::runtime_error( EXCEPTION_MSG( "should not occur" ) );
+			vector<value_type> v( first, last );
+			if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
+			typename vector<value_type>::const_iterator iter = v.begin();
+			for( size_type i = 0; i < number_rows(); ++i, iter += number_columns() ) {
+				row_type row = get_row(i);
+				row.copy_range_from( iter, iter+number_columns(), row.begin() );
+			}
 		}
+		*/
 
 	}
 

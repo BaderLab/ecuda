@@ -70,8 +70,8 @@ int main( int argc, char* argv[] ) {
 		ecuda::vector<Coordinate> deviceVector( deviceMatrix.size() );
 		deviceMatrix >> deviceVector;
 		deviceMatrix.assign( deviceVector.begin(), deviceVector.end() );
-		std::cout << "  Results of transfer device => device => device => host: " << std::endl;
-		std::cout << deviceMatrix << std::endl;
+//		std::cout << "  Results of transfer device => device => device => host: " << std::endl;
+//		std::cout << deviceMatrix << std::endl;
 	}
 
 	return EXIT_SUCCESS;
