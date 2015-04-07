@@ -99,10 +99,12 @@ int main( int argc, char* argv[] ) {
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		std::vector<Coordinate> hostVector2( 200 );
-		deviceVector >> hostVector2;
-		for( std::size_t i = 0; i < hostVector2.size(); ++i ) {
-			std::cout << "LINEAR MATRIX " << hostVector2[i] << std::endl;
+		hostVector.clear();
+		hostVector.resize( 200 );
+		//std::vector<Coordinate> hostVector2( 200 );
+		deviceVector >> hostVector;
+		for( std::size_t i = 0; i < hostVector.size(); ++i ) {
+			std::cout << "LINEAR MATRIX " << hostVector[i] << std::endl;
 		}
 	}
 
