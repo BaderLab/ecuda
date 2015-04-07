@@ -1,8 +1,11 @@
 #include <iostream>
+#include <cstdio>
 #include <vector>
-
+#include <estd/matrix.hpp>
+#include "../include/ecuda/array.hpp"
 #include "../include/ecuda/vector.hpp"
 #include "../include/ecuda/matrix.hpp"
+
 //#include "../include/ecuda/cube.hpp"
 
 /*
