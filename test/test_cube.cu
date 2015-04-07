@@ -146,7 +146,6 @@ int main( int argc, char* argv[] ) {
 
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
-/*
 	{
 		std::cout << "deviceCube.data()=" << deviceCube.data() << std::endl;
 		{
@@ -187,7 +186,7 @@ int main( int argc, char* argv[] ) {
 		std::cout << "deviceCube.begin()=" << deviceCube.begin().operator->() << std::endl;
 		std::cout << "deviceCube.end()=" << deviceCube.end().operator->() << std::endl;
 	}
-*/
+
 	/*{
 		std::vector<Coordinate> v( deviceCube.size() );
 		deviceCube >> v;
