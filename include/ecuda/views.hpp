@@ -55,10 +55,12 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/*
 template<class IteratorCategory> struct iterator_category_traits { enum { is_contiguous = false }; enum { is_device = false }; };
 template<> struct iterator_category_traits<std::random_access_iterator_tag> { enum { is_contiguous = true }; enum { is_device = false }; };
 template<> struct iterator_category_traits<contiguous_device_iterator_tag> { enum { is_contiguous = true }; enum { is_device = true }; };
 template<> struct iterator_category_traits<device_iterator_tag> { enum { is_contiguous = false }; enum { is_device = true }; };
+*/
 
 struct __dimension_contiguous_tag {};
 struct __dimension_noncontiguous_tag {};
@@ -256,8 +258,26 @@ public:
 	DEVICE inline reference operator[]( const size_type index ) { return *(data()+static_cast<int>(index)); }
 	DEVICE inline const_reference operator[]( const size_type index ) const { return *(data()+static_cast<int>(index)); }
 
+private:
 	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last ) {
+	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
+		if( n < 0 or static_cast<size_type>(n) != size() )
+			throw std::length_error( EXCEPTION_MSG("ecuda::__device_sequence::assign range of first,last does not match sequence size" ) );
+		copy_range_from( first, last, begin() );
+	}
+
+	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) { assign( first, last, contiguous_device_iterator_tag() ); }
+
+	template<class Iterator,typename FallthroughArgument> HOST inline void assign( Iterator first, Iterator last, FallthroughArgument ) {
+		throw std::invalid_argument( EXCEPTION_MSG("ecuda::__device_sequence::assign is not usable with non-contigous iterator" ) );
+	}
+
+public:
+	template<class Iterator>
+	HOST inline void assign( Iterator first, Iterator last ) {
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		/*
 		if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_contiguous ) {
 			const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 			if( n < 0 or static_cast<size_type>(n) != size() )
@@ -267,6 +287,7 @@ public:
 		} else {
 			throw std::invalid_argument( EXCEPTION_MSG("ecuda::__device_sequence::assign is not usable with non-contigous iterator" ) );
 		}
+		*/
 	}
 
 	HOST DEVICE inline void fill( const value_type& value ) { fill( value, dimension_type() ); }
@@ -430,20 +451,24 @@ private:
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest.get_pitch(), src, src.get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
 	}
 
-	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
-	HOST void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, __dimension_noncontiguous_tag, __dimension_contiguous_tag ) const {
-		std::cerr << "IT'S HAPPENING" << std::endl;
-		typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator dest = other.begin();
+	template<typename T2,typename PointerType2,typename ContainerType2>
+	HOST void copy_to( __device_sequence<T2,PointerType2,__dimension_contiguous_tag,ContainerType2>& other, __dimension_noncontiguous_tag, __dimension_contiguous_tag ) const {
+		typename __device_sequence<T2,PointerType2,__dimension_contiguous_tag,ContainerType2>::iterator dest = other.begin();
 		for( size_type i = 0; i < number_rows(); ++i, dest += number_columns() ) {
 			const_row_type row = get_row(i);
 			row.copy_range_to( row.begin(), row.end(), dest );
 		}
 	}
 
-	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
-	HOST void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, __dimension_contiguous_tag, __dimension_contiguous_tag ) const {
-		typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator dest = other.begin();
+	template<typename T2,typename PointerType2,typename ContainerType2>
+	HOST void copy_to( __device_sequence<T2,PointerType2,__dimension_contiguous_tag,ContainerType2>& other, __dimension_contiguous_tag, __dimension_contiguous_tag ) const {
+		typename __device_sequence<T2,PointerType2,__dimension_contiguous_tag,ContainerType2>::iterator dest = other.begin();
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest.operator->(), number_columns()*sizeof(value_type), data(), data().get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
+	}
+
+	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2,typename RowDimensionType2,typename ColumnDimensionType2>
+	HOST inline void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, RowDimensionType2, ColumnDimensionType2 ) const {
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("ecuda::__device_sequence::copy_to() cannot copy to or from a non-contiguous range of elements") );
 	}
 
 	HOST DEVICE void fill( const value_type& value, padded_ptr<value_type,value_type*,1>& dest, __dimension_contiguous_tag ) {
@@ -527,11 +552,7 @@ public:
 
 	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
 	HOST inline const __device_grid& operator>>( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other ) const {
-		if( iterator_category_traits<typename std::iterator_traits<typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator>::iterator_category>::is_contiguous ) {
-			copy_to( other, row_dimension_type(), column_dimension_type() );
-		} else {
-			throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::operator>> cannot copy to non-contiguous device memory") );
-		}
+		copy_to( other, row_dimension_type(), column_dimension_type() );
 		return *this;
 	}
 

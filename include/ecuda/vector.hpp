@@ -163,7 +163,31 @@ private:
 	}
 
 	template<class Iterator>
-	inline HOST void init( Iterator first, Iterator last, __false_type ) {
+	HOST inline void init( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+		n = last-first;
+		growMemory( n );
+		base_container_type::copy_range_from( first, last, base_container_type::begin() );
+	}
+
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::random_access_iterator_tag ) { assign( first, last, contiguous_device_iterator_tag() ); }
+
+	template<class Iterator>
+	HOST inline void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+		std::vector< value_type, host_allocator<value_type> > v( first, last );
+		init( v.begin(), v.end() );
+	}
+
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::input_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
+
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, device_iterator_tag ) {
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("ecuda::vector::init() cannot initialize from non-contiguous device elements") );
+	}
+
+	template<class Iterator>
+	HOST inline void init( Iterator first, Iterator last, __false_type ) {
+		init( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		/*
 		if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_contiguous ) {
 			n = last-first;
 			growMemory( n );
@@ -179,6 +203,7 @@ private:
 			growMemory( n );
 			base_container_type::copy_range_from( v.begin(), v.end(), base_container_type::begin() );
 		}
+		*/
 	}
 
 	HOST void init( size_type n, const value_type& value, __true_type ) {
@@ -628,49 +653,39 @@ public:
 
 private:
 	template<class Iterator>
-	HOST void insert( const_iterator position, Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type newElements = std::distance(first,last);
-		if( newElements <= 0 ) return;
-		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v( size() );
-		base_container_type::operator>>( v );
-		v.insert( v.begin()+index, first, last );
-		growMemory( size()+newElements );
-		base_container_type::assign( v.begin(), v.end() );
-		n += newElements;
-	}
-
-	template<class Iterator>
-	HOST void insert( const_iterator position, Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
-		vector< value_type, host_allocator<value_type> > newElements( first, last );
-		if( newElements.empty() ) return;
-		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v( size() );
-		base_container_type::operator>>( v );
-		v.insert( v.begin()+index, newElements.begin(), newElements.end() );
-		growMemory( size()+newElements.size() );
-		base_container_type::assign( v.begin(), v.end() );
-		n += newElements.size();
-	}
-
-	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::forward_iterator_tag ) { insert( first, last, std::bidirectional_iterator_tag() ); }
-	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::input_iterator_tag ) { insert( first, last, std::bidirectional_iterator_tag() ); }
-
-	template<class Iterator>
 	HOST void insert( const_iterator position, Iterator first, Iterator last, contiguous_device_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type newElements = last-first;
-		if( newElements <= 0 ) return;
+		std::vector< value_type, host_allocator<value_type> > hostExistingElements( size() );
+		base_container_type::copy_range_to( begin(), end(), hostExistingElements.begin() );
+		typename std::iterator_traits<Iterator>::difference_type len = last-first;
+		vector v( first, last );
+		std::vector< value_type, host_allocator<value_type> > hostNewElements( v.size() );
+		v >> hostNewElements;
 		const size_type index = position-begin();
-		std::vector< value_type, host_allocator<value_type> > v1( size() );
-		base_container_type::operator>>( v1 );
-		vector dv( first, last, allocator );
-		std::vector< value_type, host_allocator<value_type> > v2( dv.size() );
-		dv.operator>>( v2 );
-		v1.insert( v1.begin()+index, v2.begin(), v2.end() );
-		growMemory( size()+newElements );
-		base_container_type::assign( v1.begin(), v1.end() );
-		n += newElements;
+		hostExistingElements.insert( hostExistingElements.begin()+index, hostNewElements.begin(), hostNewElements.end() );
+		growMemory( hostExistingElements.size() );
+		base_container_type::copy_range_from( hostExistingElements.begin(), hostExistingElements.end(), base_container_type::begin() );
+		n = hostExistingElements.size();
 	}
+
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, device_iterator_tag ) {
+		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("ecuda::vector::insert() cannot insert non-contiguous device elements") );
+	}
+
+	template<class Iterator>
+	HOST void insert( const_iterator position, Iterator first, Iterator last, std::random_access_iterator_tag ) {
+		std::vector< value_type, host_allocator<value_type> > hostExistingElements( size() );
+		base_container_type::copy_range_to( begin(), end(), hostExistingElements.begin() );
+		const size_type index = position-begin();
+		hostExistingElements.insert( hostExistingElements.begin()+index, first, last );
+		growMemory( hostExistingElements.size() );
+		base_container_type::copy_range_to( hostExistingElements.begin(), hostExistingElements.end(), base_container_type::begin() );
+		n = hostExistingElements.size();
+	}
+
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::bidirectional_iterator_tag ) { insert( position, first, last, std::random_access_iterator_tag() ); }
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::forward_iterator_tag ) { insert( position, first, last, std::random_access_iterator_tag() ); }
+	template<class Iterator> HOST inline void insert( const_iterator position, Iterator first, Iterator last, std::input_iterator_tag ) { insert( position, first, last, std::random_access_iterator_tag() ); }
+
 
 public:
 	///
@@ -685,7 +700,9 @@ public:
 	/// \param first,last the range of elements to insert, can't be iterators into container for which insert is called
 	///
 	template<class Iterator>
-	HOST void insert( const_iterator position, Iterator first, Iterator last ) {
+	HOST inline void insert( const_iterator position, Iterator first, Iterator last ) {
+		insert( position, first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		/*
 		if( iterator_category_traits< typename std::iterator_traits<Iterator>::iterator_category >::is_device ) {
 			if( iterator_category_traits< typename std::iterator_traits<Iterator>::iterator_category >::is_contiguous ) {
 				std::vector< value_type, host_allocator<value_type> > hostExistingElements( size() );
@@ -711,6 +728,7 @@ public:
 		growMemory( hostExistingElements.size() );
 		base_container_type::copy_range_to( hostExistingElements.begin(), hostExistingElements.end(), base_container_type::begin() );
 		n = hostExistingElements.size();
+		*/
 	}
 
 	#ifdef __CPP11_SUPPORTED__
