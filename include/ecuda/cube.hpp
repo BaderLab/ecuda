@@ -29,7 +29,8 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // cube.hpp
-// An STL-like structure that resides in video memory.
+//
+// An STL-like 3D structure that resides in video memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -42,16 +43,13 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "config.hpp"
-#if HAVE_ESTD_LIBRARY > 0
-#include <estd/cube.hpp>
-#endif
 #include "global.hpp"
 #include "allocators.hpp"
 #include "device_ptr.hpp"
 #include "padded_ptr.hpp"
 #include "striding_ptr.hpp"
 #include "matrix.hpp"
-#include "views.hpp"
+#include "models.hpp"
 
 namespace ecuda {
 
@@ -116,9 +114,7 @@ class cube : protected matrix<T,Alloc>
 {
 
 protected:
-	typedef matrix<T,Alloc> base_matrix_type;
-	typedef typename matrix<T,Alloc>::base_container_type base_container_type;
-	typedef typename matrix<T,Alloc>::managed_pointer managed_pointer;
+	typedef matrix<T,Alloc> base_matrix_type; //!< shortcut typedef to make invokations to the base class
 
 public:
 	typedef typename base_matrix_type::value_type value_type; //!< element data type
@@ -134,11 +130,9 @@ public:
 	typedef typename base_matrix_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_matrix_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	//typedef __device_sequence< value_type, striding_ptr<value_type,pointer>, __dimension_noncontiguous_tag, __container_type_derived_tag > row_type; //!< cube row type
 	typedef typename base_matrix_type::column_type row_type; //!< cube row type
 	typedef typename base_matrix_type::column_type column_type; //!< cube column type
 	typedef typename base_matrix_type::row_type depth_type; //!< cube depth type
-	//typedef __device_sequence< const value_type, striding_ptr<const value_type,pointer>, __dimension_noncontiguous_tag, __container_type_derived_tag > row_type; //!< cube const row type
 	typedef typename base_matrix_type::const_column_type const_row_type; //!< cube const row type
 	typedef typename base_matrix_type::const_column_type const_column_type; //!< cube const column type
 	typedef typename base_matrix_type::const_row_type const_depth_type; //!< cube const depth type
@@ -147,57 +141,15 @@ public:
 	typedef __device_grid< value_type, /*padded_ptr<value_type,*/pointer/*>*/,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_xz_type; //!< cube xz-slice type
 	typedef __device_grid< value_type, pointer,                          __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > slice_yz_type; //!< cube yz-slice type
 
-	typedef const __device_grid< const value_type, striding_ptr<const value_type,pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > const_slice_xy_type; //!< const cube xy-slice type
-	typedef const __device_grid< const value_type, /*padded_ptr<const value_type,*/pointer/*>*/,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_xz_type; //!< const cube xz-slice type
-	typedef const __device_grid< const value_type, pointer,                                __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_yz_type; //!< const cube yz-slice type
-
-/*
-	typedef T value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-	#ifdef __CPP11_SUPPORTED__
-	typedef value_type& reference; //!< cell reference type
-	typedef const value_type& const_reference; //!< cell const reference type
-	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
-	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
-	#else
-	typedef typename Alloc::reference reference; //!< cell reference type
-	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
-	typedef typename Alloc::pointer pointer; //!< cell pointer type
-	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
-	#endif
-
-	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
-	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
-	typedef contiguous_sequence_view<value_type> depth_type; //!< cube depth type
-	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
-	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
-	typedef contiguous_sequence_view<const value_type> const_depth_type; //!< const cube depth type
-
-	typedef matrix_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
-	typedef contiguous_matrix_view<value_type> slice_xz_type; //!< cube xz-slice type
-	typedef contiguous_matrix_view<value_type> slice_yz_type; //!< cube yz-slice type
-	typedef matrix_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
-	typedef contiguous_matrix_view<const value_type> const_slice_xz_type; //!< const cube xz-slice type
-	typedef contiguous_matrix_view<const value_type> const_slice_yz_type; //!< const cube yz-slice type
-
-	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
-*/
+	typedef const __device_grid< const value_type, striding_ptr<const value_type,typename __pointer_traits<pointer>::const_pointer>, __dimension_noncontiguous_tag, __dimension_noncontiguous_tag, __container_type_derived_tag > const_slice_xy_type; //!< const cube xy-slice type
+	typedef const __device_grid< const value_type, /*padded_ptr<const value_type,*/typename __pointer_traits<pointer>::const_pointer/*>*/,   __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_xz_type; //!< const cube xz-slice type
+	typedef const __device_grid< const value_type, typename __pointer_traits<pointer>::const_pointer,                                __dimension_noncontiguous_tag, __dimension_contiguous_tag,    __container_type_derived_tag > const_slice_yz_type; //!< const cube yz-slice type
 
 private:
 	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
 	//           reflected on the host object. Don't allow the device to perform any operations that
 	//           change their value.
 	size_type numberRows; //!< number of rows
-	//size_type numberColumns; //!< number of columns
-	//size_type numberDepths; //!< number of depths
-	//size_type pitch; //!< pitch of device memory in bytes
-	//device_ptr<T> deviceMemory;
-	//allocator_type allocator;
 
 public:
 	///
@@ -244,37 +196,6 @@ public:
 	HOST cube( cube<T>&& src ) : base_matrix_type(src), numberRows(std::move(src.numberRows)) {}
 	#endif
 
-	/*
-	#if HAVE_ESTD_LIBRARY > 0
-	///
-	/// \brief Constructs a cube by copying the dimensions and elements of an estd library cube container.
-	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
-	///
-	/// \param src Another cube object of the same type, whose contents are copied.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.number_rows()), numberColumns(src.number_columns()), numberDepths(src.depth_size()) {
-		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector< value_type, host_allocator<value_type> > v( numberDepths );
-			for( size_type i = 0; i < numberRows; ++i ) {
-				for( size_type j = 0; j < numberColumns; ++j ) {
-					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
-					CUDA_CALL( cudaMemcpy<value_type>(
-						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
-						&v.front(), // src
-						numberDepths, // count
-						cudaMemcpyHostToDevice
-					) );
-				}
-			}
-		}
-	}
-	#endif
-	*/
-
 	//HOST DEVICE virtual ~cube() {}
 
 	///
@@ -283,39 +204,20 @@ public:
 	///
 	HOST inline allocator_type get_allocator() const { return base_matrix_type::get_allocator(); }
 
-/*
-private:
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
-		if( n < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
-		if( static_cast<size_type>(n) != size() ) throw std::length_error( "ecuda::cube::assign(first,last) iterator range [begin,end) does not have correct length" );
-		for( size_type i = 0; i < number_rows()*number_columns(); ++i, first += number_depths() ) {
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), first.operator->(), number_depths(), cudaMemcpyHostToDevice ) );
-		}
-	}
-
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
-		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
-		if( n < 0 ) throw std::length_error( "ecuda::vector::assign(first,last) last comes before first, are they switched?" );
-		if( static_cast<size_type>(n) != size() ) throw std::length_error( "ecuda::cube::assign(first,last) iterator range [begin,end) does not have correct length" );
-		for( size_type i = 0; i < number_rows()*number_columns(); ++i, first += number_depths() ) {
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), first.operator->(), number_depths(), cudaMemcpyDeviceToDevice ) );
-		}
-	}
-*/
-
-public:
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
 	///
-	/// The provided iterator must be at least an STL Random Access iterator type, or an \em ecuda
-	/// contiguous device iterator (contiguous_device_iterator).  It assumed the underlying data
-	/// resides in contiguous memory so it can be copied directly to the appropriate region of device
-	/// memory. The number of elements in [first,last) must equal the size of this cube
-	/// (i.e. rows*columns*depths). In addition, the orientation of the elements is assumed to be ordered
-	/// depth->column->row (the same orientation as the elements stored in this container).
+	/// The provided iterator can be any standard STL-style iterator type, generated from standard
+	/// host containers, custom containers, or other device-bound containers from within ecuda.
+	///
+	/// If using naked pointers (e.g. C-style arrays) see the utility class ecuda::host_array_proxy
+	/// for information on how to copy them to the device.
+	///
+	/// The operations required to copy the memory are determined at compile-time based on the
+	/// capabilities of the iterator and whether the iterator is bound to data in contiguous memory.
+	/// The underlying data is treated as though it is ordered row>column-major (depths of the same
+	/// row/column are together, then columns containing each set of depths are side-by-side, and finally
+	/// rows containing sets of columns are side-by-side.
 	///
 	/// Note that a potentially more clear way of assigning values is to use the get_depth()
 	/// method, which returns a structure that also has an assign() method.  For example:
@@ -328,7 +230,12 @@ public:
 	///       cube[i][j].assign( vec.begin(), vec.end() );
 	/// \endcode
 	///
+	/// If one wishes to partially transfer data without range checking see operator<<.
+	///
 	/// \param first,last the range to copy the elements from
+	/// \throws std::length_error thrown if the range of elements provided does not match the size of this container
+	/// \throws std::domain_error thrown if this cube is represented in non-contiguous memory and cannot be written
+	///                           to via iterators (should not occur in the default cube implementation)
 	///
 	template<class Iterator>
 	HOST inline void assign( Iterator first, Iterator last ) { base_matrix_type::assign( first, last ); }
@@ -354,15 +261,6 @@ public:
 	///
 	HOST DEVICE inline size_type number_depths() const __NOEXCEPT__ { return base_matrix_type::number_columns(); }
 
-	/*
-	///
-	/// \brief Returns the pitch of the underlying 2D device memory.
-	///
-	/// \returns The pitch (in bytes) of the underlying 2D device memory.
-	///
-	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
-	*/
-
 	///
 	/// \brief Returns the number of elements in the container.
 	///
@@ -387,6 +285,9 @@ public:
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
+	///
+	/// By default, the cube uses the specialized ecuda::padded_ptr pointer that automatically
+	/// deals with the alignment padding associated with 2D memory allocated by CUDA.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
@@ -467,96 +368,102 @@ public:
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_matrix_type::rend(); }
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single row.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single row.
 	///
-	/// \param columnIndex the column to fix the view on
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements with the specified column and depth indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param columnIndex the column the proxy container should contain
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified column and depth indices.
 	///
 	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
 		return row_type( typename row_type::pointer( data()+static_cast<int>(columnIndex*number_depths()+depthIndex), number_columns()*number_depths() ), number_rows() );
 	}
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single column.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single column.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements with the specified row and depth indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row and depth indices.
 	///
 	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
 		return column_type( typename column_type::pointer( data()+static_cast<int>(rowIndex*number_columns()*number_depths()+depthIndex), number_depths() ), number_columns() );
 	}
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single depth.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single depth.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \param columnIndex the column to fix the view on
-	/// \returns A view of the elements with the specified row and column indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \param columnIndex the column the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row and column indices.
 	///
 	HOST DEVICE inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
 		return base_matrix_type::get_row( rowIndex*number_columns()+columnIndex );
 	}
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single row.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single row.
 	///
-	/// \param columnIndex the column to fix the view on
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements with the specified column and depth indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param columnIndex the column the proxy container should contain
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified column and depth indices.
 	///
 	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
 		return const_row_type( typename const_row_type::pointer( data()+static_cast<int>(columnIndex*number_depths()+depthIndex ), number_columns()*number_depths() ), number_rows() );
 	}
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single column.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single column.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements with the specified row and depth indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row and depth indices.
 	///
 	HOST DEVICE inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
 		return const_column_type( typename const_column_type::pointer( data()+static_cast<int>(rowIndex*number_columns()*number_depths()+depthIndex), number_depths() ), number_columns() );
 	}
 
 	///
-	/// \brief Gets a view of the sequence of elements forming a single depth.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single depth.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \param columnIndex the column to fix the view on
-	/// \returns A view of the elements with the specified row and column indices.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \param columnIndex the column the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row and column indices.
 	///
 	HOST DEVICE inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
 		return base_matrix_type::get_row( rowIndex*number_columns()+columnIndex );
 	}
 
 	///
-	/// \brief Gets a view of the matrix of elements at a single row.
+	/// \brief Gets a proxy container containing the matrix of elements at a single row.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \returns A view of the elements at the specified row.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified row.
 	///
 	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
 		return slice_yz_type( data()+static_cast<int>(rowIndex*number_columns()*number_depths()), number_columns(), number_depths() );
 	}
 
 	///
-	/// \brief Gets a view of the matrix of elements at a single depth.
+	/// \brief Gets a proxy container containing the matrix of elements at a single column.
 	///
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements at the specified depth.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
 	///
-	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
-		return slice_xy_type( typename slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
-	}
-
-	///
-	/// \brief Gets a view of the matrix of elements at a single column.
-	///
-	/// \param columnIndex the column to fix the view on
-	/// \returns A view of the elements at the specified column.
+	/// \param columnIndex the column the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified column.
 	///
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
 		//TODO: currently a hack so that padded_ptr doesn't become parent of another padded_ptr
@@ -572,30 +479,36 @@ public:
 	}
 
 	///
-	/// \brief Gets a view of the matrix of elements at a single row.
+	/// \brief Gets a proxy container containing the matrix of elements at a single depth.
 	///
-	/// \param rowIndex the row to fix the view on
-	/// \returns A view of the elements at the specified row.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified depth.
+	///
+	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
+		return slice_xy_type( typename slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
+	}
+
+	///
+	/// \brief Gets a proxy container containing the matrix of elements at a single row.
+	///
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param rowIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified row.
 	///
 	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
 		return const_slice_yz_type( data()+static_cast<int>(rowIndex*number_columns()*number_depths()), number_columns(), number_depths() );
 	}
 
 	///
-	/// \brief Gets a view of the matrix of elements at a single depth.
+	/// \brief Gets a proxy container containing the matrix of elements at a single column.
 	///
-	/// \param depthIndex the depth to fix the view on
-	/// \returns A view of the elements at the specified depth.
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
 	///
-	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
-		return const_slice_xy_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
-	}
-
-	///
-	/// \brief Gets a view of the matrix of elements at a single column.
-	///
-	/// \param columnIndex the column to fix the view on
-	/// \returns A view of the elements at the specified column.
+	/// \param columnIndex the column the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified column.
 	///
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
 		//TODO: currently a hack so that padded_ptr doesn't become parent of another padded_ptr
@@ -611,16 +524,28 @@ public:
 	}
 
 	///
+	/// \brief Gets a proxy container containing the matrix of elements at a single depth.
+	///
+	/// As a proxy, any changes made to the returned container are reflected in this cube.
+	///
+	/// \param depthIndex the depth the proxy container should contain
+	/// \returns A proxy container containing the elements at the specified depth.
+	///
+	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
+		return const_slice_xy_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(depthIndex), number_depths() ), number_rows(), number_columns() );
+	}
+
+	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
-	/// \returns view object for the specified row
+	/// \returns a proxy container containing the elements of the specified YZ-slice
 	///
 	HOST DEVICE inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
-	/// \returns view object for the specified row
+	/// \returns a proxy container containing the elements of the specified YZ-slice
 	///
 	HOST DEVICE inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
 
@@ -628,7 +553,7 @@ public:
 	/// \brief Returns a reference to the element at the specified cube location.
 	///
 	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
+	/// because the former includes range checking.  In this case, no range checking is performed,
 	/// but if a thread only accesses a single element, this accessor may be slightly faster.
 	/// For example:
 	///
@@ -643,20 +568,26 @@ public:
 	/// This is due to the operator[] first creating a YZ-slice view, then the second
 	/// operator[] creating a view of a single row within the slice, and then finally
 	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
+	/// crafty at seeing through these these types of situations (as the logic produced
+	/// as the [][][] operation is unrolled should resolve to essentially this method),
+	/// but the direct accessor method is included here for completeness.
+	///
+	/// However, remember that if a thread is accessing some related range of elements
+	/// it will be faster to use operator[] or one of the other methods such as
+	/// get_column(), get_yz(), etc. in whatever fashion makes sense for the task.
 	///
 	/// \param rowIndex index of the row to get an element reference from
 	/// \param columnIndex index of the column to get an element reference from
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
+	DEVICE inline reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
+	/// \brief Returns a reference to the element at the specified cube location.
+	///
 	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
+	/// because the former includes range checking.  In this case, no range checking is performed,
 	/// but if a thread only accesses a single element, this accessor may be slightly faster.
 	/// For example:
 	///
@@ -671,16 +602,20 @@ public:
 	/// This is due to the operator[] first creating a YZ-slice view, then the second
 	/// operator[] creating a view of a single row within the slice, and then finally
 	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
+	/// crafty at seeing through these these types of situations (as the logic produced
+	/// as the [][][] operation is unrolled should resolve to essentially this method),
+	/// but the direct accessor method is included here for completeness.
+	///
+	/// However, remember that if a thread is accessing some related range of elements
+	/// it will be faster to use operator[] or one of the other methods such as
+	/// get_column(), get_yz(), etc. in whatever fashion makes sense for the task.
 	///
 	/// \param rowIndex index of the row to get an element reference from
 	/// \param columnIndex index of the column to get an element reference from
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
+	DEVICE inline const_reference at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_matrix_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
@@ -705,6 +640,50 @@ public:
 	HOST DEVICE inline void fill( const value_type& value ) { base_matrix_type::fill( value ); }
 
 	///
+	/// \brief Copies the contents of this device array to another container.
+	///
+	/// This method is designed to be as flexible as possible so that any container
+	/// that has the standard begin() and end() methods implemented should work.
+	///
+	/// The underlying architecture attempts to identify if the target container
+	/// is in contiguous memory or not, or if the target is another ecuda device-bound
+	/// container and decides at compile-time how the transfer should be optimally
+	/// performed.
+	///
+	/// The method will attempt to assign all elements to the target container.
+	/// It is the responsibility of the caller to make sure there is enough
+	/// space allocated to hold them.  Failure to do so will result in undefined
+	/// behaviour.
+	///
+	template<class Container>
+	HOST const cube& operator>>( Container& container ) const {
+		base_matrix_type::operator>>( container );
+		return *this;
+	}
+
+	///
+	/// \brief Copies the contents of another container into this device cube.
+	///
+	/// This method is designed to be as flexible as possible so that any container
+	/// that has the standard begin() and end() methods implemented should work.
+	///
+	/// The underlying architecture attempts to identify if the source container
+	/// is in contiguous memory or not, or if the target is another ecuda device-bound
+	/// container and decides at compile-time how the transfer should be optimally
+	/// performed.
+	///
+	/// Note that the number of elements in the other container do not have to match
+	/// the size of this cube.  If there are too few elements, the cube will only
+	/// be partially filled, if there are too many elements only as many elements as
+	/// needed to fill this cube will be used.
+	///
+	template<class Container>
+	HOST cube<T,N>& operator<<( const Container& container ) {
+		base_matrix_type::operator<<( container );
+		return *this;
+	}
+
+	///
 	/// \brief Assignment operator.
 	///
 	/// Copies the contents of other into this container.
@@ -726,62 +705,6 @@ public:
 		return *this;
 	}
 
-
-	template<class Container>
-	HOST const cube& operator>>( Container& container ) const {
-		base_matrix_type::operator>>( container );
-		return *this;
-	}
-
-/*
-	#if HAVE_ESTD_LIBRARY > 0
-	///
-	/// \brief Copies the contents of this device cube to an estd library cube.
-	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
-	///
-	/// \param dest An estd library cube object to copy the elements of this container to.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
-		//TODO: this can be optimized
-		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
-		std::vector< value_type, host_allocator<value_type> > tmp( numberDepths );
-		for( size_type i = 0; i < numberRows; ++i ) {
-			for( size_type j = 0; j < numberColumns; ++j ) {
-				CUDA_CALL( cudaMemcpy<value_type>( &tmp.front(), allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), numberDepths, cudaMemcpyDeviceToHost ) );
-				for( size_type k = 0; k < numberDepths; ++k ) dest[i][j][k] = tmp[k];
-			}
-		}
-		return *this;
-	}
-	#endif
-
-	#if HAVE_ESTD_LIBRARY > 0
-	///
-	/// \brief Copies the contents of an estd library cube to this device.
-	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
-	///
-	/// \param src An estd library cube object whose elements are copied to this container.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
-		//TODO: this can be optimized
-		resize( src.number_rows(), src.number_columns(), src.depth_size() );
-		std::vector< value_type, host_allocator<value_type> > tmp( src.depth_size() );
-		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.number_rows(); ++i ) {
-			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.number_columns(); ++j ) {
-				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];
-				CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), &tmp.front(), numberDepths, cudaMemcpyHostToDevice ) );
-			}
-		}
-		return *this;
-	}
-	#endif
-*/
 };
 
 } // namespace ecuda

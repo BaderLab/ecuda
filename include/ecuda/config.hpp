@@ -1,14 +1,10 @@
-///
-/// If the estd library is installed, allow
-/// its use within ecuda.  This allows the
-/// estd::matrix and estd::cube classes to
-/// be used with ecuda::matrix and ecuda::cube.
-///
-#define HAVE_ESTD_LIBRARY 0
-
-///
-/// If the GNU Scientific Library (GSL) is
-/// installed, allow its use within ecuda.
-/// This allows the estd::matrix and estd::cube
-/// classes to utilize gsl_matrix.
-#define HAVE_GNU_SCIENTIFIC_LIBRARY 0
+//
+// This file used to contain pre-processor guards for
+// including certain external libraries.  The addition
+// of general iterator-based copying to and from
+// ecuda containers was sufficient to remove any
+// external library-specific code.
+//
+// This file remains for future in case any configuration
+// of the API is needed.
+//

@@ -49,14 +49,13 @@ either expressed or implied, of the FreeBSD Project.
 #include <utility>
 #endif
 
+#include "global.hpp"
 #include "algorithm.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "device_ptr.hpp"
 #include "iterators.hpp"
-#include "global.hpp"
-
-#include "views.hpp" //TODO: change this
+#include "models.hpp"
 
 namespace ecuda {
 
@@ -169,12 +168,12 @@ private:
 		base_container_type::copy_range_from( first, last, base_container_type::begin() );
 	}
 
-	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::random_access_iterator_tag ) { assign( first, last, contiguous_device_iterator_tag() ); }
+	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::random_access_iterator_tag ) { init( first, last, contiguous_device_iterator_tag() ); }
 
 	template<class Iterator>
 	HOST inline void init( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		init( v.begin(), v.end() );
+		init( v.begin(), v.end(), std::iterator_traits< typename std::vector< value_type, host_allocator<value_type> >::iterator >::iterator_category() );
 	}
 
 	template<class Iterator> HOST inline void init( Iterator first, Iterator last, std::forward_iterator_tag ) { init( first, last, std::bidirectional_iterator_tag() ); }
@@ -700,36 +699,7 @@ public:
 	/// \param first,last the range of elements to insert, can't be iterators into container for which insert is called
 	///
 	template<class Iterator>
-	HOST inline void insert( const_iterator position, Iterator first, Iterator last ) {
-		insert( position, first, last, typename std::iterator_traits<Iterator>::iterator_category() );
-		/*
-		if( iterator_category_traits< typename std::iterator_traits<Iterator>::iterator_category >::is_device ) {
-			if( iterator_category_traits< typename std::iterator_traits<Iterator>::iterator_category >::is_contiguous ) {
-				std::vector< value_type, host_allocator<value_type> > hostExistingElements( size() );
-				base_container_type::copy_range_to( begin(), end(), hostExistingElements.begin() );
-				typename std::iterator_traits<Iterator>::difference_type len = last-first;
-				vector v( first, last );
-				std::vector< value_type, host_allocator<value_type> > hostNewElements( v.size() );
-				v >> hostNewElements;
-				const size_type index = position-begin();
-				hostExistingElements.insert( hostExistingElements.begin()+index, hostNewElements.begin(), hostNewElements.end() );
-				growMemory( hostExistingElements.size() );
-				base_container_type::copy_range_from( hostExistingElements.begin(), hostExistingElements.end(), base_container_type::begin() );
-				n = hostExistingElements.size();
-				return;
-			} else {
-				throw cuda_error( cudaErrorInvalidDevicePointer, "ecuda::vector::insert() cannot insert non-contiguous device elements" );
-			}
-		}
-		std::vector< value_type, host_allocator<value_type> > hostExistingElements( size() );
-		base_container_type::copy_range_to( begin(), end(), hostExistingElements.begin() );
-		const size_type index = position-begin();
-		hostExistingElements.insert( hostExistingElements.begin()+index, first, last );
-		growMemory( hostExistingElements.size() );
-		base_container_type::copy_range_to( hostExistingElements.begin(), hostExistingElements.end(), base_container_type::begin() );
-		n = hostExistingElements.size();
-		*/
-	}
+	HOST inline void insert( const_iterator position, Iterator first, Iterator last ) { insert( position, first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -914,15 +884,8 @@ public:
 	}
 
 	///
-	/// \brief Copies the contents of this device vector to a host STL vector.
+	/// \brief Copies the contents of this device vector to a host STL-like container.
 	///
-//	template<class OtherAlloc>
-//	HOST const vector<value_type,Alloc>& operator>>( std::vector<value_type,OtherAlloc>& vector ) const {
-//		vector.resize( n );
-//		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), n, cudaMemcpyDeviceToHost ) );
-//		return *this;
-//	}
-
 	template<class Container>
 	HOST vector<value_type,allocator_type>& operator<<( const Container& container ) {
 		init( container.begin(), container.end(), __false_type() );

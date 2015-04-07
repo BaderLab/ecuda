@@ -44,21 +44,14 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "config.hpp"
-#if HAVE_ESTD_LIBRARY > 0
-#include <estd/matrix.hpp>
-#endif
-#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
-#include <gsl/gsl_matrix.h>
-#endif
 #include "global.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "device_ptr.hpp"
+#include "models.hpp"
 #include "padded_ptr.hpp"
 #include "striding_ptr.hpp"
 #include "vector.hpp"
-
-#include "views.hpp" // TODO: change this
 
 
 namespace ecuda {
@@ -181,36 +174,7 @@ public:
 	typedef typename base_container_type::const_row_type const_row_type;
 	typedef typename base_container_type::const_column_type const_column_type;
 
-	/*
-	typedef T value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-	typedef value_type& reference; //!< cell reference type
-	typedef const value_type& const_reference; //!< cell const reference type
-	typedef value_type* pointer; //!< cell pointer type
-	typedef const value_type* const_pointer; //!< cell const pointer type
-
-	typedef contiguous_sequence_view<value_type> row_type; //!< matrix row container type
-	typedef sequence_view< value_type, padded_ptr<value_type,striding_ptr<value_type>,1> > column_type; //!< matrix column container type
-	typedef const contiguous_sequence_view<const value_type> const_row_type; //!< matrix const row container type
-	typedef const sequence_view< const value_type, padded_ptr<const value_type,striding_ptr<const value_type>,1> > const_column_type; //!< matrix const column container type
-
-	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
-	*/
-
-
 private:
-	// REMEMBER: numberRows, numberColumns, and pitch altered on device memory won't be
-	//           reflected on the host object. Don't allow the device to perform any operations that
-	//           change their value.
-//	size_type numberRows; //!< number of matrix rows
-//	size_type numberColumns; //!< number of matrix columns
-//	size_type pitch; //!< the padded width of the 2D memory allocation in bytes
-//	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 	allocator_type allocator;
 
 public:
@@ -257,26 +221,6 @@ public:
 	///
 	HOST matrix( matrix<T>&& src ) : base_container_type(src), allocator(std::move(src.allocator)) {}
 	#endif
-
-	/*
-	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
-	///
-	/// \brief Constructs a matrix by copying the dimensions and elements of a GSL matrix.
-	///
-	/// This method is enabled if the HAVE_GNU_SCIENTIFIC_LIBRARY flag in config.hpp is
-	/// set to non-zero. The GSL needs to be visible to the compiler. GSL matrices always
-	/// consist of elements of type double, so the template parameter T for this object
-	/// should also be double.  If this is not the case, the contents of the resulting
-	/// matrix are undefined.
-	///
-	/// \param src A GSL matrix whose contents are copied.
-	///
-	HOST matrix( const gsl_matrix& src ) : numberRows(src.size1), numberColumns(src.size2) {
-		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.data, src.tda*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
-	}
-	#endif
-	*/
 
 	//HOST DEVICE virtual ~matrix() {}
 
@@ -421,66 +365,56 @@ public:
 	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !number_rows() or !number_columns(); }
 
 	///
-	/// \brief Gets a view object of a single row of the matrix.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single row.
 	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
-	/// the underlying data.
+	/// As a proxy, any changes made to the returned container are reflected in this matrix.
 	///
-	/// \param rowIndex of the row to isolate
-	/// \returns view object for the specified row
+	/// \param rowIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row index.
 	///
 	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return base_container_type::get_row(rowIndex); }
 
 	///
-	/// \brief Gets a view object of a single row of the matrix.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single row.
 	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
-	/// allow any alterations to the underlying data.
+	/// As a proxy, any changes made to the returned container are reflected in this matrix.
 	///
-	/// \param rowIndex of the row to isolate
-	/// \returns view object for the specified row
+	/// \param rowIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified row index.
 	///
 	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return base_container_type::get_row(rowIndex); }
 
 	///
-	/// \brief Gets a view object of a single column of the matrix.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single column.
 	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
-	/// the underlying data.
+	/// As a proxy, any changes made to the returned container are reflected in this matrix.
 	///
-	/// \param columnIndex index of the column to isolate
-	/// \returns view object for the specified column
+	/// \param columnIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified column index.
 	///
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) { return base_container_type::get_column(columnIndex); }
 
 	///
-	/// \brief Gets a view object of a single column of the matrix.
+	/// \brief Gets a proxy container containing the sequence of elements forming a single column.
 	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
-	/// allow any alterations to the underlying data.
+	/// As a proxy, any changes made to the returned container are reflected in this matrix.
 	///
-	/// \param columnIndex index of the column to isolate
-	/// \returns view object for the specified column
+	/// \param columnIndex the row the proxy container should contain
+	/// \returns A proxy container containing the elements with the specified column index.
 	///
 	HOST DEVICE inline const_column_type get_column( const size_type columnIndex ) const { return base_container_type::get_column(columnIndex); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
 	/// \param rowIndex index of the row to isolate
-	/// \returns view object for the specified row
+	/// \returns a proxy container containing the elements of the specified row
 	///
 	HOST DEVICE inline row_type operator[]( const size_type rowIndex ) { return base_container_type::operator[](rowIndex); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
 	/// \param rowIndex index of the row to isolate
-	/// \returns view object for the specified row
+	/// \returns a proxy container containing the elements of the specified row
 	///
 	HOST DEVICE inline const_row_type operator[]( const size_type rowIndex ) const { return base_container_type::operator[](rowIndex); }
 
@@ -539,6 +473,7 @@ public:
 	/// \returns Pointer to the underlying element storage.
 	///
 	HOST DEVICE inline const pointer data() const __NOEXCEPT__ { return base_container_type::data(); }
+
 	///
 	/// \brief Replaces the contents of the container.
 	/// \param newNumberRows new number of rows
@@ -591,32 +526,42 @@ public:
 	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
 	/// \param first,last the range to copy the elements from
 	///
-	template<class Iterator>
-	HOST void assign( Iterator first, Iterator last ) {
-		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
-		/*
-		if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_contiguous ) {
-			const typename std::iterator_traits<Iterator>::difference_type n = last-first;
-			if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
-			for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
-				row_type row = get_row(i);
-				row.copy_range_from( first, first+number_columns(), row.begin() );
-			}
-			return;
-		} else if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_device ) {
-			throw cuda_error( cudaErrorInvalidDevicePointer, "ecuda::matrix::assign() cannot assign non-contiguous device elements" );
-		} else {
-			vector<value_type> v( first, last );
-			if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
-			typename vector<value_type>::const_iterator iter = v.begin();
-			for( size_type i = 0; i < number_rows(); ++i, iter += number_columns() ) {
-				row_type row = get_row(i);
-				row.copy_range_from( iter, iter+number_columns(), row.begin() );
-			}
-		}
-		*/
 
-	}
+	///
+	/// \brief Replaces the contents of the container with copies of those in the range [first,last).
+	///
+	/// The provided iterator can be any standard STL-style iterator type, generated from standard
+	/// host containers, custom containers, or other device-bound containers from within ecuda.
+	///
+	/// If using naked pointers (e.g. C-style arrays) see the utility class ecuda::host_array_proxy
+	/// for information on how to copy them to the device.
+	///
+	/// The operations required to copy the memory are determined at compile-time based on the
+	/// capabilities of the iterator and whether the iterator is bound to data in contiguous memory.
+	/// The underlying data is treated as though it is ordered row>column-major (depths of the same
+	/// row/column are together, then columns containing each set of depths are side-by-side, and finally
+	/// rows containing sets of columns are side-by-side.
+	///
+	/// Note that a potentially more clear way of assigning values is to use the get_depth()
+	/// method, which returns a structure that also has an assign() method.  For example:
+	///
+	/// \code{.cpp}
+	/// estd::cube<int> cube( 3, 4, 5 ); // cube of dimension 3x4x5 and filled with zeroes
+	/// std::vector<int> vec( { 66, 18, 96, 49, 58 } ); // vector initialized with a C++11 initializer list
+	/// for( estd::cube<int>::size_type i = 0; i < cube.number_rows(); ++i )
+	///	   for( estd::cube<int>::size_type j = 0; j < cube.number_columns(); ++j )
+	///       cube[i][j].assign( vec.begin(), vec.end() );
+	/// \endcode
+	///
+	/// If one wishes to partially transfer data without range checking see operator<<.
+	///
+	/// \param first,last the range to copy the elements from
+	/// \throws std::length_error thrown if the range of elements provided does not match the size of this container
+	/// \throws std::domain_error thrown if this cube is represented in non-contiguous memory and cannot be written
+	///                           to via iterators (should not occur in the default cube implementation)
+	///
+	template<class Iterator>
+	HOST inline void assign( Iterator first, Iterator last ) { assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );	}
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -802,22 +747,6 @@ public:
 		base_container_type::operator=( src );
 		return *this;
 	}
-/*
-	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
-	HOST matrix<T,Alloc>& operator>>( gsl_matrix** dest ) {
-		*dest = gsl_matrix_alloc( numberRows, numberColumns );
-		CUDA_CALL( cudaMemcpy2D<value_type>( (*dest)->data, (*dest)->tda*sizeof(double), deviceMemory.get(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
-		return *this;
-	}
-
-	HOST matrix<T,Alloc>& operator>>( gsl_matrix& dest ) {
-		if( dest.size1 != number_rows() ) throw std::length_error( "ecuda::matrix::operator>>(gsl_matrix&) target rows in GSL matrix and this matrix do not match" );
-		if( dest.size2 != number_columns() ) throw std::length_error( "ecuda::matrix::operator>>(gsl_matrix&) target columns in GSL matrix and this matrix do not match" );
-		CUDA_CALL( cudaMemcpy2D<value_type>( dest.data, dest.tda*sizeof(double), deviceMemory.get(), pitch, numberColumns, numberRows, cudaMemcpyDeviceToHost ) );
-		return *this;
-	}
-	#endif
-*/
 
 	///
 	/// \brief Copies the contents of this device matrix to another container.
@@ -830,27 +759,6 @@ public:
 		base_container_type::operator>>( container );
 		return *this;
 	}
-
-/*
-	#if HAVE_ESTD_LIBRARY > 0
-	template<typename U,typename V>
-	HOST matrix<T,Alloc>& operator<<( const estd::matrix<T,U,V>& src ) {
-		resize( src.number_rows(), src.number_columns() );
-		CUDA_CALL( cudaMemcpy2D<value_type>( data(), pitch, src.data(), numberColumns*sizeof(T), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
-		return *this;
-	}
-	#endif
-
-	#if HAVE_GNU_SCIENTIFIC_LIBRARY > 0
-	HOST matrix<T,Alloc>& operator<<( const gsl_matrix& dest ) {
-		numberRows = dest.size1;
-		numberColumns = dest.size2;
-		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, dest.data, dest.tda*sizeof(value_type), numberColumns, numberRows, cudaMemcpyHostToDevice ) );
-		return *this;
-	}
-	#endif
-*/
 
 	///
 	/// \brief Copies the contents of another container to this device matrix.

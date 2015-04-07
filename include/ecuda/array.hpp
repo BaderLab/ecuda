@@ -30,7 +30,7 @@ either expressed or implied, of the FreeBSD Project.
 //----------------------------------------------------------------------------
 // array.hpp
 //
-// An STL-like structure that resides in video memory.
+// An STL-like fixed-sized array that resides in video memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -41,19 +41,14 @@ either expressed or implied, of the FreeBSD Project.
 
 #include <algorithm>
 #include <limits>
-#include <stdexcept>
-#include <vector>
 #ifdef __CPP11_SUPPORTED__
-#include <array>
 #include <initializer_list>
 #endif
 
 #include "global.hpp"
 #include "allocators.hpp"
-#include "apiwrappers.hpp"
-#include "iterators.hpp"
 #include "device_ptr.hpp"
-#include "views.hpp"
+#include "models.hpp"
 
 namespace ecuda {
 
@@ -68,12 +63,19 @@ namespace ecuda {
 /// are host only, operations to access the values of specific elements
 /// are device only, and general information can be accessed by both.
 ///
+/// \todo This is currently implemented as a subclass of the __device_sequence
+///       model, which means the array is essentially a fixed-size "vector", and
+///       doesn't take advantage of the fact that the template parameter N doesn't
+///       actually need to be stored as a variable at run-time (the backing
+///       __device_sequence model does store a copy of the value).  In a future
+///       version this will be taken advantage of.
+///
+///
 template<typename T,std::size_t N>
 class array : private __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> {
 
 private:
-	typedef __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type;
-	typedef __device_sequence<T,T*,           __dimension_contiguous_tag,__container_type_derived_tag> derived_container_type;
+	typedef __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type; //!< shortcut typedef to make invokations to the base class more terse
 
 public:
 	typedef typename base_container_type::value_type value_type; //!< element data type
@@ -139,18 +141,23 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container.  This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the assignment operator. For example:
+	/// of the container is required in host code, use the iterator-based constructor. For example:
 	///
 	/// \code{.cpp}
 	/// ecuda::array<int,10> arr( 3 ); // fill array with 3s
 	/// ecuda::array<int,10> newArr( arr ); // shallow copy
-	/// ecuda::array<int,10> newArr; newArr = arr; // deep copy
+	/// ecuda::array<int,10> newArr( arr.begin(), arr.end() ); // deep copy
 	/// \endcode
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
 	HOST DEVICE array( const array& src ) : base_container_type(src) {}
-	
+
+/*
+ * Deprecating this because it causes unnecessary confusion with the behavior of the default
+ * copy ctor.  The default ctor makes a shallow copy, while supplying an array with a different
+ * number of elements triggers a deep copy, which is silly.
+ *
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
 	///
@@ -165,6 +172,7 @@ public:
 	HOST array( const array<T,N2>& src ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
 		base_container_type::copy_range_from( src.begin(), src.begin()+(std::min(N,N2)), begin() );
 	}
+*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -423,6 +431,19 @@ public:
 	///
 	/// \brief Copies the contents of this device array to another container.
 	///
+	/// This method is designed to be as flexible as possible so that any container
+	/// that has the standard begin() and end() methods implemented should work.
+	///
+	/// The underlying architecture attempts to identify if the target container
+	/// is in contiguous memory or not, or if the target is another ecuda device-bound
+	/// container and decides at compile-time how the transfer should be optimally
+	/// performed.
+	///
+	/// The method will attempt to assign all elements to the target container.
+	/// It is the responsibility of the caller to make sure there is enough
+	/// space allocated to hold them.  Failure to do so will result in undefined
+	/// behaviour.
+	///
 	template<class Container>
 	HOST const array<T,N>& operator>>( Container& container ) const {
 		base_container_type::operator>>( container );
@@ -430,28 +451,44 @@ public:
 	}
 
 	///
-	/// \brief Copies the contents of a host STL vector to this device array.
+	/// \brief Copies the contents of another container into this device array.
 	///
-	/// \param vector std::vector to copy the contents from
-	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
+	/// This method is designed to be as flexible as possible so that any container
+	/// that has the standard begin() and end() methods implemented should work.
+	///
+	/// The underlying architecture attempts to identify if the source container
+	/// is in contiguous memory or not, or if the target is another ecuda device-bound
+	/// container and decides at compile-time how the transfer should be optimally
+	/// performed.
+	///
+	/// Note that the number of elements in the other container do not have to match
+	/// the size of this array.  If there are too few elements, the array will only
+	/// be partially filled, if there are too many elements only as many elements as
+	/// needed to fill this array will be used.
 	///
 	template<class Container>
 	HOST array<T,N>& operator<<( const Container& container ) {
-		base_container_type::copy_range_from( container.begin(), container.end(), begin() );
+		base_container_type::operator<<( container );
 		return *this;
 	}
 
 	///
 	/// \brief Assignment operator.
 	///
-	/// Copies the contents of other into this container.
+	/// Note that assignment performs a shallow copy of the container, like the
+	/// copy constructor.  Thus:
 	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
+	/// \code{.cpp}
+	/// ecuda::array<int,10> arr1;
+	/// // ... initialize contents of arr1
+	/// ecuda::array<int,10> arr2 = arr1; // modifying arr2 also modifies arr1
+	/// \endcode
+	///
+	/// If a deep copy is required in hose code, use the iterator-based constructor:
+	///
+	/// \code{.cpp}
+	/// ecuda::array<int,10> arr2( arr1.begin(), arr1.end() );
+	/// \endcode
 	///
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
