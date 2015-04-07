@@ -555,6 +555,7 @@ public:
 private:
 	template<class Iterator>
 	HOST void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) {
+std::cerr << "CALLING ASSIGN #1" << std::endl;
 		const typename std::iterator_traits<Iterator>::difference_type n = last-first;
 		if( n < 0 or static_cast<size_type>(n) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
 		for( size_type i = 0; i < number_rows(); ++i, first += number_columns() ) {
@@ -563,9 +564,13 @@ private:
 		}
 	}
 
-	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) { assign( first, last, contiguous_device_iterator_tag() ); }
+	template<class Iterator> HOST inline void assign( Iterator first, Iterator last, std::random_access_iterator_tag ) {
+std::cerr << "CALLING ASSIGN #2" << std::endl;
+		assign( first, last, contiguous_device_iterator_tag() );
+	}
 
 	template<class Iterator> HOST void assign( Iterator first, Iterator last, std::bidirectional_iterator_tag ) {
+std::cerr << "CALLING ASSIGN #3" << std::endl;
 		std::vector< value_type, host_allocator<value_type> > v( first, last );
 		if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
 		typename std::vector< value_type, host_allocator<value_type> >::const_iterator src = v.begin();
