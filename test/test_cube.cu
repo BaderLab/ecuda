@@ -145,6 +145,15 @@ int main( int argc, char* argv[] ) {
 		}
 		std::cout << "deviceCube.end().operator->()=" << deviceCube.end().operator->() << std::endl;
 		std::cout << "deviceCube.xy_slice[3].data()=" << deviceCube.get_xy(3).data() << std::endl;
+		{
+			ecuda::cube<Coordinate>::slice_xy_type xy_slice = deviceCube.get_xy(3);
+			ecuda::cube<Coordinate>::slice_xy_type::iterator iter = xy_slice.begin();
+			for( unsigned i = 0; i < 10; ++i, ++iter ) {
+				Coordinate coord;
+				ecuda::cudaMemcpy( &coord, (Coordinate*)iter.operator->(), sizeof(Coordinate), cudaMemcpyDeviceToHost );
+				std::cout << "XY[" << i << "] " << iter.operator->() << " " << coord << std::endl;
+			}
+		}
 		std::cout << "deviceCube.yz_slice[0].data()=" << deviceCube.get_yz(0).data() << std::endl;
 		{
 			ecuda::cube<Coordinate>::slice_yz_type yz_slice = deviceCube.get_yz(0);
