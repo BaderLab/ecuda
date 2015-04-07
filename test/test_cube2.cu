@@ -94,13 +94,13 @@ int main( int argc, char* argv[] ) {
 
 		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
 		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
-
-		ecuda::vector<Coordinate> deviceVector1( 200 );
-		kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
+		ecuda::vector<Coordinate> deviceVector( 10*20 );
+		kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
+
 		std::vector<Coordinate> hostVector2( 200 );
-		deviceVector1 >> hostVector2;
+		deviceVector >> hostVector2;
 		for( std::size_t i = 0; i < hostVector2.size(); ++i ) {
 			std::cout << "LINEAR MATRIX " << hostVector2[i] << std::endl;
 		}
