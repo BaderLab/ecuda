@@ -42,16 +42,28 @@ struct Coordinate {
 };
 */
 
+/*
 __global__ void linearize( const ecuda::matrix<Coordinate> matrix, ecuda::vector<Coordinate> vector ) {
 	std::size_t index = 0;
 	for( ecuda::matrix<Coordinate>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
 }
+*/
+
 /*
 __global__ void linearize( const ecuda::cube<Coordinate> cube, ecuda::vector<Coordinate> vector ) {
 	std::size_t index = 0;
 	for( ecuda::cube<Coordinate>::const_iterator iter = cube.begin(); iter != cube.end(); ++iter, ++index ) vector[index] = *iter;
 }
 */
+
+template<typename T> __global__
+void kernel_linearize(
+	const ecuda::matrix<T> matrix, ecuda::vector<T> vector
+)
+{
+	std::size_t index = 0;
+	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
+}
 
 int main( int argc, char* argv[] ) {
 
@@ -75,7 +87,7 @@ int main( int argc, char* argv[] ) {
 	deviceMatrix.assign( hostVector.begin(), hostVector.end() );
 
 	ecuda::vector<Coordinate> deviceVector1( 200 );
-	linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
+	kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector1 );
 	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
 	std::vector<Coordinate> hostVector2( 200 );
