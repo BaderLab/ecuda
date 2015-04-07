@@ -170,12 +170,15 @@ private:
 			base_container_type::copy_range_from( first, last, base_container_type::begin() );
 			return;
 		}
-		else if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_device )
+		else if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_device ) {
 			throw cuda_error( cudaErrorInvalidDevicePointer, "ecuda::vector::init() cannot initialize with non-contiguous device iterator" );
-		std::vector< value_type, host_allocator<value_type> > v( first, last );
-		n = v.size();
-		growMemory( n );
-		base_container_type::copy_range_from( v.begin(), v.end(), base_container_type::begin() );
+		}
+		else {
+			std::vector< value_type, host_allocator<value_type> > v( first, last );
+			n = v.size();
+			growMemory( n );
+			base_container_type::copy_range_from( v.begin(), v.end(), base_container_type::begin() );
+		}
 	}
 
 	HOST void init( size_type n, const value_type& value, __true_type ) {

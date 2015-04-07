@@ -430,6 +430,21 @@ private:
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest.get_pitch(), src, src.get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
 	}
 
+	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
+	HOST void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, __dimension_noncontiguous_tag, __dimension_contiguous_tag ) const {
+		typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator dest = other.begin();
+		for( size_type i = 0; i < number_rows(); ++i, dest += number_columns() ) {
+			const_row_type row = get_row(i);
+			row.copy_range_to( row.begin(), row.end(), dest );
+		}
+	}
+
+	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
+	HOST void copy_to( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other, __dimension_contiguous_tag, __dimension_contiguous_tag ) const {
+		typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator dest = other.begin();
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest.operator->(), number_columns()*sizeof(value_type), data(), data().get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
+	}
+
 	HOST DEVICE void fill( const value_type& value, padded_ptr<value_type,value_type*,1>& dest, __dimension_contiguous_tag ) {
 		// this fill method is called iff. the underlying memory is a contiguous pitched memory block
 		CUDA_CALL( cudaMemset2D<value_type>( dest, dest.get_pitch(), value, number_columns(), number_rows() ) );
@@ -506,6 +521,16 @@ public:
 		if( number_rows() != other.number_rows() or number_columns() != other.number_columns() )
 			throw std::length_error( EXCEPTION_MSG("ecuda::__device_grid::operator>>() target __device_grid has different dimensions") );
 		copy_to( other, row_dimension_type(), column_dimension_type() );
+		return *this;
+	}
+
+	template<typename T2,typename PointerType2,typename DimensionType2,typename ContainerType2>
+	HOST inline const __device_grid& operator>>( __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>& other ) const {
+		if( iterator_category_traits<typename std::iterator_traits<typename __device_sequence<T2,PointerType2,DimensionType2,ContainerType2>::iterator>::iterator_category>::is_contiguous ) {
+			copy_to( other, row_dimension_type(), column_dimension_type() );
+		} else {
+			throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("__device_sequence::operator>> cannot copy to non-contiguous device memory") );
+		}
 		return *this;
 	}
 

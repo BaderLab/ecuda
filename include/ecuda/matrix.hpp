@@ -569,14 +569,17 @@ public:
 			return;
 		} else if( iterator_category_traits<typename std::iterator_traits<Iterator>::iterator_category>::is_device ) {
 			throw cuda_error( cudaErrorInvalidDevicePointer, "ecuda::matrix::assign() cannot assign non-contiguous device elements" );
+		} else {
+//			vector<value_type> v( first, last );
+//			if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
+//			typename vector<value_type>::const_iterator iter = v.begin();
+//			for( size_type i = 0; i < number_rows(); ++i, iter += number_columns() ) {
+//				row_type row = get_row(i);
+//				row.copy_range_from( iter, iter+number_columns(), row.begin() );
+//			}
+			throw std::runtime_error( EXCEPTION_MSG( "should not occur" ) );
 		}
-		vector<value_type> v( first, last );
-		if( v.size() != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::assign range of first,last does not match matrix size" ) );
-		typename vector<value_type>::const_iterator iter = v.begin();
-		for( size_type i = 0; i < number_rows(); ++i, iter += number_columns() ) {
-			row_type row = get_row(i);
-			row.copy_range_from( iter, iter+number_columns(), row.begin() );
-		}
+
 	}
 
 	#ifdef __CPP11_SUPPORTED__

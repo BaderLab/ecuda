@@ -61,8 +61,15 @@ int main( int argc, char* argv[] ) {
 		for( unsigned i = 0; i < 10; ++i )
 			for( unsigned j = 0; j < 20; ++j )
 				hostCoordinates.push_back( Coordinate(i,j) );
+		std::cout << "  Results of transfer host => device => host:" << std::endl;
 		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
 		deviceMatrix.assign( hostCoordinates.begin(), hostCoordinates.end() );
+		std::cout << deviceMatrix << std::endl;
+
+		ecuda::vector<Coordinate> deviceVector( deviceMatrix.size() );
+		deviceMatrix >> deviceVector;
+		deviceMatrix.assign( deviceVector.begin(), deviceVector.end() );
+		std::cout << "  Results of transfer device => device => device => host: " << std::endl;
 		std::cout << deviceMatrix << std::endl;
 	}
 
