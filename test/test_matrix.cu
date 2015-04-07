@@ -24,6 +24,7 @@ typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
 
+/*
 template<typename T> __global__
 void kernel_checkMatrixProperties(
 	const ecuda::matrix<T> constMatrix,
@@ -155,6 +156,7 @@ void kernel_testRowView(
 {
 	row.fill(Coordinate(99,99));
 }
+*/
 
 template<typename T> __global__
 void kernel_linearize(
