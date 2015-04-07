@@ -575,7 +575,7 @@ std::cerr << "cp1" << std::endl;
 		hostVector.clear();
 		hostVector.resize( 200 );
 		//hostVector.assign( 200, Coordinate() );
-		deviceMatrix >> hostVector;
+		deviceVector >> hostVector;
 		for( std::size_t i = 0; i < hostVector.size(); ++i ) {
 			std::cout << "LINEAR " << hostVector[i] << std::endl;
 		}
