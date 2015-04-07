@@ -559,7 +559,7 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
-		return slice_xz_type( typename slice_xz_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		return slice_xz_type( typename slice_xz_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
 		//pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
 		//return slice_xz_type( np, number_depths(), number_rows(), padding );
@@ -592,7 +592,7 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
-		return const_slice_xz_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
+		return const_slice_xz_type( typename const_slice_xy_type::pointer( data()+static_cast<int>(columnIndex*number_depths()), number_depths(), (number_columns()-1)*number_depths() ), number_rows(), number_depths() );
 		//const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
 		//const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
 		//return const_slice_xz_type( np, number_depths(), number_rows(), padding );
