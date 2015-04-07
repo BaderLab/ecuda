@@ -200,7 +200,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
 		slice[0].assign( v.begin(), v.end() );
 	}
-
+*/
 	{
 		ecuda::array<Coordinate,3> deviceRow;
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
@@ -236,7 +236,7 @@ int main( int argc, char* argv[] ) {
 		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
 		std::cout << std::endl;
 	}
-*/
+
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 4, 5 );
 		fetchSliceYZ<<<1,1>>>( deviceCube, deviceMatrix );
@@ -253,7 +253,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << std::endl;
 		}
 	}
-/*
+
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
@@ -299,7 +299,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << std::endl;
 		}
 	}
-*/
+
 	/*
 	{
 		std::vector<Coordinate> hostVector2; hostVector2.reserve( 2*5*20 );
