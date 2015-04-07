@@ -106,5 +106,31 @@ int main( int argc, char* argv[] ) {
 //		std::cout << "LINEAR CUBE " << hostVector3[i] << std::endl;
 //	}
 
+	{
+		std::vector<Coordinate> hostVector( 10*20 );
+		unsigned index = 0;
+		for( unsigned i = 0; i < 10; ++i ) {
+			for( unsigned j = 0; j < 20; ++j, ++index ) {
+				hostVector[index] = Coordinate(i,j);
+			}
+		}
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostVector.begin(), hostVector.end() );
+		ecuda::vector<Coordinate> deviceVector( 10*20 );
+		kernel_linearize<<<1,1>>>( deviceMatrix, deviceVector );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		hostVector.clear();
+		hostVector.resize( 200 );
+		//hostVector.assign( 200, Coordinate() );
+		deviceMatrix >> hostVector;
+		for( std::size_t i = 0; i < hostVector.size(); ++i ) {
+			std::cout << "LINEAR " << hostVector[i] << std::endl;
+		}
+
+	}
+
+	return EXIT_SUCCESS;
 
 }
