@@ -5,11 +5,22 @@
 #include "../include/ecuda/matrix.hpp"
 //#include "../include/ecuda/cube.hpp"
 
+/*
 struct Coordinate {
 	int x, y, z;
 	Coordinate( const int x = 0, const int y = 0, const int z = 0 ) : x(x), y(y), z(z) {}
 	friend std::ostream& operator<<( std::ostream& out, const Coordinate& coord ) {
 		out << "[" << coord.x << "," << coord.y << "," << coord.z << "]";
+		return out;
+	}
+};
+*/
+
+struct Coordinate {
+	int x, y;
+	Coordinate( const int x = 0, const int y = 0 ) : x(x), y(y) {}
+	friend std::ostream& operator<<( std::ostream& out, const Coordinate& coord ) {
+		out << "[" << coord.x << "," << coord.y << "]";
 		return out;
 	}
 };
@@ -33,7 +44,8 @@ int main( int argc, char* argv[] ) {
 		for( std::size_t i = 0; i < 5; ++i ) {
 			for( std::size_t j = 0; j < 2; ++j ) {
 				for( std::size_t k = 0; k < 20; ++k ) {
-					hostVector[index++] = Coordinate(i,j,k);
+					//hostVector[index++] = Coordinate(i,j,k);
+					hostVector[index++] = Coordinate(i*2+j,k);
 				}
 			}
 		}
