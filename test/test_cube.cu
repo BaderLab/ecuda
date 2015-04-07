@@ -40,7 +40,7 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 
 template<typename T> __global__
 void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 0 ); // 1 );
+	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 0 ); // 1 );
 printf( "number_rows()=%i\n", sliceYZ.number_rows() );
 printf( "number_columns()=%i\n", sliceYZ.number_columns() );
 	for( unsigned i = 0; i < sliceYZ.number_rows(); ++i ) {

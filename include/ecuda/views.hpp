@@ -354,8 +354,10 @@ public:
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
-private:
 	typedef PointerType managed_pointer;
+
+private:
+	//typedef PointerType managed_pointer;
 	typedef RowDimensionType row_dimension_type;
 	typedef ColumnDimensionType column_dimension_type;
 
@@ -447,12 +449,16 @@ private:
 
 public:
 	HOST DEVICE explicit __device_grid( managed_pointer ptr = managed_pointer(), size_type numberRows = 0, size_type numberColumns = 0 ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
+	template<typename T2>
+	HOST DEVICE __device_grid( const __device_grid<T2,PointerType,RowDimensionType,ColumnDimensionType,ContainerType>& src ) : base_type( src.get_managed_pointer(), src.number_rows()*src.number_columns() ), numberRows(src.number_rows()) {}
 	HOST DEVICE __device_grid( const __device_grid<T,PointerType,RowDimensionType,ColumnDimensionType,ContainerType>& src ) : base_type(src), numberRows(src.numberRows) {}
 
 	HOST DEVICE inline pointer data() const __NOEXCEPT__ { return base_type::data(); }
 	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::size() == 0 ? 0 : base_type::size()/number_rows(); }
 	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
+
+	HOST DEVICE inline managed_pointer get_managed_pointer() const __NOEXCEPT__ { return base_type::get_managed_pointer(); }
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
 	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(data()+static_cast<int>(size())); }
