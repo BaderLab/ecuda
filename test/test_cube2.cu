@@ -8,7 +8,7 @@
 /*
 struct Coordinate {
 	int x, y, z;
-	Coordinate( const int x = 0, const int y = 0, const int z = 0 ) : x(x), y(y), z(z) {}
+	HOST DEVICE Coordinate( const int x = 0, const int y = 0, const int z = 0 ) : x(x), y(y), z(z) {}
 	friend std::ostream& operator<<( std::ostream& out, const Coordinate& coord ) {
 		out << "[" << coord.x << "," << coord.y << "," << coord.z << "]";
 		return out;
@@ -18,7 +18,7 @@ struct Coordinate {
 
 struct Coordinate {
 	int x, y;
-	Coordinate( const int x = 0, const int y = 0 ) : x(x), y(y) {}
+	HOST DEVICE Coordinate( const int x = 0, const int y = 0 ) : x(x), y(y) {}
 	friend std::ostream& operator<<( std::ostream& out, const Coordinate& coord ) {
 		out << "[" << coord.x << "," << coord.y << "]";
 		return out;
