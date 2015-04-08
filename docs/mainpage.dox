@@ -449,11 +449,24 @@ Considerable effort was dedicated to minimizing the overhead of using \em ecuda.
 
 For example, the program <tt>benchmarks/matrix_multiply</tt> performs a simple, brute-force matrix multiplication of two matrices A(5000x5000) and B(5000x5000) to get AB(5000x5000) and takes about 4.86s on an NVIDIA Tesla M2090.  Run times vary, but \em ecuda code is typically slower by <0.1ms.  The same problem solved the same way with the Intel Xeon E5-2620 CPU on the test machine takes ~18 minutes (~200X acceleration).
 
-\section compatibility Tool Chain Compatibility
+\section compatibility Compatibility
 
-The library has been tested and compiles successfully with CUDA versions 3.2, 4.0, 4.1, 4.2, 5.0, 5.5, 6.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully.
+The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested.  CUDA 3.2, 4.0, 4.1, and 4.2 did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation.
 
-\em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is true, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.
+The only pernicious bug I encountered was when using test programs with a larger number (>10) of separate kernels.  Specifically, this code fragment:
+
+\code{.cpp}
+template<typename T>
+__global__ void linearizeMatrix( const ecuda::matrix<T> matrix, ecuda::vector<T> vector ) {
+  // use iterator to get data from src, and index to set data in dest
+  std::size_t index = 0;
+  for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
+}
+\endcode
+
+The value of <tt>index</tt> would not increment.  The issue disappeared if I ran only that kernel in CUDA 5.5, and was never an issue regardless of how many kernels were run in CUDA 6.0.  I concluded that it was a problem with the CUDA 5.5 <tt>nvcc</tt> compiler, but I'm including it here for transparency and in case a similar issue arises again.
+
+\em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is real problem I'm remembering correctly, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.  Please contact me if you run into issues.
 
 \section license License
 
