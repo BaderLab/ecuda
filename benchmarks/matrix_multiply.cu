@@ -118,9 +118,11 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	ecuda::matrix<double> B( m, p );
 	ecuda::matrix<double> AB( n, p );
 
-	cudaMemcpy2D( A.data(), A.get_pitch(), pool, sizeof(double)*m, sizeof(double)*m, n, cudaMemcpyHostToDevice );
-	cudaMemcpy2D( B.data(), B.get_pitch(), pool+(m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
-	cudaMemset( AB.data(), 0, n*p*sizeof(double) );
+	ecuda::host_array_proxy<const double> poolProxy( pool, n*m + m*p );
+
+	A.assign( poolProxy.begin(), poolProxy.begin()+(n*m) );
+	B.assign( poolProxy.begin()+(n*m), poolProxy.end() );
+	AB.fill( 0.0 );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
 	start.record();
