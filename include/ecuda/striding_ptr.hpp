@@ -74,8 +74,8 @@ private:
 public:
 
 	// NOTE: stride*sizeof(T) must be exact multiple of padded_ptr.get_width()
-	template<typename PointerType2,std::size_t PaddingUnitBytes>
-	HOST DEVICE striding_ptr( const padded_ptr<T,PointerType2,PaddingUnitBytes>& p, const size_type stride = 1 ) :
+	template<typename T2,typename PointerType2,std::size_t PaddingUnitBytes>
+	HOST DEVICE striding_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& p, const size_type stride = 1 ) :
 		ptr(p.get()),
 		stride( stride*sizeof(T)+p.get_pitch()*stride/p.get_width() )
 	{
