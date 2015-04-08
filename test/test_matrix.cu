@@ -40,8 +40,9 @@ std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const ecuda::
 
 template<typename T> __global__
 void convertMatrixToVector( const ecuda::matrix<T> matrix, ecuda::vector<T> vector ) {
-	typename ecuda::vector<T>::iterator dest = vector.begin();
-	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++dest ) *dest = *iter;
+	//typename ecuda::vector<T>::iterator dest = vector.begin();
+	int index = 0;
+	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index/*++dest*/ ) vector[index]/**dest*/ = *iter;
 }
 
 int main( int argc, char* argv[] ) {
