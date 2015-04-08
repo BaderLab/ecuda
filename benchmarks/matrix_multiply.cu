@@ -25,9 +25,9 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 int main( int argc, char* argv[] ) {
 
 	const std::size_t THREADS = 480;
-	const std::size_t n = 1000;
-	const std::size_t m = 1000;
-	const std::size_t p = 1000;
+	const std::size_t n = 100; //0;
+	const std::size_t m = 100; //0;
+	const std::size_t p = 100; //0;
 
 	std::vector<double> pool( n*m + m*p );
 	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
@@ -65,7 +65,12 @@ __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T>
 	//if( x < n and y < p ) {
 	if( x < A.number_rows() and y < B.number_columns() ) {
 		T result = 0;
-		for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A.at(x,i) * B.at(i,y); //[x][i] * B[i][y];
+		typename ecuda::matrix<T>::const_row_type rowA = A[x];
+		typename ecuda::matrix<T>::const_column_type colB = B.get_column(y);
+		typename ecuda::matrix<T>::const_row_type::const_iterator iterA = rowA.begin();
+		typename ecuda::matrix<T>::const_column_type::const_iterator iterB = colB.begin();
+		for( std::size_t i = 0; i < A.number_columns(); ++i, ++iterA, ++iterB ) result += *iterA * *iterB;
+		//for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A.at(x,i) * B.at(i,y); //[x][i] * B[i][y];
 		AB.at( x, y ) = result;
 		//AB[x][y] = result;
 	}
