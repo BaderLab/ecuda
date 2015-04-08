@@ -122,6 +122,10 @@ Besides being more compact and readable, there are no naked pointers, allocation
 for( double x : matrix.get_column( threadNum ) ) columnSum += x;
 \endcode
 
+\section requirements Requirements
+
+There are no additional requirements other than your existing toolchain to compile CUDA code (minimally the CUDA API and a C++ compiler).
+
 \section installation Installation
 
 The library is header only, so the <tt>include</tt> subdirectory can be placed anywhere and made visible to the compiler (e.g. <tt>-I/some/path/include</tt>).  A <tt>Makefile</tt> is included that simply copies the <tt>include/ecuda</tt> directory to <tt>/usr/local/include</tt> by issuing the command:
@@ -150,6 +154,8 @@ make docs
 
 \image html containers.png "The four core containers."
 
+The vast majority of a developer's interaction with \em ecuda is through the core containers.  Most of the rest of the API exists to support their use.  Developer's wanting to experiment with \em ecuda as fast as possible can probably do so knowing only of the core containers and applying their prior experience with STL.
+
 The library features four containers:
   -# fixed-sized \b array
   -# variable-sized \b vector
@@ -159,7 +165,8 @@ The library features four containers:
 The \ref ecuda::array and \ref ecuda::vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
 
 \code{.cpp}
-ecuda::array<double,100> deviceArray( 66 ); // create fixed 100 element array filled with value 66
+ecuda::array<double,100> deviceArray; // create fixed 100 element array where elements are initially set to 0.0
+deviceArray.fill( 66.0 ); // set value of all elements to 66
 
 ecuda::vector<double> deviceVector1( 100, 66 ); // create 100 element vector filled with value 66
 deviceVector1.resize( 200, 99 ); // expand the vector to 200 elements filling new elements with value 99
@@ -202,6 +209,34 @@ ecuda::array<double,100> deviceArray;
 addColumns<<<1,100>>>( deviceMatrix, deviceArray );
 \endcode
 
+One minor, but vital, departure from the usual STL semantics is transferring the contents of device-memory bound containers to host containers.  For example, the following won't work:
+
+\code{.cpp}
+ecuda::vector<int> deviceVector( 100 );
+std::vector<int> hostVector( deviceVector.begin(), deviceVector.end() ); // won't compile
+\endcode
+
+Since STL containers can't access device memory directly, responsibility for device to host transfer resides with the \em ecuda containers.  This is universally available from the \em ecuda containers and derivatives via the >> operator.
+
+\code{.cpp}
+// create device vector
+ecuda::vector<int> deviceVector( 100 );
+
+std::vector<int> hostVector( deviceVector.size() );
+deviceVector >> hostVector; // copy from device to host container
+
+// create device matrix
+ecuda::matrix<double> deviceMatrix( 200, 500 );
+
+std::vector<int> hostMatrix( deviceMatrix.size() );
+deviceMatrix >> hostMatrix; // copy from device to host container
+
+std::vector<int> hostRow( deviceMatrix.number_columns() );
+deviceMatrix[99] >> hostRow; // copy row #99 to host container
+
+// ... etc.
+\endcode
+
 \subsection overview_allocators Allocators
 
 \image html allocators.png "The three memory allocators."
@@ -225,42 +260,69 @@ deviceVector >> hostVector2; // slower
 
 \image html iterators.png ""
 
-Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, the basic iterator is Bidirectional, with a further specialized iterator that is Random Access and requires the range being traversed to reside in contiguous memory.  A reverse iterator, which simply reverses the order of traversal is also available.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
+Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda there are two additional types defined: a Contiguous Device and Noncontiguous Device iterator.  A general-purpose reverse device iterator is also defined.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
 
 \code{.cpp}
 ecuda::vector<int> deviceVector1( 1000 ); // create 1000 element vector in device memory
 ecuda::vector<int>::iterator begin = deviceVector1.begin();
-ecuda::vector<int> deviceVector2( begin, begin+50 ); // create a new vector initialized with the first 50 elements
+ecuda::vector<int> deviceVector2( begin, begin+50 ); // create a new device vector initialized with the first 50 elements
 \endcode
 
-Keep in mind that operations which essentially move a contiguous block of memory to another behind the scenes using <tt>cudaMemcpy</tt> must be a \ref ecuda::contiguous_device_iterator.  Code that doesn't follow this will fail to compile.  For example:
+The category of iterator is checked at compile-time to determine whether (and how) an iterator-based operation can be carried out.  This is especially important for operations performed in host code where copying memory from host to device, device to host, and device to device require both the source and destination to be contiguous blocks of memory.
+
+See the next section on \ref overview_models "Memory Models" for information on how iterators are used and the practical differences between different device iterators.
+
+\subsection overview_models Memory Models
+
+All core containers (array, vector, matrix, cube) are derived from one of two model classes: \ref ecuda::__device_sequence or \ref ecuda::__device_grid (which is itself derived from \ref ecuda::__device_sequence).  Specialized views of the data in these containers are also derived from these models.  C++ metaprogramming techniques are used to determine at compile-time what capabilities a model should have, and how things such as memory transfers should be performed.
+
+The models are not referenced directly (although a developer is free to make their own custom containers based on these model classes).  In practice, they are referenced through a container-specific <tt>typedef</tt>.  For example:
+
+\code{.cpp}
+ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix which is a specialized __device_grid
+ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // is a __device_sequence with capabilities of contiguous memory
+ecuda::matrix<int>::column_type column = deviceMatrix.get_column(0); // is a __device_sequence with capabilities of non-contiguous memory
+
+ecuda::cube<int> deviceCube( 100, 100, 100 ); // create 100x100x100 cube which is a specialized __device_grid
+ecuda::cube<int>::slice_xy_type xy = deviceCube.get_xy(0); // is a __device_grid with non-contiguous rows and non-contiguous columns
+ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a __device_grid with non-contiugous rows and contiguous columns
+\endcode
+
+Since the capabilities of a given model are interpreted at compile-time, they can perform a given task without the overhead of checking the properties of containers or data at run-time.  Compile-time considerations are primarily of two kinds: 1) is the source and/or destination of the operation a block of contiguous memory? and 2) is this operation occuring on the host or the device?
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 );
 ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0);
 ecuda::matrix<int>::column_type column = deviceMatrix.get_column(0);
-ecuda::vector<int> deviceVector;
-deviceArray.assign( row.begin(), row.end() ); // works fine
-deviceArray.assign( row.rbegin(), row.rend() ); // won't compile, elements in the wrong order
-deviceArray.assign( column.begin(), column.end() ); // won't compile, elements not in contiguous memory
-\endcode
 
-\subsection overview_models Memory Models
+ecuda::vector<int> deviceVector( 100 );
+std::vector<int> hostVector( 100 ); // STL vectors are represented in contiguous memory
 
-\image html models.png ""
+row >> deviceVector; // direct transfer of data from device to host via cudaMemcpy
+column >> deviceVector; // throws an exception because column data is not contiguous
+row >> hostVector; // direct transfer of data from device to host via cudaMemcpy
 
-The core \em ecuda containers are derived from one of two memory model classes: \ref ecuda::__device_sequence or \ref ecuda::__device_grid (which is itself derived from \ref ecuda::__device_sequence).  Specialized views within these containers are also derived from these two classes.  For example, a single column of a matrix can be represented as an \ref ecuda::__device_sequence.  The capabilities of individual models are determined at compile-time.
+row.assign( deviceVector.begin(), deviceVector.end() ); // direct transfer of data from device to device via cudaMemcpy
+row.assign( hostVector.begin(), hostVector.end() ); // direct transfer of data from host to device via cudaMemcpy
+row.assign( column.begin(), column.end() ); // throws an exception when called from host because column data is on the device and is not contiguous
 
-The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the inner workings of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \ref ecuda::matrix is provided to a \ref ecuda::contiguous_sequence_view or \ref ecuda::sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon as if it were actually a sequence.  Similarly, a slice of a \ref ecuda::cube along the x-y, x-z, or y-z plane would be represented as a \ref ecuda::matrix_view or \ref ecuda::contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
+std::list<int> hostList( 100 ); // STL lists are represented in non-contiguous memory
+row.assign( hostList.begin(), hostList.end() ); // list is non-contiguous so API copies it to a contiguous staging area before transfering to device
 
-\code{.cpp}
-ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix which is a specialized __device_grid
-ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // is a __device_sequence with capabilities of contiguous memory
-ecuda::matrix<int>::column_type column = deviceMatrix.get_row(0); // is a __device_sequence with capabilities of non-contiguous memory
+// kernel function can't use assign
+__global__ void transferColumnToRow( ecuda::matrix<int>::row_type row, ecuda::matrix<int>::column_type column ) {
+  row.assign( column.begin(), column.end() ); // won't compile, can't enforce assign() requirements in device code
+  column.assign( row.begin(), row.end() ); // won't compile, can't enforce assign() requirements in device code
+}
 
-ecuda::cube<int> deviceCube( 100, 100, 100 ); // create 100x100x100 cube which is a specialized __device_grid
-ecuda::cube<int>::slice_xy_type xy = deviceCube.get_xy(0); // is a __device_grid with non-contiguous rows and non-contiguous columns
-ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a __device_grid with non-contiugous rows and contiguous columns
+// kernel function working alternative
+__global__ void transferColumnToRow( ecuda::matrix<int>::row_type row, ecuda::matrix<int>::column_type column ) {
+  ecuda::matrix<int>::row_type::iterator rowIter = row.begin();
+  ecuda::matrix<int>::column_type::iterator columnIter = column.begin();
+  // we take responsibility for transfering column to row on the device
+  for( ; rowIter != row.end() && columnIter != column.end(); ++rowIter, ++columnIter ) *rowIter = *columnIter;
+}
+
 \endcode
 
 \subsection overview_pointers Specialized Pointers
@@ -269,9 +331,68 @@ ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a __device_grid
 
 \image html pointers.png ""
 
-\ref ecuda::device_ptr is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when the reference count reaches zero.  It's quite similar to a std::shared_ptr.  All \em ecuda containers use a \ref ecuda::device_ptr to interface with any underlying device memory.
+\ref ecuda::device_ptr is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when all objects depending on it go out of scope.  It's quite similar to a std::shared_ptr.  All \em ecuda containers use a \ref ecuda::device_ptr to interface with any underlying device memory.
 
-\ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used internally to create efficient views and iterators.
+\ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used internally to create efficient iterators and views of a particular subset of container data.
+
+\subsection overview_misc Miscellaneous
+
+The library contains additional classes, functions, and macros to simplify some common CUDA programming tasks.
+
+\subsubsection overview_misc_cudawrapper Capturing CUDA API Errors
+
+A macro called CUDA_CALL is defined that captures errors from any of the low-level CUDA API functions and throws an \ref ecuda::cuda_error exception.
+
+\code{.cpp}
+try {
+  CUDA_CALL( cudaDeviceSynchronize() );
+} catch( ecuda::cuda_error& ex ) {
+  std::cerr << "CUDA API error: " << ex.what() << std::endl;
+}
+\endcode
+
+The macro is also used with any such calls within the \em ecuda library.
+
+Additionally, a macro called CUDA_CHECK_ERRORS can be used after starting a kernel to capture any error that would normally be checked using cudaGetLastError(). Any error will be converted to an \ref ecuda::cuda_error exception and thrown.
+
+\code{.cpp}
+try {
+  myKernel<<<10,1000>>>( ... );
+  CUDA_CHECK_ERRORS();
+} catch( ecuda::cuda_error& ex ) {
+  std::cerr << "CUDA kernel error: " << ex.what() << std::endl;
+}
+\endcode
+
+\subsubsection overview_misc_cstyle Using C-style Arrays
+
+The \ref ecuda::host_array_proxy is a simple wrapper that allows C-style arrays to function as a standard container.  This is useful for incorporating other libraries, like the GNU Scientific Library, that still use naked pointers.
+
+\code{.cpp}
+gsl_matrix* mat = gsl_matrix_alloc( 10, 20 );
+// ... prepare matrix values
+ecuda::host_array_proxy<double> proxy( mat->data, 10*20 );
+ecuda::matrix<double> deviceMatrix( 10, 20 );
+deviceMatrix.assign( proxy.begin(), proxy.end() ); // copies gsl_matrix to device matrix via the proxy
+deviceMatrix >> proxy; // copies device matrix to gsl_matrix via the proxy
+\endcode
+
+\subsubsection overview_misc_events CUDA Events
+
+A wrapper around CUDA event objects called \ref ecuda::event makes these more C++-like.
+
+\code{.cpp}
+// record kernel execution time
+ecuda::event start, stop;
+
+start.record(); // record start time
+myKernel<<<10,1000>>>( ... );
+stop.record(); // record stop time
+
+stop.synchronize(); // kernel execution is asynchronous, wait until it finishes
+
+std::cerr << "EXECUTION TIME: " << ( stop-start ) << "milliseconds" << std::endl;
+\endcode
 
 \section optimizing_threads Optimizing Thread Operations
 
@@ -321,16 +442,6 @@ ecuda::vector<double> deviceVector( 1000 ); // create zero-initialized vector
 \endcode
 
 The execution time of the second kernel will invariably be \em much faster than the first.
-
-\section optional_libraries Optional Libraries
-
-\subsection optional_library_gsl GNU Scientific Library (GSL)
-
-There are hooks within the \ref ecuda::matrix container to copy information to and from a <tt>gsl_matrix</tt> used in the GNU Scientific Library (GSL).  Modify the <tt>HAVE_GNU_SCIENTIFIC_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
-
-\subsection optional_library_estd Extended STL (estd)
-
-There are hooks within the \ref ecuda::matrix and \ref ecuda::cube containers to copy information to and from the equivalent \em estd containers.  This is a header-only library that contains several container types that follow the semantics of the STL much like \em ecuda itself does.  As of this writing, this library hasn't been publicly released.  Nonetheless, the methods are present awaiting the day this changes.  Modify the <tt>HAVE_ESTD_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
 
 \section performance Performance
 

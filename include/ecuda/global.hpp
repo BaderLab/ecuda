@@ -83,7 +83,7 @@ public:
 /// should be declared after any CUDA API calls that do not return an error code
 /// (e.g. after calling kernel functions).
 ///
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw std::runtime_error(std::string(cudaGetErrorString(error))); } while(0);
+#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
 
 #define DEVICE __device__
 #define HOST __host__

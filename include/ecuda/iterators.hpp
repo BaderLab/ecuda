@@ -382,12 +382,12 @@ public:
 /// Any undocumented methods are exactly the same as their counterpart in device_iterator.
 ///
 template<class BaseIterator>
-class reverse_device_iterator : public std::iterator<typename BaseIterator::iterator_category,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
+class reverse_device_iterator : public std::iterator<device_iterator_tag,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
 {
 
 public:
 	typedef BaseIterator iterator_type; //!< type of the parent iterator being reversed
-	typedef typename BaseIterator::iterator_category iterator_category; //!< STL iterator category
+	typedef device_iterator_tag iterator_category; //!< iterator category
 	typedef typename BaseIterator::value_type value_type; //!< type of elements pointed by the iterator
 	typedef typename BaseIterator::difference_type difference_type; //!< type to represent difference between two iterators
 	typedef typename BaseIterator::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
@@ -396,8 +396,13 @@ public:
 private:
 	BaseIterator parentIterator; //!< parent iterator being operated on in reverse
 
+	HOST DEVICE inline void init( device_iterator_tag ) {}
+	HOST DEVICE inline void init( contiguous_device_iterator_tag ) {}
+
 public:
-	HOST DEVICE reverse_device_iterator( BaseIterator parentIterator = BaseIterator() ) : parentIterator(parentIterator) {}
+	HOST DEVICE reverse_device_iterator( BaseIterator parentIterator = BaseIterator() ) : parentIterator(parentIterator) {
+		init( typename BaseIterator::iterator_category() ); // guard to ensure parent iterator is a device iterator
+	}
 
 	HOST DEVICE reverse_device_iterator( const reverse_device_iterator& src ) : parentIterator(src.parentIterator) {}
 

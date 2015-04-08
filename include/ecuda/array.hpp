@@ -93,11 +93,12 @@ public:
 
 public:
 	///
-	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
-	/// \param value Value to fill the container with.
+	/// \brief Constructs a fixed-size array with N elements.
 	///
-	HOST array( const T& value = T() ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
-		fill( value );
+	/// Each element is a default initialization of the template parameter T's type.
+	///
+	HOST array() : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
+		fill( T() );
 	}
 
 	///

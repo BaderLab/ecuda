@@ -523,7 +523,7 @@ public:
 ///
 /// \code{.cpp}
 /// gsl_matrix* mat = gsl_matrix_alloc( 10, 20 );
-/// // ... initialize matrix
+/// // ... prepare matrix values
 /// ecuda::host_array_proxy<double> proxy( mat->data, 10*20 );
 /// ecuda::matrix<double> deviceMatrix( 10, 20 );
 /// deviceMatrix.assign( proxy.begin(), proxy.end() ); // copies gsl_matrix to device matrix
