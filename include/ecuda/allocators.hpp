@@ -444,7 +444,7 @@ public:
 		std::size_t pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&nakedPtr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
-		return pointer( nakedPtr, w, pitch-w*sizeof(value_type), 0 );
+		return pointer( nakedPtr, pitch, w, 0 );
 	}
 
 	///
