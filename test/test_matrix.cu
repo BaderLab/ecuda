@@ -38,6 +38,12 @@ std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const ecuda::
 	return out;
 }
 
+template<typename T> __global__
+void convertMatrixToVector( const ecuda::matrix<T> matrix, ecuda::vector<T> vector ) {
+	typename ecuda::vector<T>::iterator dest = vector.begin();
+	for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++dest ) *dest = *iter;
+}
+
 int main( int argc, char* argv[] ) {
 
 	std::cout << "Testing ecuda::matrix..." << std::endl;
@@ -72,6 +78,29 @@ int main( int argc, char* argv[] ) {
 		deviceMatrix.assign( deviceVector.begin(), deviceVector.end() );
 		std::cout << "  Results of transfer device => device => device => host: " << std::endl;
 		std::cout << deviceMatrix << std::endl;
+	}
+
+	{
+		std::cout << "  Constructing matrix of size 10x20 with source data from std::vector..." << std::endl;
+		std::vector<Coordinate> hostCoordinates; hostCoordinates.reserve( 10*20 );
+		for( unsigned i = 0; i < 10; ++i )
+			for( unsigned j = 0; j < 20; ++j )
+				hostCoordinates.push_back( Coordinate(i,j) );
+		ecuda::matrix<Coordinate> deviceMatrix( 10, 20 );
+		deviceMatrix.assign( hostCoordinates.begin(), hostCoordinates.end() );
+
+		ecuda::vector<Coordinate> deviceVector( 10*20 );
+
+		convertMatrixToVector<<<1,1>>>( deviceMatrix, deviceVector );
+		CUDA_CHECK_ERRORS();
+		CUDA_CALL( cudaDeviceSynchronize() );
+
+		std::vector<Coordinate> hostVector( 10*20 );
+		deviceVector >> hostVector;
+
+		std::cout << "  Results of linearization of matrix on device and then transfer device => host: " << std::endl;
+		for( unsigned i = 0; i < hostVector.size(); ++i )
+			std::cout << hostVector[i] << std::endl;
 	}
 
 	return EXIT_SUCCESS;
