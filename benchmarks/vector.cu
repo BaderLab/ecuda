@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include "../include/ecuda/array.hpp"
+#include "../include/ecuda/vector.hpp"
 #include "../include/ecuda/event.hpp"
 
 template<typename T>
@@ -18,7 +18,7 @@ T doSomething( const T& value ) {
 
 template<typename T>
 __global__
-void squareArray( ecuda::array<T> input ) {
+void squareArray( ecuda::vector<T> input ) {
 	const int index = blockIdx.x*blockDim.x+threadIdx.x;
 	if( index < input.size() ) {
 		T& value = input[index];
@@ -46,8 +46,9 @@ int main( int argc, char* argv[] ) {
 	std::vector<double> hostData( N );
 	for( std::size_t i = 0; i < N; ++i ) hostData[i] = i+1.0;
 
-	ecuda::array<double> deviceData( N );
-	deviceData << hostData;
+	ecuda::vector<double> deviceData( hostData.begin(), hostData.end() );
+	std::cerr << "deviceData.size()=" << deviceData.size() << std::endl;
+	//deviceData << hostData;
 
 	double* rawData = NULL;
 	CUDA_CALL( cudaMalloc( reinterpret_cast<void**>(&rawData), N*sizeof(double) ) );
