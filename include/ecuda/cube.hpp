@@ -678,7 +678,7 @@ public:
 	/// needed to fill this cube will be used.
 	///
 	template<class Container>
-	HOST cube<T,N>& operator<<( const Container& container ) {
+	HOST cube& operator<<( const Container& container ) {
 		base_matrix_type::operator<<( container );
 		return *this;
 	}

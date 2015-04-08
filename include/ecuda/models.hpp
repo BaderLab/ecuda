@@ -28,9 +28,9 @@ either expressed or implied, of the FreeBSD Project.
 */
 
 //----------------------------------------------------------------------------
-// views.hpp
+// models.hpp
 //
-// Provides specialized view of the data within a container.
+// The core memory models that provide basic operations on device memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// \brief The core memory model for data sequences used in the API.
+/// \brief The core device memory model for data sequences used in the API.
 ///
 /// A __device_sequence provides core functionality for a sequence of data.
 /// Template parameters are used as trait tags to enable/disable/alter certain
@@ -104,7 +104,7 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 private:
-	// REMEMBER: length altered on device memory won't be reflected inn the host object.
+	// REMEMBER: length altered on device memory won't be reflected in the host object.
 	managed_pointer ptr;
 	size_type length;
 
@@ -157,7 +157,7 @@ private:
 	template<class Iterator>
 	HOST void copy_range_from( Iterator first, Iterator last, iterator output, std::random_access_iterator_tag, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<Iterator>::difference_type n = std::distance(first,last);
-		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), std::min(size(),n), cudaMemcpyHostToDevice ) );
+		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), std::min(size(),static_cast<size_type>(n)), cudaMemcpyHostToDevice ) );
 	}
 
 	template<class Iterator>
@@ -172,7 +172,7 @@ private:
 	template<class Iterator>
 	HOST void copy_range_from( Iterator first, Iterator last, iterator output, contiguous_device_iterator_tag, contiguous_device_iterator_tag ) {
 		const typename std::iterator_traits<const_iterator>::difference_type n = last-first;
-		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), std::min(size(),n), cudaMemcpyDeviceToDevice ) );
+		CUDA_CALL( cudaMemcpy<typename std::remove_const<value_type>::type>( output.operator->(), first.operator->(), std::min(size(),static_cast<size_type>(n)), cudaMemcpyDeviceToDevice ) );
 	}
 
 public:
@@ -329,7 +329,7 @@ public:
 };
 
 ///
-/// \brief The core memory model for data grids (2D memory blocks) used in the API.
+/// \brief The core device memory model for data grids (2D memory blocks) used in the API.
 ///
 /// A __device_grid provides core functionality for a 2D block of data. Template parameters
 /// are used as trait tags to enable/disable/alter certain functions.
@@ -341,7 +341,8 @@ public:
 /// Models of individual rows and columns can be provided by instantiating a __device_sequence
 /// with a length and a properly traversing pointer.
 ///
-/// This model is effectively a __device_sequence where rows and columns are supported.
+/// This model is effectively an extension to __device_sequence where rows and columns are
+/// used to determine the index in the underlying sequence.
 ///
 /// The purpose of this container is to abstract away as much core functionality as possible
 /// while remaining flexible.  Any future architectural changes can ideally be made at this level

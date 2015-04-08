@@ -51,6 +51,11 @@ namespace ecuda {
 /// fixed-length padding.  Thus, one has to "stride" over the padding to reach the
 /// next element.  The term was borrowed from the GNU Scientific Library.
 ///
+/// For example, a pointer to memory representing a matrix of with N rows of M columns
+/// can be given to a striding_ptr with the stride set to length M. When the striding_ptr
+/// is incremented, the pointer moves column-wise.  This is useful for creating
+/// flexible, iterable views of a fixed region of memory while minimizing overhead.
+///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class striding_ptr {
 
