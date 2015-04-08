@@ -25,9 +25,9 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 int main( int argc, char* argv[] ) {
 
 	const std::size_t THREADS = 480;
-	const std::size_t n = 100; //0;
-	const std::size_t m = 100; //0;
-	const std::size_t p = 100; //0;
+	const std::size_t n = 500; //0;
+	const std::size_t m = 500; //0;
+	const std::size_t p = 500; //0;
 
 	std::vector<double> pool( n*m + m*p );
 	for( std::vector<double>::iterator iter = pool.begin(); iter != pool.end(); ++iter ) *iter = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
@@ -51,7 +51,7 @@ __global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std:
 			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*i) )+y);
 			result += A_ik * B_kj;
 		}
-		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*y+x*sizeof(T)) ) = result;
+		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*x+y*sizeof(T)) ) = result;
 	}
 }
 
@@ -99,13 +99,13 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
-	//std::vector<double> hostVector( n*p );
-	//cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB, pitchAB, sizeof(double)*p, n, cudaMemcpyDeviceToHost );
-	//for( std::size_t i = 0; i < n; ++i ) {
-	//	std::cout << "ROW[" << i << "]";
-	//	for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
-	//	std::cout << std::endl;
-	//}
+//	std::vector<double> hostVector( n*p );
+//	cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB, pitchAB, sizeof(double)*p, n, cudaMemcpyDeviceToHost );
+//	for( std::size_t i = 0; i < n; ++i ) {
+//		std::cout << "ROW[" << i << "]";
+//		for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
+//		std::cout << std::endl;
+//	}
 
 	cudaFree( A );
 	cudaFree( B );
@@ -137,13 +137,14 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
-	//std::vector<double> hostVector( n*p );
-	//cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB.data(), AB.get_pitch(), sizeof(double)*p, n, cudaMemcpyDeviceToHost );
-	//for( std::size_t i = 0; i < n; ++i ) {
-	//	std::cout << "ROW[" << i << "]";
-	//	for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
-	//	std::cout << std::endl;
-	//}
+//	std::vector<double> hostVector( n*p );
+//	AB >> hostVector;
+//	//cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB.data(), AB.get_pitch(), sizeof(double)*p, n, cudaMemcpyDeviceToHost );
+//	for( std::size_t i = 0; i < n; ++i ) {
+//		std::cout << "ROW[" << i << "]";
+//		for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
+//		std::cout << std::endl;
+//	}
 
 	return ( stop - start );
 

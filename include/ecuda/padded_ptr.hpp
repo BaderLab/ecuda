@@ -69,7 +69,7 @@ private:
 	/// Move the pointer ahead padding_length bytes, regardless of
 	/// the sizeof the managed pointer.
 	///
-	HOST DEVICE void jump_forward_pad_length() {
+	HOST DEVICE inline void jump_forward_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
 		char_ptr += padding_length*PaddingUnitBytes;
@@ -80,7 +80,7 @@ private:
 	/// Move the pointer back padding_length bytes, regardless of
 	/// the sizeof the managed pointer.
 	///
-	HOST DEVICE void jump_backwards_pad_length() {
+	HOST DEVICE inline void jump_backwards_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
 		char_ptr -= padding_length*PaddingUnitBytes;
