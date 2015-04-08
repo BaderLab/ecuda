@@ -46,11 +46,11 @@ __global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std:
 	const int y = blockIdx.y*blockDim.y+threadIdx.y; // column
 	if( x < n and y < p ) {
 		T result = 0;
-		for( std::size_t i = 0; i < m; ++i ) {
-			const T A_ik = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(A)+(pitchA*x) )+i);
-			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*i) )+y);
-			result += A_ik * B_kj;
-		}
+//		for( std::size_t i = 0; i < m; ++i ) {
+//			const T A_ik = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(A)+(pitchA*x) )+i);
+//			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*i) )+y);
+//			result += A_ik * B_kj;
+//		}
 		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*x+y*sizeof(T)) ) = result;
 	}
 }
@@ -65,11 +65,11 @@ __global__ void matrixMultiply(	const ecuda::matrix<T> A, const ecuda::matrix<T>
 	//if( x < n and y < p ) {
 	if( x < A.number_rows() and y < B.number_columns() ) {
 		T result = 0;
-		typename ecuda::matrix<T>::const_row_type rowA = A[x];
-		typename ecuda::matrix<T>::const_column_type colB = B.get_column(y);
-		typename ecuda::matrix<T>::const_row_type::const_iterator iterA = rowA.begin();
-		typename ecuda::matrix<T>::const_column_type::const_iterator iterB = colB.begin();
-		for( std::size_t i = 0; i < A.number_columns(); ++i, ++iterA, ++iterB ) result += *iterA * *iterB;
+//		typename ecuda::matrix<T>::const_row_type rowA = A[x];
+//		typename ecuda::matrix<T>::const_column_type colB = B.get_column(y);
+//		typename ecuda::matrix<T>::const_row_type::const_iterator iterA = rowA.begin();
+//		typename ecuda::matrix<T>::const_column_type::const_iterator iterB = colB.begin();
+//		for( std::size_t i = 0; i < A.number_columns(); ++i, ++iterA, ++iterB ) result += *iterA * *iterB;
 		//for( std::size_t i = 0; i < A.number_columns(); ++i ) result += A.at(x,i) * B.at(i,y); //[x][i] * B[i][y];
 		AB.at( x, y ) = result;
 		//AB[x][y] = result;
