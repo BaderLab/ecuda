@@ -30,7 +30,7 @@ either expressed or implied, of the FreeBSD Project.
 //----------------------------------------------------------------------------
 // type_traits.hpp
 //
-// Provides specialized view of the data within a container.
+// A set of classes to obtain type information at compile-time.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -54,9 +54,8 @@ namespace ecuda {
 /// For example, the const version of padded_ptr<int,int*,1> is
 /// padded_ptr<const int,const int*,1>, NOT const padded_ptr<int,int*,1>.
 ///
-/// These templates will make this conversion properly, and if the provided
-/// pointer is naked, handle this as well (e.g. int* because const int*).
-///
+/// Naked pointers are also converted properly. int* becomes const int* NOT
+/// int* const.
 ///
 
 template<typename T> struct __pointer_traits {
@@ -123,7 +122,6 @@ struct __dimension_noncontiguous_tag {};
 struct __container_type_base_tag {};
 struct __container_type_derived_tag {};
 
-
 ///
 /// These are templates that use the dimension and container_type tags attached
 /// to a __device_sequence container to determine the type of the pointer visible
@@ -131,21 +129,25 @@ struct __container_type_derived_tag {};
 ///
 
 template<typename T,typename PointerType,typename DimensionType,typename ContainerType> struct __device_sequence_traits;
+
 template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_contiguous_tag,__container_type_base_tag> {
 	typedef typename PointerType::pointer pointer;
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
+
 template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_noncontiguous_tag,__container_type_base_tag> {
 	typedef typename PointerType::pointer pointer;
 	typedef device_iterator<      T,typename __pointer_traits<PointerType>::pointer      > iterator;
 	typedef device_iterator<const T,typename __pointer_traits<PointerType>::const_pointer> const_iterator;
 };
+
 template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_contiguous_tag,__container_type_derived_tag> {
 	typedef PointerType pointer;
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
+
 template<typename T,typename PointerType> struct __device_sequence_traits<T,PointerType,__dimension_noncontiguous_tag,__container_type_derived_tag> {
 	typedef PointerType pointer;
 	typedef device_iterator<      T,typename __pointer_traits<PointerType>::pointer      > iterator;
@@ -159,21 +161,25 @@ template<typename T,typename PointerType> struct __device_sequence_traits<T,Poin
 ///
 
 template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType,typename ContainerType> struct __device_grid_traits;
+
 template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_base_tag> {
 	typedef typename PointerType::pointer pointer;
 	typedef device_iterator<      T,typename __pointer_traits<typename PointerType::pointer>::pointer      > iterator;
 	typedef device_iterator<const T,typename __pointer_traits<typename PointerType::pointer>::const_pointer> const_iterator;
 };
+
 template<typename T,typename PointerType> struct __device_grid_traits<T,PointerType,__dimension_contiguous_tag,__dimension_contiguous_tag,__container_type_base_tag> {
 	typedef typename PointerType::pointer pointer;
 	typedef contiguous_device_iterator<T> iterator;
 	typedef contiguous_device_iterator<const T> const_iterator;
 };
+
 template<typename T,typename PointerType,typename RowDimensionType,typename ColumnDimensionType> struct __device_grid_traits<T,PointerType,RowDimensionType,ColumnDimensionType,__container_type_derived_tag> {
 	typedef PointerType pointer;
 	typedef device_iterator<      T,typename __pointer_traits<PointerType>::pointer      > iterator;
 	typedef device_iterator<const T,typename __pointer_traits<PointerType>::const_pointer> const_iterator;
 };
+
 template<typename T,typename PointerType> struct __device_grid_traits<T,PointerType,__dimension_contiguous_tag,__dimension_contiguous_tag,__container_type_derived_tag> {
 	typedef PointerType pointer;
 	typedef contiguous_device_iterator<T> iterator;

@@ -245,20 +245,22 @@ deviceArray.assign( row.rbegin(), row.rend() ); // won't compile, elements in th
 deviceArray.assign( column.begin(), column.end() ); // won't compile, elements not in contiguous memory
 \endcode
 
-\subsection overview_views Views
+\subsection overview_models Memory Models
 
-\image html views.png ""
+\image html models.png ""
+
+The core \em ecuda containers are derived from one of two memory model classes: \ref ecuda::__device_sequence or \ref ecuda::__device_grid (which is itself derived from \ref ecuda::__device_sequence).  Specialized views within these containers are also derived from these two classes.  For example, a single column of a matrix can be represented as an \ref ecuda::__device_sequence.  The capabilities of individual models are determined at compile-time.
 
 The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the inner workings of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \ref ecuda::matrix is provided to a \ref ecuda::contiguous_sequence_view or \ref ecuda::sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon as if it were actually a sequence.  Similarly, a slice of a \ref ecuda::cube along the x-y, x-z, or y-z plane would be represented as a \ref ecuda::matrix_view or \ref ecuda::contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
 
 \code{.cpp}
-ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix
-ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // is a contiguous_sequence_view
-ecuda::matrix<int>::column_type column = deviceMatrix.get_row(0); // is a sequence_view
+ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix which is a specialized __device_grid
+ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // is a __device_sequence with capabilities of contiguous memory
+ecuda::matrix<int>::column_type column = deviceMatrix.get_row(0); // is a __device_sequence with capabilities of non-contiguous memory
 
-ecuda::cube<int> deviceCube( 100, 100, 100 ); // create 100x100x100 cube
-ecuda::cube<int>::slice_xy_type xy = deviceCube.get_xy(0); // is a matrix_view
-ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_matrix_view
+ecuda::cube<int> deviceCube( 100, 100, 100 ); // create 100x100x100 cube which is a specialized __device_grid
+ecuda::cube<int>::slice_xy_type xy = deviceCube.get_xy(0); // is a __device_grid with non-contiguous rows and non-contiguous columns
+ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a __device_grid with non-contiugous rows and contiguous columns
 \endcode
 
 \subsection overview_pointers Specialized Pointers

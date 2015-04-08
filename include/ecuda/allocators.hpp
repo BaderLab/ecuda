@@ -430,7 +430,6 @@ public:
 	///
 	/// \param w Width of the matrix (each of size sizeof(value_type)) to be allocated.
 	/// \param h Height of the matrix to be allocated.
-	/// \param[out] pitch Pitch resulting from the 2D memory allocation.
 	/// \param hint Either 0 or a value previously obtained by another call to allocate and not
 	///             yet freed with deallocate.  For standard memory allocation, a non-zero value may
 	///             used as a hint to improve performance by allocating the new block near the one
@@ -439,7 +438,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	HOST pointer allocate( size_type w, size_type h = 1/*, size_type& pitch*/, std::allocator<void>::const_pointer hint = 0 ) const {
+	HOST pointer allocate( size_type w, size_type h = 1, std::allocator<void>::const_pointer hint = 0 ) const {
 		if( !h ) h = 1; // height must be at least 1
 		value_type* nakedPtr;
 		std::size_t pitch;
