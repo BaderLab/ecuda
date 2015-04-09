@@ -361,7 +361,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::vector<int> deviceVector1( 100, 3 );
 		ecuda::vector<int> deviceVector2( 100, 5 );
 		ecuda::vector<int> deviceDummyVector( 100 );
-		ecuda::array<int,2> deviceArray( 0 );
+		ecuda::array<int,2> deviceArray;
 		kernel_testSwapAndClear<<<1,1>>>( deviceVector1, deviceVector2, deviceDummyVector, deviceArray );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );

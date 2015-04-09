@@ -42,9 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "config.hpp"
-#if HAVE_ESTD_LIBRARY > 0
-#include <estd/cube.hpp>
-#endif
 #include "global.hpp"
 #include "allocators.hpp"
 #include "device_ptr.hpp"
@@ -174,17 +171,7 @@ public:
 	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), allocator(allocator) {
 		if( numberRows and numberColumns and numberDepths ) {
 			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector< value_type, host_allocator<value_type> > v( numberDepths, value );
-			for( size_type i = 0; i < numberRows; ++i ) {
-				for( size_type j = 0; j < numberColumns; ++j ) {
-					CUDA_CALL( cudaMemcpy<value_type>(
-						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
-						&v.front(), // src
-						numberDepths, // count
-						cudaMemcpyHostToDevice
-					) );
-				}
-			}
+			CUDA_CALL( cudaMemset2D<value_type>( deviceMemory.get(), pitch, value, numberDepths, numberRows*numberColumns ) );
 		}
 	}
 
@@ -229,35 +216,6 @@ public:
 	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
 	#endif
 
-	#if HAVE_ESTD_LIBRARY > 0
-	///
-	/// \brief Constructs a cube by copying the dimensions and elements of an estd library cube container.
-	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
-	///
-	/// \param src Another cube object of the same type, whose contents are copied.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube( const estd::cube<T,U,V,W>& src ) : numberRows(src.number_rows()), numberColumns(src.number_columns()), numberDepths(src.depth_size()) {
-		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			std::vector< value_type, host_allocator<value_type> > v( numberDepths );
-			for( size_type i = 0; i < numberRows; ++i ) {
-				for( size_type j = 0; j < numberColumns; ++j ) {
-					for( size_type k = 0; k < numberDepths; ++k ) v[k] = src[i][j][k];
-					CUDA_CALL( cudaMemcpy<value_type>(
-						get_allocator().address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), // dst
-						&v.front(), // src
-						numberDepths, // count
-						cudaMemcpyHostToDevice
-					) );
-				}
-			}
-		}
-	}
-	#endif
-
 	//HOST DEVICE virtual ~cube() {}
 
 	///
@@ -266,13 +224,26 @@ public:
 	///
 	HOST inline allocator_type get_allocator() const { return allocator; }
 
+private:
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
+		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
+	}
+
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
+
+	// dummy method to trick compiler, since device code will never use a non-device iterator
+	template<class Iterator,class SomeOtherCategory>
+	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
+
+public:
+
 	///
 	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
 	///
-	/// The provided iterators must have STL random access capabilities (specifically,
-	/// end.operator-(begin) so that the length of the sequence can be determined). The number of
-	/// elements in [begin,end) must equal the size of this cube (i.e. rows*columns*depths). In
-	/// addition, the orientation of the elements is assumed to be ordered depth->column->row
+	/// The number of elements in [begin,end) must equal the size of this cube (i.e. rows*columns*depths).
+	/// In addition, the orientation of the elements is assumed to be ordered depth->column->row
 	/// (the same orientation as the elements stored in this container).
 	///
 	/// Note that a potentially more clear way of assigning values is to use the get_depth()
@@ -286,18 +257,27 @@ public:
 	///       cube[i][j].assign( vec.begin(), vec.end() );
 	/// \endcode
 	///
-	/// \param begin,end the range to copy the elements from
+	/// \param first,last the range to copy the elements from
+	/// \throws std::length_error if number of elements doesn't match the size of the cube
 	///
-	template<class RandomAccessIterator>
-	HOST void assign( RandomAccessIterator begin, RandomAccessIterator end ) {
-		if( (end-begin) != size() ) throw std::length_error( "ecuda::cube::assign(begin,end) iterator range [begin,end) does not have correct length" );
-		const size_type rc = number_rows()*number_columns();
-		std::vector< value_type, host_allocator<value_type> > v( number_depths() );
-		for( std::size_t i = 0; i < rc; ++i, begin += number_depths() ) {
-			v.assign( begin, begin+number_depths() );
-			//std::vector<value_type> v( begin, begin+number_depths() );
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i, 0, pitch ), &v.begin(), number_depths(), cudaMemcpyHostToDevice ) );
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last ) {
+		#ifdef __CUDA_ARCH__
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		#else
+		typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
+		if( len < 0 or static_cast<size_type>(len) != size() )
+			throw std::length_error( EXCEPTION_MSG("ecuda::cube::assign(begin,end) iterator range [begin,end) does not match the size of this cube") );
+		Iterator endDepth = first;
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			for( size_type j = 0; j < number_columns(); ++j ) {
+				depth_type depth = get_depth(i,j);
+				::ecuda::advance( endDepth, number_depths() );
+				depth.assign( first, endDepth );
+				first = endDepth;
+			}
 		}
+		#endif
 	}
 
 	///
@@ -712,6 +692,7 @@ public:
 		#endif
 	}
 
+	/*
 	///
 	/// \brief Assignment operator.
 	///
@@ -746,54 +727,55 @@ public:
 		#endif
 		return *this;
 	}
+	*/
 
-	#if HAVE_ESTD_LIBRARY > 0
 	///
-	/// \brief Copies the contents of this device cube to an estd library cube.
+	/// \brief Copies the contents of this device cube to another container.
 	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
+	/// The cube is converted into a row,column-major linearized form (all
+	/// depths of the first column of the first row, then the second column
+	/// of the first row, ...).
 	///
-	/// \param dest An estd library cube object to copy the elements of this container to.
-	///
-	template<typename U,typename V,typename W>
-	HOST cube<T,Alloc>& operator>>( estd::cube<T,U,V,W>& dest ) {
-		//TODO: this can be optimized
-		dest.resize( static_cast<U>(numberRows), static_cast<V>(numberColumns), static_cast<W>(numberDepths) );
-		std::vector< value_type, host_allocator<value_type> > tmp( numberDepths );
-		for( size_type i = 0; i < numberRows; ++i ) {
-			for( size_type j = 0; j < numberColumns; ++j ) {
-				CUDA_CALL( cudaMemcpy<value_type>( &tmp.front(), allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), numberDepths, cudaMemcpyDeviceToHost ) );
-				for( size_type k = 0; k < numberDepths; ++k ) dest[i][j][k] = tmp[k];
+	template<class Container>
+	HOST const cube& operator>>( Container& dest ) const {
+		typename Container::iterator destIter = dest.begin();
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			for( size_type j = 0; j < number_columns(); ++j ) {
+				const_depth_type depth = get_depth(i,j);
+				::ecuda::copy( depth.begin(), depth.end(), destIter );
+				::ecuda::advance( destIter, number_depths() );
 			}
 		}
 		return *this;
 	}
-	#endif
 
-	#if HAVE_ESTD_LIBRARY > 0
 	///
-	/// \brief Copies the contents of an estd library cube to this device.
+	/// \brief Copies the contents of another container to this device matrix.
 	///
-	/// This method is enabled if the HAVE_ESTD_LIBRARY flag in config.hpp is set to non-zero.
-	/// The estd library needs to be visible to the compiler.
+	/// The size of the container must match the number of elements in this
+	/// cube (number_rows()*number_columns()*number_depths()). The source container
+	/// is assumed to be in row,column-major linear form (all depths of the first
+	/// column of the first row, then the second column of the first row, ...).
 	///
-	/// \param src An estd library cube object whose elements are copied to this container.
+	/// \param src container to copy data from
+	/// \throws std::length_error if number of elements in src does not match the size of this matrix
 	///
-	template<typename U,typename V,typename W>
-	HOST cube<T,Alloc>& operator<<( const estd::cube<T,U,V,W>& src ) {
-		//TODO: this can be optimized
-		resize( src.number_rows(), src.number_columns(), src.depth_size() );
-		std::vector< value_type, host_allocator<value_type> > tmp( src.depth_size() );
-		for( typename estd::cube<T,U,V,W>::row_index_type i = 0; i < src.number_rows(); ++i ) {
-			for( typename estd::cube<T,U,V,W>::column_index_type j = 0; j < src.number_columns(); ++j ) {
-				for( typename estd::cube<T,U,V,W>::depth_index_type k = 0; k < src.depth_size(); ++k ) tmp[k] = src[i][j][k];
-				CUDA_CALL( cudaMemcpy<value_type>( allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ), &tmp.front(), numberDepths, cudaMemcpyHostToDevice ) );
+	template<class Container>
+	HOST cube& operator<<( const Container& src ) {
+		typename Container::const_iterator srcIter = src.begin();
+		typename std::iterator_traits<typename Container::const_iterator>::difference_type len = ::ecuda::distance( src.begin(), src.end() );
+		if( len < 0 or static_cast<size_type>(len) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::cube::operator<<() provided with a container of non-matching size") );
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			for( size_type j = 0; j < number_columns(); ++j ) {
+				depth_type depth = get_depth(i,j);
+				typename Container::const_iterator srcEnd = srcIter;
+				::ecuda::advance( srcEnd, number_depths() );
+				depth.assign( srcIter, srcEnd );
+				srcIter = srcEnd;
 			}
 		}
 		return *this;
 	}
-	#endif
 
 };
 

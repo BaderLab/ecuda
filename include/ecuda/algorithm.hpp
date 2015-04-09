@@ -40,7 +40,12 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_ALGORITHM_HPP
 #define ECUDA_ALGORITHM_HPP
 
+#include <vector>
+
 #include "global.hpp"
+#include "allocators.hpp"
+#include "apiwrappers.hpp"
+#include "iterators.hpp"
 
 namespace ecuda {
 
@@ -92,6 +97,74 @@ template<class InputIterator,typename T>
 DEVICE T accumulate( InputIterator first, InputIterator last, T init=0 ) {
 	while( first != last ) { init += *first; ++first; }
 	return init;
+}
+
+
+template<class InputIterator,class OutputIterator>
+HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::random_access_iterator_tag, ::ecuda::contiguous_device_iterator_tag ) {
+	typedef typename OutputIterator::value_type value_type;
+	typename std::iterator_traits<InputIterator>::difference_type len = ::ecuda::distance(first,last);
+	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), len, cudaMemcpyHostToDevice ) );
+	return result+len;
+}
+
+template<class InputIterator,class OutputIterator>
+HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::bidirectional_iterator_tag, ::ecuda::contiguous_device_iterator_tag ) {
+	typedef typename OutputIterator::value_type value_type;
+	std::vector< value_type, ::ecuda::host_allocator<value_type> > v( first, last );
+	return __copy( v.begin(), v.end(), result, std::random_access_iterator_tag(), ::ecuda::contiguous_device_iterator_tag() );
+}
+
+template<class InputIterator,class OutputIterator>
+HOST inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::forward_iterator_tag, ::ecuda::contiguous_device_iterator_tag ) {
+	return __copy( first, last, std::bidirectional_iterator_tag(), ::ecuda::contiguous_device_iterator_tag() );
+}
+
+template<class InputIterator,class OutputIterator>
+HOST inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::input_iterator_tag(), ::ecuda::contiguous_device_iterator_tag ) {
+	return __copy( first, last, std::bidirectional_iterator_tag(), ::ecuda::contiguous_device_iterator_tag() );
+}
+
+template<class InputIterator,class OutputIterator>
+HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, ::ecuda::contiguous_device_iterator_tag ) {
+	typedef typename OutputIterator::value_type value_type;
+	typename std::iterator_traits<InputIterator>::difference_type len = ::ecuda::distance(first,last);
+	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), len, cudaMemcpyDeviceToDevice ) );
+	return result+len;
+}
+
+template<class InputIterator,class OutputIterator>
+HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, std::random_access_iterator_tag ) {
+	typedef typename OutputIterator::value_type value_type;
+	typename std::iterator_traits<InputIterator>::difference_type len = ::ecuda::distance(first,last);
+	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), len, cudaMemcpyDeviceToHost ) );
+	return result+len;
+}
+
+template<class InputIterator,class OutputIterator>
+HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, std::bidirectional_iterator_tag ) {
+	typedef typename OutputIterator::value_type value_type;
+	typename std::iterator_traits<InputIterator>::difference_type len = ::ecuda::distance(first,last);
+	std::vector< value_type, ::ecuda::host_allocator<value_type> > v( len );
+	__copy( first, last, v.begin(), ::ecuda::contiguous_device_iterator_tag(), std::random_access_iterator_tag() );
+	for( typename std::vector< value_type, ::ecuda::host_allocator<value_type> >::iterator iter = v.begin(); iter != v.end(); ++iter, ++result ) *result = *iter;
+	return result;
+}
+
+template<class InputIterator,class OutputIterator>
+HOST inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, std::forward_iterator_tag ) {
+	return __copy( first, last, result, ::ecuda::contiguous_device_iterator_tag(), std::bidirectional_iterator_tag() );
+}
+
+template<class InputIterator,class OutputIterator>
+HOST inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, std::output_iterator_tag ) {
+	return __copy( first, last, result, ::ecuda::contiguous_device_iterator_tag(), std::bidirectional_iterator_tag() );
+}
+
+
+template<class InputIterator,class OutputIterator>
+HOST inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
+	return __copy( first, last, result, typename std::iterator_traits<InputIterator>::iterator_category(), typename std::iterator_traits<OutputIterator>::iterator_category() );
 }
 
 } // namespace ecuda

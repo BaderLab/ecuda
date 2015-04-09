@@ -49,6 +49,7 @@ either expressed or implied, of the FreeBSD Project.
 #endif
 
 #include "global.hpp"
+#include "algorithm.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "iterators.hpp"
@@ -79,8 +80,8 @@ public:
 	typedef value_type* pointer; //!< cell pointer type
 	typedef const value_type* const_pointer; //!< cell const pointer type
 
-	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
-	typedef device_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
+	typedef contiguous_device_iterator<value_type> iterator; //!< iterator type
+	typedef contiguous_device_iterator<const value_type> const_iterator; //!< const iterator type
 	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
@@ -89,54 +90,14 @@ private:
 
 public:
 	///
-	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
-	/// \param value Value to fill the container with.
+	/// \brief Constructs a fixed-size array with N elements.
 	///
-	HOST array( const T& value = T() ) {
+	/// Each element is a default-initialized value of T.
+	///
+	HOST array() {
 		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		fill( value );
+		fill( value_type() );
 	}
-
-	///
-	/// \brief Constructs a fixed-sized array with N elements taken from the sequence [begin,end).
-	///
-	/// If the length of the sequence is greater than N that only the first N elements are taken. If
-	/// the length of the sequence is less than N, the sequence is repeated from the start until all
-	/// N elements are assigned a value.
-	///
-	/// \param begin, end Input iterators to the initial and final positions in a range.  The range
-	///                   used is [begin,end).
-	///
-	template<class InputIterator>
-	HOST array( InputIterator begin, InputIterator end ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		std::vector< value_type, host_allocator<value_type> > v( N );
-		typename std::vector<value_type>::size_type index = 0;
-		while( index < N ) {
-			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
-		}
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
-	}
-
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Constructs a fixed-sized array with N elements taken an initializer list.
-	///
-	/// If the length of the initializer list is greater than N that only the first N elements are taken. If
-	/// the length of the initializer list is less than N, the initializer list is repeated from the start until all
-	/// N elements are assigned a value.
-	///
-	/// This constructor is only available if the compiler is configured to allow C++11.
-	///
-	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
-	////          declarators.
-	///
-	HOST array( std::initializer_list<T> il ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		std::vector< value_type, host_allocator<value_type> > v( il );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
-	}
-	#endif
 
 	///
 	/// \brief Constructs an array with a shallow copy of each of the elements in src.
@@ -144,12 +105,15 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container.  This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the assignment operator. For example:
+	/// of the container is required in host code, use the << or >> operators. For example:
 	///
 	/// \code{.cpp}
-	/// ecuda::array<int,10> arr( 3 ); // fill array with 3s
+	/// ecuda::array<int,10> arr;
+	/// arr.fill( 3 ); // fill array with 3s
 	/// ecuda::array<int,10> newArr( arr ); // shallow copy
-	/// ecuda::array<int,10> newArr; newArr = arr; // deep copy
+	/// ecuda::array<int,10> newArr;
+	/// newArr << arr; // deep copy
+	/// arr >> newArr; // deep copy
 	/// \endcode
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
@@ -487,52 +451,31 @@ public:
 	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
 	///
-	/// \brief Copies the contents of this device array to a host STL vector.
+	/// \brief Copies the contents of this device array to another container.
 	///
-	template<class Alloc>
-	HOST const array<T,N>& operator>>( std::vector<value_type,Alloc>& vector ) const {
-		vector.resize( N );
-		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
+	/// \param dest container to copy contents to
+	///
+	template<class Container>
+	HOST const array& operator>>( Container& dest ) const {
+		::ecuda::copy( begin(), end(), dest.begin() );
 		return *this;
 	}
 
 	///
-	/// \brief Copies the contents of a host STL vector to this device array.
+	/// \brief Copies the contents of a container to this device array.
 	///
-	/// \param vector std::vector to copy the contents from
+	/// \param src container to copy the contents from
 	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
-	template<class Alloc>
-	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
-		if( size() < vector.size() ) throw std::length_error( "ecuda::array is not large enough to fit contents of provided std::vector" );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
+	template<class Container>
+	HOST array& operator<<( const Container& src ) {
+		if( ecuda::distance(src.begin(),src.end()) > static_cast<typename Container::difference_type>(size()) )
+			throw std::length_error( EXCEPTION_MSG("ecuda::array is not large enough to fit contents of provided container") );
+		::ecuda::copy( src.begin(), src.end(), begin() );
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Copies the contents of this device array to a host STL array.
-	///
-	/// This operator is only available if the compiler is configured to allow C++11.
-	///
-	HOST const array<T,N>& operator>>( std::array<value_type,N>& arr ) const {
-		CUDA_CALL( cudaMemcpy<value_type>( &arr.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
-		return *this;
-	}
-	#endif
-
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Copies the contents of a host STL array to this device array.
-	///
-	/// This operator is only available if the compiler is configured to allow C++11.
-	///
-	HOST array<T,N>& operator<<( std::array<value_type,N>& arr ) {
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &arr.front(), N, cudaMemcpyHostToDevice ) );
-		return *this;
-	}
-	#endif
-
+	/*
 	///
 	/// \brief Assignment operator.
 	///
@@ -548,7 +491,7 @@ public:
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
-	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
+	HOST DEVICE array& operator=( const array& other ) {
 		#ifdef __CUDA_ARCH__
 		// shallow copy if called from device
 		deviceMemory = other.deviceMemory;
@@ -559,6 +502,7 @@ public:
 		#endif
 		return *this;
 	}
+	*/
 
 };
 

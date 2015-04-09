@@ -44,6 +44,9 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+struct device_iterator_tag {};
+struct contiguous_device_iterator_tag {};
+
 ///
 /// \brief Iterator template compatible with pointers to device memory.
 ///
@@ -61,7 +64,7 @@ namespace ecuda {
 /// fact that 2D device memory allocations often include padding to align the
 /// memory for optimal read/write operations.
 ///
-template<typename T,typename PointerType,class Category=std::bidirectional_iterator_tag>
+template<typename T,typename PointerType,class Category=device_iterator_tag>
 class device_iterator : public std::iterator<Category,T,std::ptrdiff_t,PointerType>
 {
 private:
@@ -220,11 +223,11 @@ public:
 /// \brief Iterator template for use with naked pointers to contiguous device memory.
 ///
 template<typename T>
-class contiguous_device_iterator : public device_iterator<T,T*,std::random_access_iterator_tag>
+class contiguous_device_iterator : public device_iterator<T,T*,contiguous_device_iterator_tag>
 {
 
 private:
-	typedef device_iterator<T,T*,std::random_access_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
+	typedef device_iterator<T,T*,contiguous_device_iterator_tag> base_iterator_type; //!< redeclares base device_iterator type to make later typedefs more compact
 
 public:
 	typedef typename base_iterator_type::iterator_category iterator_category; //!< STL iterator category
@@ -378,12 +381,13 @@ public:
 /// Any undocumented methods are exactly the same as their counterpart in device_iterator.
 ///
 template<class BaseIterator>
-class reverse_device_iterator : public std::iterator<typename BaseIterator::iterator_category,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
+class reverse_device_iterator : public std::iterator<device_iterator_tag,typename BaseIterator::value_type,typename BaseIterator::difference_type,typename BaseIterator::pointer>
 {
 
 public:
 	typedef BaseIterator iterator_type; //!< type of the parent iterator being reversed
-	typedef typename BaseIterator::iterator_category iterator_category; //!< STL iterator category
+	typedef device_iterator_tag iterator_category; //!< iterator category
+	//typedef typename BaseIterator::iterator_category iterator_category; //!< STL iterator category
 	typedef typename BaseIterator::value_type value_type; //!< type of elements pointed by the iterator
 	typedef typename BaseIterator::difference_type difference_type; //!< type to represent difference between two iterators
 	typedef typename BaseIterator::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
@@ -470,6 +474,38 @@ public:
 	}
 
 };
+
+template<class Iterator,class Distance>
+HOST void __advance( Iterator& iter, Distance n, contiguous_device_iterator_tag ) { iter += n; }
+
+template<class Iterator,class Distance>
+HOST void __advance( Iterator& iter, Distance n, device_iterator_tag ) { for( Distance i = 0; i < n; ++i ) ++iter; }
+
+template<class Iterator,class Distance,class SomeOtherCategory>
+HOST void __advance( Iterator& iter, Distance n, SomeOtherCategory ) { std::advance( iter, n ); }
+
+template<class Iterator,class Distance>
+HOST void advance( Iterator& iter, Distance n ) { __advance( iter, n, typename std::iterator_traits<Iterator>::iterator_category() ); }
+
+template<class Iterator>
+HOST inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, ::ecuda::contiguous_device_iterator_tag ) { return last-first; }
+
+template<class Iterator>
+HOST inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, ::ecuda::device_iterator_tag ) {
+	typename std::iterator_traits<Iterator>::difference_type n = 0;
+	while( first != last ) { ++n; ++first; }
+	return n;
+}
+
+template<class Iterator,class SomeOtherCategory>
+HOST inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, SomeOtherCategory ) {
+	// let STL give it a try
+	return std::distance( first, last );
+}
+
+template<class Iterator>
+HOST inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) { return __distance( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
+
 
 } // namespace ecuda
 

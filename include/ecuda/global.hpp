@@ -69,11 +69,20 @@ public:
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 
 ///
+/// String wrapper that adds the source file and line to a given error message.
+///
+#define S(x) #x
+#define S_(x) S(x)
+#define S__LINE__ S_(__LINE__)
+#define EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
+
+///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
 /// should be declared after any CUDA API calls that do not return an error code
 /// (e.g. after calling kernel functions).
 ///
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw std::runtime_error(std::string(cudaGetErrorString(error))); } while(0);
+#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+
 
 #define DEVICE __device__
 #define HOST __host__

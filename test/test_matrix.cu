@@ -419,7 +419,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::matrix<int> deviceMatrix1( 10, 20, 3 );
 		ecuda::matrix<int> deviceMatrix2( 10, 20, 5 );
 		ecuda::matrix<int> deviceDummyMatrix( 10, 20 );
-		ecuda::array<int,1> deviceArray( 0 );
+		ecuda::array<int,1> deviceArray;
 		kernel_testSwapAndFill<<<1,1>>>( deviceMatrix1, deviceMatrix2, deviceDummyMatrix, deviceArray );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );

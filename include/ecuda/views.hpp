@@ -188,31 +188,28 @@ public:
 	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data()+static_cast<int>(base_type::size()))); }
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
 
-	HOST DEVICE void assign( contiguous_device_iterator<const T> begin, contiguous_device_iterator<const T> end ) {
-		#ifdef __CUDA_ARCH__
-		iterator dest = this->begin();
-		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
-		#else
-		const difference_type n = end-begin;
-		if( n < 0 ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy<value_type>( base_type::data(), begin.operator->(), std::min(static_cast<typename base_type::size_type>(n),base_type::size()), cudaMemcpyDeviceToDevice ) );
-		#endif
+private:
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
+		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
 	}
 
-	template<typename U,typename Q>
-	DEVICE void assign( device_iterator<U,Q> begin, device_iterator<U,Q> end ) {
-		iterator dest = this->begin();
-		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
-	}
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
 
-	template<class InputIterator>
-	HOST DEVICE void assign( InputIterator begin, InputIterator end ) {
+	// dummy method to trick compiler, since device code will never use a non-device iterator
+	template<class Iterator,class SomeOtherCategory>
+	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
+
+public:
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last ) {
 		#ifdef __CUDA_ARCH__
-		iterator dest = this->begin();
-		while( begin != end and dest != this->end() ) { *dest = *begin; ++dest; ++begin; }
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
 		#else
-		std::vector< value_type, host_allocator<value_type> > v( begin, end );
-		CUDA_CALL( cudaMemcpy<value_type>( reinterpret_cast<value_type*>(sequence_view<T,T*>::data()), &v.front(), std::min(v.size(),sequence_view<T,T*>::size()), cudaMemcpyHostToDevice ) );
+		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
+		if( len < 0 or len != base_type::size() ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given range does not match size of this view" );
+		::ecuda::copy( first, last, begin() );
 		#endif
 	}
 

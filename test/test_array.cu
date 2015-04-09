@@ -132,7 +132,8 @@ int main( int argc, char* argv[] ) {
 	//
 	std::cerr << "Test 1" << std::endl;
 	{
-		ecuda::array<int,100> deviceArray( 3 ); // array filled with number 3
+		ecuda::array<int,100> deviceArray;
+		deviceArray.fill( 3 ); // array filled with number 3
 		std::vector<int> hostVector;
 		deviceArray >> hostVector;
 		bool passed = true;
@@ -153,8 +154,9 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostVector( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
-		ecuda::array<int,100> deviceArray( hostVector.begin(), hostVector.end() );
-		ecuda::array<int,100> deviceEmpties( -1 );
+		ecuda::array<int,100> deviceArray;
+		deviceArray << hostVector;
+		ecuda::array<int,100> deviceEmpties; deviceEmpties.fill( -1 );
 		ecuda::array<ecuda::array<int,100>::size_type,100> deviceSizes;
 		ecuda::array<ecuda::array<int,100>::const_pointer,100> devicePointers;
 		kernel_checkArrayProperties<<<1,100>>>( deviceArray, deviceEmpties, deviceSizes, devicePointers );
@@ -203,9 +205,13 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> srcDeviceArray; srcDeviceArray << hostArray;
 		ecuda::array<int,100> destDeviceArray;
-		ecuda::array<int,100> deviceFronts( -1 ), deviceBacks( -1 ), deviceFrontsNonConst( -1 ), deviceBacksNonConst( -1 );
+		ecuda::array<int,100> deviceFronts, deviceBacks, deviceFrontsNonConst, deviceBacksNonConst;
+		deviceFronts.fill(-1);
+		deviceBacks.fill(-1);
+		deviceFrontsNonConst.fill(-1);
+		deviceBacksNonConst.fill(-1);
 		kernel_checkArrayAccessors<<<1,100>>>( srcDeviceArray, srcDeviceArray, destDeviceArray, deviceFronts, deviceBacks, deviceFrontsNonConst, deviceBacksNonConst );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
@@ -243,7 +249,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> srcDeviceArray; srcDeviceArray << hostArray;
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkDeviceIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
 		CUDA_CHECK_ERRORS();
@@ -262,7 +268,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> srcDeviceArray; srcDeviceArray << hostArray;
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkHostIterators<int,100><<<1,1>>>( srcDeviceArray.begin(), srcDeviceArray.end(), destDeviceArray.begin(), destDeviceArray.end() );
 		CUDA_CHECK_ERRORS();
@@ -281,7 +287,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> srcDeviceArray; srcDeviceArray << hostArray;
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkDeviceReverseIterators<<<1,1>>>( srcDeviceArray, destDeviceArray );
 		CUDA_CHECK_ERRORS();
@@ -300,7 +306,7 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> srcDeviceArray( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> srcDeviceArray; srcDeviceArray << hostArray;
 		ecuda::array<int,100> destDeviceArray;
 		kernel_checkHostReverseIterators<int,100><<<1,1>>>( srcDeviceArray.rbegin(), srcDeviceArray.rend(), destDeviceArray.rbegin(), destDeviceArray.rend() );
 		CUDA_CHECK_ERRORS();
@@ -352,8 +358,8 @@ int main( int argc, char* argv[] ) {
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> deviceArray1( hostArray.begin(), hostArray.end() );
-		ecuda::array<int,100> deviceArray2( hostArray.begin(), hostArray.end() );// = deviceArray1; //ecuda::array<int,100>( deviceArray1 );
+		ecuda::array<int,100> deviceArray1; deviceArray1 << hostArray;
+		ecuda::array<int,100> deviceArray2; deviceArray2 << hostArray;
 
 		bool passed = true;
 		if( !deviceArray1.operator==(deviceArray2) ) passed = false;
@@ -387,10 +393,11 @@ std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 	{
 		std::vector<int> hostArray( 100 );
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i;
-		ecuda::array<int,100> deviceArray1( hostArray.begin(), hostArray.end() );
+		ecuda::array<int,100> deviceArray1; deviceArray1 << hostArray;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i+10;
-		ecuda::array<int,100> deviceArray2( hostArray.begin(), hostArray.end() );
-		ecuda::array<int,10> deviceResults( -1 );
+		ecuda::array<int,100> deviceArray2; deviceArray2 << hostArray;
+		ecuda::array<int,10> deviceResults;
+		deviceResults.fill( -1 );
 
 		kernel_testComparisonOperators<<<1,1>>>( deviceArray1, deviceArray2, deviceResults );
 		CUDA_CHECK_ERRORS();
