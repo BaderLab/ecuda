@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "../include/ecuda/views.hpp"
+#include "../include/ecuda/models.hpp"
 
 template<typename T>
 struct coord_t {
