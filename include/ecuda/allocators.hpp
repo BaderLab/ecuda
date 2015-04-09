@@ -339,33 +339,6 @@ public:
 
 };
 
-template<typename T>
-class pitched_ptr
-{
-public:
-	typedef T element_type;
-	typedef typename reference<T>::pointer_type pointer;
-	typedef std::size_t size_type;
-
-private:
-	pointer ptr;
-	size_type pitch;
-
-public:
-	HOST DEVICE pitched_ptr( T* ptr, const size_type pitch ) : ptr(ptr), pitch(pitch) {}
-
-	HOST DEVICE pitched_ptr( const pitched_ptr& src ) : ptr(src.ptr), pitch(src.pitch) {}
-	template<typename U> HOST DEVICE pitched_ptr( const pitched_ptr<U>& src ) : ptr(src.get()), pitch(src.get_pitch()) {}
-
-	HOST DEVICE inline pointer get() const { return ptr; }
-	HOST DEVICE inline size_type get_pitch() const { return pitch; }
-
-	HOST DEVICE inline operator pointer() const { return ptr; }
-
-	HOST DEVICE inline pointer advance( const size_type n ) const { return reinterpret_cast<pointer>(reinterpret_cast<typename cast_to_char<pointer>::type>(ptr)+(n*pitch)); }
-
-};
-
 ///
 /// \brief An pseudo-STL allocator for hardware aligned device memory.
 ///
@@ -390,10 +363,9 @@ class device_pitch_allocator {
 
 public:
 	typedef T value_type; //!< element type
-	typedef pitched_ptr<T> pointer; //!< pointer to element
+	typedef padded_ptr<T,T*,1> pointer; //!< pointer to element
 	typedef T& reference; //!< reference to element
-	typedef pitched_ptr<const T> const_pointer; //!< pointer to constant element
-	//typedef padded_ptr<const T,const T*,1> const_pointer; //!< pointer to constant element
+	typedef padded_ptr<const T,const T*,1> const_pointer; //!< pointer to constant element
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
 	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
@@ -468,11 +440,11 @@ public:
 	///
 	HOST pointer allocate( size_type w, size_type h = 1, std::allocator<void>::const_pointer hint = 0 ) const {
 		if( !h ) h = 1; // height must be at least 1
-		value_type* p;
+		value_type* nakedPtr;
 		std::size_t pitch;
-		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&p), &pitch, w*sizeof(value_type), h );
+		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&nakedPtr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
-		return pointer( p, pitch );
+		return pointer( nakedPtr, pitch, w, 0 );
 	}
 
 	///

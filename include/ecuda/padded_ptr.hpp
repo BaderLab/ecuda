@@ -43,7 +43,6 @@ either expressed or implied, of the FreeBSD Project.
 
 #include "global.hpp"
 
-/*
 namespace ecuda {
 
 ///
@@ -64,6 +63,43 @@ private:
 	const size_type padding; // padding memory width in bytes
 	const size_type width; // width of grid in elements
 	size_type current_position; // position of pointer in the grid
+
+//	const size_type data_length; //!< contiguous elements of data before pad, expressed in units of element_type
+//	const size_type padding_length;  //!< contiguous elements of padding after data, expressed in bytes
+//	size_type distance_to_padding; //!< distance of current pointer from the padding, expressed in units of element_type
+/*
+private:
+	///
+	/// Move the pointer ahead padding_length bytes, regardless of
+	/// the sizeof the managed pointer.
+	///
+	HOST DEVICE inline void jump_forward_pad_length() {
+		T* p = static_cast<T*>(ptr);
+		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
+		char_ptr += padding_length; //*PaddingUnitBytes;
+		ptr = reinterpret_cast<T*>(char_ptr);
+	}
+
+	///
+	/// Move the pointer back padding_length bytes, regardless of
+	/// the sizeof the managed pointer.
+	///
+	HOST DEVICE inline void jump_backwards_pad_length() {
+		T* p = static_cast<T*>(ptr);
+		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
+		char_ptr -= padding_length; //*PaddingUnitBytes;
+		ptr = reinterpret_cast<T*>(char_ptr);
+	}
+
+	///
+	/// Casts the underlying pointer to a char pointer whilst maintaining constness.
+	/// e.g. const int* -> const char* ; int* -> char*
+	///
+	HOST DEVICE inline typename cast_to_char<T*>::type to_char_ptr() const {
+		T* p = static_cast<T*>(ptr);
+		return reinterpret_cast<typename cast_to_char<T*>::type>(p);
+	}
+*/
 
 public:
 	///
@@ -96,6 +132,14 @@ public:
 
 	template<typename T2,typename PointerType2>
 	HOST DEVICE padded_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& src ) : ptr(src.get()), padding(src.get_padding()), width(src.get_width()), current_position(src.get_current_position()) {}
+
+
+	/*
+	///
+	/// \brief Destructor.
+	///
+	HOST DEVICE ~padded_ptr() {}
+	*/
 
 	HOST DEVICE inline size_type get_pitch() const { return sizeof(element_type)*width+padding; }
 	HOST DEVICE inline size_type get_padding() const { return padding; }
@@ -172,6 +216,23 @@ public:
 	HOST DEVICE inline padded_ptr operator+( const int units ) const { return padded_ptr(*this).operator+=(units); }
 	HOST DEVICE inline padded_ptr operator-( const int units ) const { return padded_ptr(*this).operator-=(units); }
 
+	/*
+	 * Going to disable this for now. It's unclear to me how this would be useful and produce intuitive behaviour.
+	 * Since the padding isn't necessarily a multiple of the element_type, the difference between two pointers, even
+	 * if they're in the same "array" (so to speak), cannot be guaranteed to be a whole numbered multiple of
+	 * element_type-sized bytes.  Yet, this is probably what you'd intuitively expect.  The commented out implementation
+	 * below returns the number of bytes difference, which is guaranteed to be correct, but is unintuitive.
+	///
+	/// \brief operator-
+	///
+	/// Note this will always be expressed in bytes, regardless of the size of element_type.
+	///
+	/// \param other
+	/// \return
+	///
+	HOST DEVICE inline difference_type operator-( const padded_ptr& other ) const { return to_char_ptr() - other.to_char_ptr(); }
+	*/
+
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }
 
@@ -214,6 +275,5 @@ public:
 };
 
 } // namespace ecuda
-*/
 
 #endif

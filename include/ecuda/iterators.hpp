@@ -42,8 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 
 #include "global.hpp"
 
-#include "allocators.hpp" // TODO: check if still needed
-
 namespace ecuda {
 
 struct device_iterator_tag {};
@@ -93,8 +91,6 @@ public:
 	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
 	///
 	HOST DEVICE device_iterator( const PointerType& ptr = PointerType() ) : ptr(ptr) {}
-
-//	HOST DEVICE explicit device_iterator( const pitched_ptr<T>& ptr ) : ptr(ptr) {}
 
 	///
 	/// \brief Copy constructor.

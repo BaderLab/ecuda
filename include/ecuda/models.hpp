@@ -375,11 +375,10 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef       __device_sequence<      value_type,typename __pointer_traits<pointer>::child_pointer,column_dimension_type,__container_type_derived_tag> row_type;
-	typedef       __device_sequence<      value_type,striding_ptr<value_type>,                         row_dimension_type,   __container_type_derived_tag> column_type;
-	typedef const __device_sequence<const value_type,typename __pointer_traits<pointer>::child_pointer,column_dimension_type,__container_type_derived_tag> const_row_type;
-	//typedef const __device_sequence<const value_type,typename __pointer_traits<typename __pointer_traits<pointer>::const_pointer>::const_child_pointer,column_dimension_type,__container_type_derived_tag> const_row_type;
-	typedef const __device_sequence<const value_type,striding_ptr<const value_type>,                   row_dimension_type,   __container_type_derived_tag> const_column_type;
+	typedef       __device_sequence<      value_type,pointer,column_dimension_type,__container_type_derived_tag> row_type;
+	typedef       __device_sequence<      value_type,striding_ptr<value_type,value_type*>,row_dimension_type,__container_type_derived_tag> column_type;
+	typedef const __device_sequence<const value_type,typename __pointer_traits<pointer>::const_pointer,                               column_dimension_type,__container_type_derived_tag> const_row_type;
+	typedef const __device_sequence<const value_type,striding_ptr<const value_type,const value_type*>,row_dimension_type,__container_type_derived_tag> const_column_type;
 
 private:
 	// REMEMBER: numberRows altered on device memory won't be reflected inn the host object.
@@ -388,10 +387,9 @@ private:
 private:
 	HOST void copy_to( __device_grid& other, __dimension_noncontiguous_tag, __dimension_contiguous_tag ) const {
 		// assume a pitched memory model
-		//padded_ptr<const value_type,const value_type*,1> src( data() );
-		//padded_ptr<value_type,value_type*,1> dest( other.data() );
-		//CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest.get_pitch(), src, src.get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( other.data().get(), other.data().get_pitch(), data().get(), data().get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
+		padded_ptr<const value_type,const value_type*,1> src( data() );
+		padded_ptr<value_type,value_type*,1> dest( other.data() );
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest.get_pitch(), src, src.get_pitch(), number_columns(), number_rows(), cudaMemcpyDeviceToDevice ) );
 	}
 
 	template<typename T2,typename PointerType2,typename ContainerType2>
@@ -414,17 +412,9 @@ private:
 		throw cuda_error( cudaErrorInvalidDevicePointer, EXCEPTION_MSG("ecuda::__device_sequence::copy_to() cannot copy to or from a non-contiguous range of elements") );
 	}
 
-	HOST DEVICE void fill( const value_type& value, const pitched_ptr<value_type>& dest, __dimension_contiguous_tag ) {
+	HOST DEVICE void fill( const value_type& value, padded_ptr<value_type,value_type*,1>& dest, __dimension_contiguous_tag ) {
 		// this fill method is called iff. the underlying memory is a contiguous pitched memory block
-		#ifdef __CUDA_ARCH__
-		typename pitched_ptr<value_type>::pointer p = dest.get();
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			for( size_type j = 0; j < number_columns(); ++j, ++p ) *p = value;
-			p = reinterpret_cast<typename pitched_ptr<value_type>::pointer>( reinterpret_cast<typename cast_to_char<typename pitched_ptr<value_type>::pointer>::type>(p)+dest.get_pitch() );
-		}
-		#else
-		CUDA_CALL( cudaMemset2D<value_type>( dest.get(), dest.get_pitch(), value, number_columns(), number_rows() ) );
-		#endif
+		CUDA_CALL( cudaMemset2D<value_type>( dest, dest.get_pitch(), value, number_columns(), number_rows() ) );
 	}
 
 	HOST DEVICE void fill( const value_type& value, value_type*, __dimension_contiguous_tag ) {
@@ -438,18 +428,6 @@ private:
 		// this is the default by-row fill method
 		for( size_type i = 0; i < number_rows(); ++i ) get_row(i).fill( value );
 	}
-
-	HOST DEVICE inline row_type get_row( const size_type rowIndex, __pointer_naked_tag ) { return row_type( base_type::data()+(rowIndex*number_columns()), number_columns() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex, __pointer_naked_tag ) const { return const_row_type( base_type::data()+(rowIndex*number_columns()), number_columns() ); }
-
-	HOST DEVICE inline row_type get_row( const size_type rowIndex, __pointer_pitched_tag ) { return row_type( base_type::data().advance( rowIndex ), number_columns() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex, __pointer_pitched_tag ) const { return const_row_type( base_type::data().advance( rowIndex ), number_columns() ); }
-
-	HOST DEVICE inline iterator end( __pointer_naked_tag ) __NOEXCEPT__ { return iterator( base_type::data()+size() ); }
-	HOST DEVICE inline iterator end( __pointer_pitched_tag ) __NOEXCEPT__ { return iterator( pointer(base_type::data().advance(number_rows()),base_type::data().get_pitch()) ); }
-
-	HOST DEVICE inline const_iterator end( __pointer_naked_tag ) const __NOEXCEPT__ { return const_iterator( base_type::data()+size() ); }
-	HOST DEVICE inline const_iterator end( __pointer_pitched_tag ) const __NOEXCEPT__ { return const_iterator( pointer(base_type::data().advance(number_rows()),base_type::data().get_pitch()) ); }
 
 public:
 	HOST DEVICE explicit __device_grid( managed_pointer ptr = managed_pointer(), size_type numberRows = 0, size_type numberColumns = 0 ) : base_type( ptr, numberRows*numberColumns ), numberRows(numberRows) {}
@@ -465,17 +443,17 @@ public:
 	HOST DEVICE inline managed_pointer get_managed_pointer() const __NOEXCEPT__ { return base_type::get_managed_pointer(); }
 
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(data()); }
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return end(typename __pointer_traits<pointer>::category()); }
+	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator(data()+static_cast<int>(size())); }
 	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator(data()); }
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return end(typename __pointer_traits<pointer>::category()); }
+	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator(data()+static_cast<int>(size())); }
 
 	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
 	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
 	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
-	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return get_row( rowIndex, typename __pointer_traits<pointer>::category() ); }
-	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return get_row( rowIndex, typename __pointer_traits<pointer>::category() ); }
+	HOST DEVICE inline row_type get_row( const size_type rowIndex ) { return row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
+	HOST DEVICE inline const_row_type get_row( const size_type rowIndex ) const { return const_row_type( data()+static_cast<int>(number_columns()*rowIndex), number_columns() ); }
 	HOST DEVICE inline column_type get_column( const size_type columnIndex ) {
 		return column_type( column_type::pointer( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() );
 		//return column_type( striding_ptr<value_type,pointer>( data()+static_cast<int>(columnIndex), number_columns() ), number_rows() );
