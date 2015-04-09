@@ -58,6 +58,11 @@ namespace ecuda {
 /// int* const.
 ///
 
+struct __pointer_naked_tag {};
+struct __pointer_pitched_tag {};
+struct __pointer_device_tag {};
+struct __pointer_striding_tag {};
+
 template<typename T> struct __pointer_traits {
 	typedef T* pointer;
 	typedef const T* const_pointer;
@@ -66,18 +71,33 @@ template<typename T> struct __pointer_traits {
 template<typename T> struct __pointer_traits<T*> {
 	typedef T* pointer;
 	typedef const T* const_pointer;
+	typedef __pointer_naked_tag category;
+	typedef T* child_pointer;
+	typedef const T* const_child_pointer;
 };
 
-template<typename T,typename PointerType,std::size_t PaddedUnitSize>
-struct __pointer_traits< padded_ptr<T,PointerType,PaddedUnitSize> > {
-	typedef padded_ptr<T,PointerType,PaddedUnitSize> pointer;
-	typedef padded_ptr<const T,typename __pointer_traits<PointerType>::const_pointer,PaddedUnitSize> const_pointer;
+//template<typename T,typename PointerType,std::size_t PaddedUnitSize>
+//struct __pointer_traits< padded_ptr<T,PointerType,PaddedUnitSize> > {
+//	typedef padded_ptr<T,PointerType,PaddedUnitSize> pointer;
+//	typedef padded_ptr<const T,typename __pointer_traits<PointerType>::const_pointer,PaddedUnitSize> const_pointer;
+//};
+
+template<typename T>
+struct __pointer_traits< pitched_ptr<T> > {
+	typedef pitched_ptr<T> pointer;
+	typedef pitched_ptr<const T> const_pointer;
+	typedef __pointer_pitched_tag category;
+	typedef typename pitched_ptr<T>::pointer child_pointer;
+	typedef typename pitched_ptr<const T>::pointer const_child_pointer;
 };
 
-template<typename T,typename PointerType>
-struct __pointer_traits< striding_ptr<T,PointerType> > {
-	typedef striding_ptr<T,PointerType> pointer;
-	typedef striding_ptr<const T,typename __pointer_traits<PointerType>::const_pointer> const_pointer;
+template<typename T>
+struct __pointer_traits< striding_ptr<T> > {
+	typedef striding_ptr<T> pointer;
+	typedef striding_ptr<const T> const_pointer;
+	typedef __pointer_striding_tag category;
+	typedef typename striding_ptr<T>::pointer child_pointer;
+	typedef typename striding_ptr<const T>::pointer const_child_pointer;
 };
 
 

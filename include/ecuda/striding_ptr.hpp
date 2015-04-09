@@ -43,6 +43,8 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "padded_ptr.hpp"
 
+#include "allocators.hpp"
+
 namespace ecuda {
 
 ///
@@ -57,12 +59,13 @@ namespace ecuda {
 /// is incremented, the pointer moves column-wise.  This is useful for creating
 /// flexible, iterable views of a fixed region of memory while minimizing overhead.
 ///
-template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
+template<typename T> //,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class striding_ptr {
 
 public:
 	typedef T element_type; //!< data type represented in allocated memory
-	typedef PointerType pointer; //!< data type pointer
+	//typedef PointerType pointer; //!< data type pointer
+	typedef typename ecuda::reference<T>::pointer_type pointer; //!< data type pointer
 	typedef T& reference; //!< data type reference
 	typedef std::size_t size_type; //!< size type for pointer arithmetic and reference counting
 	typedef std::ptrdiff_t difference_type; //!< signed integer type of the result of subtracting two pointers
@@ -73,19 +76,14 @@ private:
 
 public:
 
-	// NOTE: stride*sizeof(T) must be exact multiple of padded_ptr.get_width()
-	template<typename T2,typename PointerType2,std::size_t PaddingUnitBytes>
-	HOST DEVICE striding_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& p, const size_type stride = 1 ) :
-		ptr(p.get()),
-		stride( stride*sizeof(T)+p.get_pitch()*stride/p.get_width() )
-	{
-	}
+	HOST DEVICE striding_ptr( pointer ptr, const size_type stride = 1 ) : ptr(ptr), stride(stride*sizeof(T)) {}
 
-//	HOST DEVICE striding_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(p), stride(stride*sizeof(T)) {}
-	HOST DEVICE striding_ptr( const striding_ptr<T,PointerType>& src ) : ptr(src.ptr), stride(src.stride) {}
-	//template<typename U,std::size_t StrideBytes2>
-	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
-	HOST DEVICE ~striding_ptr() {}
+	template<typename U>
+	HOST DEVICE striding_ptr( const pitched_ptr<U>& pptr, const size_type stride = 1 ) : ptr(pptr.get()), stride(stride*sizeof(T)+pptr.get_pitch()) {}
+
+	HOST DEVICE striding_ptr( const striding_ptr& src ) : ptr(src.ptr), stride(src.stride) {}
+
+	//HOST DEVICE ~striding_ptr() {}
 
 	HOST DEVICE inline size_type get_stride() const { return stride; }
 
@@ -101,11 +99,10 @@ public:
 	/// (T*)(*this)
 	/// \endcode
 	///
-	HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
+	//HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
 
 	HOST DEVICE inline striding_ptr& operator++() {
-		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)+stride );
-		//ptr += stride;
+		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<pointer>::type>(ptr)+stride );
 		return *this;
 	}
 	HOST DEVICE inline striding_ptr operator++( int ) {
@@ -116,7 +113,6 @@ public:
 
 	HOST DEVICE inline striding_ptr& operator--() {
 		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)-stride );
-		//ptr -= stride;
 		return *this;
 	}
 	HOST DEVICE inline striding_ptr operator--( int ) {
@@ -127,12 +123,10 @@ public:
 
 	HOST DEVICE inline striding_ptr& operator+=( const int strides ) {
 		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)+stride*strides );
-		//ptr += stride*strides;
 		return *this;
 	}
 	HOST DEVICE inline striding_ptr& operator-=( const int strides ) {
 		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)-stride*strides );
-		//ptr -= stride*strides;
 		return *this;
 	}
 
@@ -152,25 +146,20 @@ public:
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }
 
-	HOST DEVICE inline bool operator==( const striding_ptr<T,PointerType>& other ) const { return ptr == other.ptr; }
-	HOST DEVICE inline bool operator!=( const striding_ptr<T,PointerType>& other ) const { return ptr != other.ptr; }
-	HOST DEVICE inline bool operator< ( const striding_ptr<T,PointerType>& other ) const { return ptr <  other.ptr; }
-	HOST DEVICE inline bool operator> ( const striding_ptr<T,PointerType>& other ) const { return ptr >  other.ptr; }
-	HOST DEVICE inline bool operator<=( const striding_ptr<T,PointerType>& other ) const { return ptr <= other.ptr; }
-	HOST DEVICE inline bool operator>=( const striding_ptr<T,PointerType>& other ) const { return ptr >= other.ptr; }
+	HOST DEVICE inline bool operator==( const striding_ptr& other ) const { return ptr == other.ptr; }
+	HOST DEVICE inline bool operator!=( const striding_ptr& other ) const { return ptr != other.ptr; }
+	HOST DEVICE inline bool operator< ( const striding_ptr& other ) const { return ptr <  other.ptr; }
+	HOST DEVICE inline bool operator> ( const striding_ptr& other ) const { return ptr >  other.ptr; }
+	HOST DEVICE inline bool operator<=( const striding_ptr& other ) const { return ptr <= other.ptr; }
+	HOST DEVICE inline bool operator>=( const striding_ptr& other ) const { return ptr >= other.ptr; }
 
-	HOST DEVICE striding_ptr& operator=( const striding_ptr<T,PointerType>& other ) {
+	HOST DEVICE striding_ptr& operator=( const striding_ptr& other ) {
 		ptr = other.ptr;
 		stride = other.stride;
 		return *this;
 	}
 
-	HOST DEVICE striding_ptr& operator=( PointerType& pt ) {
-		ptr = pt;
-		return *this;
-	}
-
-	HOST DEVICE striding_ptr& operator=( T* p ) {
+	HOST DEVICE striding_ptr& operator=( pointer p ) {
 		ptr = p;
 		return *this;
 	}
