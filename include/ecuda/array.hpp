@@ -30,7 +30,7 @@ either expressed or implied, of the FreeBSD Project.
 //----------------------------------------------------------------------------
 // array.hpp
 //
-// An STL-like fixed-sized array that resides in video memory.
+// An STL-like structure that resides in video memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -41,14 +41,18 @@ either expressed or implied, of the FreeBSD Project.
 
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
+#include <vector>
 #ifdef __CPP11_SUPPORTED__
+#include <array>
 #include <initializer_list>
 #endif
 
 #include "global.hpp"
 #include "allocators.hpp"
+#include "apiwrappers.hpp"
+#include "iterators.hpp"
 #include "device_ptr.hpp"
-#include "models.hpp"
 
 namespace ecuda {
 
@@ -63,42 +67,34 @@ namespace ecuda {
 /// are host only, operations to access the values of specific elements
 /// are device only, and general information can be accessed by both.
 ///
-/// \todo This is currently implemented as a subclass of the __device_sequence
-///       model, which means the array is essentially a fixed-size "vector", and
-///       doesn't take advantage of the fact that the template parameter N doesn't
-///       actually need to be stored as a variable at run-time (the backing
-///       __device_sequence model does store a copy of the value).  In a future
-///       version this will be taken advantage of.
-///
-///
 template<typename T,std::size_t N>
-class array : private __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> {
+class array {
+
+public:
+	typedef T value_type; //!< cell data type
+	typedef std::size_t size_type; //!< unsigned integral type
+	typedef std::ptrdiff_t difference_type; //!< signed integral type
+	typedef value_type& reference; //!< cell reference type
+	typedef const value_type& const_reference; //!< cell const reference type
+	typedef value_type* pointer; //!< cell pointer type
+	typedef const value_type* const_pointer; //!< cell const pointer type
+
+	typedef device_iterator<value_type,pointer> iterator; //!< iterator type
+	typedef device_iterator<const value_type,const_pointer> const_iterator; //!< const iterator type
+	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
 
 private:
-	typedef __device_sequence<T,device_ptr<T>,__dimension_contiguous_tag,__container_type_base_tag> base_container_type; //!< shortcut typedef to make invokations to the base class more terse
-
-public:
-	typedef typename base_container_type::value_type value_type; //!< element data type
-	typedef typename base_container_type::size_type size_type; //!< unsigned integral type
-	typedef typename base_container_type::difference_type difference_type; //!< signed integral type
-	typedef typename base_container_type::reference reference; //!< element reference type
-	typedef typename base_container_type::const_reference const_reference; //!< element const reference type
-	typedef typename base_container_type::pointer pointer; //!< element pointer type
-	typedef const typename base_container_type::pointer const_pointer; //!< element const pointer type
-
-	typedef typename base_container_type::iterator iterator; //!< iterator type
-	typedef typename base_container_type::const_iterator const_iterator; //!< const iterator type
-	typedef typename base_container_type::reverse_iterator reverse_iterator; //!< reverse iterator type
-	typedef typename base_container_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 
 public:
 	///
-	/// \brief Constructs a fixed-size array with N elements.
+	/// \brief Constructs a fixed-size array with N elements. Each element is a copy of value.
+	/// \param value Value to fill the container with.
 	///
-	/// Each element is a default initialization of the template parameter T's type.
-	///
-	HOST array() : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
-		fill( T() );
+	HOST array( const T& value = T() ) {
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		fill( value );
 	}
 
 	///
@@ -108,13 +104,18 @@ public:
 	/// the length of the sequence is less than N, the sequence is repeated from the start until all
 	/// N elements are assigned a value.
 	///
-	/// \param first,last Iterators to the initial and final positions in a range.  The range
-	///                   used is [first,last).
+	/// \param begin, end Input iterators to the initial and final positions in a range.  The range
+	///                   used is [begin,end).
 	///
-	template<class Iterator>
-	HOST array( Iterator first, Iterator last ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
-		fill( value_type() );
-		base_container_type::copy_range_from( first, last, begin() );
+	template<class InputIterator>
+	HOST array( InputIterator begin, InputIterator end ) {
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		std::vector< value_type, host_allocator<value_type> > v( N );
+		typename std::vector<value_type>::size_type index = 0;
+		while( index < N ) {
+			for( InputIterator current = begin; current != end and index < N; ++current, ++index ) v[index] = *current;
+		}
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -130,9 +131,10 @@ public:
 	/// \param il An initializer_list object. These objects are automatically constructed from initializer list
 	////          declarators.
 	///
-	HOST array( std::initializer_list<T> il ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
-		fill( value_type() );
-		base_container_type::copy_range_from( il.begin(), il.end(), begin() );
+	HOST array( std::initializer_list<T> il ) {
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		std::vector< value_type, host_allocator<value_type> > v( il );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), N, cudaMemcpyHostToDevice ) );
 	}
 	#endif
 
@@ -142,23 +144,18 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container.  This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the iterator-based constructor. For example:
+	/// of the container is required in host code, use the assignment operator. For example:
 	///
 	/// \code{.cpp}
 	/// ecuda::array<int,10> arr( 3 ); // fill array with 3s
 	/// ecuda::array<int,10> newArr( arr ); // shallow copy
-	/// ecuda::array<int,10> newArr( arr.begin(), arr.end() ); // deep copy
+	/// ecuda::array<int,10> newArr; newArr = arr; // deep copy
 	/// \endcode
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST DEVICE array( const array& src ) : base_container_type(src) {}
-
-/*
- * Deprecating this because it causes unnecessary confusion with the behavior of the default
- * copy ctor.  The default ctor makes a shallow copy, while supplying an array with a different
- * number of elements triggers a deep copy, which is silly.
- *
+	HOST DEVICE array( const array& src ) : deviceMemory(src.deviceMemory) {}
+	
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
 	///
@@ -170,10 +167,10 @@ public:
 	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
 	///
 	template<std::size_t N2>
-	HOST array( const array<T,N2>& src ) : base_container_type( device_ptr<T,T*>(device_allocator<value_type>().allocate(N)), N ) {
-		base_container_type::copy_range_from( src.begin(), src.begin()+(std::min(N,N2)), begin() );
+	HOST array( const array<T,N2>& src ) {
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 	}
-*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -183,7 +180,7 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST array( array<T,N>&& src ) : base_container_type(std::move(src)) {}
+	HOST array( array<T,N>&& src ) : deviceMemory(std::move(src.deviceMemory)) {}
 	#endif
 
 	/*
@@ -199,7 +196,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( size_type index ) { return base_container_type::operator[]( index ); }
+	DEVICE inline reference operator[]( size_type index ) { return *(deviceMemory.get()+index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -207,7 +204,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( size_type index ) const { return base_container_type::operator[]( index ); }
+	DEVICE inline const_reference operator[]( size_type index ) const { return *(deviceMemory.get()+index); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -216,7 +213,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline reference front() { return base_container_type::operator[](0); }
+	DEVICE inline reference front() { return *deviceMemory; }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -225,7 +222,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline reference back() { return base_container_type::operator[](size()-1); }
+	DEVICE inline reference back() { return operator[]( size()-1 ); }
 	///
 	/// \brief Returns a reference to the first element in the container.
 	///
@@ -233,7 +230,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline const_reference front() const { return base_container_type::operator[](0); }
+	DEVICE inline const_reference front() const { return *deviceMemory; }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -242,7 +239,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline const_reference back() const { return base_container_type::operator[](size()-1); }
+	DEVICE inline const_reference back() const { return operator[]( size()-1 ); }
 
 	///
 	/// \brief Checks if the container has no elements.
@@ -274,7 +271,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() { return base_container_type::data(); }
+	HOST DEVICE inline pointer data() { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -284,7 +281,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const { return base_container_type::data(); }
+	HOST DEVICE inline const_pointer data() const { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -293,7 +290,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() { return base_container_type::begin(); }
+	HOST DEVICE inline iterator begin() { return iterator(deviceMemory.get()); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -302,7 +299,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() { return base_container_type::end(); }
+	HOST DEVICE inline iterator end() { return iterator(deviceMemory.get()+size()); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -310,7 +307,7 @@ public:
 	/// If the container is empty, the returned iterator will be equal to end().
 	///
 	/// \returns Iterator to the first element.
-	HOST DEVICE inline const_iterator begin() const { return base_container_type::begin(); }
+	HOST DEVICE inline const_iterator begin() const { return const_iterator(deviceMemory.get()); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -319,7 +316,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const { return base_container_type::end(); }
+	HOST DEVICE inline const_iterator end() const { return const_iterator(deviceMemory.get()+size()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -328,7 +325,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() { return base_container_type::rbegin(); }
+	HOST DEVICE inline reverse_iterator rbegin() { return reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -338,7 +335,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() { return base_container_type::rend(); }
+	HOST DEVICE inline reverse_iterator rend() { return reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -347,7 +344,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const { return base_container_type::rbegin(); }
+	HOST DEVICE inline const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -357,14 +354,21 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const { return base_container_type::rend(); }
+	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
 	///
 	/// \brief Assigns a given value to all elements in the container.
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE inline void fill( const value_type& value ) { base_container_type::fill( value ); }
+	HOST DEVICE void fill( const value_type& value ) {
+		#ifdef __CUDA_ARCH__
+		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
+		#else
+		std::vector< value_type, host_allocator<value_type> > v( size(), value );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), size(), cudaMemcpyHostToDevice ) );
+		#endif
+	}
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -373,7 +377,18 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE inline void swap( array<T,N>& other ) { base_container_type::swap( other ); }
+	HOST DEVICE void swap( array<T,N>& other ) {
+		#ifdef __CUDA_ARCH__
+		iterator iter1 = begin();
+		iterator iter2 = other.begin();
+		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
+		#else
+		std::vector< value_type, host_allocator<value_type> > host1; operator>>( host1 );
+		std::vector< value_type, host_allocator<value_type> > host2; other.operator>>( host2 );
+		operator<<( host2 );
+		other.operator<<( host1 );
+		#endif
+	}
 
 	///
 	/// \brief Checks if the contents of two arrays are equal.
@@ -384,7 +399,23 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	HOST DEVICE bool operator==( const array<T,N>& other ) const { return base_container_type::operator==( other ); }
+	HOST DEVICE bool operator==( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
+		const_iterator iter1 = begin();
+		const_iterator iter2 = other.begin();
+		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
+		return true;
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 == arr2;
+		#endif
+	}
 
 	///
 	/// \brief Checks if the contents of two arrays are not equal.
@@ -395,7 +426,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are not equal, false otherwise
 	///
-	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return base_container_type::operator!=( other ); }
+	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -403,7 +434,20 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<( const array<T,N>& other ) const { return base_container_type::operator<( other ); }
+	HOST DEVICE inline bool operator<( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 < arr2;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -411,7 +455,20 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>( const array<T,N>& other ) const { return base_container_type::operator>( other ); }
+	HOST DEVICE inline bool operator>( const array<T,N>& other ) const {
+		#ifdef __CUDA_ARCH__
+		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
+		#else
+		#ifdef __CPP11_SUPPORTED__
+		std::array<T,N> arr1, arr2;
+		#else
+		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		#endif
+		operator>>( arr1 );
+		other.operator>>( arr2 );
+		return arr1 > arr2;
+		#endif
+	}
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -419,7 +476,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return base_container_type::operator<=( other ); }
+	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -427,75 +484,79 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return base_container_type::operator>=( other ); }
+	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
 	///
-	/// \brief Copies the contents of this device array to another container.
+	/// \brief Copies the contents of this device array to a host STL vector.
 	///
-	/// This method is designed to be as flexible as possible so that any container
-	/// that has the standard begin() and end() methods implemented should work.
-	///
-	/// The underlying architecture attempts to identify if the target container
-	/// is in contiguous memory or not, or if the target is another ecuda device-bound
-	/// container and decides at compile-time how the transfer should be optimally
-	/// performed.
-	///
-	/// The method will attempt to assign all elements to the target container.
-	/// It is the responsibility of the caller to make sure there is enough
-	/// space allocated to hold them.  Failure to do so will result in undefined
-	/// behaviour.
-	///
-	template<class Container>
-	HOST const array<T,N>& operator>>( Container& container ) const {
-		base_container_type::operator>>( container );
+	template<class Alloc>
+	HOST const array<T,N>& operator>>( std::vector<value_type,Alloc>& vector ) const {
+		vector.resize( N );
+		CUDA_CALL( cudaMemcpy<value_type>( &vector.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
 		return *this;
 	}
 
 	///
-	/// \brief Copies the contents of another container into this device array.
+	/// \brief Copies the contents of a host STL vector to this device array.
 	///
-	/// This method is designed to be as flexible as possible so that any container
-	/// that has the standard begin() and end() methods implemented should work.
+	/// \param vector std::vector to copy the contents from
+	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
-	/// The underlying architecture attempts to identify if the source container
-	/// is in contiguous memory or not, or if the target is another ecuda device-bound
-	/// container and decides at compile-time how the transfer should be optimally
-	/// performed.
-	///
-	/// Note that the number of elements in the other container do not have to match
-	/// the size of this array.  If there are too few elements, the array will only
-	/// be partially filled, if there are too many elements only as many elements as
-	/// needed to fill this array will be used.
-	///
-	template<class Container>
-	HOST array<T,N>& operator<<( const Container& container ) {
-		base_container_type::operator<<( container );
+	template<class Alloc>
+	HOST array<T,N>& operator<<( std::vector<value_type,Alloc>& vector ) {
+		if( size() < vector.size() ) throw std::length_error( "ecuda::array is not large enough to fit contents of provided std::vector" );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &vector.front(), vector.size(), cudaMemcpyHostToDevice ) );
 		return *this;
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Copies the contents of this device array to a host STL array.
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
+	HOST const array<T,N>& operator>>( std::array<value_type,N>& arr ) const {
+		CUDA_CALL( cudaMemcpy<value_type>( &arr.front(), deviceMemory.get(), N, cudaMemcpyDeviceToHost ) );
+		return *this;
+	}
+	#endif
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Copies the contents of a host STL array to this device array.
+	///
+	/// This operator is only available if the compiler is configured to allow C++11.
+	///
+	HOST array<T,N>& operator<<( std::array<value_type,N>& arr ) {
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &arr.front(), N, cudaMemcpyHostToDevice ) );
+		return *this;
+	}
+	#endif
 
 	///
 	/// \brief Assignment operator.
 	///
-	/// Note that assignment performs a shallow copy of the container, like the
-	/// copy constructor.  Thus:
+	/// Copies the contents of other into this container.
 	///
-	/// \code{.cpp}
-	/// ecuda::array<int,10> arr1;
-	/// // ... initialize contents of arr1
-	/// ecuda::array<int,10> arr2 = arr1; // modifying arr2 also modifies arr1
-	/// \endcode
-	///
-	/// If a deep copy is required in hose code, use the iterator-based constructor:
-	///
-	/// \code{.cpp}
-	/// ecuda::array<int,10> arr2( arr1.begin(), arr1.end() );
-	/// \endcode
+	/// Note that the behaviour differs depending on whether the assignment occurs on the
+	/// host or the device. If called from the host, a deep copy is performed: additional
+	/// memory is allocated in this container and the contents of other are copied there.
+	/// If called from the device, a shallow copy is performed: the pointer to the device
+	/// memory is copied only.  Therefore any changes made to this container are reflected
+	/// in other as well, and vice versa.
 	///
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
-	HOST DEVICE inline array<T,N>& operator=( const array<T,N>& other ) {
-		base_container_type::operator=( other );
+	HOST DEVICE array<T,N>& operator=( const array<T,N>& other ) {
+		#ifdef __CUDA_ARCH__
+		// shallow copy if called from device
+		deviceMemory = other.deviceMemory;
+		#else
+		// deep copy if called from host
+		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
+		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), N, cudaMemcpyDeviceToDevice ) );
+		#endif
 		return *this;
 	}
 

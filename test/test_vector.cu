@@ -11,15 +11,15 @@ void kernel_checkVectorProperties(
 	ecuda::vector<T> vector,
 	ecuda::vector<T> empties,
 	ecuda::vector<typename ecuda::vector<T>::size_type> sizes,
-	ecuda::vector<typename ecuda::vector<T>::pointer> pointers//,
-//	ecuda::vector<typename ecuda::vector<T>::const_pointer> constPointers
+	ecuda::vector<typename ecuda::vector<T>::pointer> pointers,
+	ecuda::vector<typename ecuda::vector<T>::const_pointer> constPointers
 )
 {
 	const int threadNumber = threadIdx.x;
 	empties[threadNumber] = constVector.empty() ? 1 : 0;
 	sizes[threadNumber] = constVector.size();
 	pointers[threadNumber] = vector.data();
-	//constPointers[threadNumber] = constVector.data();
+	constPointers[threadNumber] = constVector.data();
 }
 
 template<typename T> __global__
@@ -145,37 +145,16 @@ int main( int argc, char* argv[] ) {
 			if( deviceVector.size() != 100 ) passed = false;
 			if( deviceVector.empty() ) passed = false;
 			if( !deviceVector.data() ) passed = false;
-			std::vector<int> hostVector( deviceVector.size() );
+			std::vector<int> hostVector;
 			deviceVector >> hostVector;
 			if( hostVector.size() != 100 ) passed = false;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
 		}
-		/*
-		{
-			// grow test
-			std::vector<int> hostVector( 10 );
-			for( unsigned i = 0; i < 10; ++i ) hostVector[i] = i;
-			ecuda::vector<int> deviceVector( hostVector.begin(), hostVector.end() );
-			hostVector.clear();
-			hostVector.resize( 10 );
-			deviceVector >> hostVector;
-			std::cerr << "size=" << deviceVector.size() << std::endl;
-			std::cerr << "capacity=" << deviceVector.capacity() << std::endl;
-			deviceVector.resize( deviceVector.capacity()+1 );
-			deviceVector.shrink_to_fit();
-			std::cerr << "size=" << deviceVector.size() << std::endl;
-			std::cerr << "capacity=" << deviceVector.capacity() << std::endl;
-			std::vector<int> hostVector2( deviceVector.size() );
-			deviceVector >> hostVector2;
-			std::cerr << "ORIGINAL"; for( unsigned i = 0; i < hostVector.size(); ++i ) std::cerr << " " << hostVector[i]; std::cerr << std::endl;
-			std::cerr << "GROWN   "; for( unsigned i = 0; i < hostVector2.size(); ++i ) std::cerr << " " << hostVector2[i]; std::cerr << std::endl;
-		}
-		*/
 		ecuda::vector<int> deviceVector( 100, 3 );
 		if( deviceVector.size() != 100 ) passed = false;
 		if( deviceVector.empty() ) passed = false;
 		if( !deviceVector.data() ) passed = false;
-		std::vector<int> hostVector( deviceVector.size() );
+		std::vector<int> hostVector;
 		deviceVector >> hostVector;
 		if( hostVector.size() != 100 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
@@ -193,23 +172,23 @@ int main( int argc, char* argv[] ) {
 		ecuda::vector<int> deviceEmpties( 100, -1 );
 		ecuda::vector<ecuda::vector<int>::size_type> deviceSizes( 100 );
 		ecuda::vector<ecuda::vector<int>::pointer> devicePointers( 100 );
-		//ecuda::vector<ecuda::vector<int>::const_pointer> deviceConstPointers( 100 );
-		kernel_checkVectorProperties<<<1,100>>>( deviceVector, deviceVector, deviceEmpties, deviceSizes, devicePointers ); //, deviceConstPointers );
+		ecuda::vector<ecuda::vector<int>::const_pointer> deviceConstPointers( 100 );
+		kernel_checkVectorProperties<<<1,100>>>( deviceVector, deviceVector, deviceEmpties, deviceSizes, devicePointers, deviceConstPointers );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 		std::vector<int> hostEmpties( 100, -1 );
 		std::vector<ecuda::vector<int>::size_type> hostSizes( 100 );
 		std::vector<ecuda::vector<int>::pointer> hostPointers( 100 );
-		//std::vector<ecuda::vector<int>::const_pointer> hostConstPointers( 100 );
+		std::vector<ecuda::vector<int>::const_pointer> hostConstPointers( 100 );
 		deviceEmpties >> hostEmpties;
 		deviceSizes >> hostSizes;
 		devicePointers >> hostPointers;
-		//deviceConstPointers >> hostConstPointers;
+		deviceConstPointers >> hostConstPointers;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostEmpties.size(); ++i ) if( hostEmpties[i] != 0 ) passed = false;
 		for( std::vector<ecuda::vector<int>::size_type>::size_type i = 0; i < hostSizes.size(); ++i ) if( hostSizes[i] != 100 ) passed = false;
 		for( std::vector<ecuda::vector<int>::pointer>::size_type i = 0; i < hostPointers.size(); ++i ) if( hostPointers[i] != deviceVector.data() ) passed = false;
-		//for( std::vector<ecuda::vector<int>::const_pointer>::size_type i = 0; i < hostConstPointers.size(); ++i ) if( hostConstPointers[i] != deviceVector.data() ) passed = false;
+		for( std::vector<ecuda::vector<int>::const_pointer>::size_type i = 0; i < hostConstPointers.size(); ++i ) if( hostConstPointers[i] != deviceVector.data() ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
@@ -251,7 +230,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 
 		bool passed = true;
-		std::vector<int> hostResults( destDeviceVector.size() );
+		std::vector<int> hostResults;
 
 		destDeviceVector >> hostResults;
 		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != i ) passed = false;
@@ -360,8 +339,8 @@ int main( int argc, char* argv[] ) {
 		ecuda::vector<int> deviceVector1( 100, 3 );
 		ecuda::vector<int> deviceVector2( 100, 5 );
 		deviceVector1.swap( deviceVector2 );
-		std::vector<int> hostVector1( deviceVector1.size() ); deviceVector1 >> hostVector1;
-		std::vector<int> hostVector2( deviceVector2.size() ); deviceVector2 >> hostVector2;
+		std::vector<int> hostVector1; deviceVector1 >> hostVector1;
+		std::vector<int> hostVector2; deviceVector2 >> hostVector2;
 		bool passed = true;
 		if( hostVector1.size() != 100 ) passed = false;
 		if( hostVector2.size() != 100 ) passed = false;
@@ -388,7 +367,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 		//std::vector<int> hostVector1; deviceVector1 >> hostVector1;
 		//std::vector<int> hostVector2; deviceVector2 >> hostVector2;
-		std::vector<int> hostArray( deviceArray.size() );
+		std::vector<int> hostArray;
 		deviceArray >> hostArray;
 		//bool passed = true;
 		const bool passed = hostArray.size() == 2 and hostArray.front() == 1 and hostArray.back() == 1;
@@ -439,7 +418,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		std::vector<int> hostResults( deviceResults.size() );
+		std::vector<int> hostResults;
 		deviceResults >> hostResults;
 		bool passed = true;
 		for( std::vector<bool>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 1 ) passed = false;

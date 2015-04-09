@@ -30,26 +30,7 @@ either expressed or implied, of the FreeBSD Project.
 //----------------------------------------------------------------------------
 // apiwrappers.hpp
 //
-// Wrappers around CUDA API functions.  These low-level calls are more consistent
-// with C++ semantics and automatically deal with type sizes.
-//
-// e.g.
-// unsigned n; // number of elements in each array of device memory
-// std::vector<double> src( n );
-// // ... do something to initialize src
-// double *dest; // some previously allocated device memory
-//
-// cudaMemcpy(
-//   reinterpret_cast<void*>(dest),
-//   reinterpret_cast<void*>(&src.front()),
-//   sizeof(double)*n,
-//   cudaMemcpyHostToDevice
-// );
-//
-// becomes:
-//
-// cudaMemcpy<double>( dest, src, n, cudaMemcpyHostToDevice );
-//
+// Wrappers around CUDA API functions.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------

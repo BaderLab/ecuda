@@ -45,6 +45,22 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
+
+///
+/// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.
+/// Since we don't know if the pointer provided to padded_ptr is const or not, whether to
+/// convert to const char* or char* is not implicit.
+///
+/// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
+///       this is a less elegant method that works with C98 and later.
+///
+template<typename T> struct cast_to_char;
+template<typename T> struct cast_to_char<T*> { typedef char* type; };
+template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
+
+/// \endcond
+
 ///
 /// \brief A specialized pointer to memory with padding after a fixed-size sequence of data.
 ///
@@ -60,23 +76,19 @@ public:
 
 private:
 	pointer ptr; //!< underlying pointer
-	const size_type padding; // padding memory width in bytes
-	const size_type width; // width of grid in elements
-	size_type current_position; // position of pointer in the grid
+	const size_type data_length; //!< contiguous elements of data before pad, expressed in units of element_type
+	const size_type padding_length;  //!< contiguous elements of padding after data, expressed in PaddingUnitBytes
+	size_type distance_to_padding; //!< distance of current pointer from the padding, expressed in units of element_type
 
-//	const size_type data_length; //!< contiguous elements of data before pad, expressed in units of element_type
-//	const size_type padding_length;  //!< contiguous elements of padding after data, expressed in bytes
-//	size_type distance_to_padding; //!< distance of current pointer from the padding, expressed in units of element_type
-/*
 private:
 	///
 	/// Move the pointer ahead padding_length bytes, regardless of
 	/// the sizeof the managed pointer.
 	///
-	HOST DEVICE inline void jump_forward_pad_length() {
+	HOST DEVICE void jump_forward_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-		char_ptr += padding_length; //*PaddingUnitBytes;
+		char_ptr += padding_length*PaddingUnitBytes;
 		ptr = reinterpret_cast<T*>(char_ptr);
 	}
 
@@ -84,10 +96,10 @@ private:
 	/// Move the pointer back padding_length bytes, regardless of
 	/// the sizeof the managed pointer.
 	///
-	HOST DEVICE inline void jump_backwards_pad_length() {
+	HOST DEVICE void jump_backwards_pad_length() {
 		T* p = static_cast<T*>(ptr);
 		typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-		char_ptr -= padding_length; //*PaddingUnitBytes;
+		char_ptr -= padding_length*PaddingUnitBytes;
 		ptr = reinterpret_cast<T*>(char_ptr);
 	}
 
@@ -99,7 +111,6 @@ private:
 		T* p = static_cast<T*>(ptr);
 		return reinterpret_cast<typename cast_to_char<T*>::type>(p);
 	}
-*/
 
 public:
 	///
@@ -117,22 +128,21 @@ public:
 	/// \param pointer_position the index of the pointer within the current data block
 	///
 	///
-	HOST DEVICE padded_ptr( pointer p, const size_type pitch, const size_type width, const size_type current_position = 0 ) :
+	HOST DEVICE padded_ptr( pointer p = pointer(), const size_type data_length = 1, const size_type padding_length = 0, const size_type pointer_position = 0 ) :
 		ptr(p),
-		padding( (pitch*PaddingUnitBytes-width*sizeof(element_type))/PaddingUnitBytes ),
-		width(width),
-		current_position(current_position)
+		data_length(data_length),
+		padding_length(padding_length),
+		distance_to_padding(data_length-pointer_position)
 	{
 	}
 
 	///
 	/// \brief Copy constructor.
 	///
-	HOST DEVICE padded_ptr( const padded_ptr& src ) : ptr(src.ptr), padding(src.padding), width(src.width), current_position(src.current_position) {}
+	HOST DEVICE padded_ptr( const padded_ptr<T,PointerType,PaddingUnitBytes>& src ) : ptr(src.ptr), data_length(src.data_length), padding_length(src.padding_length), distance_to_padding(src.distance_to_padding) {}
 
 	template<typename T2,typename PointerType2>
-	HOST DEVICE padded_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& src ) : ptr(src.get()), padding(src.get_padding()), width(src.get_width()), current_position(src.get_current_position()) {}
-
+	HOST DEVICE padded_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& src ) :	ptr(src.get()),	data_length(src.get_data_length()), padding_length(src.get_padding_length()), distance_to_padding(src.get_distance_to_padding()) {}
 
 	/*
 	///
@@ -141,27 +151,39 @@ public:
 	HOST DEVICE ~padded_ptr() {}
 	*/
 
-	HOST DEVICE inline size_type get_pitch() const { return sizeof(element_type)*width+padding; }
-	HOST DEVICE inline size_type get_padding() const { return padding; }
-	HOST DEVICE inline size_type get_width() const { return width; }
-	HOST DEVICE inline size_type get_current_position() const { return current_position; }
-	HOST DEVICE inline __CONSTEXPR__ size_type get_pitch_units() const { return PaddingUnitBytes; }
+	///
+	/// \brief Gets the size of the contiguous data block in units of sizeof(T).
+	///
+	HOST DEVICE inline size_type get_data_length() const { return data_length; }
+
+	///
+	/// \brief Gets the the size of the contiguous padding block in units of size PaddingUnitBytes.
+	///
+	HOST DEVICE inline size_type get_padding_length() const { return padding_length; }
+
+	///
+	/// \brief Gets the size in bytes of the padding unit.
+	///
+	HOST DEVICE inline __CONSTEXPR__ size_type get_pad_length_units() const { return PaddingUnitBytes; }
+
+	///
+	/// \brief Gets the distance in units of sizeof(T) of the current pointer position from the next padding region.
+	///
+	HOST DEVICE inline size_type get_distance_to_padding() const { return distance_to_padding; }
+
 
 	HOST DEVICE inline pointer get() const { return ptr; }
 
-	HOST DEVICE inline operator bool() const { return ptr != pointer(); } //nullptr; }
+	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
 
 	HOST DEVICE inline operator pointer() const { return ptr; }
 
 	HOST DEVICE inline padded_ptr& operator++() {
 		++ptr;
-		++current_position;
-		if( current_position == width ) {
-			T* p = static_cast<T*>(ptr);
-			typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-			char_ptr += padding;
-			ptr = reinterpret_cast<T*>(char_ptr);
-			current_position = 0;
+		--distance_to_padding;
+		if( !distance_to_padding ) {
+			jump_forward_pad_length();
+			distance_to_padding = data_length;
 		}
 		return *this;
 	}
@@ -172,14 +194,12 @@ public:
 	}
 
 	HOST DEVICE inline padded_ptr& operator--() {
-		--ptr;
-		if( current_position == 0 ) {
-			T* p = static_cast<T*>(ptr);
-			typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-			char_ptr -= padding;
-			ptr = reinterpret_cast<T*>(char_ptr);
-			current_position = width-1;
+		if( distance_to_padding == data_length ) {
+			jump_backwards_pad_length();
+			distance_to_padding = 0;
 		}
+		--ptr;
+		++distance_to_padding;
 		return *this;
 	}
 	HOST DEVICE inline padded_ptr operator--( int ) {
@@ -189,27 +209,29 @@ public:
 	}
 
 	HOST DEVICE padded_ptr& operator+=( int units ) {
-		if( (current_position+units) >= width ) {
-			T* p = static_cast<T*>(ptr);
-			typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-			char_ptr += units/width*padding;
-			ptr = reinterpret_cast<T*>(char_ptr);
+		if( units >= distance_to_padding ) {
+			units -= distance_to_padding;
+			ptr += distance_to_padding;
+			jump_forward_pad_length();
+			distance_to_padding = data_length;
+			return operator+=( units );
 		}
-		current_position += units;
-		current_position = current_position % width;
 		ptr += units;
+		distance_to_padding -= units;
 		return *this;
 	}
 
 	HOST DEVICE padded_ptr& operator-=( int units ) {
-		if( units < current_position ) {
-			T* p = static_cast<T*>(ptr);
-			typename cast_to_char<T*>::type char_ptr = reinterpret_cast<typename cast_to_char<T*>::type>(p);
-			char_ptr -= units/width*padding;
-			ptr = reinterpret_cast<T*>(char_ptr);
+		const difference_type distance_from_start = data_length-distance_to_padding;
+		if( units > distance_from_start ) {
+			units -= distance_from_start;
+			ptr -= distance_from_start;
+			jump_backwards_pad_length();
+			distance_to_padding = 0;
+			return operator-=( units );
 		}
-		current_position -= (width-(units % width));
 		ptr -= units;
+		distance_to_padding += units;
 		return *this;
 	}
 
@@ -243,13 +265,11 @@ public:
 	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator<=( const padded_ptr<T,PointerType,PaddingUnitBytes2>& other ) const { return ptr <= other.ptr; }
 	template<std::size_t PaddingUnitBytes2> HOST DEVICE inline bool operator>=( const padded_ptr<T,PointerType,PaddingUnitBytes2>& other ) const { return ptr >= other.ptr; }
 
-	//HOST DEVICE padded_ptr& operator=( const padded_ptr<T,PointerType,PaddingUnitBytes>& other ) {
-	//	ptr = other.ptr;
-		//padding = other.padding;
-		//width = other.width;
-	//	current_position = other.current_position;
-	//	return *this;
-	//}
+	HOST DEVICE padded_ptr& operator=( const padded_ptr<T,PointerType,PaddingUnitBytes>& other ) {
+		ptr = other.ptr;
+		distance_to_padding = other.distance_to_padding;
+		return *this;
+	}
 
 	HOST DEVICE padded_ptr& operator=( PointerType& pt ) {
 		ptr = pt;
@@ -259,17 +279,6 @@ public:
 	HOST DEVICE padded_ptr& operator=( T* p ) {
 		ptr = p;
 		return *this;
-	}
-
-	template<typename U,typename V>
-	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr ) {
-		out << "padded_ptr(current_position=" << ptr.current_position;
-		out << ";width=" << ptr.width;
-		out << ";padding=" << ptr.padding;
-		out << ";units=" << PaddingUnitBytes;
-		out << ";ptr=" << ptr.get();
-		out << ")";
-		return out;
 	}
 
 };

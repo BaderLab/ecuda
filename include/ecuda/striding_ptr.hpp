@@ -41,7 +41,6 @@ either expressed or implied, of the FreeBSD Project.
 #define ECUDA_STRIDING_PTR_HPP
 
 #include "global.hpp"
-#include "padded_ptr.hpp"
 
 namespace ecuda {
 
@@ -51,11 +50,6 @@ namespace ecuda {
 /// Strided memory is a block of contiguous memory where elements are separated by
 /// fixed-length padding.  Thus, one has to "stride" over the padding to reach the
 /// next element.  The term was borrowed from the GNU Scientific Library.
-///
-/// For example, a pointer to memory representing a matrix of with N rows of M columns
-/// can be given to a striding_ptr with the stride set to length M. When the striding_ptr
-/// is incremented, the pointer moves column-wise.  This is useful for creating
-/// flexible, iterable views of a fixed region of memory while minimizing overhead.
 ///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class striding_ptr {
@@ -69,19 +63,10 @@ public:
 
 private:
 	pointer ptr;
-	size_type stride; // stride in bytes
+	size_type stride;
 
 public:
-
-	// NOTE: stride*sizeof(T) must be exact multiple of padded_ptr.get_width()
-	template<typename T2,typename PointerType2,std::size_t PaddingUnitBytes>
-	HOST DEVICE striding_ptr( const padded_ptr<T2,PointerType2,PaddingUnitBytes>& p, const size_type stride = 1 ) :
-		ptr(p.get()),
-		stride( stride*sizeof(T)+p.get_pitch()*stride/p.get_width() )
-	{
-	}
-
-//	HOST DEVICE striding_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(p), stride(stride*sizeof(T)) {}
+	HOST DEVICE striding_ptr( pointer p = pointer(), const size_type stride = 1 ) : ptr(p), stride(stride) {}
 	HOST DEVICE striding_ptr( const striding_ptr<T,PointerType>& src ) : ptr(src.ptr), stride(src.stride) {}
 	//template<typename U,std::size_t StrideBytes2>
 	//strided_ptr( const strided_ptr<U,StrideBytes2>& src ) : ptr(src.ptr), stride(src.stride) {}
@@ -103,38 +88,22 @@ public:
 	///
 	HOST DEVICE inline operator typename ecuda::reference<element_type>::pointer_type() const { return ptr; }
 
-	HOST DEVICE inline striding_ptr& operator++() {
-		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)+stride );
-		//ptr += stride;
-		return *this;
-	}
+	HOST DEVICE inline striding_ptr& operator++() { ptr += stride; return *this; }
 	HOST DEVICE inline striding_ptr operator++( int ) {
 		striding_ptr tmp(*this);
 		++(*this);
 		return tmp;
 	}
 
-	HOST DEVICE inline striding_ptr& operator--() {
-		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)-stride );
-		//ptr -= stride;
-		return *this;
-	}
+	HOST DEVICE inline striding_ptr& operator--() { ptr -= stride; return *this; }
 	HOST DEVICE inline striding_ptr operator--( int ) {
 		striding_ptr tmp(*this);
 		--(*this);
 		return tmp;
 	}
 
-	HOST DEVICE inline striding_ptr& operator+=( const int strides ) {
-		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)+stride*strides );
-		//ptr += stride*strides;
-		return *this;
-	}
-	HOST DEVICE inline striding_ptr& operator-=( const int strides ) {
-		ptr = reinterpret_cast<pointer>( reinterpret_cast<typename cast_to_char<T*>::type>(ptr)-stride*strides );
-		//ptr -= stride*strides;
-		return *this;
-	}
+	HOST DEVICE inline striding_ptr& operator+=( const int strides ) { ptr += stride*strides; return *this; }
+	HOST DEVICE inline striding_ptr& operator-=( const int strides ) { ptr -= stride*strides; return *this; }
 
 	HOST DEVICE inline striding_ptr operator+( const int strides ) const {
 		striding_ptr tmp(*this);
@@ -147,7 +116,7 @@ public:
 		return tmp;
 	}
 
-//	HOST DEVICE inline difference_type operator-( const striding_ptr& other ) const { return ptr-other.ptr; }
+	HOST DEVICE inline difference_type operator-( const striding_ptr& other ) const { return ptr-other.ptr; }
 
 	DEVICE inline reference operator*() const { return *get(); }
 	DEVICE inline pointer operator->() const { return get(); }
@@ -173,12 +142,6 @@ public:
 	HOST DEVICE striding_ptr& operator=( T* p ) {
 		ptr = p;
 		return *this;
-	}
-
-	template<typename U,typename V>
-	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const striding_ptr& ptr ) {
-		out << "striding_ptr(stride=" << ptr.stride << ";ptr=" << ptr.get() << ")";
-		return out;
 	}
 
 };

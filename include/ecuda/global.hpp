@@ -38,9 +38,8 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_GLOBAL_HPP
 #define ECUDA_GLOBAL_HPP
 
-#include <sstream>
 #include <stdexcept>
-#include <string>
+#include <sstream>
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
@@ -70,20 +69,11 @@ public:
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 
 ///
-/// String wrapper that adds the source file and line to a given error message.
-///
-#define S(x) #x
-#define S_(x) S(x)
-#define S__LINE__ S_(__LINE__)
-#define EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
-//std::string(__FILE__ ":" S__LINE__)+std::string(" ")+std::string(x)
-
-///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
 /// should be declared after any CUDA API calls that do not return an error code
 /// (e.g. after calling kernel functions).
 ///
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw std::runtime_error(std::string(cudaGetErrorString(error))); } while(0);
 
 #define DEVICE __device__
 #define HOST __host__
@@ -104,27 +94,16 @@ public:
 
 /// \cond DEVELOPER_DOCUMENTATION
 
-
-#ifndef __CPP11_SUPPORTED__
-namespace std {
-	template<typename T> struct remove_const          { typedef T type; };
-	template<typename T> struct remove_const<const T> { typedef T type; };
-} // namespace std
-#else
-#include <type_traits>
-#endif
-
+///
+/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
+/// for implementing the strategy required to make const/non-const iterators.
+/// C++11 type_traits would allow this to be done inline, but nvcc currently
+/// lacks C++11 support. Example:
+///
+///   typedef int* pointer;
+///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
+///
 namespace ecuda {
-
-	///
-	/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
-	/// for implementing the strategy required to make const/non-const iterators.
-	/// C++11 type_traits would allow this to be done inline, but nvcc currently
-	/// lacks C++11 support. Example:
-	///
-	///   typedef int* pointer;
-	///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
-	///
 	template<typename T> struct dereference;
 	template<typename T> struct dereference<T*> { typedef T& type; };
 	template<typename T> struct dereference<T* const> { typedef const T& type; };
@@ -133,19 +112,6 @@ namespace ecuda {
 		typedef T& reference_type;
 		typedef T element_type;
 	};
-
-	///
-	/// Utility struct to convert arbitrary pointer type to char* whilst maintaining constness.
-	/// Since we don't know if the pointer provided to padded_ptr is const or not, whether to
-	/// convert to const char* or char* is not implicit.
-	///
-	/// NOTE: C++11 has cool semantics via type_traits and enable_if that can accomplish this, but
-	///       this is a less elegant method that works with C98 and later.
-	///
-	template<typename T> struct cast_to_char;
-	template<typename T> struct cast_to_char<T*> { typedef char* type; };
-	template<typename T> struct cast_to_char<const T*> { typedef const char* type; };
-
 } // namespace ecuda
 
 /// \endcond
