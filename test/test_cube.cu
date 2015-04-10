@@ -19,7 +19,7 @@ struct coord_t {
 typedef coord_t<double> Coordinate;
 
 typedef unsigned char uint8_t;
-
+/*
 template<typename T,std::size_t U> __global__
 void fetchRow( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row( 2, 3 );
@@ -37,10 +37,11 @@ void fetchDepth( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_depth_type depth = cube.get_depth( 2, 3 );
 	for( typename ecuda::cube<T>::const_depth_type::size_type i = 0; i < depth.size(); ++i ) array[i] = depth[i];
 }
+*/
 
 template<typename T> __global__
-void fetchSliceYZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::/*const_*/slice_yz_type sliceYZ = cube.get_yz( 1 );
+void fetchSliceYZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_yz_type sliceYZ = cube.get_yz( 1 );
 printf( "get_width()=%i\n", sliceYZ.get_width() );
 printf( "get_height()=%i\n", sliceYZ.get_height() );
 	for( unsigned i = 0; i < sliceYZ.get_width(); ++i ) {
@@ -50,9 +51,10 @@ printf( "get_height()=%i\n", sliceYZ.get_height() );
 	}
 }
 
+/*
 template<typename T> __global__
-void fetchSliceXY( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::/*const_*/slice_xy_type sliceXY = cube.get_xy( 3 );
+void fetchSliceXY( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_xy_type sliceXY = cube.get_xy( 3 );
 printf( "get_width()=%i\n", sliceXY.get_width() );
 printf( "get_height()=%i\n", sliceXY.get_height() );
 	for( unsigned i = 0; i < sliceXY.get_width(); ++i ) {
@@ -63,8 +65,8 @@ printf( "get_height()=%i\n", sliceXY.get_height() );
 }
 
 template<typename T> __global__
-void fetchSliceXZ( /*const*/ ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
-	typename ecuda::cube<T>::/*const_*/slice_xz_type sliceXZ = cube.get_xz( 2 );
+void fetchSliceXZ( const ecuda::cube<T> cube, ecuda::matrix<T> matrix ) {
+	typename ecuda::cube<T>::const_slice_xz_type sliceXZ = cube.get_xz( 2 );
 printf( "get_width()=%i\n", sliceXZ.get_width() );
 printf( "get_height()=%i\n", sliceXZ.get_height() );
 	for( unsigned i = 0; i < sliceXZ.get_width(); ++i ) {
@@ -87,6 +89,7 @@ void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 	typename ecuda::cube<T>::const_row_type row = cube.get_row(0,0);
 	for( typename ecuda::cube<T>::const_row_type::const_iterator iter = row.begin(); iter != row.end(); ++iter, ++index ) array[index] = *iter;
 }
+*/
 
 int main( int argc, char* argv[] ) {
 
@@ -109,16 +112,11 @@ int main( int argc, char* argv[] ) {
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 
 	{
-std::cerr << "cp1" << std::endl;
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
-std::cerr << "cp2" << std::endl;
 		std::vector<Coordinate> v( slice.size() );
-std::cerr << "cp3" << std::endl;
 		slice[0].assign( v.begin(), v.end() );
-std::cerr << "cp4" << std::endl;
 	}
-
-std::cerr << "cp5" << std::endl;
+/*
 	{
 		ecuda::array<Coordinate,3> deviceRow;
 		fetchRow<<<1,1>>>( deviceCube, deviceRow );
@@ -154,7 +152,7 @@ std::cerr << "cp5" << std::endl;
 		for( std::vector<Coordinate>::size_type i = 0; i < hostDepth.size(); ++i ) std::cout << hostDepth[i];
 		std::cout << std::endl;
 	}
-
+*/
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 4, 5 );
 		fetchSliceYZ<<<1,1>>>( deviceCube, deviceMatrix );
@@ -170,7 +168,7 @@ std::cerr << "cp5" << std::endl;
 			std::cout << std::endl;
 		}
 	}
-
+/*
 	{
 		ecuda::matrix<Coordinate> deviceMatrix( 3, 4 );
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
@@ -230,7 +228,7 @@ std::cerr << "cp5" << std::endl;
 			std::cout << std::endl;
 		}
 	}
-
+*/
 	return EXIT_SUCCESS;
 
 }

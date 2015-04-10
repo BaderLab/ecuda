@@ -367,8 +367,6 @@ public:
 	typedef typename base_type::column_type column_type;
 	typedef typename base_type::const_column_type const_column_type;
 
-	typedef contiguous_device_iterator<const T> ContiguousDeviceIterator;
-
 public:
 	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
@@ -416,6 +414,33 @@ public:
 	HOST DEVICE inline column_type get_column( size_type columnIndex ) { return base_type::get_column(); }
 	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const { return base_type::get_column(); }
 
+
+private:
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
+		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
+	}
+
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
+
+	// dummy method to trick compiler, since device code will never use a non-device iterator
+	template<class Iterator,class SomeOtherCategory>
+	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
+
+public:
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last ) {
+		#ifdef __CUDA_ARCH__
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		#else
+		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
+		if( len < 0 or len != size() ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given range does not match size of this view" );
+		::ecuda::copy( first, last, begin() );
+		#endif
+	}
+
+	/*
 	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
 		const std::ptrdiff_t n = end-begin;
 		if( n != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
@@ -429,6 +454,7 @@ public:
 		if( v.size() != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
 		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), &v.front(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
 	}
+	*/
 
 	HOST DEVICE void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
