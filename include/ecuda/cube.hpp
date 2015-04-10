@@ -502,6 +502,7 @@ public:
 		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
 		const size_type padding = pitch-number_depths()*sizeof(value_type);
 		return slice_yz_type( np, number_depths(), number_columns(), padding );
+		//return slice_yz_type( np, number_columns(), number_depths(), padding );
 	}
 
 	///
@@ -541,6 +542,7 @@ public:
 		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
 		const size_type padding = pitch-number_depths()*sizeof(value_type);
 		return const_slice_yz_type( np, number_depths(), number_columns(), padding );
+		//return const_slice_yz_type( np, number_columns(), number_depths(), padding );
 	}
 
 	///

@@ -271,15 +271,15 @@ public:
 		return *this;
 	}
 
-	HOST DEVICE padded_ptr& operator=( PointerType& pt ) {
-		ptr = pt;
-		return *this;
-	}
+//	HOST DEVICE padded_ptr& operator=( PointerType& pt ) {
+//		ptr = pt;
+//		return *this;
+//	}
 
-	HOST DEVICE padded_ptr& operator=( T* p ) {
-		ptr = p;
-		return *this;
-	}
+//	HOST DEVICE padded_ptr& operator=( T* p ) {
+//		ptr = p;
+//		return *this;
+//	}
 
 };
 

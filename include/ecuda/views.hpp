@@ -247,6 +247,7 @@ private:
 
 public:
 	typedef typename base_type::value_type value_type; //!< element data type
+	//typedef PointerType pointer; //!< element pointer type
 	typedef typename base_type::pointer pointer; //!< element pointer type
 	typedef typename base_type::reference reference; //!< element reference type
 	typedef typename base_type::const_reference const_reference; //!< const element reference type
@@ -350,8 +351,8 @@ private:
 
 public:
 	typedef typename base_type::value_type value_type; //!< element data type
-	typedef T* pointer; //!< element pointer type
-	//typedef typename base_type::pointer pointer; //!< element pointer type
+	//typedef T* pointer; //!< element pointer type
+	typedef typename base_type::pointer pointer; //!< element pointer type
 	typedef typename base_type::reference reference; //!< element reference type
 	typedef typename base_type::const_reference const_reference; //!< const element reference type
 	typedef typename base_type::size_type size_type; //!< unsigned integral type
@@ -367,21 +368,30 @@ public:
 	typedef typename base_type::column_type column_type;
 	typedef typename base_type::const_column_type const_column_type;
 
-	typedef contiguous_device_iterator<const T> ContiguousDeviceIterator;
+private:
+	size_type paddingBytes;
 
 public:
 	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
 	HOST DEVICE contiguous_matrix_view( const contiguous_matrix_view<U>& src ) : base_type(src) {}
 	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height, size_type paddingBytes=0 ) :
-		base_type( padded_ptr<T,T*,1>( ptr, width, paddingBytes ), width, height ) {}
+		base_type( ptr, width, height ), paddingBytes(paddingBytes) {
+//		base_type( padded_ptr<T,T*,1>( ptr, width, paddingBytes ), width, height ) {
+#ifndef __CUDA_ARCH__
+std::cerr << "width=" << width << std::endl;
+std::cerr << "height=" << height << std::endl;
+std::cerr << "paddingBytes=" << paddingBytes << std::endl;
+std::cerr << "pitch=" << get_pitch() << std::endl;
+#endif
+	}
 	HOST DEVICE ~contiguous_matrix_view() {}
 
 	HOST DEVICE inline size_type size() const { return base_type::size(); }
 	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
 	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
 	HOST DEVICE inline size_type get_pitch() const {
-		padded_ptr<T,T*,1> ptr = base_type::data();
+		padded_ptr<T,T*,1> ptr( base_type::data(), get_width(), paddingBytes );
 		const typename base_type::size_type pitch = ptr.get_data_length()*sizeof(value_type) + ptr.get_padding_length()*ptr.get_pad_length_units();
 		return pitch;
 	}
@@ -397,17 +407,22 @@ public:
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
 
 	HOST DEVICE inline row_type operator[]( size_type index ) {
-		pointer p = base_type::data();
-		p += index*base_type::get_height();
+//		pointer p = base_type::data();
+		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
+#ifndef __CUDA_ARCH__
+std::cerr << "operator[].padding_length=" << p.get_padding_length() << std::endl;
+#endif
+		p += index*base_type::get_width();
 		typename row_type::pointer np = p;
-		return row_type( np, base_type::get_height() );
+		return row_type( np, base_type::get_width() );
 	}
 
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
-		pointer p = base_type::data();
-		p += index*base_type::get_height();
+		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
+//		pointer p = base_type::data();
+		p += index*base_type::get_width();
 		typename const_row_type::pointer np = p;
-		return const_row_type( np, base_type::get_height() );
+		return const_row_type( np, base_type::get_width() );
 	}
 
 	HOST DEVICE inline row_type get_row( size_type rowIndex ) { return operator[]( rowIndex ); }
@@ -416,6 +431,33 @@ public:
 	HOST DEVICE inline column_type get_column( size_type columnIndex ) { return base_type::get_column(); }
 	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const { return base_type::get_column(); }
 
+
+private:
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
+		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
+	}
+
+	template<class Iterator>
+	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
+
+	// dummy method to trick compiler, since device code will never use a non-device iterator
+	template<class Iterator,class SomeOtherCategory>
+	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
+
+public:
+	template<class Iterator>
+	HOST DEVICE void assign( Iterator first, Iterator last ) {
+		#ifdef __CUDA_ARCH__
+		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
+		#else
+		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
+		if( len < 0 or len != size() ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given range does not match size of this view" );
+		::ecuda::copy( first, last, begin() );
+		#endif
+	}
+
+	/*
 	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
 		const std::ptrdiff_t n = end-begin;
 		if( n != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
@@ -429,6 +471,7 @@ public:
 		if( v.size() != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
 		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), &v.front(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
 	}
+	*/
 
 	HOST DEVICE void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
