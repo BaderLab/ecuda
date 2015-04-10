@@ -763,7 +763,7 @@ public:
 		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
 		return true;
 		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
+		std::vector< value_type, host_allocator<value_type> > v1( size() ), v2( size() );
 		operator>>( v1 );
 		other.operator>>( v2 );
 		return v1 == v2;
@@ -791,7 +791,7 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
+		std::vector< value_type, host_allocator<value_type> > v1( size() ), v2( size() );
 		operator>>( v1 );
 		other.operator>>( v2 );
 		return v1 < v2;
@@ -808,7 +808,7 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else
-		std::vector< value_type, host_allocator<value_type> > v1, v2;
+		std::vector< value_type, host_allocator<value_type> > v1( size() ), v2( size() );
 		operator>>( v1 );
 		other.operator>>( v2 );
 		return v1 > v2;

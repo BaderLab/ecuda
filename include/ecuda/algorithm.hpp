@@ -137,7 +137,6 @@ template<class InputIterator,class OutputIterator>
 HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ::ecuda::contiguous_device_iterator_tag, std::random_access_iterator_tag ) {
 	typedef typename OutputIterator::value_type value_type;
 	typename std::iterator_traits<InputIterator>::difference_type len = ::ecuda::distance(first,last);
-	if( !first.operator->() ) throw std::invalid_argument( EXCEPTION_MSG("ecuda::__copy() target iterator points to nothing, did you supply an empty container?") );
 	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), len, cudaMemcpyDeviceToHost ) );
 	return result+len;
 }
