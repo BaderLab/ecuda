@@ -53,7 +53,7 @@ __global__ void matrixMultiply(	const T* A,	std::size_t pitchA,	const T* B,	std:
 			const T B_kj = *(reinterpret_cast<const T*>( reinterpret_cast<const char*>(B)+(pitchB*i) )+y);
 			result += A_ik * B_kj;
 		}
-		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*y+x*sizeof(T)) ) = result;
+		*reinterpret_cast<T*>( reinterpret_cast<char*>(AB)+(pitchAB*x+y*sizeof(T)) ) = result;
 	}
 }
 
