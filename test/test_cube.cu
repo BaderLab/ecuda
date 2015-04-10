@@ -112,7 +112,7 @@ int main( int argc, char* argv[] ) {
 std::cerr << "cp1" << std::endl;
 		ecuda::cube<Coordinate>::slice_yz_type slice = deviceCube.get_yz(0);
 std::cerr << "cp2" << std::endl;
-		std::vector<Coordinate> v( slice.size() );
+		std::vector<Coordinate> v( slice[0].size() );
 std::cerr << "cp3" << std::endl;
 		slice[0].assign( v.begin(), v.end() );
 std::cerr << "cp4" << std::endl;
