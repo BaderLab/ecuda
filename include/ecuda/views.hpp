@@ -375,16 +375,7 @@ public:
 	HOST DEVICE contiguous_matrix_view() : base_type() {}
 	template<typename U>
 	HOST DEVICE contiguous_matrix_view( const contiguous_matrix_view<U>& src ) : base_type(src) {}
-	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height, size_type paddingBytes=0 ) :
-		base_type( ptr, width, height ), paddingBytes(paddingBytes) {
-//		base_type( padded_ptr<T,T*,1>( ptr, width, paddingBytes ), width, height ) {
-#ifndef __CUDA_ARCH__
-std::cerr << "width=" << width << std::endl;
-std::cerr << "height=" << height << std::endl;
-std::cerr << "paddingBytes=" << paddingBytes << std::endl;
-std::cerr << "pitch=" << get_pitch() << std::endl;
-#endif
-	}
+	HOST DEVICE contiguous_matrix_view( pointer ptr, size_type width, size_type height, size_type paddingBytes=0 ) : base_type( ptr, width, height ), paddingBytes(paddingBytes) {}
 	HOST DEVICE ~contiguous_matrix_view() {}
 
 	HOST DEVICE inline size_type size() const { return base_type::size(); }
@@ -407,11 +398,7 @@ std::cerr << "pitch=" << get_pitch() << std::endl;
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
 
 	HOST DEVICE inline row_type operator[]( size_type index ) {
-//		pointer p = base_type::data();
 		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
-#ifndef __CUDA_ARCH__
-std::cerr << "operator[].padding_length=" << p.get_padding_length() << std::endl;
-#endif
 		p += index*base_type::get_width();
 		typename row_type::pointer np = p;
 		return row_type( np, base_type::get_width() );
@@ -419,7 +406,6 @@ std::cerr << "operator[].padding_length=" << p.get_padding_length() << std::endl
 
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
 		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
-//		pointer p = base_type::data();
 		p += index*base_type::get_width();
 		typename const_row_type::pointer np = p;
 		return const_row_type( np, base_type::get_width() );
