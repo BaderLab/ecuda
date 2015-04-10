@@ -274,6 +274,7 @@ public:
 	HOST DEVICE ~matrix_view() {}
 
 	// capacity:
+	HOST DEVICE inline size_type size() const { return base_type::size(); }
 	HOST DEVICE inline size_type get_width() const { return base_type::size()/height; }
 	HOST DEVICE inline size_type get_height() const { return height; }
 
@@ -376,6 +377,7 @@ public:
 		base_type( padded_ptr<T,T*,1>( ptr, width, paddingBytes ), width, height ) {}
 	HOST DEVICE ~contiguous_matrix_view() {}
 
+	HOST DEVICE inline size_type size() const { return base_type::size(); }
 	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
 	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
 	HOST DEVICE inline size_type get_pitch() const {

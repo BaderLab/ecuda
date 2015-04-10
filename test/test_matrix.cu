@@ -178,7 +178,7 @@ int main( int argc, char* argv[] ) {
 			if( deviceMatrix.size() != 200 ) passed = false;
 			if( deviceMatrix.empty() ) passed = false;
 			if( !deviceMatrix.data() ) passed = false;
-			std::vector<int> hostVector;
+			std::vector<int> hostVector( 200 );
 			deviceMatrix >> hostVector;
 			if( hostVector.size() != 200 ) passed = false;
 			for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] ) passed = false;
@@ -187,7 +187,7 @@ int main( int argc, char* argv[] ) {
 		if( deviceMatrix.size() != 200 ) passed = false;
 		if( deviceMatrix.empty() ) passed = false;
 		if( !deviceMatrix.data() ) passed = false;
-		std::vector<int> hostVector;
+		std::vector<int> hostVector( 200 );
 		deviceMatrix >> hostVector;
 		if( hostVector.size() != 200 ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostVector.size(); ++i ) if( hostVector[i] != 3 ) passed = false;
@@ -271,7 +271,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 
 		bool passed = true;
-		std::vector<Coordinate> hostResults;
+		std::vector<Coordinate> hostResults( 200 );
 
 		destDeviceMatrix >> hostResults;
 
@@ -425,8 +425,8 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 		//std::vector<int> hostVector1; deviceMatrix1 >> hostVector1;
 		//std::vector<int> hostVector2; deviceMatrix2 >> hostVector2;
-		std::vector<int> hostArray; deviceArray >> hostArray;
-		std::vector<int> hostDummyVector; deviceDummyMatrix >> hostDummyVector;
+		std::vector<int> hostArray( 1 ); deviceArray >> hostArray;
+		std::vector<int> hostDummyVector( 200 ); deviceDummyMatrix >> hostDummyVector;
 		bool passed = hostArray.size() == 1 and hostArray.front() == 1;
 		//for( std::vector<int>::size_type i = 0; i < hostVector1.size(); ++i ) if( hostVector1[i] != 5 ) passed = false;
 		//for( std::vector<int>::size_type i = 0; i < hostVector2.size(); ++i ) if( hostVector2[i] != 3 ) passed = false;
