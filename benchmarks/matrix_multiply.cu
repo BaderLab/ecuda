@@ -5,6 +5,8 @@
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/event.hpp"
 
+#define PRINT_MATRIX
+
 template<typename T>
 __global__ void matrixMultiply(
 	const T* A,
@@ -94,13 +96,17 @@ float cudaMatrixMultiply( const int numThreads, const std::size_t n, const std::
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
-	//std::vector<double> hostVector( n*p );
-	//cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB, pitchAB, sizeof(double)*p, n, cudaMemcpyDeviceToHost );
-	//for( std::size_t i = 0; i < n; ++i ) {
-	//	std::cout << "ROW[" << i << "]";
-	//	for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
-	//	std::cout << std::endl;
-	//}
+	#ifdef PRINT_MATRIX
+	std::vector<double> hostVector( 10*10 );
+	for( std::size_t i = 0; i < 10; ++i ) {
+		cudaMemcpy( &hostVector[i*10], reinterpret_cast<char*>(AB)+(pitchAB*i), sizeof(double)*10, cudaMemcpyDeviceToHost );
+	}
+	for( std::size_t i = 0; i < 10; ++i ) {
+		std::cout << "ROW[" << i << "]";
+		for( std::size_t j = 0; j < 10; ++j ) std::cout << " " << std::fixed << hostVector[i*10+j];
+		std::cout << std::endl;
+	}
+	#endif
 
 	cudaFree( A );
 	cudaFree( B );
@@ -118,9 +124,15 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	ecuda::matrix<double> B( m, p );
 	ecuda::matrix<double> AB( n, p );
 
-	cudaMemcpy2D( A.data(), A.get_pitch(), pool, sizeof(double)*m, sizeof(double)*m, n, cudaMemcpyHostToDevice );
-	cudaMemcpy2D( B.data(), B.get_pitch(), pool+(m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
-	cudaMemset( AB.data(), 0, n*p*sizeof(double) );
+	ecuda::host_array_proxy<const double> randomNumbers( pool, n*m+m*p );
+
+	A.assign( randomNumbers.begin(), randomNumbers.begin()+(n*m) );
+	B.assign( randomNumbers.begin()+(n*m), randomNumbers.end() );
+	AB.fill( 0.0 );
+
+	//cudaMemcpy2D( A.data(), A.get_pitch(), pool, sizeof(double)*m, sizeof(double)*m, n, cudaMemcpyHostToDevice );
+	//cudaMemcpy2D( B.data(), B.get_pitch(), pool+(m*n), sizeof(double)*p, sizeof(double)*p, m, cudaMemcpyHostToDevice );
+	//cudaMemset( AB.data(), 0, n*p*sizeof(double) );
 
 	dim3 grid( n, (p+numThreads-1)/numThreads ), threads( 1, numThreads );
 	start.record();
@@ -130,13 +142,19 @@ float ecudaMatrixMultiply( const int numThreads, const std::size_t n, const std:
 	CUDA_CHECK_ERRORS();
 	stop.synchronize();
 
-	//std::vector<double> hostVector( n*p );
-	//cudaMemcpy2D( &hostVector.front(), sizeof(double)*p, AB.data(), AB.get_pitch(), sizeof(double)*p, n, cudaMemcpyDeviceToHost );
-	//for( std::size_t i = 0; i < n; ++i ) {
-	//	std::cout << "ROW[" << i << "]";
-	//	for( std::size_t j = 0; j < p; ++j ) std::cout << " " << std::fixed << hostVector[i*p+j];
-	//	std::cout << std::endl;
-	//}
+	#ifdef PRINT_MATRIX
+	std::vector<double> hostVector( 10*10 );
+	for( std::size_t i = 0; i < 10; ++i ) {
+		std::vector<double> hostRow( AB.number_columns() );
+		AB[i] >> hostRow;
+		for( std::size_t j = 0; j < 10; ++j ) hostVector[i*10+j] = hostRow[j];
+	}
+	for( std::size_t i = 0; i < 10; ++i ) {
+		std::cout << "ROW[" << i << "]";
+		for( std::size_t j = 0; j < 10; ++j ) std::cout << " " << std::fixed << hostVector[i*10+j];
+		std::cout << std::endl;
+	}
+	#endif
 
 	return ( stop - start );
 

@@ -739,7 +739,7 @@ public:
 	/// of the first row, ...).
 	///
 	template<class Container>
-	HOST const cube& operator>>( Container& dest ) const {
+	HOST Container& operator>>( Container& dest ) const {
 		typename Container::iterator destIter = dest.begin();
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			for( size_type j = 0; j < number_columns(); ++j ) {
@@ -748,7 +748,7 @@ public:
 				::ecuda::advance( destIter, number_depths() );
 			}
 		}
-		return *this;
+		return dest;
 	}
 
 	///

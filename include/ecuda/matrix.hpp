@@ -829,14 +829,14 @@ public:
 	/// of the first row, then all columns of the second row, ...).
 	///
 	template<class Container>
-	HOST const matrix& operator>>( Container& dest ) const {
+	HOST Container& operator>>( Container& dest ) const {
 		typename Container::iterator destIter = dest.begin();
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			const_row_type row = get_row(i);
 			::ecuda::copy( row.begin(), row.end(), destIter );
 			::ecuda::advance( destIter, number_columns() );
 		}
-		return *this;
+		return dest;
 	}
 
 	///

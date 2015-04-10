@@ -475,6 +475,79 @@ public:
 
 };
 
+///
+/// \brief Utility iterator for C-style arrays.
+///
+template<typename T>
+class host_pointer_iterator : public std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*>
+{
+private:
+	typedef std::iterator<std::random_access_iterator_tag,T,std::ptrdiff_t,T*> base_iterator_type;
+public:
+	typedef typename base_iterator_type::iterator_category iterator_category;
+	typedef typename base_iterator_type::value_type value_type;
+	typedef typename base_iterator_type::difference_type difference_type;
+	typedef typename base_iterator_type::pointer pointer;
+	typedef typename base_iterator_type::reference reference;
+private:
+	pointer ptr;
+public:
+	host_pointer_iterator( const pointer& ptr = pointer() ) : ptr(ptr) {}
+	template<typename U>
+	host_pointer_iterator( const host_pointer_iterator<U>& src ) : ptr(src.operator->()) {}
+
+	inline host_pointer_iterator& operator++() { ++ptr; return *this; }
+	inline host_pointer_iterator operator++( int ) {
+		host_pointer_iterator tmp(*this);
+		++(*this);
+		// operator++(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	inline host_pointer_iterator& operator--() { --ptr; return *this; }
+	inline host_pointer_iterator& operator--( int ) const {
+		host_pointer_iterator tmp(*this);
+		--(*this);
+		// operator--(); // nvcc V6.0.1 didn't like this but above line works
+		return tmp;
+	}
+
+	inline host_pointer_iterator& operator+=( int x ) { ptr += x; return *this; }
+	inline host_pointer_iterator& operator-=( int x ) { ptr -= x; return *this; }
+
+	bool operator==( const host_pointer_iterator& other ) const { return ptr == other.ptr; }
+	bool operator!=( const host_pointer_iterator& other ) const { return !operator==(other); }
+
+	inline reference operator*() const { return *ptr; }
+	inline pointer operator->() const { return ptr; }
+
+	inline host_pointer_iterator& operator=( const host_pointer_iterator<T>& other ) {
+		ptr = other.ptr;
+		return *this;
+	}
+
+	template<typename U>
+	inline host_pointer_iterator& operator=( const host_pointer_iterator<U>& other ) {
+		ptr = other.ptr;
+		return *this;
+	}
+
+	inline host_pointer_iterator operator+( int x ) const { return host_pointer_iterator( ptr + x ); }
+	inline host_pointer_iterator operator-( int x ) const { return host_pointer_iterator( ptr - x ); }
+
+	inline bool operator<( const host_pointer_iterator& other ) const { return ptr < other.ptr; }
+	inline bool operator>( const host_pointer_iterator& other ) const { return ptr > other.ptr; }
+
+	inline bool operator<=( const host_pointer_iterator& other ) const { return operator<(other) or operator==(other); }
+	inline bool operator>=( const host_pointer_iterator& other ) const { return operator>(other) or operator==(other); }
+
+	inline reference operator[]( int x ) const { return *(ptr+x); }
+
+	inline difference_type operator-( const host_pointer_iterator& other ) { return ptr - other.ptr; }
+
+};
+
+
 template<class Iterator,class Distance>
 HOST void __advance( Iterator& iter, Distance n, contiguous_device_iterator_tag ) { iter += n; }
 

@@ -226,6 +226,28 @@ public:
 		return *this;
 	}
 
+	///
+	/// \brief Copies the contents of this device sequence to another container.
+	///
+	/// \param dest container to copy contents to
+	///
+	template<class Container>
+	HOST Container& operator>>( Container& dest ) const {
+		::ecuda::copy( begin(), end(), dest.begin() );
+		return dest;
+	}
+
+	///
+	/// \brief Copies the contents of a container to this device sequence.
+	///
+	/// \param src container to copy contents from
+	///
+	template<class Container>
+	HOST contiguous_sequence_view& operator<<( const Container& src ) {
+		const size_type len = ::ecuda::distance(src.begin(),src.end());
+		::ecuda::copy( src.begin(), src.end(), begin() );
+		return *this;
+	}
 
 };
 
@@ -276,8 +298,8 @@ public:
 
 	// capacity:
 	HOST DEVICE inline size_type size() const { return base_type::size(); }
-	HOST DEVICE inline size_type get_width() const { return base_type::size()/height; }
-	HOST DEVICE inline size_type get_height() const { return height; }
+	HOST DEVICE inline size_type number_columns() const { return base_type::size()/height; }
+	HOST DEVICE inline size_type number_rows() const { return height; }
 
 	// iterators:
 	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator(base_type::data()); }
@@ -292,13 +314,13 @@ public:
 	// element access:
 	HOST DEVICE inline row_type operator[]( size_type index ) {
 		pointer ptr = base_type::data();
-		ptr += index*get_width();
-		return row_type( ptr, get_width() );
+		ptr += index*number_columns();
+		return row_type( ptr, number_columns() );
 	}
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
 		pointer ptr = base_type::data();
-		ptr += index*get_width();
-		return const_row_type( ptr, get_width() );
+		ptr += index*number_columns();
+		return const_row_type( ptr, number_columns() );
 	}
 
 	HOST DEVICE inline row_type get_row( size_type rowIndex ) { return operator[]( rowIndex ); }
@@ -307,13 +329,13 @@ public:
 	HOST DEVICE inline column_type get_column( size_type columnIndex ) {
 		pointer ptr = base_type::data();
 		ptr += columnIndex;
-		return column_type( striding_ptr<value_type,pointer>( ptr, get_width() ), get_height() );
+		return column_type( striding_ptr<value_type,pointer>( ptr, number_columns() ), number_rows() );
 	}
 
 	HOST DEVICE inline const_column_type get_column( size_type columnIndex ) const {
 		pointer ptr = base_type::data();
 		ptr += columnIndex;
-		return const_column_type( striding_ptr<const value_type,const pointer>( ptr, get_width() ), get_height() );
+		return const_column_type( striding_ptr<const value_type,const pointer>( ptr, number_columns() ), number_rows() );
 	}
 
 	template<class InputIterator>
@@ -379,10 +401,10 @@ public:
 	HOST DEVICE ~contiguous_matrix_view() {}
 
 	HOST DEVICE inline size_type size() const { return base_type::size(); }
-	HOST DEVICE inline size_type get_width() const { return base_type::get_width(); }
-	HOST DEVICE inline size_type get_height() const { return base_type::get_height(); }
+	HOST DEVICE inline size_type number_columns() const { return base_type::number_columns(); }
+	HOST DEVICE inline size_type number_rows() const { return base_type::number_rows(); }
 	HOST DEVICE inline size_type get_pitch() const {
-		padded_ptr<T,T*,1> ptr( base_type::data(), get_width(), paddingBytes );
+		padded_ptr<T,T*,1> ptr( base_type::data(), number_columns(), paddingBytes );
 		const typename base_type::size_type pitch = ptr.get_data_length()*sizeof(value_type) + ptr.get_padding_length()*ptr.get_pad_length_units();
 		return pitch;
 	}
@@ -398,17 +420,17 @@ public:
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(const_iterator(base_type::data())); }
 
 	HOST DEVICE inline row_type operator[]( size_type index ) {
-		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
-		p += index*base_type::get_width();
+		padded_ptr<T,T*,1> p( base_type::data(), number_columns(), paddingBytes );
+		p += index*base_type::number_columns();
 		typename row_type::pointer np = p;
-		return row_type( np, base_type::get_width() );
+		return row_type( np, base_type::number_columns() );
 	}
 
 	HOST DEVICE inline const_row_type operator[]( size_type index ) const {
-		padded_ptr<T,T*,1> p( base_type::data(), get_width(), paddingBytes );
-		p += index*base_type::get_width();
+		padded_ptr<T,T*,1> p( base_type::data(), number_columns(), paddingBytes );
+		p += index*base_type::number_columns();
 		typename const_row_type::pointer np = p;
-		return const_row_type( np, base_type::get_width() );
+		return const_row_type( np, base_type::number_columns() );
 	}
 
 	HOST DEVICE inline row_type get_row( size_type rowIndex ) { return operator[]( rowIndex ); }
@@ -439,33 +461,47 @@ public:
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
 		if( len < 0 or len != size() ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given range does not match size of this view" );
-		::ecuda::copy( first, last, begin() );
+		Iterator endRow = first;
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			row_type row = get_row(i);
+			::ecuda::advance( endRow, number_columns() );
+			row.assign( first, endRow );
+		}
 		#endif
 	}
-
-	/*
-	HOST void assign( ContiguousDeviceIterator begin, ContiguousDeviceIterator end ) {
-		const std::ptrdiff_t n = end-begin;
-		if( n != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
-		if( n < 0 ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range oriented in wrong direction (are begin and end mixed up?)" );
-		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), begin.operator->(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
-	}
-
-	template<class InputIterator>
-	HOST void assign( InputIterator begin, InputIterator end ) {
-		std::vector< value_type, host_allocator<value_type> > v( begin, end );
-		if( v.size() != (get_width()*get_height()) ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given iterator-based range that does not have width x height elements" );
-		CUDA_CALL( cudaMemcpy2D<value_type>( base_type::data(), get_pitch(), &v.front(), get_width()*sizeof(value_type), get_width(), get_height(), cudaMemcpyHostToDevice ) );
-	}
-	*/
 
 	HOST DEVICE void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
 		iterator iter = begin();
 		while( iter != end() ) { *begin = value; ++iter; }
 		#else
-		CUDA_CALL( cudaMemset2D<value_type>( base_type::data(), get_pitch(), value, get_width(), get_height() ) );
+		CUDA_CALL( cudaMemset2D<value_type>( base_type::data(), get_pitch(), value, number_columns(), number_rows() ) );
 		#endif
+	}
+
+	template<class Container>
+	HOST Container& operator>>( Container& dest ) const {
+		typename Container::iterator first = dest.begin();
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			const_row_type row = get_row(i);
+			::ecuda::copy( row.begin(), row.end(), first );
+			::ecuda::advance( first, number_columns() );
+		}
+		return dest;
+	}
+
+	template<class Container>
+	HOST contiguous_matrix_view& operator<<( const Container& src ) {
+		typename Container::iterator first = src.begin();
+		typename Container::iterator last = first;
+		::ecuda::advance( last, number_columns() );
+		for( size_type i = 0; i < number_rows(); ++i ) {
+			row_type row = get_row(i);
+			::ecuda::copy( first, last, row.begin() );
+			first = last;
+			::ecuda::advance( last, number_columns() );
+		}
+		return *this;
 	}
 
 	HOST DEVICE contiguous_matrix_view& operator=( const contiguous_matrix_view& other ) {
@@ -474,6 +510,55 @@ public:
 	}
 
 };
+
+
+///
+/// \brief Simple utility container to make C-style arrays useable by ecuda containers.
+///
+/// Given a C-style array consisting of a pointer and a length, this is a simple wrapper
+/// that provides the C-style array with the ability to produce iterators so that
+/// ecuda containers can use them to copy to/from.
+///
+/// This is handy for C-style APIs that might be useful, such as the GNU Scientific
+/// Library.
+///
+/// \code{.cpp}
+/// gsl_matrix* mat = gsl_matrix_alloc( 10, 20 );
+/// // ... prepare matrix values
+/// ecuda::host_array_proxy<double> proxy( mat->data, 10*20 );
+/// ecuda::matrix<double> deviceMatrix( 10, 20 );
+/// deviceMatrix.assign( proxy.begin(), proxy.end() ); // copies gsl_matrix to device matrix
+/// deviceMatrix >> proxy; // copies device matrix to gsl_matrix
+/// // proxy container can now be safely discarded, since the
+/// // manipulations of the data are reflected in the original gsl_matrix.
+/// \endcode
+///
+template<class T>
+class host_array_proxy {
+public:
+	typedef T value_type;
+	typedef T* pointer;
+	typedef T& reference;
+	typedef const T& const_reference;
+	typedef std::ptrdiff_t difference_type;
+	typedef std::size_t size_type;
+
+	typedef host_pointer_iterator<value_type> iterator;
+	typedef host_pointer_iterator<const value_type> const_iterator;
+
+private:
+	pointer ptr;
+	size_type len;
+public:
+	host_array_proxy( T* ptr, const size_type len ) : ptr(ptr), len(len) {}
+
+	inline iterator begin() { return iterator(ptr); }
+	inline iterator end() { return iterator(ptr+len); }
+	inline const_iterator begin() const { return const_iterator(ptr); }
+	inline const_iterator end() const { return const_iterator(ptr+len); }
+
+};
+
 
 } // namespace ecuda
 

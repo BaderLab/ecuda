@@ -457,9 +457,9 @@ public:
 	/// \param dest container to copy contents to
 	///
 	template<class Container>
-	HOST const array& operator>>( Container& dest ) const {
+	HOST Container& operator>>( Container& dest ) const {
 		::ecuda::copy( begin(), end(), dest.begin() );
-		return *this;
+		return dest;
 	}
 
 	///
