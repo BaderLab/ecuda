@@ -134,7 +134,7 @@ int main( int argc, char* argv[] ) {
 	{
 		ecuda::array<int,100> deviceArray;
 		deviceArray.fill( 3 ); // array filled with number 3
-		std::vector<int> hostVector;
+		std::vector<int> hostVector( 100 );
 		deviceArray >> hostVector;
 		bool passed = true;
 		if( deviceArray.size() == 100 and hostVector.size() == deviceArray.size() ) {
@@ -217,7 +217,7 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 
 		bool passed = true;
-		std::vector<int> hostResults;
+		std::vector<int> hostResults( 100 );
 
 		destDeviceArray >> hostResults;
 		for( std::vector<int>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != i ) passed = false;
@@ -327,7 +327,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::array<int,100> deviceArray2;
 		deviceArray1.fill( 3 );
 		deviceArray1.swap( deviceArray2 );
-		std::vector<int> hostArray;
+		std::vector<int> hostArray( 100 );
 		deviceArray2 >> hostArray;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != 3 ) passed = false;
@@ -344,7 +344,7 @@ int main( int argc, char* argv[] ) {
 		kernel_testFillAndSwap<<<1,1>>>( deviceArray1, deviceArray2 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		std::vector<int> hostArray;
+		std::vector<int> hostArray( 100 );
 		deviceArray2 >> hostArray;
 		bool passed = true;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) if( hostArray[i] != 3 ) passed = false;
@@ -366,23 +366,23 @@ int main( int argc, char* argv[] ) {
 		if( deviceArray1.operator!=(deviceArray2) ) passed = false;
 		for( std::vector<int>::size_type i = 0; i < hostArray.size(); ++i ) hostArray[i] = i+10;
 		deviceArray2 << hostArray;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray1.operator< (deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray1.operator> (deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray1.operator<=(deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray1.operator>=(deviceArray2) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray2.operator< (deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray2.operator> (deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if(  deviceArray2.operator<=(deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		if( !deviceArray2.operator>=(deviceArray1) ) passed = false;
-std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
+//std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		testResults.push_back( passed ? 1 : 0 );
 	}
 
@@ -403,7 +403,7 @@ std::cerr << "passed = " << ( passed ? "true" : "false" ) << std::endl;
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		std::vector<int> hostResults;
+		std::vector<int> hostResults( 10 );
 		deviceResults >> hostResults;
 		bool passed = true;
 		for( std::vector<bool>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 1 ) passed = false;

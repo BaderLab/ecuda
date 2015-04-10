@@ -341,16 +341,17 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE void swap( array<T,N>& other ) {
+	HOST DEVICE void swap( array& other ) {
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
 		iterator iter2 = other.begin();
 		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
 		#else
-		std::vector< value_type, host_allocator<value_type> > host1; operator>>( host1 );
-		std::vector< value_type, host_allocator<value_type> > host2; other.operator>>( host2 );
-		operator<<( host2 );
-		other.operator<<( host1 );
+		std::swap( deviceMemory, other.deviceMemory );
+		//std::vector< value_type, host_allocator<value_type> > host1; operator>>( host1 );
+		//std::vector< value_type, host_allocator<value_type> > host2; other.operator>>( host2 );
+		//operator<<( host2 );
+		//other.operator<<( host1 );
 		#endif
 	}
 
@@ -373,7 +374,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -405,7 +406,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
@@ -426,7 +427,7 @@ public:
 		#ifdef __CPP11_SUPPORTED__
 		std::array<T,N> arr1, arr2;
 		#else
-		std::vector< value_type, host_allocator<value_type> > arr1, arr2;
+		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
 		#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
