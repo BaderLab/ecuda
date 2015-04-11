@@ -6,12 +6,13 @@
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/cube.hpp"
 
-template<typename Iterator>
-void print_sequence( Iterator first, Iterator last ) {
+template<typename Container>
+void print_sequence( const Container& container ) {
+	std::vector<typename Container::value_type> vec( container.size() );
+	container >> vec;
 	std::cout << "SEQUENCE";
-	while( first != last ) {
-		std::cout << " " << *first;
-		++first;
+	for( typename std::vector<typename Container::value_type>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter ) {
+		std::cout << " " << *iter;
 	}
 	std::cout << std::endl;
 }
@@ -39,34 +40,34 @@ struct coord3d : coord2d {
 int main( int argc, char* argv[] ) {
 
 	ecuda::array<double,10> arr;
-	print_sequence( arr.begin(), arr.end() );
+	print_sequence( arr );
 
 	ecuda::vector<double> vec1;
-	print_sequence( vec1.begin(), vec1.end() );
+	print_sequence( vec1 );
 
 	ecuda::vector<double> vec2( 10 );
-	print_sequence( vec2.begin(), vec2.end() );
+	print_sequence( vec2 );
 
 	ecuda::vector<double> vec3( 10, 99 );
-	print_sequence( vec3.begin(), vec3.end() );
+	print_sequence( vec3 );
 
 	ecuda::vector<double> vec4( vec3.begin(), vec3.end() );
-	print_sequence( vec4.begin(), vec4.end() );
+	print_sequence( vec4 );
 
 	ecuda::vector<double> vec5( vec3 );
-	print_sequence( vec5.begin(), vec5.end() );
+	print_sequence( vec5 );
 
 	ecuda::matrix<coord2d> mat1;
-	print_sequence( mat1.begin(), mat1.end() );
+	print_sequence( mat1 );
 
 	ecuda::matrix<coord2d> mat2( 2, 5, coord2d(66,99) );
-	print_sequence( mat2.begin(), mat2.end() );
+	print_sequence( mat2 );
 
 	ecuda::cube<coord3d> cube1;
-	print_sequence( cube1.begin(), cube1.end() );
+	print_sequence( cube1 );
 
 	ecuda::cube<coord3d> cube2( 2, 3, 4, coord3d(66,99) );
-	print_sequence( cube2.begin(), cube2.end() );
+	print_sequence( cube2 );
 
 	return EXIT_SUCCESS;
 
