@@ -122,6 +122,47 @@ Besides being more compact and readable, there are no naked pointers, allocation
 for( double x : matrix.get_column( threadNum ) ) columnSum += x;
 \endcode
 
+\subsection overview_thrust Comparison to the Thrust Library
+
+Whereas <a href="http://docs.nvidia.com/cuda/thrust/">Thrust</a>, available from NVIDIA, is a CUDA-parallelized \em replacement of the STL, \em ecuda is a CUDA-capable \em expansion to the STL.  For example, Thrust has parallelized versions of common STL algorithms like sort.  It currently has only two containers: thrust::host_vector and thrust:device_vector, whereas \em ecuda simply has ecuda::vector that can work in concert with the existing std::vector.  \em ecuda also focuses on the inclusion of higher-dimensional containers like ecuda::matrix and ecuda::cube which are often an intuitive way to represent data for device-bound tasks.  Thrust is also not designed such that you'd pass the containers themselves to kernel functions, whereas this is a central feature of \em ecuda.
+
+I have had no extensive hands-on experience using Thrust, but I imagine it and \em ecuda are excellent complementary toolkits.  For example:
+
+Good task for Thrust:
+\code{.cpp}
+// I have 1000 measurements from 1000 experiments, and I want to sort each experiment
+for( std::size_t i = 0; i < 1000; ++i ) {
+  std::vector<double> measurements( 1000 );
+  // ... load measurements for i-th experiment
+  thrust::sort( measurements.begin(), measurements.end() ); // parallelized!
+}
+\endcode
+
+Good task for ecuda:
+\code{.cpp}
+// I have 1000 measurements from 1000 experiments, and I want to run my fancy stats on each experiment
+ecuda::matrix<double> data( 1000, 1000 );
+ecuda::vector<double> result( 1000 );
+// ... load measurements
+runStatistics<<<1,1000>>>( data, result );
+CUDA_CALL( cudaDeviceSynchronize() );
+
+__global__void runStatistics( const ecuda::matrix<double> data, ecuda::vector<double> result ) {
+  const int threadNum = threadIdx.x;
+  if( threadNum < data.number_columns() ) {
+	double fancyStat;
+	ecuda::matrix<double>::const_column_type measurements = data.get_column(threadNum);
+    // ... calculate fancy stat
+	result[threadNum] = fancyStat;
+  }
+}
+\endcode
+
+
+\section requirements Requirements
+
+There are no additional requirements other than your existing toolchain to compile CUDA code (minimally the CUDA API and a C++ compiler).
+
 \section installation Installation
 
 The library is header only, so the <tt>include</tt> subdirectory can be placed anywhere and made visible to the compiler (e.g. <tt>-I/some/path/include</tt>).  A <tt>Makefile</tt> is included that simply copies the <tt>include/ecuda</tt> directory to <tt>/usr/local/include</tt> by issuing the command:
@@ -142,7 +183,6 @@ If you have <a href="http://www.doxygen.org">Doxygen</a> installed, you can crea
 \code
 make docs
 \endcode
-
 
 \section overview Overview
 
@@ -225,7 +265,9 @@ deviceVector >> hostVector2; // slower
 
 \image html iterators.png ""
 
-Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different categories depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, the basic iterator is Bidirectional, with a further specialized iterator that is Random Access and requires the range being traversed to reside in contiguous memory.  A reverse iterator, which simply reverses the order of traversal is also available.  Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
+Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different "categories" depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, two additional categories are defined: a device_iterator and a contiguous_device_iterator.  A reverse iterator, which simply reverses the order of traversal is also available.  By design, regular STL iterators are compatible with \em ecuda containers and views, but not vice versa (since STL containers cannot access device memory).  
+
+Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
 
 \code{.cpp}
 ecuda::vector<int> deviceVector1( 1000 ); // create 1000 element vector in device memory
@@ -233,16 +275,49 @@ ecuda::vector<int>::iterator begin = deviceVector1.begin();
 ecuda::vector<int> deviceVector2( begin, begin+50 ); // create a new vector initialized with the first 50 elements
 \endcode
 
-Keep in mind that operations which essentially move a contiguous block of memory to another behind the scenes using <tt>cudaMemcpy</tt> must be a \ref ecuda::contiguous_device_iterator.  Code that doesn't follow this will fail to compile.  For example:
+\em ecuda containers will also accept standard STL host iterators for most operations.
+
+\code{.cpp}
+ecuda::vector<int> deviceVector; // create empty vector in device memory
+std::vector<int> hostVector( 1000 ); // create 1000 element vector in host memory
+deviceVector.assign( hostVector.begin(), hostVector.end() ); // copy elements from host to device, vector will grow to accomodate
+\endcode
+
+Keep in mind that iterator-based operations that occur on the host that involve device memory requires that the device memory be contiguous (since the code behind the scenes utilizes <tt>cudaMemcpy</tt> or <tt>cudaMemcpy2D</tt>.  However, code that doesn't follow this rule will simply fail to compile so you'll know that you've violated this.
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 );
-ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0);
-ecuda::matrix<int>::column_type column = deviceMatrix.get_column(0);
+ecuda::matrix<int>::row_type row = deviceMatrix.get_row(0); // rows are contiguous
+ecuda::matrix<int>::column_type column = deviceMatrix.get_column(0); // columns are non-contiguous
 ecuda::vector<int> deviceVector;
 deviceArray.assign( row.begin(), row.end() ); // works fine
 deviceArray.assign( row.rbegin(), row.rend() ); // won't compile, elements in the wrong order
 deviceArray.assign( column.begin(), column.end() ); // won't compile, elements not in contiguous memory
+\endcode
+
+The same operations in kernel code will compile and work fine though, since element-by-element copying is used.
+
+\code{.cpp}
+__global__ void copyColumn( const ecuda::matrix<int> matrix, ecuda::vector<int> vector ) {
+  ecuda::matrix<int>::const_column_type column = matrix.get_column(0);
+  vector.assign( column.begin(), column.end() ); // now compiles and works fine
+}
+\endcode
+
+Copying device data to host containers should be done through the >> operator, which is defined for all containers and contiguous views.
+
+\code{.cpp}
+ecuda::vector<int> deviceVector( 1000 );
+// ... do stuff to device vector
+std::vector<int> hostVector( 1000 );
+deviceVector >> hostVector; // copy vector contents to host
+
+ecuda::matrix<int> deviceMatrix( 10, 1000 );
+// ... do stuff to device matrix
+std::vector<int> hostRow( 1000 );
+deviceMatrix[5] >> hostRow; // copy individial matrix row to host
+std::vector<int> hostMatrix( 10*1000 );
+deviceMatrix >> hostMatrix; // copy entire matrix to host
 \endcode
 
 \subsection overview_views Views
@@ -270,6 +345,65 @@ ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_ma
 \ref ecuda::device_ptr is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when the reference count reaches zero.  It's quite similar to a std::shared_ptr.  All \em ecuda containers use a \ref ecuda::device_ptr to interface with any underlying device memory.
 
 \ref ecuda::striding_ptr and \ref ecuda::padded_ptr are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed.  For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a \ref ecuda::striding_ptr where the "stride" is set to the number of columns.  CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see \ref optimizing_threads below for more discussion on this), and results in empty padding at the end of each row.  A \ref ecuda::padded_ptr is used to traverse these elements while automatically skipping the padding.  These two specialized pointers can also be combined.  They're used internally to create efficient views and iterators.
+
+\subsection overview_misc Miscellaneous
+
+The library contains additional classes, functions, and macros to simplify some common CUDA programming tasks.
+
+\subsubsection overview_misc_cudawrapper Capturing CUDA API Errors
+
+A macro called CUDA_CALL is defined that captures errors from any of the low-level CUDA API functions and throws an \ref ecuda::cuda_error exception.
+
+\code{.cpp}
+try {
+  CUDA_CALL( cudaDeviceSynchronize() );
+} catch( ecuda::cuda_error& ex ) {
+  std::cerr << "CUDA API error: " << ex.what() << std::endl;
+}
+\endcode
+
+The macro is also used with any such calls within the \em ecuda library.
+
+Additionally, a macro called CUDA_CHECK_ERRORS can be used after starting a kernel to capture any error that would normally be checked using cudaGetLastError(). Any error will be converted to an \ref ecuda::cuda_error exception and thrown.
+
+\code{.cpp}
+try {
+  myKernel<<<10,1000>>>( ... );
+  CUDA_CHECK_ERRORS();
+} catch( ecuda::cuda_error& ex ) {
+  std::cerr << "CUDA kernel error: " << ex.what() << std::endl;
+}
+\endcode
+
+\subsubsection overview_misc_cstyle Using C-style Arrays
+
+The \ref ecuda::host_array_proxy is a simple wrapper that allows C-style arrays to function as a standard container.  This is useful for incorporating other libraries, like the GNU Scientific Library, that still use naked pointers.
+
+\code{.cpp}
+gsl_matrix* mat = gsl_matrix_alloc( 10, 20 );
+// ... prepare matrix values
+ecuda::host_array_proxy<double> proxy( mat->data, 10*20 );
+ecuda::matrix<double> deviceMatrix( 10, 20 );
+deviceMatrix.assign( proxy.begin(), proxy.end() ); // copies gsl_matrix to device matrix via the proxy
+deviceMatrix >> proxy; // copies device matrix to gsl_matrix via the proxy
+\endcode
+
+\subsubsection overview_misc_events CUDA Events
+
+A wrapper around CUDA event objects called \ref ecuda::event makes these more C++-like.
+
+\code{.cpp}
+// record kernel execution time
+ecuda::event start, stop;
+
+start.record(); // record start time
+myKernel<<<10,1000>>>( ... );
+stop.record(); // record stop time
+
+stop.synchronize(); // kernel execution is asynchronous, wait until it finishes
+
+std::cerr << "EXECUTION TIME: " << ( stop-start ) << "milliseconds" << std::endl;
+\endcode
 
 \section optimizing_threads Optimizing Thread Operations
 
@@ -318,29 +452,44 @@ ecuda::vector<double> deviceVector( 1000 ); // create zero-initialized vector
 }
 \endcode
 
-The execution time of the second kernel will invariably be \em much faster than the first.
-
-\section optional_libraries Optional Libraries
-
-\subsection optional_library_gsl GNU Scientific Library (GSL)
-
-There are hooks within the \ref ecuda::matrix container to copy information to and from a <tt>gsl_matrix</tt> used in the GNU Scientific Library (GSL).  Modify the <tt>HAVE_GNU_SCIENTIFIC_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
-
-\subsection optional_library_estd Extended STL (estd)
-
-There are hooks within the \ref ecuda::matrix and \ref ecuda::cube containers to copy information to and from the equivalent \em estd containers.  This is a header-only library that contains several container types that follow the semantics of the STL much like \em ecuda itself does.  As of this writing, this library hasn't been publicly released.  Nonetheless, the methods are present awaiting the day this changes.  Modify the <tt>HAVE_ESTD_LIBRARY</tt> flag in the <tt>include/ecuda/config.hpp</tt> file to enable these.
+The execution time of the second kernel will invariably be \em much faster than the first.  These considerations are also discussed and expanded on in the generated documentation for each container.
 
 \section performance Performance
 
-Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is minute (a constant sub-millisecond).  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.
+Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing \em ecuda containers.  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and certainly less headaches with raw pointers.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.  They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional \em ecuda layer over direct CUDA API calls.
 
-For example, the program <tt>benchmarks/matrix_multiply</tt> performs a simple, brute-force matrix multiplication of two matrices A(5000x5000) and B(5000x5000) to get AB(5000x5000) and takes about 4.86s on an NVIDIA Tesla M2090.  Run times vary, but \em ecuda code is typically slower by <0.1ms.  The same problem solved the same way with the Intel Xeon E5-2620 CPU on the test machine takes ~18 minutes (~200X acceleration).
+On a test machine containing an NVIDIA Tesla M2090 GPU and Intel Xeon E5-2620 CPU, some results were:
 
-\section compatibility Tool Chain Compatibility
+Program         | Matrix Size | CPU only | GPU + CUDA | GPU + ecuda
+--------------- | ----------- | -------- | ---------- | -----------
+matrix_tranpose | 10000x10000 | 1420ms   | 44ms       | 44ms
+matrix_multiply | 1000x1000   | 9760ms   | 40ms       | 40ms
+matrix_multiply | 5000x5000   | ~18min   | 4900ms     | 4900ms
 
-The library has been tested and compiles successfully with CUDA versions 3.2, 4.0, 4.1, 4.2, 5.0, 5.5, 6.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully.
+\section compatibility Compatibility
 
-\em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is true, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.
+The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested.  CUDA 3.2, 4.0, 4.1, and 4.2 did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation.
+
+The only pernicious bug I encountered was in an experimental version of the API (and that was ultimately not adopted for final release), when using test programs with a larger number (>10) of separate kernels.  Specifically, this code fragment:
+
+\code{.cpp}
+template<typename T>
+__global__ void linearizeMatrix( const ecuda::matrix<T> matrix, ecuda::vector<T> vector ) {
+  // use iterator to get data from src, and index to set data in dest
+  std::size_t index = 0;
+  for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++index ) vector[index] = *iter;
+}
+\endcode
+
+The value of <tt>index</tt> would not increment.  The issue disappeared if I ran only that kernel in CUDA 5.5, and was never an issue regardless of how many kernels were run in CUDA 6.0.  I concluded that it was a problem with the CUDA 5.5 <tt>nvcc</tt> compiler, but I'm including it here for transparency and in case a similar issue arises again.
+
+\em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is real problem I'm remembering correctly, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.  Please contact me if you run into issues.
+
+\section section_future_work Future Work
+
+I'll continue to develop this as time permits.  The specifications for the core container should remain fixed, so I don't anticipate any backwards compatibility issues from any future improvements.
+
+There are a number of architectural changes that are possible to the API that are on a to-do list.  In one ill-fated trip down the C++ template/metaprogramming rabbit hole, I was able to make containers subclasses of views, and reworked specialized pointers in a way that was more appealing.  Unfortunately, the API took a huge performance hit.  It's well-known that too much templating eventually hinders C++ compilers (and presumably the nvcc compiler) from making good optimizations, so this is something to keep in mind.  As of now, the design is in a good place as far as performance versus duplicating certain patterns.
 
 \section license License
 

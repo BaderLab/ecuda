@@ -31,7 +31,8 @@ either expressed or implied, of the FreeBSD Project.
 // algorithm.hpp
 //
 // Generic functions found in STL <algorithm> reimplemented so they can be
-// called from device code.
+// called from device code or handle iterators to device memory depending
+// on the purpose of the function.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
@@ -161,7 +162,20 @@ HOST inline OutputIterator __copy( InputIterator first, InputIterator last, Outp
 	return __copy( first, last, result, ::ecuda::contiguous_device_iterator_tag(), std::bidirectional_iterator_tag() );
 }
 
-
+///
+/// \brief Copy range of elements.
+///
+/// This is analagous to the std::copy method in the STL <algorithm> header.  In this case, the behaviour
+/// of the copy is determined at compile-time depending on whether the source and destination iterators
+/// are contiguous and whether they refer to device or host memory.
+///
+/// \param first,last input iterators to the initial and final positions in a sequence to be copied. The
+///        range used is [first,last), which contains all the elements between first and last, including
+///        the element pointed by first but the not the element pointed by last.
+/// \param result Output iterator to the initial position in the destination sequence. This shall not
+///               pointer to any element in the range [first,last).
+/// \return An iterator to the end of the destination range where elements have been copied.
+///
 template<class InputIterator,class OutputIterator>
 HOST inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
 	return __copy( first, last, result, typename std::iterator_traits<InputIterator>::iterator_category(), typename std::iterator_traits<OutputIterator>::iterator_category() );

@@ -60,13 +60,13 @@ namespace ecuda {
 ///
 /// \brief A fixed-size array stored in device memory.
 ///
-/// Creates a fixed size array in GPU memory.  Redeclares most of the
-/// STL methods on the equivalent C++11 std::array (although this implementation
-/// works with C98 compilers).  Methods are prefaced with
-/// appropriate keywords to declare them as host and/or device capable.
-/// In general: operations requiring memory allocation/deallocation/copying
-/// are host only, operations to access the values of specific elements
-/// are device only, and general information can be accessed by both.
+/// Creates a fixed size array in GPU memory.  Redeclares most of the STL methods on the equivalent
+/// C++11 std::array (although this implementation works with C98 compilers).
+///
+/// Methods are prefaced with appropriate keywords to declare them as host and/or device capable.
+/// In general: operations requiring memory allocation/deallocation are host only, operations
+/// to access the values of specific elements are device only, and copy operations on ranges of data and
+/// accessors of general information can be performed on both the host and device.
 ///
 template<typename T,std::size_t N>
 class array {
@@ -119,7 +119,8 @@ public:
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
 	HOST DEVICE array( const array& src ) : deviceMemory(src.deviceMemory) {}
-	
+
+	/*
 	///
 	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
 	///
@@ -135,6 +136,7 @@ public:
 		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 	}
+	*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///

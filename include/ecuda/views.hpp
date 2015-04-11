@@ -52,11 +52,14 @@ namespace ecuda {
 ///
 /// \brief View of data sequence given a pointer and size.
 ///
-/// Acts as a standalone representation of a linear fixed-size series of values
+/// Acts as a standalone representation of a fixed-size series of values
 /// given a pointer and the desired size. Used to generate subsequences from
 /// a larger memory structure (e.g. an individual row of a larger matrix). This
 /// is a contrived structure to provide array-like operations, no
 /// allocation/deallocation is done.
+///
+/// This view does NOT assume the range of values lies in contiguous memory,
+/// so some methods (e.g. host assign()) are not available.
 ///
 template<typename T,typename PointerType=typename ecuda::reference<T>::pointer_type>
 class sequence_view
@@ -208,7 +211,7 @@ public:
 		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
-		if( len < 0 or len != base_type::size() ) throw std::length_error( "ecuda::contiguous_sequence_view::assign() given range does not match size of this view" );
+		if( len < 0 or len != base_type::size() ) throw std::length_error( EXCEPTION_MSG("ecuda::contiguous_sequence_view::assign() given range does not match size of this view") );
 		::ecuda::copy( first, last, begin() );
 		#endif
 	}
@@ -460,7 +463,7 @@ public:
 		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
 		#else
 		const typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
-		if( len < 0 or len != size() ) throw std::length_error( "ecuda::contiguous_matrix_view::assign() given range does not match size of this view" );
+		if( len < 0 or len != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::contiguous_matrix_view::assign() given range does not match size of this view") );
 		Iterator endRow = first;
 		for( size_type i = 0; i < number_rows(); ++i ) {
 			row_type row = get_row(i);

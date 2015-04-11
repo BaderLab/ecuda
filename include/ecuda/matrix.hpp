@@ -65,6 +65,11 @@ namespace ecuda {
 /// threaded more efficiently (i.e. minimizing the number of read operations required to supply data to
 /// multiple threads). Consult the CUDA API documentation for a more verbose explanation.
 ///
+/// Methods are prefaced with appropriate keywords to declare them as host and/or device capable.
+/// In general: operations requiring memory allocation/deallocation are host only, operations
+/// to access the values of specific elements are device only, and copy operations on ranges of data and
+/// accessors of general information can be performed on both the host and device.
+///
 /// Memory use can be conceptualized as:
 /// \code
 ///       |- columns -|
@@ -102,7 +107,8 @@ namespace ecuda {
 /// Unfortunately, CUDA solutions are very problem specific, so there is no generally applicable example for
 /// specifying how thread blocks should be defined.  The size of the matrix, hardware limitations, CUDA API
 /// limitations, etc. all play a part.  For example, the above implementation won't work in earlier versions
-/// of CUDA since blockDim.y is limited to 512.
+/// of CUDA since blockDim.y was limited to 512 (at the time of this writing it was 1024 in the newer versions
+/// of CUDA).
 ///
 /// Just keep in mind that the column dimension lies in contiguous memory, and the row dimension is contiguous
 /// blocks of columns; thus, an implementation that aims to have concurrently running threads accessing
@@ -930,10 +936,10 @@ HOST void matrix_swap(
 	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0
 )
 {
-	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( "ecuda::matrix_swap() specified row subset of mat1 is out of bounds" );
-	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( "ecuda::matrix_swap() specified row subset of mat2 is out of bounds" );
-	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( "ecuda::matrix_swap() specified column subset of mat1 is out of bounds" );
-	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( "ecuda::matrix_swap() specified column subset of mat2 is out of bounds" );
+	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat1 is out of bounds") );
+	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat2 is out of bounds" ) );
+	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat1 is out of bounds") );
+	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat2 is out of bounds") );
 	ecuda::vector<T> stagingMemory( numberColumns );
 	typedef typename matrix<T,Alloc1>::size_type size_type;
 	for( size_type i = 0; i < numberRows; ++i ) {

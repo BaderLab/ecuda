@@ -89,8 +89,13 @@ template<> struct __is_integer<unsigned long long> { typedef __true_type __type;
 ///
 /// \brief A resizable vector stored in device memory.
 ///
+/// Methods are prefaced with appropriate keywords to declare them as host and/or device capable.
+/// In general: operations requiring memory allocation/deallocation are host only, operations
+/// to access the values of specific elements are device only, and copy operations on ranges of data and
+/// accessors of general information can be performed on both the host and device.
 ///
-///
+/// Any growth of the vector follows a doubling pattern.  The existing memory allocation size
+/// is doubled until the requested amount of memory is met or exceeded.
 ///
 template< typename T, class Alloc=device_allocator<T> >
 class vector {

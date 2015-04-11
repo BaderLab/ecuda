@@ -29,6 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // allocators.hpp
+//
 // STL-compatible memory allocators using CUDA memory allocation routines.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
@@ -341,6 +342,12 @@ public:
 /// \brief An STL allocator for hardware aligned device memory.
 ///
 /// The implementation uses the CUDA API functions cudaMallocPitch and cudaFree.
+/// This allocator is NOT strictly compatible with STL because the allocated
+/// memory is 2D and has padding to align the allocation in hardware memory.
+///
+/// \todo Possibly re-engineer this to return a specialized pointer that
+///       keeps track of the pitch parameter.  This might make it possible
+///       for this allocator to be more STL-like.
 ///
 template<typename T>
 class device_pitch_allocator {

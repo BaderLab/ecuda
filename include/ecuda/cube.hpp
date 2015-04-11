@@ -61,6 +61,11 @@ namespace ecuda {
 /// be threaded more efficiently (i.e. minimizing the number of read operations required to supply data to
 /// multiple threads). Consult the CUDA API documentation for a more verbose explanation.
 ///
+/// Methods are prefaced with appropriate keywords to declare them as host and/or device capable.
+/// In general: operations requiring memory allocation/deallocation are host only, operations
+/// to access the values of specific elements are device only, and copy operations on ranges of data and
+/// accessors of general information can be performed on both the host and device.
+///
 /// Memory use can be conceptualized as:
 /// \code
 ///              |- depths -|
@@ -101,7 +106,7 @@ namespace ecuda {
 /// Unfortunately, CUDA solutions are very problem specific, so there is no generally applicable example for
 /// specifying how thread blocks should be defined.  The size of the cube, hardware limitations, CUDA API
 /// limitations, etc. all play a part.  For example, the above implementation won't work in earlier versions
-/// of CUDA when blockDim.x is limited to 512 (at the time of this writing it was 1024 in the newer versions
+/// of CUDA when blockDim.x was limited to 512 (at the time of this writing it was 1024 in the newer versions
 /// of CUDA).
 ///
 /// Just keep in mind that the depth dimension lies in contiguous memory, the column dimension is contiguous
