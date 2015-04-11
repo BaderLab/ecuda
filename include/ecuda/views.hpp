@@ -122,12 +122,12 @@ public:
 	DEVICE inline const_reference back() const { return operator[](size()-1); }
 
 	template<class InputIterator>
-	DEVICE void assign( InputIterator begin, InputIterator end ) {
+	DEVICE void assign( InputIterator first, InputIterator last ) {
 		iterator iter = begin();
-		while( begin != end and iter != end() ) {
-			*iter = *begin;
+		while( first != last and iter != end() ) {
+			*iter = *first;
 			++iter;
-			++begin;
+			++first;
 		}
 	}
 
