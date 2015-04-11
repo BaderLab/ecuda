@@ -58,7 +58,7 @@ int main( int argc, char* argv[] ) {
 	print_sequence( mat1 );
 
 	// should fail to compile
-	mat1.get_row(1).assign( mat1.get_column(0).begin(), mat1.get_column(0).end() );
+	//mat1.get_row(1).assign( mat1.get_column(0).begin(), mat1.get_column(0).end() );
 
 	return EXIT_SUCCESS;
 
