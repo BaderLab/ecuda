@@ -178,6 +178,9 @@ int main( int argc, char* argv[] ) {
 	//
 	// Test 3: construction using a C++11 intializer list
 	//
+	// - removed this from ecuda::array
+	//
+	/*
 	#ifdef __CPP11_SUPPORTED__
 	std::cerr << "Test 3" << std::endl;
 	{
@@ -194,9 +197,10 @@ int main( int argc, char* argv[] ) {
 		testResults.push_back( passed ? 1 : 0 );
 	}
 	#else
+	*/
 	std::cerr << "Test 3 (skipped)" << std::endl;
 	testResults.push_back( -1 );
-	#endif
+	//#endif
 
 	//
 	// Test 4: index accessors, front(), and back()

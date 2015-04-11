@@ -43,10 +43,10 @@ either expressed or implied, of the FreeBSD Project.
 #include <limits>
 #include <stdexcept>
 #include <vector>
-#ifdef __CPP11_SUPPORTED__
-#include <array>
-#include <initializer_list>
-#endif
+//#ifdef __CPP11_SUPPORTED__
+//#include <array>
+//#include <initializer_list>
+//#endif
 
 #include "global.hpp"
 #include "algorithm.hpp"
@@ -322,6 +322,13 @@ public:
 	///
 	HOST DEVICE inline const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return const_reverse_iterator(cend()); }
+	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return const_reverse_iterator(cbegin()); }
+	#endif
+
 	///
 	/// \brief Assigns a given value to all elements in the container.
 	///
@@ -373,11 +380,11 @@ public:
 		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
 		return true;
 		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//std::array<T,N> arr1, arr2;
+		//#else
 		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
-		#endif
+		//#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
 		return arr1 == arr2;
@@ -405,11 +412,11 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//std::array<T,N> arr1, arr2;
+		//#else
 		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
-		#endif
+		//#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
 		return arr1 < arr2;
@@ -426,11 +433,11 @@ public:
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else
-		#ifdef __CPP11_SUPPORTED__
-		std::array<T,N> arr1, arr2;
-		#else
+		//#ifdef __CPP11_SUPPORTED__
+		//std::array<T,N> arr1, arr2;
+		//#else
 		std::vector< value_type, host_allocator<value_type> > arr1( size() ), arr2( size() );
-		#endif
+		//#endif
 		operator>>( arr1 );
 		other.operator>>( arr2 );
 		return arr1 > arr2;

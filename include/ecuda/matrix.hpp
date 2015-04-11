@@ -289,6 +289,13 @@ public:
 	///
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows(), 0, pitch ), number_columns(), pitch-number_columns()*sizeof(value_type), 0 ) ); }
+	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return const_reverse_iterator(cend()); }
+	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return const_reverse_iterator(cbegin()); }
+	#endif
+
 	///
 	/// \brief Returns the number of elements in the container (numberRows*numberColumns).
 	///
@@ -544,7 +551,11 @@ public:
 	/// \throws std::length_error if the number of elements in the initializer list does not match the number of elements in this container
 	/// \param il initializer list to initialize the elements of the container with
 	///
-	HOST inline void assign( std::initializer_list<T> il ) { assign( il.begin(), il.end() ); }
+	HOST inline void assign( std::initializer_list<T> il ) {
+		host_array_proxy<const T> proxy( il.begin(), il.size() );
+		assign( proxy.begin(), proxy.end() );
+		//assign( il.begin(), il.end() );
+	}
 	#endif
 
 	///

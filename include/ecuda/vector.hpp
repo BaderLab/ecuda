@@ -55,6 +55,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "device_ptr.hpp"
 #include "iterators.hpp"
 #include "global.hpp"
+#include "views.hpp"
 
 namespace ecuda {
 
@@ -248,9 +249,10 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	HOST vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : n(0), m(0), allocator(allocator) {
-		std::vector< value_type, host_allocator<value_type> > v( il );
-		growMemory( v.size() );
-		::ecuda::copy( v.begin(), v.end(), begin() );
+		//std::vector< value_type, host_allocator<value_type> > v( il );
+		host_array_proxy<const value_type> proxy( il.begin(), il.size() );
+		growMemory( proxy.size() );
+		::ecuda::copy( proxy.begin(), proxy.end(), begin() );
 	}
 	#endif
 
@@ -329,6 +331,13 @@ public:
 	/// \returns Reverse iterator to the element following the last element.
 	///
 	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
+
+	#ifdef __CPP11_SUPPORTED__
+	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()); }
+	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return const_iterator(deviceMemory.get()+size()); }
+	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return const_reverse_iterator(cend()); }
+	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return const_reverse_iterator(cbegin()); }
+	#endif
 
 	///
 	/// \brief Returns the number of elements in the container.
@@ -502,7 +511,11 @@ public:
 	///
 	/// \param il initializer list to copy the values from
 	///
-	HOST inline void assign( std::initializer_list<value_type> il ) { assign( il.begin(), il.end() ); }
+	HOST inline void assign( std::initializer_list<value_type> il ) {
+		host_array_proxy<const value_type> proxy( il.begin(), il.size() );
+		assign( proxy.begin(), proxy.end() );
+		//assign( il.begin(), il.end() );
+	}
 	#endif
 
 	///
@@ -652,7 +665,10 @@ public:
 	/// \param position iterator before which the content will be inserted. position may be the end() iterator
 	/// \param il initializer list to insert values from
 	///
-	HOST inline void insert( const_iterator position, std::initializer_list<value_type> il ) { return insert( position, il.begin(), il.end() ); }
+	HOST inline void insert( const_iterator position, std::initializer_list<value_type> il ) {
+		host_array_proxy<const value_type> proxy( il.begin(), il.size() );
+		return insert( position, proxy.begin(), proxy.end() );
+	}
 	#endif
 
 	///

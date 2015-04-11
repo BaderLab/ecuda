@@ -158,7 +158,6 @@ __global__void runStatistics( const ecuda::matrix<double> data, ecuda::vector<do
 }
 \endcode
 
-
 \section requirements Requirements
 
 There are no additional requirements other than your existing toolchain to compile CUDA code (minimally the CUDA API and a C++ compiler).
@@ -456,7 +455,7 @@ The execution time of the second kernel will invariably be \em much faster than 
 
 \section performance Performance
 
-Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing \em ecuda containers.  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and certainly less headaches with raw pointers.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.  They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional \em ecuda layer over direct CUDA API calls.
+Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing \em ecuda containers.  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and there will certainly be less headaches with raw pointers.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.  They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional \em ecuda layer over direct CUDA API calls.
 
 On a test machine containing an NVIDIA Tesla M2090 GPU and Intel Xeon E5-2620 CPU, some results were:
 
@@ -484,6 +483,12 @@ __global__ void linearizeMatrix( const ecuda::matrix<T> matrix, ecuda::vector<T>
 The value of <tt>index</tt> would not increment.  The issue disappeared if I ran only that kernel in CUDA 5.5, and was never an issue regardless of how many kernels were run in CUDA 6.0.  I concluded that it was a problem with the CUDA 5.5 <tt>nvcc</tt> compiler, but I'm including it here for transparency and in case a similar issue arises again.
 
 \em ecuda has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using \b and and \b or (a personal C++ idiosyncracy of mine) in place of \b <tt>&&</tt> and \b <tt>||</tt> with Windows compilers in other code I've worked on.  If this is real problem I'm remembering correctly, I will replace these in a future release.  YMMV, but I expect any problems can be easily identified and hacked into working form.  Please contact me if you run into issues.
+
+\subsection overview_cpp11 C++11 Support and CUDA >= 7.0
+
+C++11 support was finally added to CUDA 7.0.  \em ecuda does implement the additions to the STL specification that came with C++11.  The move constructor is defined,  std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const.  The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.
+
+The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the __CONSTEXPR__ and __NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0.
 
 \section section_future_work Future Work
 
