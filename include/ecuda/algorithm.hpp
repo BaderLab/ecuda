@@ -101,6 +101,8 @@ DEVICE T accumulate( InputIterator first, InputIterator last, T init=0 ) {
 }
 
 
+/// \cond DEVELOPER_DOCUMENTATION
+
 template<class InputIterator,class OutputIterator>
 HOST OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::random_access_iterator_tag, ::ecuda::contiguous_device_iterator_tag ) {
 	typedef typename OutputIterator::value_type value_type;
@@ -162,10 +164,12 @@ HOST inline OutputIterator __copy( InputIterator first, InputIterator last, Outp
 	return __copy( first, last, result, ::ecuda::contiguous_device_iterator_tag(), std::bidirectional_iterator_tag() );
 }
 
+/// \endcond
+
 ///
 /// \brief Copy range of elements.
 ///
-/// This is analagous to the std::copy method in the STL <algorithm> header.  In this case, the behaviour
+/// This is analagous to the std::copy method in the STL \<algorithm\> header.  In this case, the behaviour
 /// of the copy is determined at compile-time depending on whether the source and destination iterators
 /// are contiguous and whether they refer to device or host memory.
 ///

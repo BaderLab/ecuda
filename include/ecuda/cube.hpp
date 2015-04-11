@@ -186,12 +186,16 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container. This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead. If a deep copy
-	/// of the container is required in host code, use the assignment operator. For example:
+	/// of the container is required in host code, use the << or >> operators, or use iterators.
+	/// For example:
 	///
 	/// \code{.cpp}
 	/// ecuda::cube<int> cube( 5, 10, 15 ); // create a cube of dimensions 5x10x15 filled with zeroes
 	/// ecuda::cube<int> newCube( cube ); // shallow copy (changes to newCube reflected in cube)
-	/// ecuda::cube<int> newCube; newCube = cube; // deep copy (new device memory allocated and contents of cube copied there)
+	/// ecuda::cube<int> newCube( 5, 10, 15 );
+	/// newCube << cube; // deep copy
+	/// cube >> newCube; // deep copy
+	/// newCube.assign( cube.begin(), cube.end() ); // deep copy
 	/// \endcode
 	///
 	/// \param src Another cube object of the same type, whose contents are copied.

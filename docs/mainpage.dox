@@ -282,7 +282,7 @@ std::vector<int> hostVector( 1000 ); // create 1000 element vector in host memor
 deviceVector.assign( hostVector.begin(), hostVector.end() ); // copy elements from host to device, vector will grow to accomodate
 \endcode
 
-Keep in mind that iterator-based operations that occur on the host that involve device memory requires that the device memory be contiguous (since the code behind the scenes utilizes <tt>cudaMemcpy</tt> or <tt>cudaMemcpy2D</tt>.  However, code that doesn't follow this rule will simply fail to compile so you'll know that you've violated this.
+Keep in mind that iterator-based operations that occur on the host that involve device memory requires that the device memory be contiguous (since the code behind the scenes utilizes <tt>cudaMemcpy</tt> or <tt>cudaMemcpy2D</tt>).  However, code that doesn't follow this rule will simply fail to compile so you'll know that you've violated this.
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 );
@@ -495,6 +495,8 @@ The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the __C
 I'll continue to develop this as time permits.  The specifications for the core container should remain fixed, so I don't anticipate any backwards compatibility issues from any future improvements.
 
 There are a number of architectural changes that are possible to the API that are on a to-do list.  In one ill-fated trip down the C++ template/metaprogramming rabbit hole, I was able to make containers subclasses of views, and reworked specialized pointers in a way that was more appealing.  Unfortunately, the API took a huge performance hit.  It's well-known that too much templating eventually hinders C++ compilers (and presumably the nvcc compiler) from making good optimizations, so this is something to keep in mind.  As of now, the design is in a good place as far as performance versus duplicating certain patterns.
+
+Finally, apologies in advance for any cosmetic blemishes in variable names and documentation.  These will be cleaned up as they are found.
 
 \section license License
 

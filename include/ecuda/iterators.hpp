@@ -547,6 +547,7 @@ public:
 
 };
 
+/// \cond DEVELOPER_DOCUMENTATION
 
 template<class Iterator,class Distance>
 HOST void __advance( Iterator& iter, Distance n, contiguous_device_iterator_tag ) { iter += n; }
@@ -557,8 +558,22 @@ HOST void __advance( Iterator& iter, Distance n, device_iterator_tag ) { for( Di
 template<class Iterator,class Distance,class SomeOtherCategory>
 HOST void __advance( Iterator& iter, Distance n, SomeOtherCategory ) { std::advance( iter, n ); }
 
+/// \endcond
+
+///
+/// \brief Increments given iterator by n elements.
+///
+/// This is analagous to the STL std::advance function in the STL \<iterator\> header.  In this case, the
+/// function supports \em ecuda device iterators.  If the given iterator is not a device iterator, it
+/// resolves to std::advance.
+///
+/// \param iter iterator to be advance
+/// \param n number of elements it should be advanced
+///
 template<class Iterator,class Distance>
 HOST void advance( Iterator& iter, Distance n ) { __advance( iter, n, typename std::iterator_traits<Iterator>::iterator_category() ); }
+
+/// \cond DEVELOPER_DOCUMENTATION
 
 template<class Iterator>
 HOST inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, ::ecuda::contiguous_device_iterator_tag ) { return last-first; }
@@ -576,6 +591,24 @@ HOST inline typename std::iterator_traits<Iterator>::difference_type __distance(
 	return std::distance( first, last );
 }
 
+/// \endcond
+
+///
+/// \brief Returns the number of elements between first and last.
+///
+/// This is analagous to the STL std::distance function in the STL \<iterator\> header.  In this case, the
+/// function supports \em ecuda device iterators.  If the given iterator is not a device iterator, it
+/// resolves to std::distance.
+///
+/// Note that this function is far more efficient for contiguous device iterators, since the distance
+/// can be calculated through a simple (last-first), rather than incrementing the iterator step-by-step until
+/// last is reached.  This is also the case with the STL method, where iterators from the RandomAccessIterator
+/// category are more efficient than other categories.
+///
+/// \param first iterator pointing to the first element
+/// \param last iterator pointing to the end of the range
+/// \returns The number of elements between first and last.
+///
 template<class Iterator>
 HOST inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) { return __distance( first, last, typename std::iterator_traits<Iterator>::iterator_category() ); }
 
