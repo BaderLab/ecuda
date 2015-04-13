@@ -282,7 +282,8 @@ The four core containers.</div></div>
 <li>3D <b>cube</b> </li>
 </ol>
 <p>The <a class="el" href="classecuda_1_1array.html">ecuda::array</a> and <a class="el" href="classecuda_1_1vector.html">ecuda::vector</a> are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,100&gt;</a> deviceArray( 66 ); <span class="comment">// create fixed 100 element array filled with value 66</span></div>
+<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,100&gt;</a> deviceArray; <span class="comment">// create fixed 100 element array</span></div>
+<div class="line">deviceArray.<a class="code" href="classecuda_1_1array.html#a8ce14930b529dd0639d388b0317cee6b">fill</a>( 66 ); <span class="comment">// fill array with value 66</span></div>
 <div class="line"></div>
 <div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector1( 100, 66 ); <span class="comment">// create 100 element vector filled with value 66</span></div>
 <div class="line">deviceVector1.resize( 200, 99 ); <span class="comment">// expand the vector to 200 elements filling new elements with value 99</span></div>
@@ -577,7 +578,7 @@ Acknowledgements</h1>
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 13 2015 13:56:45 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Apr 13 2015 17:40:41 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
