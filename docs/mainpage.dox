@@ -11,6 +11,8 @@ The original motivation for creating the library was to remove a lot of the head
 
 For example, here's some typical looking code using the CUDA API that a) creates a matrix and b) uses the GPU to calculate the column sums:
 
+\b Before
+
 \code{.cpp}
 const size_t width = 100;
 const size_t height = 100;
@@ -73,6 +75,8 @@ There are so many places to innocently go wrong.  Did you remember to specify <t
 
 Here's the equivalent code using \em ecuda:
 
+\b After
+
 \code{.cpp}
 const size_t width = 100;
 const size_t height = 100;
@@ -126,11 +130,12 @@ for( double x : matrix.get_column( threadNum ) ) columnSum += x;
 
 \subsection overview_thrust Comparison to the Thrust Library
 
-Whereas <a href="http://docs.nvidia.com/cuda/thrust/">Thrust</a>, available from NVIDIA, is a CUDA-parallelized \em replacement of the STL, \em ecuda is a CUDA-capable \em expansion to the STL.  For example, Thrust has parallelized versions of common STL algorithms like sort.  It currently has only two containers: thrust::host_vector and thrust:device_vector, whereas \em ecuda simply has ecuda::vector that can work in concert with the existing std::vector.  \em ecuda also focuses on the inclusion of higher-dimensional containers like ecuda::matrix and ecuda::cube which are often an intuitive way to represent data for device-bound tasks.  Thrust is also not designed such that you'd pass the containers themselves to kernel functions, whereas this is a central feature of \em ecuda.
+Whereas <a href="http://docs.nvidia.com/cuda/thrust/">Thrust</a>, available from NVIDIA, is a CUDA-parallelized \em replacement of the STL, \em ecuda is a CUDA-capable \em extension to the STL.  For example, Thrust has parallelized versions of common STL algorithms like sort.  It currently has only two containers: thrust::host_vector and thrust:device_vector, whereas \em ecuda simply has ecuda::vector that can work in concert with the existing std::vector.  \em ecuda also focuses on the inclusion of higher-dimensional containers like ecuda::matrix and ecuda::cube which are often an intuitive way to represent data for device-bound tasks.  Thrust is also not designed such that you'd pass the containers themselves to kernel functions, whereas this is a central feature of \em ecuda.
 
 I have had no extensive hands-on experience using Thrust, but I imagine it and \em ecuda are excellent complementary toolkits.  For example:
 
-Good task for Thrust:
+\b Good task for Thrust:
+
 \code{.cpp}
 // I have 1000 measurements from 1000 experiments, and I want to sort each experiment
 for( std::size_t i = 0; i < 1000; ++i ) {
@@ -140,7 +145,8 @@ for( std::size_t i = 0; i < 1000; ++i ) {
 }
 \endcode
 
-Good task for ecuda:
+\b Good task for ecuda:
+
 \code{.cpp}
 // I have 1000 measurements from 1000 experiments, and I want to run my fancy stats on each experiment
 ecuda::matrix<double> data( 1000, 1000 );
@@ -175,9 +181,20 @@ sudo make install
 The required containers can be declared in your CUDA code with, for example:
 
 \code{.cpp}
+#include <ecuda/array.hpp>
 #include <ecuda/vector.hpp>
 #include <ecuda/matrix.hpp>
+#include <ecuda/cube.hpp>
 \endcode
+
+If you use the CUDA device information or event wrapper then:
+
+\code{.cpp}
+#include <ecuda/device.hpp>
+#include <ecuda/event.hpp>
+\endcode
+
+Other headers are utilized internally as needed.
 
 If you have <a href="http://www.doxygen.org">Doxygen</a> installed, you can create a local copy of this documentation with:
 
@@ -325,7 +342,7 @@ deviceMatrix >> hostMatrix; // copy entire matrix to host
 
 \image html views.png ""
 
-The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist in terms of the inner workings of the library.  These act as views of a subset of an existing container without carrying responsibility for the memory management.  For example, a pointer to the start of a single row or column of a \ref ecuda::matrix is provided to a \ref ecuda::contiguous_sequence_view or \ref ecuda::sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon as if it were actually a sequence.  Similarly, a slice of a \ref ecuda::cube along the x-y, x-z, or y-z plane would be represented as a \ref ecuda::matrix_view or \ref ecuda::contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
+The core \em ecuda containers can be used without having to directly create a view, but it can be useful to know they exist since they are returned by methods such as ecuda::matrix's <tt>get_row</tt>.  These act as views of a subset of an existing container without carrying responsibility for memory [de]allocation.  For example, a pointer to the start of a single row or column of a \ref ecuda::matrix is provided to a \ref ecuda::contiguous_sequence_view or \ref ecuda::sequence_view, respectively, so that the memory in the matrix can be traversed and acted upon as a sequence.  Similarly, a slice of a \ref ecuda::cube along the x-y, x-z, or y-z plane would be represented as a \ref ecuda::matrix_view or \ref ecuda::contiguous_matrix_view.  Like iterators, they are aliased through a container-specific <tt>typedef</tt> and aren't referenced explicity under normal use.  For example:
 
 \code{.cpp}
 ecuda::matrix<int> deviceMatrix( 100, 100 ); // create 100x100 matrix
@@ -339,7 +356,7 @@ ecuda::cube<int>::slice_xz_type xz = deviceCube.get_xz(0); // is a contiguous_ma
 
 \subsection overview_pointers Specialized Pointers
 
-\warning Specialized pointers are quite far removed from a developer's interaction with the library. This section is included only for completeness.
+\warning This section is optional reading since a developer doesn't interact with specialized pointers directly.  They are used by the API internally.
 
 \image html pointers.png ""
 
@@ -408,7 +425,7 @@ std::cerr << "EXECUTION TIME: " << ( stop-start ) << "milliseconds" << std::endl
 
 \subsection overview_misc_stl_algo STL Functions
 
-Some standard STL functions are re-implemented, or extended to work in kernels or utilize \em ecuda classes.  For example, <tt>max_element</tt>, <tt>swap</tt>, <tt>copy</tt>, <tt>distance</tt> etc.  A <a href="namespaceecuda.html">complete list</a> is available in the generated documentation.
+Some standard STL functions are re-implemented, or extended to work in kernels or utilize \em ecuda classes.  For example, <tt>max_element</tt>, <tt>swap</tt>, <tt>copy</tt>, <tt>distance</tt> etc.  A <a href="namespaceecuda.html">complete list</a> is available in the generated documentation.  These were implemented only to support specific tasks within the API, so \em ecuda does not exhaustively treat the many STL functions in headers like \<algorithm\>, \<iterator\>, or \<type_traits\>.
 
 \code{.cpp}
 std::vector<int> hostVectorFragment1( 50, 99 );
@@ -470,7 +487,7 @@ The execution time of the second kernel will invariably be \em much faster than 
 
 \section performance Performance
 
-Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing \em ecuda containers.  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and there will certainly be less headaches with raw pointers.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.  They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional \em ecuda layer over direct CUDA API calls.
+Considerable effort was dedicated to minimizing the overhead of using \em ecuda.  Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing \em ecuda containers.  If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and there will certainly be less headaches with raw pointers.  If you're already familiar with C++/STL \em ecuda should greatly ease your introduction to CUDA programming.  There are several programs in the <tt>benchmarks</tt> folder you can compile to look at the performance and the design of the test problems used.  They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional \em ecuda layer over direct CUDA API calls.
 
 On a test machine containing an NVIDIA Tesla M2090 GPU and Intel Xeon E5-2620 CPU, some results were:
 
@@ -484,7 +501,7 @@ matrix_multiply | 5000x5000   | ~18min   | 4900ms     | 4900ms
 
 The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested.  CUDA <5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation).
 
-The only pernicious bug I encountered was in an experimental version of the API (and that was ultimately not adopted for final release), when using test programs with a larger number (>10) of separate kernels.  Specifically, this code fragment:
+The only pernicious bug I encountered was in an experimental version of the API (that was ultimately not adopted for final release), when using test programs with a larger number (>10) of separate kernels in the same file.  Specifically, this code fragment:
 
 \code{.cpp}
 template<typename T>
@@ -501,7 +518,7 @@ The value of <tt>index</tt> would not increment.  The issue disappeared if I ran
 
 \subsection overview_cpp11 C++11 Support and CUDA >= 7.0
 
-C++11 support was finally added to CUDA 7.0.  \em ecuda does implement the additions to the STL specification that came with C++11.  The move constructor is defined,  std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const.  The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.
+C++11 support was finally added to CUDA 7.0.  \em ecuda does implement the additions to the STL specification that came with C++11.  These have been included in \em ecuda for quite some time in an attempt to future-proof the API, and it's paid off just in time for release.   The move constructor is defined,  std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const.  The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.
 
 The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the \_\_CONSTEXPR__ and \_\_NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0 (and the -std=c++11 flag).
 
@@ -526,7 +543,7 @@ NVCCFLAGS = -arch=sm_21 -O3
 LDLIBS = -lcudart
 \endcode
 
-Alternatively, the Makefile will take any variables defined in a file named <tt>local-config.cfg</tt> if present, so you can simply create that file and redeclare the relevant lines with different values there.
+Alternatively, the Makefile will take any variables defined in a file named <tt>local-config.cfg</tt> if it is present, so you can simply create that file and redeclare the relevant lines with different values there.
 
 The programs are not intended to be pretty or well organized, but they will give a taste of how to use the API in practice.  They're basically hacky code that I used to check that the API was performing tasks correctly.
 
@@ -534,7 +551,7 @@ The programs are not intended to be pretty or well organized, but they will give
 
 I'll continue to develop this as time permits.  The specifications for the core container should remain fixed, so I don't anticipate any backwards compatibility issues from any future improvements.
 
-There are a number of architectural changes that are possible to the API that are on a to-do list.  In one ill-fated trip down the C++ template/metaprogramming rabbit hole, I was able to make containers subclasses of views, and reworked specialized pointers in a way that was more appealing.  Unfortunately, the API took a huge performance hit.  It's well-known that too much templating eventually hinders C++ compilers (and presumably the nvcc compiler) from making good optimizations, so this is something to keep in mind.  As of now, the design is in a good place as far as performance versus duplicating certain patterns.
+There are a number of architectural changes that are possible to the API that are on a to-do list.  In one ill-fated trip down the C++ template/metaprogramming rabbit hole, I was able to make containers subclasses of views, and reworked specialized pointers in a way that was more appealing.  Unfortunately, the API took a huge performance hit.  It's well-known that too much templating eventually hinders C++ compilers (and presumably the nvcc compiler) from making good optimizations, so this is something to keep in mind.  As of now, the design is in a good place as far as performance versus code duplication.
 
 Finally, apologies in advance for any cosmetic blemishes in variable names and documentation.  These will be cleaned up as they are found.
 
