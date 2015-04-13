@@ -412,6 +412,7 @@ int main( int argc, char* argv[] ) {
 		bool passed = true;
 		for( std::vector<bool>::size_type i = 0; i < hostResults.size(); ++i ) if( hostResults[i] != 1 ) passed = false;
 		testResults.push_back( passed ? 1 : 0 );
+
 	}
 
 	const std::string outputText =
