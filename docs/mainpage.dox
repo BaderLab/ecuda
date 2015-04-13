@@ -406,6 +406,19 @@ stop.synchronize(); // kernel execution is asynchronous, wait until it finishes
 std::cerr << "EXECUTION TIME: " << ( stop-start ) << "milliseconds" << std::endl;
 \endcode
 
+\subsection overview_misc_stl_algo STL Functions
+
+Some standard STL functions are re-implemented, or extended to work in kernels or utilize \em ecuda classes.  For example, <tt>max_element</tt>, <tt>swap</tt>, <tt>copy</tt>, <tt>distance</tt> etc.  A <a href="namespaceecuda.html">complete list</a> is available in the generated documentation.
+
+\code{.cpp}
+std::vector<int> hostVectorFragment1( 50, 99 );
+std::vector<int> hostVectorFragment1( 50, 66 );
+ecuda::vector<int> deviceVector( 100 );
+ecuda::copy( hostVectorFragment1.begin(), hostVectorFragment1.end(), deviceVector.begin() ); // works with device iterators
+ecuda::copy( hostVectorFragment2.begin(), hostVectorFragment2.end(), deviceVector.begin()+50 ); // works with device iterators
+std::copy( hostVectorFragment1.begin(), hostVectorFragment1.end(), deviceVector.begin() ); // compiler barfs, STL doesn't recognize device iterators
+\endcode
+
 \section optimizing_threads Optimizing Thread Operations
 
 One of the central concerns when CUDA programming is that read/write operations to device memory are extremely time-consuming, so organizing these operations so that different threads access data in close physical proximity greatly optimizes the program.  This can be a source of optimization with any program, but it is particularly impactful for multi-threading with GPUs.  The specifics depend on the hardware, but the bus might always transfer say, 128 bits of memory per read operation.  If each data element is 8 bytes then a single read can potentially supply 16 threads with the information it requires.  When using the \ref ecuda::matrix matrix and \ref ecuda::cube containers, it's important to note how these are represented in memory and which dimension different threads should preferably access.  The rule of thumb is that the minor dimension should be the target of separate threads.  For a matrix, this is a column; for a cube, this is a depth (and secondarily, a column). For example, given these two kernel functions:
@@ -491,6 +504,31 @@ The value of <tt>index</tt> would not increment.  The issue disappeared if I ran
 C++11 support was finally added to CUDA 7.0.  \em ecuda does implement the additions to the STL specification that came with C++11.  The move constructor is defined,  std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const.  The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.
 
 The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the \_\_CONSTEXPR__ and \_\_NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0 (and the -std=c++11 flag).
+
+\section section_examples Example Programs
+
+There are a number of programs in the <tt>test</tt>, <tt>examples</tt>, and <tt>benchmarks</tt> subdirectories of the release.  These should all compile with GNU Make:
+
+\code
+make test/test_array
+make examples/euclidean
+make benchmarks/matrix_transpose
+... and so forth
+\endcode
+
+You may have to change the Makefile parameters to reflect your setup if you're using a compiler other than GCC or have CUDA installed in a non-standard location.  Look for:
+
+\code
+CXX = g++
+CXXFLAGS = -O3 -Wall -flto -L/usr/local/cuda/lib64 -pedantic
+NVCC = /usr/local/cuda/bin/nvcc
+NVCCFLAGS = -arch=sm_21 -O3
+LDLIBS = -lcudart
+\endcode
+
+Alternatively, the Makefile will take any variables defined in a file named <tt>local-config.cfg</tt> if present, so you can simply create that file and redeclare the relevant lines with different values there.
+
+The programs are not intended to be pretty or well organized, but they will give a taste of how to use the API in practice.  They're basically hacky code that I used to check that the API was performing tasks correctly.
 
 \section section_future_work Future Work
 

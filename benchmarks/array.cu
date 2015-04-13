@@ -16,9 +16,9 @@ T doSomething( const T& value ) {
 	return static_cast<T>(result);
 }
 
-template<typename T>
+template<typename T,std::size_t N>
 __global__
-void squareArray( ecuda::array<T> input ) {
+void squareArray( ecuda::array<T,N> input ) {
 	const int index = blockIdx.x*blockDim.x+threadIdx.x;
 	if( index < input.size() ) {
 		T& value = input[index];
@@ -46,7 +46,7 @@ int main( int argc, char* argv[] ) {
 	std::vector<double> hostData( N );
 	for( std::size_t i = 0; i < N; ++i ) hostData[i] = i+1.0;
 
-	ecuda::array<double> deviceData( N );
+	ecuda::array<double,10000000> deviceData;
 	deviceData << hostData;
 
 	double* rawData = NULL;
