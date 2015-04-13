@@ -47,6 +47,8 @@ namespace ecuda {
 struct device_iterator_tag {};
 struct contiguous_device_iterator_tag {};
 
+template<typename T> class contiguous_device_iterator; // forward declaration
+
 ///
 /// \brief Iterator template compatible with pointers to device memory.
 ///
@@ -77,11 +79,14 @@ public:
 	typedef typename base_iterator_type::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
 	typedef typename base_iterator_type::reference reference; //!< type to represent a reference to an element pointed by the iterator
 
+	template<typename T2,typename PointerType2,class Category2> friend class device_iterator;
+	template<typename T2> friend class contiguous_device_iterator;
+
 private:
 	pointer ptr;
 
-protected:
-	HOST DEVICE inline pointer& get_pointer_ref() const { return ptr; }
+//protected:
+//	HOST DEVICE inline pointer& get_pointer_ref() const { return ptr; }
 
 public:
 	///
@@ -109,7 +114,7 @@ public:
 	/// \param src Another iterator whose contents are to be copied.
 	///
 	template<typename T2,typename PointerType2>
-	HOST DEVICE device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.operator->()) {}
+	HOST DEVICE device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.ptr) {}
 
 	///
 	/// \brief Destructor.
@@ -189,14 +194,14 @@ public:
 	///
 	/// \returns a pointer to the element pointed at by this iterator
 	///
-	HOST DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion device_iterator<T,T*> -> device_iterator<const T,const T*>
+	DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion device_iterator<T,T*> -> device_iterator<const T,const T*>
 
 
 	///
 	/// \brief Assigns a copy of another iterators position to this iterator.
 	/// \param other another iterator whose position should be assigned to this iterator
 	///
-	HOST DEVICE device_iterator& operator=( const device_iterator<T,PointerType,Category>& other ) {
+	HOST DEVICE device_iterator& operator=( const device_iterator& other ) {
 		ptr = other.ptr;
 		return *this;
 	}
@@ -236,8 +241,8 @@ public:
 	typedef typename base_iterator_type::pointer pointer; //!< type to represent a pointer to an element pointed by the iterator
 	typedef typename base_iterator_type::reference reference; //!< type to represent a reference to an element pointed by the iterator
 
-private:
-	HOST DEVICE inline pointer get_naked_pointer() const { return base_iterator_type::operator->(); }
+//private:
+//	HOST DEVICE inline pointer get_naked_pointer() const { return base_iterator_type::operator->(); }
 
 public:
 	///
@@ -265,7 +270,7 @@ public:
 	/// \param src Another iterator whose contents are to be copied.
 	///
 	template<typename T2>
-	HOST DEVICE contiguous_device_iterator( const contiguous_device_iterator<T2>& src ) : base_iterator_type(src.operator->()) {}
+	HOST DEVICE contiguous_device_iterator( const contiguous_device_iterator<T2>& src ) : base_iterator_type(src.ptr) {} //operator->()) {}
 
 	///
 	/// \brief Creates an iterator pointing to a later element some specified positions away.
@@ -275,7 +280,7 @@ public:
 	/// \param x The number of positions ahead to move the new iterator to.
 	/// \returns Another iterator which points to an element x positions after this iterator's element.
 	///
-	HOST DEVICE inline contiguous_device_iterator operator+( int x ) const { return contiguous_device_iterator( get_naked_pointer() + x ); }
+	HOST DEVICE inline contiguous_device_iterator operator+( int x ) const { return contiguous_device_iterator( base_iterator_type::ptr + x ); }
 
 	///
 	/// \brief Creates an iterator pointing to a prior element some specified positions away.
@@ -285,7 +290,7 @@ public:
 	/// \param x The number of positions prior to move the new iterator to.
 	/// \returns Another iterator which points to an element x positions before this iterator's element.
 	///
-	HOST DEVICE inline contiguous_device_iterator operator-( int x ) const { return contiguous_device_iterator( get_naked_pointer() - x ); }
+	HOST DEVICE inline contiguous_device_iterator operator-( int x ) const { return contiguous_device_iterator( base_iterator_type::ptr - x ); }
 
 	///
 	/// \brief Checks if the element pointed at by this iterator comes before another.
@@ -295,7 +300,7 @@ public:
 	/// \param other Another iterator to compare element location with.
 	/// \returns true if the element pointed at by this iterator comes before the element pointed at by other.
 	///
-	HOST DEVICE bool operator<( const contiguous_device_iterator& other ) const { return get_naked_pointer() < other.get_naked_pointer(); }
+	HOST DEVICE bool operator<( const contiguous_device_iterator& other ) const { return base_iterator_type::ptr < other.ptr; }
 
 	///
 	/// \brief Checks if the element pointed at by this iterator comes after another.
@@ -305,7 +310,7 @@ public:
 	/// \param other Another iterator to compare element location with.
 	/// \returns true if the element pointed at by this iterator comes after the element pointed at by other.
 	///
-	HOST DEVICE bool operator>( const contiguous_device_iterator& other ) const { return get_naked_pointer() > other.get_naked_pointer(); }
+	HOST DEVICE bool operator>( const contiguous_device_iterator& other ) const { return base_iterator_type::ptr > other.ptr; }
 
 	///
 	/// \brief Checks if the element pointed at by this iterator is equal to or comes before another.
@@ -334,7 +339,7 @@ public:
 	///
 	/// \param x The number of positions to increment this iterator by.
 	///
-	HOST DEVICE inline contiguous_device_iterator& operator+=( int x ) { base_iterator_type::get_pointer_ref() += x; return *this; }
+	HOST DEVICE inline contiguous_device_iterator& operator+=( int x ) { base_iterator_type::ptr += x; return *this; }
 
 	///
 	/// \brief Decrements the position of this iterator by some amount.
@@ -343,14 +348,14 @@ public:
 	///
 	/// \param x The number of positions to increment this iterator by.
 	///
-	HOST DEVICE inline contiguous_device_iterator& operator-=( int x ) { base_iterator_type::get_pointer_ref() -= x; return *this; }
+	HOST DEVICE inline contiguous_device_iterator& operator-=( int x ) { base_iterator_type::ptr -= x; return *this; }
 
 	///
 	/// \brief Gets a reference to an element whose position is offset by a specified amount from this iterator's element.
 	/// \param x The amount to offset the current position by (can be positive or negative).
 	/// \returns a reference to the offset element
 	///
-	DEVICE reference operator[]( int x ) const { return *(get_naked_pointer()+x); }
+	DEVICE inline reference operator[]( int x ) const { return *(base_iterator_type::ptr+x); }
 
 	///
 	/// \brief Gets the difference in location between the element pointed at by this iterator and another.
@@ -360,7 +365,7 @@ public:
 	/// \param other Another iterator with which to determine the difference in location.
 	/// \returns the difference in location between the element pointed at by this iterator and other
 	///
-	HOST DEVICE inline difference_type operator-( const contiguous_device_iterator& other ) { return get_naked_pointer() - other.get_naked_pointer(); }
+	HOST DEVICE inline difference_type operator-( const contiguous_device_iterator& other ) { return base_iterator_type::ptr - other.ptr; }
 
 };
 
@@ -404,7 +409,7 @@ public:
 	template<class ParentIterator2>
 	HOST DEVICE reverse_device_iterator( const reverse_device_iterator<ParentIterator2>& src ) : parentIterator(src.base()) {}
 
-	HOST DEVICE virtual ~reverse_device_iterator() {}
+	//HOST DEVICE virtual ~reverse_device_iterator() {}
 
 	///
 	/// \brief Returns a copy of the base iterator.

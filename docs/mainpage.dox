@@ -7,7 +7,9 @@
 
 The \em ecuda library is a set of templates fashioned after the C++ Standard Template Library (STL) that provide several useful containers for use with the CUDA API.  These containers remove most of the repetitive low-level tasks that are required when assigning, traversing, and manipulating data in device memory.  The containers can be instantiated in host code and passed to kernel functions, so familiar STL-style semantics can be used inside the device code itself.  The library is header only, so it's portable and simple to install.
 
-The original motivation for creating the library was to remove a lot of the headaches and inherent lack of safety when using naked pointers to device memory.  For example, here's some typical looking code using the CUDA API that a) creates a matrix and b) uses the GPU to calculate the column sums:
+The original motivation for creating the library was to remove a lot of the headaches and inherent lack of safety when using naked pointers to device memory and to create containers that were more intuitive to work with.
+
+For example, here's some typical looking code using the CUDA API that a) creates a matrix and b) uses the GPU to calculate the column sums:
 
 \code{.cpp}
 const size_t width = 100;
@@ -467,7 +469,7 @@ matrix_multiply | 5000x5000   | ~18min   | 4900ms     | 4900ms
 
 \section compatibility Compatibility
 
-The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested.  CUDA 3.2, 4.0, 4.1, and 4.2 did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation.
+The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested.  CUDA <5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation).
 
 The only pernicious bug I encountered was in an experimental version of the API (and that was ultimately not adopted for final release), when using test programs with a larger number (>10) of separate kernels.  Specifically, this code fragment:
 
@@ -488,7 +490,7 @@ The value of <tt>index</tt> would not increment.  The issue disappeared if I ran
 
 C++11 support was finally added to CUDA 7.0.  \em ecuda does implement the additions to the STL specification that came with C++11.  The move constructor is defined,  std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const.  The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.
 
-The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the __CONSTEXPR__ and __NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0.
+The keywords <tt>constexpr</tt> and <tt>noexcept</tt> are also utilized (the \_\_CONSTEXPR__ and \_\_NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0 (and the -std=c++11 flag).
 
 \section section_future_work Future Work
 

@@ -34,6 +34,9 @@ either expressed or implied, of the FreeBSD Project.
 // called from device code or handle iterators to device memory depending
 // on the purpose of the function.
 //
+// TODO: make ecuda::copy handle case where input range and output have
+//       different value types
+//
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
