@@ -56,6 +56,8 @@ else
 	CFLAGS += -O3 -march=native
 endif
 
+VERSION = $(shell cat VERSION)
+
 install:
 	@mkdir -p $(includedir)
 	cp -a include/ecuda $(includedir)/ecuda
@@ -79,7 +81,7 @@ examples/% :: examples/%.cu
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
 dist:
-	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp test/*.cu benchmarks/*.cu
+	tar zcvf ecuda-dist-${VERSION}.tar.gz LICENSE.txt Makefile MANIFEST doxygen.cfg include/ecuda/*.hpp test/*.cu benchmarks/*.cu examples/*.cu docs/*.html docs/*.css docs/*.dox docs/images/*.png
 
 docs: FORCE
 	doxygen doxygen.cfg
