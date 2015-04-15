@@ -217,7 +217,8 @@ The library features four containers:
 The \ref ecuda::array and \ref ecuda::vector are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):
 
 \code{.cpp}
-ecuda::array<double,100> deviceArray( 66 ); // create fixed 100 element array filled with value 66
+ecuda::array<double,100> deviceArray; // create fixed 100 element array
+deviceArray.fill( 66 ); // fill array with value 66
 
 ecuda::vector<double> deviceVector1( 100, 66 ); // create 100 element vector filled with value 66
 deviceVector1.resize( 200, 99 ); // expand the vector to 200 elements filling new elements with value 99
