@@ -160,7 +160,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="preprocessor"></span>        reference_count = <span class="keyword">new</span> <a class="code" href="classecuda_1_1device__ptr.html#ac017ed2e7598472dd8619b167c0d74e7">size_type</a>;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        *reference_count = 1;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="preprocessor">        #else</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor"></span>        reference_count = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor"></span>        reference_count = NULL; <span class="comment">// nullptr;</span></div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor"></span>    }</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
@@ -172,12 +172,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;</div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="preprocessor">    #ifdef __CPP11_SUPPORTED__</span></div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor"></span>    HOST DEVICE <a class="code" href="classecuda_1_1device__ptr.html#a21531cd4a3a7f12781bc215996a605a8">device_ptr</a>( <a class="code" href="classecuda_1_1device__ptr.html">device_ptr&lt;T&gt;</a>&amp;&amp; src ) : ptr(src.ptr), reference_count(src.reference_count) {</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        src.ptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        src.ptr = NULL; <span class="comment">//nullptr;</span></div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="preprocessor">        #ifndef __CUDA_ARCH__</span></div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor"></span>        src.reference_count = <span class="keyword">new</span> <a class="code" href="classecuda_1_1device__ptr.html#ac017ed2e7598472dd8619b167c0d74e7">size_type</a>;</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        *(src.reference_count) = 1;</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">        #else</span></div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor"></span>        src.reference_count = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor"></span>        src.reference_count = NULL; <span class="comment">//nullptr;</span></div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="preprocessor"></span>    }</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="preprocessor">    #endif</span></div>
@@ -217,7 +217,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;</div>
 <div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="classecuda_1_1device__ptr.html#a3e8f083d44daff89674cd0c69053bfaa">  212</a></span>&#160;    HOST <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="classecuda_1_1device__ptr.html#a3e8f083d44daff89674cd0c69053bfaa">unique</a>() const __NOEXCEPT__ { <span class="keywordflow">return</span> <a class="code" href="classecuda_1_1device__ptr.html#a2e1d9d4d5cdf567bad83466937a53c30">use_count</a>() == 1; }</div>
 <div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;</div>
-<div class="line"><a name="l00219"></a><span class="lineno"><a class="line" href="classecuda_1_1device__ptr.html#a1b395137c61fb7b06b5836cb44b0cee2">  219</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <span class="keyword">operator</span> bool() const __NOEXCEPT__ { <span class="keywordflow">return</span> <span class="keyword">get</span>() != <span class="keyword">nullptr</span>; }</div>
+<div class="line"><a name="l00219"></a><span class="lineno"><a class="line" href="classecuda_1_1device__ptr.html#a1b395137c61fb7b06b5836cb44b0cee2">  219</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <span class="keyword">operator</span> bool() const __NOEXCEPT__ { <span class="keywordflow">return</span> <span class="keyword">get</span>() != NULL; } <span class="comment">//nullptr; }</span></div>
 <div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;</div>
 <div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</div>
 <div class="line"><a name="l00232"></a><span class="lineno"><a class="line" href="classecuda_1_1device__ptr.html#aec244033215d3c95e6fa28c4720bad8a">  232</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classecuda_1_1device__ptr.html#aec244033215d3c95e6fa28c4720bad8a">owner_before</a>( <span class="keyword">const</span> <a class="code" href="classecuda_1_1device__ptr.html">device_ptr&lt;U&gt;</a>&amp; other )<span class="keyword"> const </span>{</div>
@@ -335,7 +335,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 13 2015 17:40:41 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

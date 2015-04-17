@@ -503,6 +503,14 @@ Performance</h1>
 <h1><a class="anchor" id="compatibility"></a>
 Compatibility</h1>
 <p>The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1. CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested. CUDA &lt;5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in __host__/__device__ methods that create a host-specific and device-specific implementation).</p>
+<dl class="section warning"><dt>Warning</dt><dd>Users of libc++ (e.g. Mac users developing with XCode) READ THIS </dd>
+<dd>
+The initial 1.0 release contained some minor problems that caused failed compilation with libc++. Since I did all tests on platforms that used libstdc++, these weren't known until after release. If this applies to you, you'll have to pull the latest source code directly rather than download the bundled release. </dd>
+<dd>
+<div class="fragment"><div class="line">git clone https:<span class="comment">//github.com/BaderLab/ecuda.git</span></div>
+</div><!-- fragment --></dd>
+<dd>
+This won't apply to releases post-1.0 since these issues have been fixed.</dd></dl>
 <p>The only pernicious bug I encountered was in an experimental version of the API (that was ultimately not adopted for final release), when using test programs with a larger number (&gt;10) of separate kernels in the same file. Specifically, this code fragment:</p>
 <div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line">__global__ <span class="keywordtype">void</span> linearizeMatrix( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;T&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;T&gt;</a> vector ) {</div>
@@ -578,7 +586,7 @@ Acknowledgements</h1>
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 13 2015 17:40:41 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

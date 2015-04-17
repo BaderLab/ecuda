@@ -160,7 +160,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="classecuda_1_1striding__ptr.html#ae94e79127218760aeea2cf17c2c9f8a3">   75</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <a class="code" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a> <a class="code" href="classecuda_1_1striding__ptr.html#ae94e79127218760aeea2cf17c2c9f8a3">get_stride</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> stride; }</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
 <div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="classecuda_1_1striding__ptr.html#a34a05f1e3bc7aff4fd617553fefff9ff">   77</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <a class="code" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a> <span class="keyword">get</span>() <span class="keyword">const</span> { <span class="keywordflow">return</span> ptr; }</div>
-<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="classecuda_1_1striding__ptr.html#a86eb636398b3bc8ca6763e48757ad476">   78</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> ptr != <span class="keyword">nullptr</span>; }</div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="classecuda_1_1striding__ptr.html#a86eb636398b3bc8ca6763e48757ad476">   78</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> ptr != NULL; <span class="comment">/*nullptr;*/</span> }</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
 <div class="line"><a name="l00089"></a><span class="lineno"><a class="line" href="classecuda_1_1striding__ptr.html#a078d209cf443ef5e3a22135ce0b4d66b">   89</a></span>&#160;    HOST DEVICE <span class="keyword">inline</span> <span class="keyword">operator</span> <span class="keyword">typename</span> ecuda::reference&lt;element_type&gt;::pointer_type()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> ptr; }</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
@@ -258,7 +258,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Apr 13 2015 17:40:41 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
