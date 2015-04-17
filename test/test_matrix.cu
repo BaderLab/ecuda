@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
-#include <estd/matrix.hpp>
+//#include <estd/matrix.hpp>
 #include "../include/ecuda/array.hpp"
 #include "../include/ecuda/matrix.hpp"
 

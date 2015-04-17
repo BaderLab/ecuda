@@ -82,7 +82,7 @@ protected:
 	size_type length; //!< number of elements in the array
 
 public:
-	HOST DEVICE sequence_view() : ptr(nullptr), length(0) {}
+	HOST DEVICE sequence_view() : ptr(NULL/*nullptr*/), length(0) {}
 	template<typename T2,typename PointerType2>
 	HOST DEVICE sequence_view( const sequence_view<T2,PointerType2>& src ) : ptr(src.data()), length(src.size()) {}
 	HOST DEVICE sequence_view( pointer ptr, size_type length ) : ptr(ptr), length(length) {}

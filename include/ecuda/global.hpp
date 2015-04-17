@@ -89,7 +89,9 @@ public:
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
 #ifndef __CPP11_SUPPORTED__
+#ifndef nullptr
 #define nullptr NULL
+#endif
 #endif
 
 /** Allow noexcept and constexpr if C++11 supported. */

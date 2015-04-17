@@ -87,7 +87,7 @@ public:
 		reference_count = new size_type;
 		*reference_count = 1;
 		#else
-		reference_count = nullptr;
+		reference_count = NULL; // nullptr;
 		#endif
 	}
 
@@ -115,12 +115,12 @@ public:
 	/// \param src Another device pointer whose contents are to be moved.
 	///
 	HOST DEVICE device_ptr( device_ptr<T>&& src ) : ptr(src.ptr), reference_count(src.reference_count) {
-		src.ptr = nullptr;
+		src.ptr = NULL; //nullptr;
 		#ifndef __CUDA_ARCH__
 		src.reference_count = new size_type;
 		*(src.reference_count) = 1;
 		#else
-		src.reference_count = nullptr;
+		src.reference_count = NULL; //nullptr;
 		#endif
 	}
 	#endif
@@ -216,7 +216,7 @@ public:
 	///
 	/// \returns true if *this stores a pointer, false otherwise.
 	///
-	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != nullptr; }
+	HOST DEVICE inline operator bool() const __NOEXCEPT__ { return get() != NULL; } //nullptr; }
 
 	///
 	/// \brief Checks whether this device_ptr precedes other in implementation defined owner-based (as opposed to value-based) order.

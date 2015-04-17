@@ -75,7 +75,7 @@ public:
 	HOST DEVICE inline size_type get_stride() const { return stride; }
 
 	HOST DEVICE inline pointer get() const { return ptr; }
-	HOST DEVICE inline operator bool() const { return ptr != nullptr; }
+	HOST DEVICE inline operator bool() const { return ptr != NULL; /*nullptr;*/ }
 
 	///
 	/// \brief operator T*

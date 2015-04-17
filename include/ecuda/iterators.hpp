@@ -44,8 +44,8 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-struct device_iterator_tag {};
-struct contiguous_device_iterator_tag {};
+struct device_iterator_tag : std::bidirectional_iterator_tag {};
+struct contiguous_device_iterator_tag : std::random_access_iterator_tag {};
 
 template<typename T> class contiguous_device_iterator; // forward declaration
 
@@ -250,7 +250,7 @@ public:
 	///
 	/// \param ptr Pointer to device memory location that holds the element to be pointed at.
 	///
-	HOST DEVICE contiguous_device_iterator( T* ptr = nullptr ) : base_iterator_type(ptr) {}
+	HOST DEVICE contiguous_device_iterator( T* ptr = NULL/*nullptr*/ ) : base_iterator_type(ptr) {}
 
 	///
 	/// \brief Copy constructor.

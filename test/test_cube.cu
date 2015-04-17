@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdio>
-#include <estd/cube.hpp>
+//#include <estd/cube.hpp>
 #include "../include/ecuda/array.hpp"
 #include "../include/ecuda/cube.hpp"
 
@@ -93,6 +93,7 @@ void iterateAll( const ecuda::cube<T> cube, ecuda::array<T,U> array ) {
 
 int main( int argc, char* argv[] ) {
 
+/*
 	estd::cube<Coordinate> hostCube( 3, 4, 5 );
 	for( estd::cube<Coordinate>::size_type i = 0; i < hostCube.row_size(); ++i ) {
 		for( estd::cube<Coordinate>::size_type j = 0; j < hostCube.column_size(); ++j ) {
@@ -101,13 +102,19 @@ int main( int argc, char* argv[] ) {
 			}
 		}
 	}
+*/
+	std::vector<Coordinate> hostCube( 3*4*5 );
+	for( unsigned i = 0; i < 3; ++i )
+		for( unsigned j = 0; j < 4; ++j )
+			for( unsigned k = 0; k < 5; ++k )
+				hostCube[i*(4*5)+j*5+k] = Coordinate(i,j,k);
 
 	ecuda::cube<Coordinate> deviceCube( 3, 4, 5 );
 	deviceCube << hostCube;
 
-	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
+//	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
 	deviceCube >> hostCube;
-	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
+//	std::cout << "(1,2,3)=" << hostCube[1][2][3] << std::endl;
 
 	std::cout << "sizeof(Coordinate)=" << sizeof(Coordinate) << std::endl;
 /*
@@ -161,12 +168,13 @@ int main( int argc, char* argv[] ) {
 		fetchSliceYZ<<<1,1>>>( deviceCube, deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		estd::matrix<Coordinate> hostMatrix( 4, 5 );
+//		estd::matrix<Coordinate> hostMatrix( 4, 5 );
+		std::vector<Coordinate> hostMatrix( 4*5 );
 		deviceMatrix >> hostMatrix;
-		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+		for( unsigned i = 0; i < deviceMatrix.number_rows(); ++i ) {
 			std::cout << "SLICE_YZ_ROW";
-			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
-				std::cout << " " << hostMatrix[i][j];
+			for( unsigned j = 0; j < deviceMatrix.number_columns(); ++j ) {
+				std::cout << " " << hostMatrix[i*deviceMatrix.number_columns()+j];
 			}
 			std::cout << std::endl;
 		}
@@ -177,12 +185,13 @@ int main( int argc, char* argv[] ) {
 		fetchSliceXY<<<1,1>>>( deviceCube, deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		estd::matrix<Coordinate> hostMatrix( 3, 4 );
+		//estd::matrix<Coordinate> hostMatrix( 3, 4 );
+		std::vector<Coordinate> hostMatrix( 3*4 );
 		deviceMatrix >> hostMatrix;
-		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+		for( unsigned i = 0; i < deviceMatrix.number_rows(); ++i ) {
 			std::cout << "SLICE_XY_ROW";
-			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
-				std::cout << " " << hostMatrix[i][j];
+			for( unsigned j = 0; j < deviceMatrix.number_columns(); ++j ) {
+				std::cout << " " << hostMatrix[i*deviceMatrix.number_columns()+j];
 			}
 			std::cout << std::endl;
 		}
@@ -193,12 +202,13 @@ int main( int argc, char* argv[] ) {
 		fetchSliceXZ<<<1,1>>>( deviceCube, deviceMatrix );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		estd::matrix<Coordinate> hostMatrix( 3, 5 );
+		//estd::matrix<Coordinate> hostMatrix( 3, 5 );
+		std::vector<Coordinate> hostMatrix( 3*5 );
 		deviceMatrix >> hostMatrix;
-		for( unsigned i = 0; i < hostMatrix.row_size(); ++i ) {
+		for( unsigned i = 0; i < deviceMatrix.number_rows(); ++i ) {
 			std::cout << "SLICE_XZ_ROW";
-			for( unsigned j = 0; j < hostMatrix.column_size(); ++j ) {
-				std::cout << " " << hostMatrix[i][j];
+			for( unsigned j = 0; j < deviceMatrix.number_columns(); ++j ) {
+				std::cout << " " << hostMatrix[i*deviceMatrix.number_columns()+j];
 			}
 			std::cout << std::endl;
 		}
