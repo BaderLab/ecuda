@@ -189,7 +189,6 @@ public:
 
 };
 
-
 namespace detail {
 
 struct __true_type {};

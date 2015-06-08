@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ECUDA_ALGO_COPY_HPP
 #define ECUDA_ALGO_COPY_HPP
 
