@@ -9,7 +9,7 @@
 
 namespace ecuda {
 
-template<typename T,typename PointerType=typename pointer_traits<T>::pointer> //__pointer_type<T>::pointer>
+template<typename T,typename PointerType=typename type_traits<T>::pointer> //__pointer_type<T>::pointer>
 class striding_ptr
 {
 

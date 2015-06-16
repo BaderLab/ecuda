@@ -44,16 +44,17 @@ public:
 
 	__host__ __device__ inline size_type size() const { return length; }
 
+// \todo This seems wrong - seems to assume contiguity.
 	__device__ inline reference operator[]( const size_type x ) { return *(pointer_traits<pointer>().undress(ptr)+x); }
-	__device__ inline const_reference operator[]( const size_type x ) const { return *(pointer_traits<const pointer>().undress(ptr)+x); }
+	__device__ inline const_reference operator[]( const size_type x ) const { return *(pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+x); }
 
 	__host__ __device__ inline iterator begin() { return iterator( pointer_traits<pointer>().cast_to_modifiable(ptr) ); }
 	__host__ __device__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(ptr,size()) ); }
-	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<const pointer>().cast_to_modifiable(ptr) ); }
-	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<const pointer>().increment(ptr,size()) ); }
+	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(ptr) ); }
+	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(ptr,size()) ); }
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<const pointer>().cast_to_modifiable(ptr) ); }
-	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<const pointer>().increment(ptr,size()) ); }
+	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(ptr) ); }
+	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(ptr,size()) ); }
 	#endif
 
 	__host__ __device__ inline reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -119,11 +120,11 @@ public:
 
 	__host__ __device__ inline iterator begin() { return iterator( pointer_traits<pointer>().undress(ptr) ); }
 	__host__ __device__ inline iterator end() { return iterator( pointer_traits<pointer>().undress(ptr)+N ); }
-	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<const pointer>().undress(ptr) ); }
-	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<const pointer>().undress(ptr)+N ); }
+	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr) ); }
+	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+N ); }
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<const pointer>().undress(ptr) ); }
-	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<const pointer>().undress(ptr)+N ); }
+	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr) ); }
+	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+N ); }
 	#endif
 
 	__host__ __device__ inline reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -178,11 +179,11 @@ public:
 
 	__host__ __device__ iterator begin() { return iterator( pointer_traits<pointer>().undress(base_type::get_pointer()) ); }
 	__host__ __device__ iterator end() { return iterator( pointer_traits<pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
-	__host__ __device__ const_iterator begin() const { return const_iterator( pointer_traits<const pointer>().undress(base_type::get_pointer()) ); }
-	__host__ __device__ const_iterator end() const { return const_iterator( pointer_traits<const pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
+	__host__ __device__ const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(base_type::get_pointer()) ); }
+	__host__ __device__ const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ const_iterator cbegin() const { return const_iterator( pointer_traits<const pointer>().undress(base_type::get_pointer()) ); }
-	__host__ __device__ const_iterator cend() const { return const_iterator( pointer_traits<const pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
+	__host__ __device__ const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(base_type::get_pointer()) ); }
+	__host__ __device__ const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
 	#endif
 
 	__host__ __device__ reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -237,23 +238,25 @@ public:
 	__host__ __device__ inline size_type number_columns() const { return base_type::size()/rows; }
 
 	__host__ __device__ inline row_type get_row( const size_type row ) { return row_type( pointer_traits<pointer>().increment(base_type::get_pointer(),row*number_columns()), number_columns() ); }
-	__host__ __device__ inline const_row_type get_row( const size_type row ) const { return const_row_type( pointer_traits<const pointer>().increment(base_type::get_pointer(),row*number_columns()), number_columns() ); }
+	__host__ __device__ inline const_row_type get_row( const size_type row ) const { return const_row_type( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(base_type::get_pointer(),row*number_columns()), number_columns() ); }
 
 	__host__ __device__ inline column_type get_column( const size_type column ) {
 		return column_type( 
 			striding_ptr<value_type,typename pointer_traits<pointer>::modifiable_pointer>(
 				pointer_traits<pointer>().increment( base_type::get_pointer(), column ),
-				number_rows() 
-			) 
+				number_columns() 
+			),
+			number_rows()
 		); 
 	}
 	__host__ __device__ inline const_column_type get_column( const size_type column ) const { 
 		return const_column_type( 
 			striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>(
-				pointer_traits<const pointer>().increment( base_type::get_pointer(), column ),
+				pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), column ),
 				//pointer_traits<typename pointer_traits<pointer>::const_pointer>().make_offsetable( base_type::get_pointer() ) + column,
-				number_rows()
-			)
+				number_columns() 
+			),
+			number_rows()
 		); 
 	}
 
@@ -301,11 +304,11 @@ public:
 
 	__host__ __device__ inline iterator begin() { return iterator( pointer_traits<pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
 	__host__ __device__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
-	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<const pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
-	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<const pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
+	__host__ __device__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
+	__host__ __device__ inline const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<const pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
-	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<const pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
+	__host__ __device__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
+	__host__ __device__ inline const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
 	#endif
 
 	__host__ __device__ reverse_iterator rbegin() { return reverse_iterator(end()); }
@@ -323,8 +326,8 @@ public:
 		return row_type( pointer_traits<typename pointer_traits<pointer>::modifiable_pointer>().undress(mp), base_type::number_columns() );
 	}
 	__host__ __device__ inline const_row_type get_row( const size_type row ) const {
-		typename pointer_traits<const pointer>::modifiable_pointer mp = pointer_traits<const pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
-		return const_row_type( pointer_traits<typename pointer_traits<const pointer>::modifiable_pointer>().undress(mp), base_type::number_columns() );
+		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
+		return const_row_type( pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>().undress(mp), base_type::number_columns() );
 	}
 
 	__host__ __device__ inline row_type operator[]( const size_type row ) { return get_row(row); }
@@ -336,8 +339,8 @@ public:
 	}
 
 	__host__ __device__ inline const_reference at( const size_type row, const size_type column ) const {
-		typename pointer_traits<const pointer>::modifiable_pointer mp = pointer_traits<const pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
-		return *pointer_traits<typename pointer_traits<const pointer>::modifiable_pointer>::undress( mp );
+		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
+		return *pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>::undress( mp );
 	}
 
 };

@@ -17,6 +17,27 @@
 
 namespace ecuda {
 
+
+//template<class Function,class InputIterator,class UnaryPredicate>
+
+
+template<class InputIterator,class UnaryPredicate>
+inline __host__ __device__ bool all_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+	return ecuda::find_if_not( first, last, p ) == last;
+}
+
+template<class InputIterator,class UnaryPredicate>
+inline __host__ __device__ bool any_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+	return ecuda::find_if( first, last, p ) != last;
+}
+
+template<class InputIterator,class UnaryPredicate>
+inline __host__ __device__ bool none_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+	return ecuda::find_if( first, last, p ) == last;
+}
+
+
+
 template<typename T> __host__ __device__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T& tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
 template<class InputIterator,class UnaryFunction> __host__ __device__ inline UnaryFunction __for_each( InputIterator first, InputIterator last, UnaryFunction f, detail::__false_type ) {
