@@ -597,7 +597,8 @@ public:
 	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
-		ptr += number_depths(); // move to correct depth
+		ptr += depthIndex; // move to correct depth
+		//ptr += number_depths(); // move to correct depth
 		typename slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
 		return slice_xy_type( ptr2, number_rows(), number_columns() );
 		//pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );

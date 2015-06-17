@@ -29,7 +29,9 @@ private:
 	pointer ptr;
 
 public:
-	__host__ __device__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {}
+	__host__ __device__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {
+		if( !ptr ) this->ptr = edge_ptr;
+	}
 	template<typename T2,class PointerType2>
 	__host__ __device__ padded_ptr( const padded_ptr<T2,PointerType2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
 
