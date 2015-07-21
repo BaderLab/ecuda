@@ -194,8 +194,8 @@ public:
 	///
 	/// \returns a pointer to the element pointed at by this iterator
 	///
-	DEVICE pointer operator->() const { return ptr; } // have to declare HOST here to allow conversion device_iterator<T,T*> -> device_iterator<const T,const T*>
-
+	HOST // have to declare HOST because functions like ecuda::copy use iterator::operator->() to get addresses
+	DEVICE pointer operator->() const { return ptr; }
 
 	///
 	/// \brief Assigns a copy of another iterators position to this iterator.
@@ -446,6 +446,8 @@ public:
 		--tmp;
 		return tmp.operator*();
 	}
+
+	HOST // have to declare HOST here since functions like ecuda::copy use iterator::operator->() to get address
 	DEVICE inline pointer operator->() const {
 		BaseIterator tmp(parentIterator);
 		--tmp;
