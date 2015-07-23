@@ -52,6 +52,12 @@ template<typename T> struct remove_const<const T> { typedef T type; };
 template<typename T,typename U> struct is_same { enum { value = 0 }; };
 template<typename T> struct is_same<T,T> { enum { value = 1 }; };
 
+template<typename T> struct remove_reference { typedef T type; };
+template<typename T> struct remove_reference<T&> { typedef T type; };
+#ifdef __CPP11_SUPPORTED__
+template<typename T> struct remove_reference<T&&> { typedef T type; };
+#endif
+
 } // namespace std
 #endif
 

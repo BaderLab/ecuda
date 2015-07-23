@@ -7,9 +7,14 @@
 #include "common.hpp"
 #include "../algorithm.hpp"
 #include "../type_traits.hpp"
+#include "unique_ptr.hpp"
+#include "../utility.hpp"
 
 //
 // Implementation is the approach used by boost::shared_ptr.
+//
+// \todo STL contains means to use a custom allocator to allocate memory for the internal counter
+//       but this hasn't been done here
 //
 
 namespace ecuda {
@@ -43,6 +48,23 @@ struct sp_counter_impl_pd : sp_counter_base {
 template<typename T> struct __cast_void;
 template<typename T> struct __cast_void<const T*> { inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
 template<typename T> struct __cast_void { inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
+
+/*
+template<typename T>
+struct __shared_count {
+	sp_counter_base* counter;
+	template<class Deleter>
+	__shared_count( Deleter deleter ) {
+		std::allocator<sp_counter_impl_pd> allocator;
+		typename std::allocator<sp_counter_impl_pd>::pointer p = allocator.allocate(1);
+		allocator.construct( p, sp_counter_impl_pd(deleter) );
+	}
+	template<class Deleter,class Alloc>
+	__shared_count( Deleter deleter, Alloc allocator ) {
+
+	}
+};
+*/
 
 } // namespace detail
 
@@ -91,31 +113,143 @@ private:
 
 public:
 
-	__host__ shared_ptr() : current_ptr(NULL), counter(NULL) {}
+	///
+	/// \brief Default constructor constructs a shared_ptr with no managed object.
+	///
+	__host__ __CONSTEXPR__ shared_ptr() __NOEXCEPT__ : current_ptr(NULL), counter(NULL) {}
 
+	///
+	/// \brief Constructs a shared_ptr with a pointer to the managed object.
+	///
+	/// U must be a complete type and ptr must be convertible to T*.
+	/// Additionally, uses the cudaFree CUDA API function as the deleter.
+	///
+	/// \param ptr a pointer to an object to manage
+	///
 	template<typename U>
-	__host__ explicit shared_ptr( U* ptr ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
-		counter = new detail::sp_counter_impl_p<U>();
+	__host__ explicit shared_ptr( U* ptr ) : current_ptr(detail::__cast_void<T*>()(ptr)) {
+		counter = new detail::sp_counter_impl_p<T>();
 	}
 
+	///
+	/// \brief Constructs a shared_ptr with a pointer to the managed object.
+	///
+	/// U must be a complete type and ptr must be convertible to T*.
+	/// Additionally, uses the cudaFree CUDA API function as the deleter.
+	///
+	/// \param ptr a pointer to an object to manage
+	/// \param deleter a deleter to use to destroy the object
+	///
 	template<typename U,class Deleter>
-	__host__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
-		counter = new detail::sp_counter_impl_pd<U,Deleter>( deleter );
+	__host__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::__cast_void<T*>()(ptr)) {
+		counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
 	}
 
-	__host__ __device__ shared_ptr( const shared_ptr& src ) : current_ptr(src.current_ptr), counter(src.counter) {
-		#ifndef __CUDA_ARCH__
-		++(counter->owner_count);
-		#endif
-	}
-
+	///
+	/// \brief The aliasing constructor.
+	///
+	/// Constructs a shared_ptr which shares ownership information with src, but
+	/// holds an unrelated and unmanaged pointer ptr. Even if this shared_ptr is
+	/// the last of the group to go out of scope, it will call the destructor
+	/// for the object originally managed by src. However, calling get() on this
+	/// will always return a copy of ptr. It is the responsibility of the
+	/// programmer to make sure that this ptr remains valid as long as this
+	/// shared_ptr exists, such as in the typical use cases where ptr is a member
+	/// of the object managed by src or is an alias (e.g. downcast) of src.get().
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	/// \param ptr a pointer to an object to manage
+	///
 	template<typename U>
-	__host__ __device__ shared_ptr( const shared_ptr<U>& src ) : current_ptr(src.current_ptr), counter(src.counter) {
+	__host__ shared_ptr( const shared_ptr<U>& src, T* ptr ) __NOEXCEPT__ : current_ptr(ptr), counter(src.counter) {
 		#ifndef __CUDA_ARCH__
 		++(counter->owner_count);
 		#endif
 	}
 
+	///
+	/// \brief Copy constructor.
+	///
+	/// Constructs a shared_ptr which shares ownership of the object managed by src.
+	/// If src manages no object, *this manages no object too.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	__host__ __device__ shared_ptr( const shared_ptr& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+		#ifndef __CUDA_ARCH__
+		++(counter->owner_count);
+		#endif
+	}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// Constructs a shared_ptr which shares ownership of the object managed by src.
+	/// If src manages no object, *this manages no object too. This overload won't
+	/// participate in overload resolution if U* is not implicitly convertible to
+	/// T*.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U>
+	__host__ __device__ shared_ptr( const shared_ptr<U>& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+		#ifndef __CUDA_ARCH__
+		++(counter->owner_count);
+		#endif
+	}
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Move constructor.
+	///
+	/// Move-constructs a shared_ptr from src. After the construction, *this contains
+	/// a copy of the previous state of src, src is empty.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	__host__ __device__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+		src.current_ptr = NULL;
+		src.counter = NULL;
+	}
+
+	///
+	/// \brief Move constructor.
+	///
+	/// Move-constructs a shared_ptr from src. After the construction, *this contains
+	/// a copy of the previous state of src, src is empty. This overload doesn't
+	/// participate in overload resolution if U* is not implicitly convertible to T*.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U>
+	__host__ __device__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+		src.current_ptr = NULL;
+		src.counter = NULL;
+	}
+
+	///
+	/// \brief Takes over management of object owned by a unique_ptr.
+	///
+	/// Constructs a shared_ptr which manages the object currently managed by src.
+	/// The deleter associated to src is stored for future deletion of the
+	/// managed object. src manages no object after the call.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U,class Deleter>
+	__host__ __device__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::__cast_void<T*>()(src.release())) {
+	   counter = current_ptr ? new detail::sp_counter_impl_pd<T,Deleter>( deleter ) : NULL;
+	}
+	#endif
+
+	///
+	/// \brief Destructor.
+	///
+	/// If *this owns an object and it is the last shared_ptr owning it, the object
+	/// is destroyed through the owned deleter. After the destruction, the smart
+	/// pointers that shared ownership with *this, if any, will report a use_count()
+	/// that is one less than the previous value.
+	///
 	__host__ __device__ ~shared_ptr() {
 		#ifndef __CUDA_ARCH__
 		if( counter ) {
@@ -128,41 +262,194 @@ public:
 		#endif
 	}
 
-	__host__ __device__ inline void reset() __NOEXCEPT__ { shared_ptr().swap( *this ); }
-	template<typename U> __host__ __device__ inline void reset( U* ptr ) __NOEXCEPT__ { shared_ptr( ptr ).swap( *this ); }
-	template<typename U,class Deleter> __host__ __device__ inline void reset( U* ptr, Deleter d ) __NOEXCEPT__ { shared_ptr( ptr, d ).swap( *this ); }
+	///
+	/// \brief Replaces the managed object.
+	///
+	/// Shares ownership of the object managed by src. If src manages no object, *this
+	/// manages no object too.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	__host__ __device__ inline shared_ptr& operator=( const shared_ptr& src ) __NOEXCEPT__ { shared_ptr(src).swap(*this); return *this; }
 
+	///
+	/// \brief Replaces the managed object.
+	///
+	/// Shares ownership of the object managed by src. If src manages no object, *this
+	/// manages no object too. This overload doesn't participate in overload resolution
+	/// if U* is not implicitly convertible to T*.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U> __host__ __device__ inline shared_ptr& operator=( const shared_ptr<U>& src ) __NOEXCEPT__ { shared_ptr(src).swap(*this); return *this; }
+
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Replaces the managed object.
+	///
+	/// Move-assigns a shared_ptr from src. After the assignment, *this contains a copy
+	/// of the previous state of src, src is empty.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	__host__ __device__ inline shared_ptr& operator=( shared_ptr&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+
+	///
+	/// \brief Replaces the managed object.
+	///
+	/// Move-assigns a shared_ptr from src. After the assignment, *this contains a copy
+	/// of the previous state of src, src is empty. This overload doesn't participate
+	/// in overload resoution if U* is not implicitly convertible to T*.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U> __host__ __device__ inline shared_ptr& operator=( shared_ptr<U>&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+
+	///
+	/// \brief Transfers management of object owned by a unique_ptr.
+	///
+	/// Transfers the ownership of the object managed by src to *this. The deleter
+	/// associated to src is stored for future deletion of the managed object.
+	/// src manages no object after the call.
+	///
+	/// \param src another smart pointer to share ownership to or acquire the ownership from
+	///
+	template<typename U,class Deleter> __host__ __device__ inline shared_ptr& operator=( unique_ptr<U,Deleter>&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+	#endif
+
+	///
+	/// \brief Releases ownership of the managed object.
+	///
+	/// After the call, *this manages no object.
+	///
+	__host__ __device__ inline void reset() __NOEXCEPT__ { shared_ptr().swap( *this ); }
+
+
+	///
+	/// \brief Replaces the managed object with another.
+	///
+	/// Replaces the managed object with an object pointed to by ptr. U must be a complete
+	/// type and implicitly convertible to T. Additionally, uses the cudaFree CUDA API
+	/// function as the deleter.
+	///
+	/// \param ptr pointer to an object to acquire ownership of
+	///
+	template<typename U> __host__ __device__ inline void reset( U* ptr ) { shared_ptr( ptr ).swap( *this ); }
+
+	///
+	/// \brief Replaces the managed object with another.
+	///
+	/// Replaces the managed object with an object pointed to by ptr. U must be a complete
+	/// type and implicitly convertible to T. Additionally, uses the specified deleter as
+	/// the deleter.
+	///
+	/// \param ptr pointer to an object to acquire ownership of
+	/// \param d deleter to store for deletion of the object
+	///
+	template<typename U,class Deleter> __host__ __device__ inline void reset( U* ptr, Deleter d ) { shared_ptr( ptr, d ).swap( *this ); }
+
+	///
+	/// \brief Exchanges the contents of *this and other.
+	///
+	/// \param other smart pointer to exchange the contents with
+	///
 	__host__ __device__ inline void swap( shared_ptr& other ) __NOEXCEPT__ {
 		::ecuda::swap( current_ptr, other.current_ptr );
 		::ecuda::swap( counter, other.counter );
 	}
 
-	__host__ __device__ inline T* get() const { return reinterpret_cast<T*>(current_ptr); }
+	///
+	/// \brief Returns a pointer to the managed object.
+	///
+	/// Returns a null pointer if no object is being managed.
+	///
+	/// \return a pointer to the managed object
+	///
+	__host__ __device__ inline T* get() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
 
+	///
+	/// \brief Dereferences pointer to the managed object.
+	///
+	/// This is only callable from the device, since objects in device memory are only
+	/// accessible from device code.
+	///
+	/// \return reference to the managed object
+	///
 	__device__ inline typename add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
 
+	///
+	/// \brief Dereferences pointer to the managed object.
+	///
+	/// \return pointer to the managed object
+	///
 	__host__ __device__ inline T* operator->() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
 
+	///
+	/// \brief Returns the number of smart pointers managing the current object.
+	///
+	/// Returns the number of different shared_ptr instances (this included) managing
+	/// the current object. If there is no managed object, 0 is returned.
+	///
+	/// \return the number of shared_ptr instances managing the current object or 0 if there is no managed object
+	///
 	__host__ __device__ inline std::size_t use_count() const __NOEXCEPT__ { return counter ? counter->owner_count : 0; }
 
+	///
+	/// \brief Checks if this is the only shared_ptr instance managing the current object.
+	///
+	/// i.e. whether use_count() == 1.
+	///
+	/// \return true if *this is the only shared_ptr instance managing the current object, false otherwise
+	///
 	__host__ __device__ inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
 
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ explicit operator bool() const { return get() != NULL; }
+	///
+	/// \brief Checks if this stores a non-null pointer.
+	///
+	/// \return true if *this stores a pointer, false otherwise.
+	///
+	__host__ __device__ explicit operator bool() const __NOEXCEPT__ { return get() != NULL; }
 	#else
-	__host__ __device__ operator bool() const { return get() != NULL; }
+	///
+	/// \brief Checks if this stores a non-null pointer.
+	///
+	/// \return true if *this stores a pointer, false otherwise.
+	///
+	__host__ __device__ operator bool() const __NOEXCEPT__ { return get() != NULL; }
 	#endif
 
+	///
+	/// Checks whether this shared_ptr precedes other in implementation defined owner-based
+	/// (as opposed to value-based) order. The order is such that two smart pointers compare
+	/// equivalent only if they are both empty or if they both own the same object, even
+	/// if the values of the pointers obtained by get() are different (e.g. because they
+	/// point at different subobjects within the same object.
+	///
+	/// The ordering is used to make shared pointers usable as keys in associative
+	/// containers, typically through ecuda::owner_less.
+	///
+	/// \return true if *this precedes other, false otherwise.
+	///
 	template<typename U>
 	__host__ __device__ inline bool owner_before( const shared_ptr<U>& other ) const { return counter < other.counter; }
 
-	template<typename T2> __host__ __device__ bool operator==( const shared_ptr<T2>& other ) const { return get() == other.get(); }
-	template<typename T2> __host__ __device__ bool operator!=( const shared_ptr<T2>& other ) const { return get() != other.get(); }
-	template<typename T2> __host__ __device__ bool operator< ( const shared_ptr<T2>& other ) const { return get() <  other.get(); }
-	template<typename T2> __host__ __device__ bool operator> ( const shared_ptr<T2>& other ) const { return get() >  other.get(); }
-	template<typename T2> __host__ __device__ bool operator<=( const shared_ptr<T2>& other ) const { return get() <= other.get(); }
-	template<typename T2> __host__ __device__ bool operator>=( const shared_ptr<T2>& other ) const { return get() >= other.get(); }
+	template<typename T2> __host__ __device__ bool operator==( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() == other.get(); }
+	template<typename T2> __host__ __device__ bool operator!=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() != other.get(); }
+	template<typename T2> __host__ __device__ bool operator< ( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() <  other.get(); }
+	template<typename T2> __host__ __device__ bool operator> ( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() >  other.get(); }
+	template<typename T2> __host__ __device__ bool operator<=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() <= other.get(); }
+	template<typename T2> __host__ __device__ bool operator>=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() >= other.get(); }
 
+	///
+	/// \brief Inserts a shared_ptr into a std::basic_ostream.
+	///
+	/// Equivalent to out << ptr.get().
+	///
+	/// \param out a std::basic_ostream to insert ptr into
+	/// \param ptr the data to be inserted into os
+	/// \return out
+	///
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const shared_ptr& ptr ) {
 		out << ptr.get();

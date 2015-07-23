@@ -3,8 +3,14 @@
 #define ECUDA_UTILITY_HPP
 
 #include "global.hpp"
+#include "type_traits.hpp"
 
 namespace ecuda {
+
+#ifdef __CPP11_SUPPORTED__
+template<typename T>
+__host__ __device__ __CONSTEXPR__ typename std::remove_reference<T>::type&& move( T&& t ) __NOEXCEPT__ { return static_cast<typename std::remove_reference<T>::type&&>(t); }
+#endif
 
 template<typename T1,typename T2>
 struct pair {
