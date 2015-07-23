@@ -90,8 +90,11 @@ private:
 	template<typename U> friend class shared_ptr;
 
 public:
+
+	__host__ shared_ptr() : current_ptr(NULL), counter(NULL) {}
+
 	template<typename U>
-	__host__ explicit shared_ptr( U* ptr = NULL ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
+	__host__ explicit shared_ptr( U* ptr ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
 		counter = new detail::sp_counter_impl_p<U>();
 	}
 
@@ -115,10 +118,12 @@ public:
 
 	__host__ __device__ ~shared_ptr() {
 		#ifndef __CUDA_ARCH__
-		--(counter->owner_count);
-		if( counter->owner_count == 0 ) {
-			counter->dispose( current_ptr );
-			delete counter;
+		if( counter ) {
+			--(counter->owner_count);
+			if( counter->owner_count == 0 ) {
+				counter->dispose( current_ptr );
+				delete counter;
+			}
 		}
 		#endif
 	}
@@ -138,7 +143,7 @@ public:
 
 	__host__ __device__ inline T* operator->() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
 
-	__host__ __device__ inline std::size_t use_count() const __NOEXCEPT__ { return counter->owner_count; }
+	__host__ __device__ inline std::size_t use_count() const __NOEXCEPT__ { return counter ? counter->owner_count : 0; }
 
 	__host__ __device__ inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
 
