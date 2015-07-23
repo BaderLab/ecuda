@@ -18,7 +18,33 @@
 namespace ecuda {
 
 
-//template<class Function,class InputIterator,class UnaryPredicate>
+
+template<class InputIterator,typename T>
+inline __host__ __device__ InputIterator find( InputIterator first, InputIterator last, const T& value ) {
+	while( first != last ) {
+		if( *first == value ) return first;
+		++first;
+	}
+	return first;
+}
+
+template<class InputIterator,class UnaryPredicate>
+inline __host__ __device__ InputIterator find_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
+	while( first != last ) {
+		if( p(*first) ) return first;
+		++first;
+	}
+	return first;
+}
+
+template<class InputIterator,class UnaryPredicate>
+inline __host__ __device__ InputIterator find_if_not( InputIterator first, InputIterator last, UnaryPredicate p ) {
+	while( first != last ) {
+		if( !p(*first) ) return first;
+		++first;
+	}
+	return first;
+}
 
 
 template<class InputIterator,class UnaryPredicate>

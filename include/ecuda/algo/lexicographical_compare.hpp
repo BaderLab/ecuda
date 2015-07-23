@@ -8,6 +8,7 @@
 
 #include "../global.hpp"
 #include "../iterator.hpp"
+#include "../utility.hpp"
 
 namespace ecuda {
 
@@ -17,22 +18,22 @@ template<class InputIterator1,class InputIterator2> __host__ __device__ inline b
 
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, std::pair<detail::__false_type,detail::__false_type> ) {
+__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__false_type,detail::__false_type> ) {
 	return std::lexicographical_compare( first1, last1, first2, last2 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, std::pair<detail::__true_type,detail::__false_type> ) {
+__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__true_type,detail::__false_type> ) {
 	return std::lexicographical_compare( first1, last1, first2, last2 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, std::pair<detail::__false_type,detail::__true_type> ) {
+__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__false_type,detail::__true_type> ) {
 	return std::lexicographical_compare( first1, last1, first2, last2 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, std::pair<detail::__true_type,detail::__true_type> ) {
+__host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__true_type,detail::__true_type> ) {
 	#ifdef __CUDA_ARCH__
 	for( ; (first1 != last1) and (first2 != last2); ++first1, ++first2 ) {
 		if( *first1 < *first2 ) return true;
@@ -53,7 +54,7 @@ __host__ __device__ inline bool __lexicographical_compare( InputIterator1 first1
 
 template<class InputIterator1,class InputIterator2>
 __host__ __device__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 ) {
-	return __lexicographical_compare( first1, last1, first2, last2, std::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
+	return __lexicographical_compare( first1, last1, first2, last2, pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
 }
 
 } // namespace ecuda

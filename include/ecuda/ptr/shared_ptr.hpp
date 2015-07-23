@@ -6,6 +6,7 @@
 #include "../global.hpp"
 #include "common.hpp"
 #include "../algorithm.hpp"
+#include "../type_traits.hpp"
 
 //
 // Implementation is the approach used by boost::shared_ptr.
@@ -26,7 +27,7 @@ struct sp_counter_base {
 template<typename T>
 struct sp_counter_impl_p : sp_counter_base {
 	sp_counter_impl_p() : sp_counter_base() {}
-	virtual void dispose( void* p ) { if( p ) cudaFree( static_cast<T*>(p) ); }
+	virtual void dispose( void* p ) { if( p ) cudaFree( p ); }
 };
 
 template<typename T,class Deleter>
@@ -37,33 +38,78 @@ struct sp_counter_impl_pd : sp_counter_base {
 	virtual void* get_deleter() { return deleter; }
 };
 
+// this is hacky structure that takes any pointer (const or not)
+// and casts it to void* so it can be used by the deleter dispose() method
+template<typename T> struct __cast_void;
+template<typename T> struct __cast_void<const T*> { inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
+template<typename T> struct __cast_void { inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
+
 } // namespace detail
 
+///
+/// \brief A smart pointer that retains shared ownership of an object in device memory.
+///
+/// ecuda::shared_ptr is a smart pointer that retains shared ownership of an object in device memory
+/// through a pointer. Several shared_ptr objects may own the same object. The object is destroyed
+/// and its memory deallocated when either of the following happens:
+///
+/// - the last remaining shared_ptr owning the object is destroyed
+/// - the last remaining shared_ptr owning the object is assigned another pointer via operator= or reset().
+///
+/// The object is destroyed using cudaFree or a custom deleter that is supplied to shared_ptr during
+/// construction.
+///
+/// A shared_ptr can share ownership of an object while storing a pointer to another object. This feature
+/// can be used to point to member objects while owning the object they belong to. The stored pointer is the
+/// one accessed by get(), the dereference and the comparison operators. The managed poitner is the one
+/// passed to the deleter when use count reaches zero.
+///
+/// A shared_ptr may also own no objects, in which case it is called empty (an empty shared_ptr may have
+/// a non-null stored pointer if the aliasing constructor was used to create it).
+///
+/// All specializations of shared_ptr meet the requirements of CopyConstructible, CopyAssignable, and
+/// LessThanComparable and are contextually convertible to bool.
+///
+/// All member functions (including copy constructor and copy assignment) can be called by multiple threads
+/// on different instances of shared_ptr without additional synchronization even if these instances are
+/// copies and share ownership of the same object. If multiple threads of execution access the same shared_ptr
+/// without synchronization and any of those accesses uses a non-const member function of shared_ptr then a
+/// data race will occur; the shared_ptr overloads of atomic functions can be used to prevent the data race.
+///
 template<typename T>
 class shared_ptr
 {
 
 public:
-	typedef T element_type;
-	typedef T* pointer;
+	typedef T element_type; //!< type of the managed object
+	//typedef T* pointer; //!< type of pointer to the managed object
 
 private:
-	pointer current_ptr;
+	//pointer current_ptr;
+	void* current_ptr;
 	detail::sp_counter_base* counter;
 
 	template<typename U> friend class shared_ptr;
 
 public:
-	__host__ explicit shared_ptr( T* ptr = NULL ) : current_ptr(ptr) {
-		counter = new detail::sp_counter_impl_p<T>();
+	template<typename U>
+	__host__ explicit shared_ptr( U* ptr = NULL ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
+		counter = new detail::sp_counter_impl_p<U>();
 	}
 
-	template<class Deleter>
-	__host__ shared_ptr( T* ptr, Deleter deleter ) : current_ptr(ptr) {
-		counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
+	template<typename U,class Deleter>
+	__host__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::__cast_void<U*>()(ptr)) {
+		counter = new detail::sp_counter_impl_pd<U,Deleter>( deleter );
 	}
 
 	__host__ __device__ shared_ptr( const shared_ptr& src ) : current_ptr(src.current_ptr), counter(src.counter) {
+		#ifndef __CUDA_ARCH__
+		++(counter->owner_count);
+		#endif
+	}
+
+	template<typename U>
+	__host__ __device__ shared_ptr( const shared_ptr<U>& src ) : current_ptr(src.current_ptr), counter(src.counter) {
 		#ifndef __CUDA_ARCH__
 		++(counter->owner_count);
 		#endif
@@ -79,18 +125,20 @@ public:
 		#endif
 	}
 
-	__host__ __device__ inline void reset( pointer ptr = pointer() ) __NOEXCEPT__ {	shared_ptr().swap( *this );	}
+	__host__ __device__ inline void reset() __NOEXCEPT__ { shared_ptr().swap( *this ); }
+	template<typename U> __host__ __device__ inline void reset( U* ptr ) __NOEXCEPT__ { shared_ptr( ptr ).swap( *this ); }
+	template<typename U,class Deleter> __host__ __device__ inline void reset( U* ptr, Deleter d ) __NOEXCEPT__ { shared_ptr( ptr, d ).swap( *this ); }
 
 	__host__ __device__ inline void swap( shared_ptr& other ) __NOEXCEPT__ {
 		::ecuda::swap( current_ptr, other.current_ptr );
 		::ecuda::swap( counter, other.counter );
 	}
 
-	__host__ __device__ inline pointer get() const { return current_ptr; }
+	__host__ __device__ inline T* get() const { return reinterpret_cast<T*>(current_ptr); }
 
-	__device__ inline typename add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
+	__device__ inline typename add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
 
-	__host__ __device__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
+	__host__ __device__ inline T* operator->() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
 
 	__host__ __device__ inline std::size_t use_count() const __NOEXCEPT__ { return counter->owner_count; }
 

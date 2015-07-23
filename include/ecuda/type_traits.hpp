@@ -173,7 +173,7 @@ template<typename T>
 struct pointer_traits< shared_ptr<T> > {
 	typedef shared_ptr<T> pointer;
 	typedef shared_ptr<const T> const_pointer;
-	typedef typename shared_ptr<T>::pointer naked_pointer;
+	typedef T* naked_pointer;
 	typedef naked_pointer modifiable_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
 	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }

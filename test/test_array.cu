@@ -17,8 +17,8 @@ int main( int argc, char* argv[] ) {
 
 	std::vector<int> hostVector( 100 );	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
 
-	ecuda::array<int,100> deviceArray; deviceArray.operator<<( hostVector );
-	if( !ecuda::equal( hostVector.begin(), hostVector.end(), deviceArray.begin() ) ) throw std::runtime_error( "operator<< failed" );
+	//ecuda::array<int,100> deviceArray; deviceArray.operator<<( hostVector );
+	//if( !ecuda::equal( hostVector.begin(), hostVector.end(), deviceArray.begin() ) ) throw std::runtime_error( "operator<< failed" );
 
 	ecuda::array<int,100> deviceArray;
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceArray.begin() );

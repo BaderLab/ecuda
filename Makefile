@@ -36,10 +36,11 @@ AR = ar
 CC = gcc -x c
 CFLAGS = -Wall
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -flto -L/usr/local/cuda/lib64 -pedantic
+CXXFLAGS = -Wall -flto -L/usr/local/cuda/lib64 -pedantic
+#-std=c++11 
 FC = gfortran
 NVCC = /usr/local/cuda/bin/nvcc
-NVCCFLAGS = -arch=sm_21 -O3 -std=c++11
+NVCCFLAGS = -arch=sm_21 -O3
 # for OpenMP support add to above: -X compiler -fopenmp
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
