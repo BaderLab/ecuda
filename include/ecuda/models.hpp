@@ -45,8 +45,10 @@ public:
 	__host__ __device__ inline size_type size() const { return length; }
 
 // \todo This seems wrong - seems to assume contiguity.
-	__device__ inline reference operator[]( const size_type x ) { return *(pointer_traits<pointer>().undress(ptr)+x); }
-	__device__ inline const_reference operator[]( const size_type x ) const { return *(pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+x); }
+	__device__ inline reference operator[]( const size_type x ) { return *pointer_traits<pointer>().increment( ptr, x ); }
+	__device__ inline const_reference operator[]( const size_type x ) const { return *pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( ptr, x ); }
+	//__device__ inline reference operator[]( const size_type x ) { return *(pointer_traits<pointer>().undress(ptr)+x); }
+	//__device__ inline const_reference operator[]( const size_type x ) const { return *(pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+x); }
 
 	__host__ __device__ inline iterator begin() { return iterator( pointer_traits<pointer>().cast_to_modifiable(ptr) ); }
 	__host__ __device__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(ptr,size()) ); }

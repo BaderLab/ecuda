@@ -1,6 +1,6 @@
 #include <iostream>
 #include <list>
-#include <initializer_list>
+//#include <initializer_list>
 #include <vector>
 
 #include "../include/ecuda/algorithm.hpp"
@@ -47,8 +47,8 @@ int main( int argc, char* argv[] ) {
 	}
 
 	{
-		ecuda::matrix<int> deviceMatrix2( 2, 2 );
-		deviceMatrix2.assign( { 1, 2, 3, 4 } );
+		//ecuda::matrix<int> deviceMatrix2( 2, 2 );
+		//deviceMatrix2.assign( { 1, 2, 3, 4 } );
 	}
 
 	return EXIT_SUCCESS;
