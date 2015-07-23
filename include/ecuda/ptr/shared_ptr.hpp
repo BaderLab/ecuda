@@ -82,12 +82,10 @@ class shared_ptr
 
 public:
 	typedef T element_type; //!< type of the managed object
-	//typedef T* pointer; //!< type of pointer to the managed object
 
 private:
-	//pointer current_ptr;
-	void* current_ptr;
-	detail::sp_counter_base* counter;
+	void* current_ptr; //!< the stored pointer to the object itself is anonymous (primarily because cudaFree takes a void* argument)
+	detail::sp_counter_base* counter; //!< pointer to shared counting/disposal structure (is NULL iff current_ptr is NULL)
 
 	template<typename U> friend class shared_ptr;
 
