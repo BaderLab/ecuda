@@ -45,6 +45,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "type_traits.hpp"
 #include "ptr/common.hpp"
+#include "ptr/padded_ptr.hpp"
 //#include "memory.hpp"
 
 namespace ecuda {
@@ -337,11 +338,7 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-<<<<<<< HEAD
-	__host__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
-=======
 	__device__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
->>>>>>> e174f34cabe9caaf483ad53a06c284bb47737572
 
 };
 
@@ -443,6 +440,7 @@ public:
 		typename pointer_traits<pointer>::naked_pointer ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
+		if( result != cudaSuccess ) throw std::bad_alloc();
 		return pointer( ptr, pitch, w, ptr );
 //		pointer ptr = NULL;
 //		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(T), h );
@@ -462,7 +460,7 @@ public:
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
 	__host__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		default_delete<value_type>()( pointer_traits<typename pointer_traits<pointer>::naked_pointer>().undress(ptr) );
+		default_delete<value_type>()( pointer_traits<pointer>().undress(ptr) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(pointer_traits<pointer>().undress(ptr)) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) );
 	}
@@ -487,7 +485,7 @@ public:
 	__host__ inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL(
 			cudaMemcpy(
-				detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<typename pointer_traits<pointer>::naked_pointer>().undress(ptr) ),
+				detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<pointer>().undress(ptr) ),
 				reinterpret_cast<const void*>(&val),
 				sizeof(val),
 				cudaMemcpyHostToDevice

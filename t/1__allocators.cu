@@ -1,7 +1,7 @@
 #include "../include/ecuda/allocators.hpp"
 
 template<typename T,class Alloc>
-__global__ void destroy( Alloc alloc, typename ecuda::device_allocator<T>::pointer p, std::size_t n ) {
+__global__ void destroy( Alloc alloc, typename Alloc::pointer p, std::size_t n ) {
 	const std::size_t index = blockIdx.x*blockDim.x+threadIdx.x;
 	if( index < n ) alloc.destroy( p+index );
 }
@@ -38,8 +38,8 @@ int main( int argc, char* argv[] ) {
 		ecuda::device_pitch_allocator<double> deviceAllocator1;
 		ecuda::device_pitch_allocator<double> deviceAllocator2( deviceAllocator1 );
 		ecuda::device_pitch_allocator<int> deviceAllocator3( deviceAllocator2 );
-		typename ecuda::device_pitch_allocator<double>::size_type pitch;
-		typename ecuda::device_pitch_allocator<double>::pointer p = deviceAllocator1.allocate( 100, 100, pitch );
+		//typename ecuda::device_pitch_allocator<double>::size_type pitch;
+		typename ecuda::device_pitch_allocator<double>::pointer p( deviceAllocator1.allocate( 100, 100 ) );
 		typename ecuda::device_pitch_allocator<double>::pointer q( p );
 		for( std::size_t i = 0; i < 1000; ++i, ++q ) deviceAllocator1.construct( q, static_cast<typename ecuda::device_pitch_allocator<double>::value_type>(i) );
 		q = p;
