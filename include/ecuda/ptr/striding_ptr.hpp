@@ -9,7 +9,7 @@
 
 namespace ecuda {
 
-template<typename T,typename PointerType=typename type_traits<T>::pointer> //__pointer_type<T>::pointer>
+template<typename T,typename PointerType=typename type_traits<T>::pointer>
 class striding_ptr
 {
 
@@ -37,6 +37,8 @@ public:
 	__device__ inline reference operator*() { return *ptr; }
 	__device__ inline const_reference operator*() const { return *ptr; }
 	__device__ inline pointer operator->() const { return ptr; }
+	__device__ inline reference operator[]( std::size_t i ) { return striding_ptr(*this).operator+=(i).operator*(); }
+	__device__ inline const_reference operator[]( std::size_t i ) const { return striding_ptr(*this).operator+=(i).operator*(); }
 
 	__host__ __device__ inline striding_ptr& operator++() { ptr += stride; return *this; }
 	__host__ __device__ inline striding_ptr& operator--() { ptr -= stride; return *this; }

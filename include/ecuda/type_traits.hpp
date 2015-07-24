@@ -58,6 +58,15 @@ template<typename T> struct remove_reference<T&> { typedef T type; };
 template<typename T> struct remove_reference<T&&> { typedef T type; };
 #endif
 
+template<typename T> struct add_lvalue_reference { typedef T& type; };
+template<typename T> struct add_lvalue_reference<T&> { typedef T& type; };
+
+template<bool B,typename T,typename F> struct conditional { typedef T type; };
+template<typename T,typename F> struct conditional<false,T,F> { typedef F type; };
+
+template<bool B,typename T=void> struct enable_if {};
+template<typename T> struct enable_if<true,T> { typedef T type; };
+
 } // namespace std
 #endif
 

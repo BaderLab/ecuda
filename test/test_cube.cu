@@ -1,6 +1,6 @@
 #include <iostream>
 #include <list>
-#include <initializer_list>
+//#include <initializer_list>
 #include <vector>
 
 #include "../include/ecuda/algorithm.hpp"

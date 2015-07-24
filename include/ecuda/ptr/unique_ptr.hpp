@@ -5,12 +5,58 @@
 
 #include "../global.hpp"
 #include "common.hpp"
+#include "../type_traits.hpp"
 
 namespace ecuda {
 
+///
+/// \brief A smart pointer that retains sole ownership of an object.
+///
+/// ecuda::unique_ptr is a smart pointer that retains sole ownership of a
+/// device object through a pointer and destroys that object when the
+/// unique_ptr goes out of scope. No two unique_ptr instances can manage
+/// the same object.
+///
+/// The object is destroyed and its memory deallocated when either of the
+/// following happens:
+///
+/// - unique_ptr managing the object is destroyed
+/// - unique_ptr managing the object is assigned another pointer via operator=() or reset()
+///
+/// The object is destroyed using a potentially user-supplied deleter by
+/// calling Deleter(ptr). The deleter calls the destructor of the object
+/// and dispenses the memory.
+///
+/// A unique_ptr may alternatively own no object, in which case it is called
+/// empty.
+///
+/// There is no separate specialization of unique_ptr for dynamically-allocated
+/// arrays of objects (i.e. T[]) since the underlying CUDA API makes no
+/// distinction between individual objects versus arrays in terms of memory
+/// allocation/deallocation.
+///
+/// The class satisfies the requirements of MoveConstructible and MoveAssignable,
+/// but not the requirements of either CopyConstructible or CopyAssignable.
+///
+/// Deleter must be Functionobject or lvalue_reference to a FunctionObject or
+/// lvalue reference to function, callable with an argument of type
+/// unique_ptr<T,Deleter>::pointer.
+///
 template< typename T, class Deleter=default_delete<T> >
 class unique_ptr
 {
+
+	/* SFINAE strat used in c++ stdlib to get T::pointer if it exists - unfortunately
+	 * relies on decltype which we don't have prior to C++11 but we can do without
+	 * this for now.
+	class _Pointer {
+		template<typename U> static typename U::pointer __test(typename U::pointer*);
+		template<typename U> static T* __test(...);
+		typedef typename std::remove_reference<Deleter>::type _Del;
+	public:
+		typedef decltype(__test<Deleter>(0)) type;
+	};
+	*/
 
 public:
 	typedef T element_type;
@@ -22,17 +68,28 @@ private:
 	deleter_type deleter;
 
 public:
-	__host__ __device__ explicit unique_ptr( T* ptr = pointer() ) : current_ptr(ptr) {}
-	__host__ __device__ unique_ptr( T* ptr, Deleter deleter ) : current_ptr(ptr), deleter(deleter) {}
+	__host__ __device__ __CONSTEXPR__ unique_ptr() __NOEXCEPT__ : current_ptr(NULL) {}
+	__host__ __device__ explicit unique_ptr( T* ptr ) __NOEXCEPT__ : current_ptr(ptr) {}
+	__host__ __device__ unique_ptr( T* ptr, Deleter deleter ) __NOEXCEPT__ : current_ptr(ptr), deleter(deleter) {}
 
-	__host__ __device__ ~unique_ptr() { get_deleter()( current_ptr ); }
+	#ifdef __CPP11_SUPPORTED__
+	__host__ __device__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
+	template<typename U,class E> __host__ __device__ unique_ptr( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
+	#endif
 
-	template<typename U>
-	__host__ __device__ inline unique_ptr& operator=( U* ptr ) {
-		reset(release());
-		current_ptr = ptr;
-		return *this;
-	}
+	__host__ __device__ ~unique_ptr() { deleter(current_ptr); }
+
+	#ifdef __CPP11_SUPPORTED__
+	__host__ __device__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
+	template<typename U,class E> __host__ __device__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
+	#endif
+
+	//template<typename U>
+	//__host__ __device__ inline unique_ptr& operator=( U* ptr ) {
+	//	reset(release());
+	//	current_ptr = ptr;
+	//	return *this;
+	//}
 
 	__host__ __device__ inline pointer release() __NOEXCEPT__ {
 		pointer old_ptr = current_ptr;
@@ -59,9 +116,11 @@ public:
 	__host__ __device__ operator bool() const { return get() != NULL; }
 	#endif
 
-	__device__ inline typename add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
+	__device__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
 
 	__host__ __device__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
+
+	__device__ inline typename std::add_lvalue_reference<T>::type operator[]( std::size_t i ) const { return *pointer_traits<pointer>().increment( current_ptr, i ); }
 
 	template<typename T2,class D2> __host__ __device__ bool operator==( const unique_ptr<T2,D2>& other ) const { return get() == other.get(); }
 	template<typename T2,class D2> __host__ __device__ bool operator!=( const unique_ptr<T2,D2>& other ) const { return get() != other.get(); }

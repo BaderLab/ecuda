@@ -14,7 +14,10 @@
 // Implementation is the approach used by boost::shared_ptr.
 //
 // \todo STL contains means to use a custom allocator to allocate memory for the internal counter
-//       but this hasn't been done here
+//       but this hasn't been done here (things are overengineered enough atm!) - if a programmer
+//       were to take the approach of allocating a lot of individual shared_ptr managing many
+//       different objects, there is a potential performance benefit from allowing a task-optimized
+//       custom allocator
 //
 
 namespace ecuda {
@@ -32,7 +35,7 @@ struct sp_counter_base {
 template<typename T>
 struct sp_counter_impl_p : sp_counter_base {
 	sp_counter_impl_p() : sp_counter_base() {}
-	virtual void dispose( void* p ) { if( p ) cudaFree( p ); }
+	virtual void dispose( void* p ) { if( p ) default_delete<void>()(p); } // cudaFree( p ); }
 };
 
 template<typename T,class Deleter>
@@ -78,8 +81,8 @@ struct __shared_count {
 /// - the last remaining shared_ptr owning the object is destroyed
 /// - the last remaining shared_ptr owning the object is assigned another pointer via operator= or reset().
 ///
-/// The object is destroyed using cudaFree or a custom deleter that is supplied to shared_ptr during
-/// construction.
+/// The object is destroyed using ecuda::default_delete or a custom deleter that is supplied to shared_ptr
+/// during construction.
 ///
 /// A shared_ptr can share ownership of an object while storing a pointer to another object. This feature
 /// can be used to point to member objects while owning the object they belong to. The stored pointer is the
@@ -106,7 +109,7 @@ public:
 	typedef T element_type; //!< type of the managed object
 
 private:
-	void* current_ptr; //!< the stored pointer to the object itself is anonymous (primarily because cudaFree takes a void* argument)
+	void* current_ptr; //!< the stored pointer to the object itself is anonymous (sp_counter_base relies on a void* pointer for dispose)
 	detail::sp_counter_base* counter; //!< pointer to shared counting/disposal structure (is NULL iff current_ptr is NULL)
 
 	template<typename U> friend class shared_ptr;
@@ -122,7 +125,7 @@ public:
 	/// \brief Constructs a shared_ptr with a pointer to the managed object.
 	///
 	/// U must be a complete type and ptr must be convertible to T*.
-	/// Additionally, uses the cudaFree CUDA API function as the deleter.
+	/// Additionally, uses ecuda::default_delete as the deleter.
 	///
 	/// \param ptr a pointer to an object to manage
 	///
@@ -135,7 +138,7 @@ public:
 	/// \brief Constructs a shared_ptr with a pointer to the managed object.
 	///
 	/// U must be a complete type and ptr must be convertible to T*.
-	/// Additionally, uses the cudaFree CUDA API function as the deleter.
+	/// Additionally, uses ecuda::default_delete as the deleter.
 	///
 	/// \param ptr a pointer to an object to manage
 	/// \param deleter a deleter to use to destroy the object
@@ -329,8 +332,8 @@ public:
 	/// \brief Replaces the managed object with another.
 	///
 	/// Replaces the managed object with an object pointed to by ptr. U must be a complete
-	/// type and implicitly convertible to T. Additionally, uses the cudaFree CUDA API
-	/// function as the deleter.
+	/// type and implicitly convertible to T. Additionally, uses ecuda::default_delete as
+	/// the deleter.
 	///
 	/// \param ptr pointer to an object to acquire ownership of
 	///
@@ -375,7 +378,7 @@ public:
 	///
 	/// \return reference to the managed object
 	///
-	__device__ inline typename add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
+	__device__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
 
 	///
 	/// \brief Dereferences pointer to the managed object.

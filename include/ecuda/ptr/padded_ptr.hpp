@@ -43,6 +43,8 @@ public:
 	__device__ inline reference operator*() { return *ptr; }
 	__device__ inline const_reference operator*() const { return *ptr; }
 	__device__ inline pointer operator->() const { return ptr; }
+	__device__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
+	__device__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
 
 	__host__ __device__ inline padded_ptr& operator++() {
 		++ptr;
