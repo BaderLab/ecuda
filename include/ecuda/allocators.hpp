@@ -337,7 +337,11 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
+<<<<<<< HEAD
 	__host__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+=======
+	__device__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+>>>>>>> e174f34cabe9caaf483ad53a06c284bb47737572
 
 };
 
@@ -497,7 +501,7 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-	__host__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+	__device__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
 
 	///
 	/// \brief Returns the address of a given coordinate.
