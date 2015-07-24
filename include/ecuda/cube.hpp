@@ -196,10 +196,14 @@ public:
 		base_type( pointer(), numberRows*numberColumns, numberDepths ), numberRows(numberRows), allocator(allocator)
 	{
 		if( numberRows and numberColumns and numberDepths ) {
-			typename Alloc::size_type pitch;
-			typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch );
-			shared_ptr<value_type> sp( p );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberDepths );
+
+			//typename Alloc::size_type pitch;
+			//typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch );
+			typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberRows*numberColumns );
+			//shared_ptr<value_type> sp( p );
+			shared_ptr<value_type> sp( pointer_traits<typename Alloc::pointer>().undress(p) );
+			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberDepths );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, numberRows*numberColumns, numberDepths );
 			for( size_type i = 0; i < base.number_rows(); ++i ) {
 				typename base_type::row_type row = base.get_row(i);

@@ -5,6 +5,17 @@
 
 namespace ecuda {
 
+namespace detail {
+
+// this is hacky structure that takes any pointer (const or not)
+// and casts it to void* so it can be used by the deleter dispose() method
+// and other places that call cudaFree
+template<typename T> struct __cast_void;
+template<typename T> struct __cast_void<const T*> { inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
+template<typename T> struct __cast_void { inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
+
+} // namespace detail
+
 ///
 /// \brief The default destruction policy used by smart pointers.
 ///
@@ -34,7 +45,8 @@ struct default_delete {
 		#ifdef __CUDA_ARCH__
 		//ptr = NULL;
 		#else
-		if( ptr ) cudaFree(ptr);
+		if( ptr ) cudaFree( detail::__cast_void<T*>()(ptr) );
+		//if( ptr ) cudaFree(ptr);
 		#endif
 	}
 

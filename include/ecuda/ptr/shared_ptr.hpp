@@ -46,12 +46,6 @@ struct sp_counter_impl_pd : sp_counter_base {
 	virtual void* get_deleter() { return deleter; }
 };
 
-// this is hacky structure that takes any pointer (const or not)
-// and casts it to void* so it can be used by the deleter dispose() method
-template<typename T> struct __cast_void;
-template<typename T> struct __cast_void<const T*> { inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
-template<typename T> struct __cast_void { inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
-
 /*
 template<typename T>
 struct __shared_count {

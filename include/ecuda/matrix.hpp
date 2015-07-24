@@ -50,7 +50,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "apiwrappers.hpp"
 #include "memory.hpp"
 #include "models.hpp"
-
+#include "type_traits.hpp"
 
 namespace ecuda {
 
@@ -156,10 +156,12 @@ public:
 	///
 	HOST matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), Alloc allocator = Alloc() ) : base_type( pointer(), numberRows, numberColumns ), allocator(allocator) {
 		if( numberRows and numberColumns ) {
-			typename Alloc::size_type pitch;
-			typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows, pitch );
-			shared_ptr<value_type> sp( p );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberColumns );
+			//typename Alloc::size_type pitch;
+			//typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows, pitch );
+			typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows );
+			shared_ptr<value_type> sp( pointer_traits<typename Alloc::pointer>().undress(p) );
+			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberColumns );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, numberRows, numberColumns );
 			for( size_type i = 0; i < base.number_rows(); ++i ) {
 				typename base_type::row_type row = base.get_row(i);
