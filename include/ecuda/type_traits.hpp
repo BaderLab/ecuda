@@ -114,6 +114,7 @@ template<typename T> struct pointer_traits;
 
 template<typename T>
 struct pointer_traits<T*> {
+	typedef T element_type;
 	typedef T* pointer;
 	typedef const T* const_pointer;
 	typedef T* naked_pointer;
@@ -126,6 +127,7 @@ struct pointer_traits<T*> {
 
 template<typename T>
 struct pointer_traits<const T*> {
+	typedef const T element_type;
 	typedef const T* pointer;
 	typedef const T* const_pointer;
 	typedef const T* naked_pointer;
@@ -138,6 +140,7 @@ struct pointer_traits<const T*> {
 
 template<typename T>
 struct pointer_traits< naked_ptr<T> > {
+	typedef typename naked_ptr<T>::element_type element_type;
 	typedef naked_ptr<T> pointer;
 	typedef naked_ptr<const T> const_pointer;
 	typedef typename naked_ptr<T>::pointer naked_pointer;
@@ -150,6 +153,7 @@ struct pointer_traits< naked_ptr<T> > {
 
 template<typename T>
 struct pointer_traits< const naked_ptr<T> > {
+	typedef typename naked_ptr<T>::element_type element_type;
 	typedef const naked_ptr<T> pointer;
 	typedef const naked_ptr<const T> const_pointer;
 	typedef typename naked_ptr<T>::pointer naked_pointer;
@@ -162,6 +166,7 @@ struct pointer_traits< const naked_ptr<T> > {
 
 template<typename T,typename U>
 struct pointer_traits< unique_ptr<T,U> > {
+	typedef typename unique_ptr<T,U>::element_type element_type;
 	typedef unique_ptr<T,U> pointer;
 	typedef unique_ptr<const T,U> const_pointer;
 	typedef typename unique_ptr<T,U>::pointer naked_pointer;
@@ -174,6 +179,7 @@ struct pointer_traits< unique_ptr<T,U> > {
 
 template<typename T,typename U>
 struct pointer_traits< const unique_ptr<T,U> > {
+	typedef typename unique_ptr<T,U>::element_type element_type;
 	typedef const unique_ptr<T,U> pointer;
 	typedef const unique_ptr<const T,U> const_pointer;
 	typedef typename unique_ptr<T,U>::pointer naked_pointer;
@@ -186,6 +192,7 @@ struct pointer_traits< const unique_ptr<T,U> > {
 
 template<typename T>
 struct pointer_traits< shared_ptr<T> > {
+	typedef typename shared_ptr<T>::element_type element_type;
 	typedef shared_ptr<T> pointer;
 	typedef shared_ptr<const T> const_pointer;
 	typedef T* naked_pointer;
@@ -198,6 +205,7 @@ struct pointer_traits< shared_ptr<T> > {
 
 template<typename T>
 struct pointer_traits< const shared_ptr<T> > {
+	typedef typename shared_ptr<T>::element_type element_type;
 	typedef const shared_ptr<T> pointer;
 	typedef const shared_ptr<const T> const_pointer;
 	typedef typename shared_ptr<T>::pointer naked_pointer;
@@ -207,6 +215,7 @@ struct pointer_traits< const shared_ptr<T> > {
 
 template<typename T,typename U>
 struct pointer_traits< padded_ptr<T,U> > {
+	typedef typename padded_ptr<T,U>::element_type element_type;
 	typedef padded_ptr<T,U> pointer;
 	typedef padded_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
@@ -223,6 +232,7 @@ struct pointer_traits< padded_ptr<T,U> > {
 
 template<typename T,typename U>
 struct pointer_traits< const padded_ptr<T,U> > {
+	typedef typename padded_ptr<T,U>::element_type element_type;
 	typedef const padded_ptr<T,U> pointer;
 	typedef const padded_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
@@ -239,6 +249,7 @@ struct pointer_traits< const padded_ptr<T,U> > {
 
 template<typename T,typename U>
 struct pointer_traits< striding_ptr<T,U> > {
+	typedef typename striding_ptr<T,U>::element_type element_type;
 	typedef striding_ptr<T,U> pointer;
 	typedef striding_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
@@ -251,6 +262,7 @@ struct pointer_traits< striding_ptr<T,U> > {
 
 template<typename T,typename U>
 struct pointer_traits< const striding_ptr<T,U> > {
+	typedef typename striding_ptr<T,U>::element_type element_type;
 	typedef const striding_ptr<T,U> pointer;
 	typedef const striding_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;

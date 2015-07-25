@@ -66,6 +66,8 @@ test/% :: test/%.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
+T_FILES = $(basename $(shell find t -name '*.cu'))
+
 t/% :: t/%.cu
 	@mkdir -p bin/t
 	@mkdir -p obj/t
@@ -73,6 +75,9 @@ t/% :: t/%.cu
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 	$(NVCC) $(NVCCFLAGS) -std=c++11 -c $< -o obj/$@_c++11.cu.o
 	$(CXX) $(CXXFLAGS) -std=c++11 obj/$@.cu.o $(LDLIBS) -o bin/$@_c++11
+
+unittests :: $(T_FILES)
+.PHONY: unittests
 
 benchmarks/% :: benchmarks/%.cu
 	@mkdir -p bin/benchmarks
