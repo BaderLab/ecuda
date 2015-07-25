@@ -349,10 +349,6 @@ public:
 /// This allocator is NOT strictly compatible with STL because the allocated
 /// memory is 2D and has padding to align the allocation in hardware memory.
 ///
-/// \todo Possibly re-engineer this to return a specialized pointer that
-///       keeps track of the pitch parameter.  This might make it possible
-///       for this allocator to be more STL-like.
-///
 template<typename T>
 class device_pitch_allocator {
 
