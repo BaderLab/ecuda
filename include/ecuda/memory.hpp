@@ -55,7 +55,7 @@ struct owner_less< shared_ptr<T> > {
 	/// \param lhs,rhs shared-ownership pointers to compare
 	/// \return true if lhs is less than rhs as determined by the owner-based ordering
 	///
-	__host__ __device__ inline bool operator()( const shared_ptr<T>& lhs, const shared_ptr<T>& rhs ) const { return lhs.owner_before(rhs); }
+	__HOST__ __DEVICE__ inline bool operator()( const shared_ptr<T>& lhs, const shared_ptr<T>& rhs ) const { return lhs.owner_before(rhs); }
 };
 
 } // namespace ecuda

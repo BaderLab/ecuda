@@ -12,10 +12,10 @@
 namespace ecuda {
 
 // forward declaration
-template<class ForwardIterator,typename T> __host__ __device__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val );
+template<class ForwardIterator,typename T> __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val );
 
 template<class ForwardIterator,typename T,class IsContiguous>
-__host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__false_type,IsContiguous> ) {
+__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__false_type,IsContiguous> ) {
 	#ifdef __CUDA_ARCH__
 	return; // never actually gets called, just here to trick nvcc
 	#else
@@ -25,7 +25,7 @@ __host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator l
 }
 
 template<class ForwardIterator,typename T>
-__host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__true_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = val; ++first; }
 	#else
@@ -35,7 +35,7 @@ __host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator l
 }
 
 template<class ForwardIterator,typename T>
-__host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__false_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = val; ++first; }
 	#else
@@ -45,7 +45,7 @@ __host__ __device__ inline void __fill( ForwardIterator first, ForwardIterator l
 
 
 template<class ForwardIterator,typename T>
-__host__ __device__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val ) {
 	__fill(
 		first, last,
 		val,

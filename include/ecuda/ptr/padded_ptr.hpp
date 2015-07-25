@@ -29,24 +29,24 @@ private:
 	pointer ptr;
 
 public:
-	__host__ __device__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {
+	__HOST__ __DEVICE__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {
 		if( !ptr ) this->ptr = edge_ptr;
 	}
 	template<typename T2,class PointerType2>
-	__host__ __device__ padded_ptr( const padded_ptr<T2,PointerType2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,PointerType2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
 
-	__host__ __device__ inline pointer get_edge() const { return edge_ptr; }
-	__host__ __device__ inline size_type get_pitch() const { return pitch; }
-	__host__ __device__ inline size_type get_width() const { return width; }
-	__host__ __device__ inline pointer get() const { return ptr; }
+	__HOST__ __DEVICE__ inline pointer get_edge() const { return edge_ptr; }
+	__HOST__ __DEVICE__ inline size_type get_pitch() const { return pitch; }
+	__HOST__ __DEVICE__ inline size_type get_width() const { return width; }
+	__HOST__ __DEVICE__ inline pointer get() const { return ptr; }
 
-	__device__ inline reference operator*() { return *ptr; }
-	__device__ inline const_reference operator*() const { return *ptr; }
-	__device__ inline pointer operator->() const { return ptr; }
-	__device__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
-	__device__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
+	__DEVICE__ inline reference operator*() { return *ptr; }
+	__DEVICE__ inline const_reference operator*() const { return *ptr; }
+	__DEVICE__ inline pointer operator->() const { return ptr; }
+	__DEVICE__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
+	__DEVICE__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
 
-	__host__ __device__ inline padded_ptr& operator++() {
+	__HOST__ __DEVICE__ inline padded_ptr& operator++() {
 		++ptr;
 		if( (ptr-edge_ptr) == width ) {
 			// skip padding
@@ -57,7 +57,7 @@ public:
 		return *this;
 	}
 
-	__host__ __device__ inline padded_ptr& operator--() {
+	__HOST__ __DEVICE__ inline padded_ptr& operator--() {
 		--ptr;
 		if( ptr < edge_ptr ) {
 			// skip padding
@@ -68,10 +68,10 @@ public:
 		return *this;
 	}
 
-	__host__ __device__ inline padded_ptr operator++( int ) { padded_ptr tmp(*this); ++(*this); return tmp; }
-	__host__ __device__ inline padded_ptr operator--( int ) { padded_ptr tmp(*this); --(*this); return tmp; }
+	__HOST__ __DEVICE__ inline padded_ptr operator++( int ) { padded_ptr tmp(*this); ++(*this); return tmp; }
+	__HOST__ __DEVICE__ inline padded_ptr operator--( int ) { padded_ptr tmp(*this); --(*this); return tmp; }
 
-	__host__ __device__ inline padded_ptr& operator+=( int x ) {
+	__HOST__ __DEVICE__ inline padded_ptr& operator+=( int x ) {
 		ptr += x;
 		if( (ptr-edge_ptr) >= width ) {
 			// skip padding(s)
@@ -84,7 +84,7 @@ public:
 		return *this;
 	}
 
-	__host__ __device__ inline padded_ptr& operator-=( int x ) {
+	__HOST__ __DEVICE__ inline padded_ptr& operator-=( int x ) {
 		ptr -= x;
 		if( ptr < edge_ptr ) {
 			// skip padding(s)
@@ -97,24 +97,24 @@ public:
 		return *this;
 	}
 
-	__host__ __device__ inline padded_ptr operator+( int x ) const {
+	__HOST__ __DEVICE__ inline padded_ptr operator+( int x ) const {
 		padded_ptr tmp( *this );
 		tmp += x;
 		return tmp;
 	}
 
-	__host__ __device__ inline padded_ptr operator-( int x ) const {
+	__HOST__ __DEVICE__ inline padded_ptr operator-( int x ) const {
 		padded_ptr tmp( *this );
 		tmp -= x;
 		return tmp;
 	}
 
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator==( const padded_ptr<T2,PointerType2>& other ) const { return ptr == other.ptr; }
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator!=( const padded_ptr<T2,PointerType2>& other ) const { return ptr != other.ptr; }
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator< ( const padded_ptr<T2,PointerType2>& other ) const { return ptr <  other.ptr; }
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator> ( const padded_ptr<T2,PointerType2>& other ) const { return ptr >  other.ptr; }
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator<=( const padded_ptr<T2,PointerType2>& other ) const { return ptr <= other.ptr; }
-	template<typename T2,typename PointerType2> __host__ __device__ bool operator>=( const padded_ptr<T2,PointerType2>& other ) const { return ptr >= other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator==( const padded_ptr<T2,PointerType2>& other ) const { return ptr == other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator!=( const padded_ptr<T2,PointerType2>& other ) const { return ptr != other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator< ( const padded_ptr<T2,PointerType2>& other ) const { return ptr <  other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator> ( const padded_ptr<T2,PointerType2>& other ) const { return ptr >  other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator<=( const padded_ptr<T2,PointerType2>& other ) const { return ptr <= other.ptr; }
+	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator>=( const padded_ptr<T2,PointerType2>& other ) const { return ptr >= other.ptr; }
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr ) {

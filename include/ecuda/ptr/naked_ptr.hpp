@@ -28,29 +28,29 @@ private:
 	pointer ptr;
 
 public:
-	__host__ __device__ naked_ptr( pointer ptr = pointer() ) : ptr(ptr) {}
-	__host__ __device__ naked_ptr( const naked_ptr& src ) : ptr(src.ptr) {}
+	__HOST__ __DEVICE__ naked_ptr( pointer ptr = pointer() ) : ptr(ptr) {}
+	__HOST__ __DEVICE__ naked_ptr( const naked_ptr& src ) : ptr(src.ptr) {}
 	template<typename U>
-	__host__ __device__ naked_ptr( const naked_ptr<U>& src ) : ptr(src.ptr) {}
+	__HOST__ __DEVICE__ naked_ptr( const naked_ptr<U>& src ) : ptr(src.ptr) {}
 
-	__host__ __device__ pointer get() const { return ptr; }
+	__HOST__ __DEVICE__ pointer get() const { return ptr; }
 
-	__device__ inline reference operator*() { return *ptr; }
-	__device__ inline const_reference operator*() const { return *ptr; }
-	__device__ inline pointer operator->() const { return ptr; }
+	__DEVICE__ inline reference operator*() { return *ptr; }
+	__DEVICE__ inline const_reference operator*() const { return *ptr; }
+	__DEVICE__ inline pointer operator->() const { return ptr; }
 
-	__host__ __device__ inline naked_ptr& operator++() { ++ptr; return *this; }
-	__host__ __device__ inline naked_ptr& operator--() { --ptr; return *this; }
-	__host__ __device__ inline naked_ptr operator++( int ) { naked_ptr tmp(*this); ++(*this); return tmp; }
-	__host__ __device__ inline naked_ptr operator--( int ) { naked_ptr tmp(*this); --(*this); return tmp; }
+	__HOST__ __DEVICE__ inline naked_ptr& operator++() { ++ptr; return *this; }
+	__HOST__ __DEVICE__ inline naked_ptr& operator--() { --ptr; return *this; }
+	__HOST__ __DEVICE__ inline naked_ptr operator++( int ) { naked_ptr tmp(*this); ++(*this); return tmp; }
+	__HOST__ __DEVICE__ inline naked_ptr operator--( int ) { naked_ptr tmp(*this); --(*this); return tmp; }
 
-	__host__ __device__ inline naked_ptr& operator+=( int x ) { ptr += x; return *this; }
-	__host__ __device__ inline naked_ptr& operator-=( int x ) { ptr -= x; return *this; }
+	__HOST__ __DEVICE__ inline naked_ptr& operator+=( int x ) { ptr += x; return *this; }
+	__HOST__ __DEVICE__ inline naked_ptr& operator-=( int x ) { ptr -= x; return *this; }
 
-	__host__ __device__ inline naked_ptr operator+( int x ) const { naked_ptr tmp(*this); tmp += x; return tmp; }
-	__host__ __device__ inline naked_ptr operator-( int x ) const { naked_ptr tmp(*this); tmp -= x; return tmp; }
+	__HOST__ __DEVICE__ inline naked_ptr operator+( int x ) const { naked_ptr tmp(*this); tmp += x; return tmp; }
+	__HOST__ __DEVICE__ inline naked_ptr operator-( int x ) const { naked_ptr tmp(*this); tmp -= x; return tmp; }
 
-	__host__ __device__ inline difference_type operator-( const naked_ptr& other ) const { return ptr-other.ptr; }
+	__HOST__ __DEVICE__ inline difference_type operator-( const naked_ptr& other ) const { return ptr-other.ptr; }
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const naked_ptr& ptr ) {

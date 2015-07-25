@@ -32,38 +32,38 @@ private:
 	pointer ptr;
 
 public:
-	__host__ __device__ device_iterator( const pointer& ptr = pointer() ) : ptr(ptr) {}
-	__host__ __device__ device_iterator( const device_iterator& src ) : ptr(src.ptr) {}
+	__HOST__ __DEVICE__ device_iterator( const pointer& ptr = pointer() ) : ptr(ptr) {}
+	__HOST__ __DEVICE__ device_iterator( const device_iterator& src ) : ptr(src.ptr) {}
 	template<typename T2,typename PointerType2>
-	__host__ __device__ device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.ptr) {}
+	__HOST__ __DEVICE__ device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.ptr) {}
 
-	__host__ __device__ inline device_iterator& operator++() { ++ptr; return *this; }
-	__host__ __device__ inline device_iterator operator++( int ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator++() { ++ptr; return *this; }
+	__HOST__ __DEVICE__ inline device_iterator operator++( int ) {
 		device_iterator tmp(*this);
 		++(*this);
 		return tmp;
 	}
 
-	__host__ __device__ inline device_iterator& operator--() { --ptr; return *this; }
-	__host__ __device__ inline device_iterator operator--( int ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator--() { --ptr; return *this; }
+	__HOST__ __DEVICE__ inline device_iterator operator--( int ) {
 		device_iterator tmp(*this);
 		--(*this);
 		return tmp;
 	}
 
-	__host__ __device__ inline bool operator==( const device_iterator& other ) const __NOEXCEPT__ { return ptr == other.ptr; }
-	__host__ __device__ inline bool operator!=( const device_iterator& other ) const __NOEXCEPT__ { return !operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator==( const device_iterator& other ) const __NOEXCEPT__ { return ptr == other.ptr; }
+	__HOST__ __DEVICE__ inline bool operator!=( const device_iterator& other ) const __NOEXCEPT__ { return !operator==(other); }
 
-	__device__ inline reference operator*() { return *ptr; }
-	__host__ __device__ inline pointer operator->() const { return ptr; }
+	__DEVICE__ inline reference operator*() { return *ptr; }
+	__HOST__ __DEVICE__ inline pointer operator->() const { return ptr; }
 
-	__host__ __device__ inline device_iterator& operator=( const device_iterator& other ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator& other ) {
 		ptr = other.ptr;
 		return *this;
 	}
 
 	template<typename U,typename PointerType2>
-	__host__ __device__ inline device_iterator& operator=( const device_iterator<U,PointerType2,Category>& other ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator<U,PointerType2,Category>& other ) {
 		ptr = other.ptr;
 		return *this;
 	}
@@ -85,25 +85,25 @@ public:
 	typedef typename base_type::reference reference;
 
 public:
-	__host__ __device__ device_contiguous_iterator( const pointer& ptr = pointer() ) : base_type(ptr) {}
-	__host__ __device__ device_contiguous_iterator( const device_contiguous_iterator& src ) : base_type(src) {}
+	__HOST__ __DEVICE__ device_contiguous_iterator( const pointer& ptr = pointer() ) : base_type(ptr) {}
+	__HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator& src ) : base_type(src) {}
 	template<typename U>
-	__host__ __device__ device_contiguous_iterator( const device_contiguous_iterator<U>& src ) : base_type(src) {}
+	__HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator<U>& src ) : base_type(src) {}
 
-	__host__ __device__ inline device_contiguous_iterator operator+( int x ) const { return device_contiguous_iterator( base_type::ptr + x ); }
-	__host__ __device__ inline device_contiguous_iterator operator-( int x ) const { return device_contiguous_iterator( base_type::ptr - x ); }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator operator+( int x ) const { return device_contiguous_iterator( base_type::ptr + x ); }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator operator-( int x ) const { return device_contiguous_iterator( base_type::ptr - x ); }
 
-	__host__ __device__ inline device_contiguous_iterator& operator+=( int x ) { base_type::ptr += x; return *this; }
-	__host__ __device__ inline device_contiguous_iterator& operator-=( int x ) { base_type::ptr -= x; return *this; }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator+=( int x ) { base_type::ptr += x; return *this; }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator-=( int x ) { base_type::ptr -= x; return *this; }
 
-	__device__ inline reference operator[]( int x ) const { return *(base_type::ptr+x); }
+	__DEVICE__ inline reference operator[]( int x ) const { return *(base_type::ptr+x); }
 
-	__host__ __device__ inline difference_type operator-( const device_contiguous_iterator& other ) { return base_type::ptr - other.ptr; }
+	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_iterator& other ) { return base_type::ptr - other.ptr; }
 
-	__host__ __device__ inline bool operator<( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
-	__host__ __device__ inline bool operator>( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
-	__host__ __device__ inline bool operator<=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator<(other) or operator==(other); }
-	__host__ __device__ inline bool operator>=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator<( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
+	__HOST__ __DEVICE__ inline bool operator>( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
+	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator<(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
 
 };
 
@@ -125,64 +125,64 @@ private:
 	Iterator parentIterator;
 
 public:
-	__host__ __device__ reverse_device_iterator( Iterator parentIterator = Iterator() ) : parentIterator(parentIterator) {}
-	__host__ __device__ reverse_device_iterator( const reverse_device_iterator& src ) : parentIterator(src.parentIterator) {}
+	__HOST__ __DEVICE__ reverse_device_iterator( Iterator parentIterator = Iterator() ) : parentIterator(parentIterator) {}
+	__HOST__ __DEVICE__ reverse_device_iterator( const reverse_device_iterator& src ) : parentIterator(src.parentIterator) {}
 	template<class Iterator2>
-	__host__ __device__ reverse_device_iterator( const reverse_device_iterator<Iterator2>& src ) : parentIterator(src.base()) {}
+	__HOST__ __DEVICE__ reverse_device_iterator( const reverse_device_iterator<Iterator2>& src ) : parentIterator(src.base()) {}
 
-	__host__ __device__ Iterator base() const { return parentIterator; }
+	__HOST__ __DEVICE__ Iterator base() const { return parentIterator; }
 
-	__host__ __device__ inline reverse_device_iterator& operator++() { --parentIterator; return *this; }
-	__host__ __device__ inline reverse_device_iterator operator++( int ) {
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator++() { --parentIterator; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator++( int ) {
 		reverse_device_iterator tmp(*this);
 		++(*this);
 		return tmp;
 	}
 
-	__host__ __device__ inline reverse_device_iterator& operator--() { ++parentIterator; return *this; }
-	__host__ __device__ inline reverse_device_iterator operator--( int ) {
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator--() { ++parentIterator; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator--( int ) {
 		reverse_device_iterator tmp(*this);
 		--(*this);
 		return tmp;
 	}
 
-	__host__ __device__ inline bool operator==( const reverse_device_iterator& other ) const { return parentIterator == other.parentIterator; }
-	__host__ __device__ inline bool operator!=( const reverse_device_iterator& other ) const { return !operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator==( const reverse_device_iterator& other ) const { return parentIterator == other.parentIterator; }
+	__HOST__ __DEVICE__ inline bool operator!=( const reverse_device_iterator& other ) const { return !operator==(other); }
 
-	__device__ inline reference operator*() const {
+	__DEVICE__ inline reference operator*() const {
 		Iterator tmp(parentIterator);
 		--tmp;
 		return tmp.operator*();
 	}
 
-	__host__ __device__ inline pointer operator->() const {
+	__HOST__ __DEVICE__ inline pointer operator->() const {
 		Iterator tmp(parentIterator);
 		--tmp;
 		return tmp.operator->();
 	}
 
-	__host__ __device__ inline difference_type operator-( const reverse_device_iterator& other ) { return parentIterator - other.parentIterator; }
+	__HOST__ __DEVICE__ inline difference_type operator-( const reverse_device_iterator& other ) { return parentIterator - other.parentIterator; }
 
-	__host__ __device__ inline reverse_device_iterator operator+( int x ) const { return reverse_device_iterator( parentIterator-x ); }
-	__host__ __device__ inline reverse_device_iterator operator-( int x ) const { return reverse_device_iterator( parentIterator+x ); }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator+( int x ) const { return reverse_device_iterator( parentIterator-x ); }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator-( int x ) const { return reverse_device_iterator( parentIterator+x ); }
 
-	__host__ __device__ inline bool operator<( const reverse_device_iterator& other ) const { return parentIterator < other.parentIterator; }
-	__host__ __device__ inline bool operator>( const reverse_device_iterator& other ) const { return parentIterator > other.parentIterator; }
-	__host__ __device__ inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) or operator==(other); }
-	__host__ __device__ inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator<( const reverse_device_iterator& other ) const { return parentIterator < other.parentIterator; }
+	__HOST__ __DEVICE__ inline bool operator>( const reverse_device_iterator& other ) const { return parentIterator > other.parentIterator; }
+	__HOST__ __DEVICE__ inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) or operator==(other); }
 
-	__host__ __device__ inline reverse_device_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
-	__host__ __device__ inline reverse_device_iterator& operator-=( int x ) { parentIterator += x; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator-=( int x ) { parentIterator += x; return *this; }
 
-	__device__ reference operator[]( int x ) const { return parentIterator.operator[]( -x-1 ); }
+	__DEVICE__ reference operator[]( int x ) const { return parentIterator.operator[]( -x-1 ); }
 
-	__host__ __device__ reverse_device_iterator& operator=( const reverse_device_iterator& other ) {
+	__HOST__ __DEVICE__ reverse_device_iterator& operator=( const reverse_device_iterator& other ) {
 		parentIterator = other.parentIterator;
 		return *this;
 	}
 
 	template<class Iterator2>
-	__host__ __device__ reverse_device_iterator& operator=( const reverse_device_iterator<Iterator2>& other ) {
+	__HOST__ __DEVICE__ reverse_device_iterator& operator=( const reverse_device_iterator<Iterator2>& other ) {
 		parentIterator = other.parentIterator;
 		return *this;
 	}
@@ -252,7 +252,7 @@ struct iterator_traits< reverse_device_iterator<Iterator> > : std::iterator_trai
 };
 
 template<class InputIterator,typename Distance,class IsContiguous>
-__host__ __device__ inline void __advance( InputIterator& iterator, Distance n, detail::__false_type, IsContiguous ) {
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__false_type, IsContiguous ) {
 	// just defer to STL
 	#ifdef __CUDA_ARCH__
 	return; // never actually gets called, just here to trick nvcc
@@ -262,12 +262,12 @@ __host__ __device__ inline void __advance( InputIterator& iterator, Distance n, 
 }
 
 template<class InputIterator,typename Distance>
-__host__ __device__ inline void __advance( InputIterator& iterator, Distance n, detail::__true_type, detail::__true_type ) {
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__true_type, detail::__true_type ) {
 	iterator += n;
 }
 
 template<class InputIterator,typename Distance>
-__host__ __device__ inline void __advance( InputIterator& iterator, Distance n, detail::__true_type, detail::__false_type ) {
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__true_type, detail::__false_type ) {
 	#ifdef __CUDA_ARCH__
 	for( Distance i = 0; i < n; ++i ) ++iterator;
 	#else
@@ -278,18 +278,18 @@ __host__ __device__ inline void __advance( InputIterator& iterator, Distance n, 
 
 
 template<class InputIterator,typename Distance>
-__host__ __device__ inline void advance( InputIterator& iterator, Distance n ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n ) {
 	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator(), typename ecuda::iterator_traits<InputIterator>::is_contiguous() );
 }
 
 
 template<class Iterator>
-__host__ __device__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__true_type, detail::__true_type ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__true_type, detail::__true_type ) {
 	return last-first;
 }
 
 template<class Iterator>
-__host__ __device__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__true_type, detail::__false_type ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__true_type, detail::__false_type ) {
 	#ifdef __CUDA_ARCH__
 	typename std::iterator_traits<Iterator>::difference_type n = 0;
 	while( first != last ) { ++n; ++first; }
@@ -300,7 +300,7 @@ __host__ __device__ inline typename std::iterator_traits<Iterator>::difference_t
 }
 
 template<class Iterator,class IsContiguous>
-__host__ __device__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__false_type, IsContiguous ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__false_type, IsContiguous ) {
 	#ifdef __CUDA_ARCH__
 	return 0; // never actually gets called, just here to trick nvcc
 	#else
@@ -310,7 +310,7 @@ __host__ __device__ inline typename std::iterator_traits<Iterator>::difference_t
 }
 
 template<class Iterator>
-__host__ __device__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) {
 	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator(), typename ecuda::iterator_traits<Iterator>::is_contiguous() );
 	//return __distance( first, last, typename detail::__iterator_contiguity<typename std::iterator_traits<Iterator>::iterator_category>::type() );
 }

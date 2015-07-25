@@ -120,9 +120,9 @@ struct pointer_traits<T*> {
 	typedef T* naked_pointer;
 	typedef T* modifiable_pointer;
 	typedef char* char_pointer;
-	__host__ __device__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
-	__host__ __device__ inline modifiable_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return ptr; }
+	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return ptr; }
 };
 
 template<typename T>
@@ -133,9 +133,9 @@ struct pointer_traits<const T*> {
 	typedef const T* naked_pointer;
 	typedef const T* modifiable_pointer;
 	typedef const char* char_pointer;
-	__host__ __device__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
-	__host__ __device__ inline modifiable_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return ptr; }
+	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return ptr; }
 };
 
 template<typename T>
@@ -146,9 +146,9 @@ struct pointer_traits< naked_ptr<T> > {
 	typedef typename naked_ptr<T>::pointer naked_pointer;
 	typedef naked_ptr<T> modifiable_pointer;
 	typedef char* char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return ptr + x; }
-	__host__ __device__ inline modifiable_pointer& cast_to_modifiable( pointer& ptr ) const { return ptr; }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return ptr + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer& cast_to_modifiable( pointer& ptr ) const { return ptr; }
 };
 
 template<typename T>
@@ -159,9 +159,9 @@ struct pointer_traits< const naked_ptr<T> > {
 	typedef typename naked_ptr<T>::pointer naked_pointer;
 	typedef naked_pointer modifiable_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return ptr.get() + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return ptr.get(); }
 };
 
 template<typename T,typename U>
@@ -172,9 +172,9 @@ struct pointer_traits< unique_ptr<T,U> > {
 	typedef typename unique_ptr<T,U>::pointer naked_pointer;
 	typedef naked_pointer modifiable_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__host__ __device__ inline modifiable_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return undress(ptr); }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return undress(ptr); }
 };
 
 template<typename T,typename U>
@@ -185,9 +185,9 @@ struct pointer_traits< const unique_ptr<T,U> > {
 	typedef typename unique_ptr<T,U>::pointer naked_pointer;
 	typedef naked_pointer modifiable_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__host__ __device__ inline modifiable_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return undress(ptr); }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer& ptr ) const { return undress(ptr); }
 };
 
 template<typename T>
@@ -198,9 +198,9 @@ struct pointer_traits< shared_ptr<T> > {
 	typedef T* naked_pointer;
 	typedef naked_pointer modifiable_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__host__ __device__ inline modifiable_pointer increment( const shared_ptr<T> ptr, const int x ) const { return ptr.get() + x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return undress(ptr); }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const shared_ptr<T> ptr, const int x ) const { return ptr.get() + x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( pointer ptr ) const { return undress(ptr); }
 };
 
 template<typename T>
@@ -210,7 +210,7 @@ struct pointer_traits< const shared_ptr<T> > {
 	typedef const shared_ptr<const T> const_pointer;
 	typedef typename shared_ptr<T>::pointer naked_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 };
 
 template<typename T,typename U>
@@ -221,9 +221,9 @@ struct pointer_traits< padded_ptr<T,U> > {
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
 	typedef padded_ptr<T,typename pointer_traits<U>::modifiable_pointer> modifiable_pointer;
 	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const {
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const {
 		typename pointer_traits<U>::modifiable_pointer mp1 = pointer_traits<U>().cast_to_modifiable( ptr.get_edge() );
 		typename pointer_traits<U>::modifiable_pointer mp2 = pointer_traits<U>().cast_to_modifiable( ptr.get() );
 		return modifiable_pointer( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
@@ -238,9 +238,9 @@ struct pointer_traits< const padded_ptr<T,U> > {
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
 	typedef padded_ptr<const T,typename pointer_traits<typename pointer_traits<U>::const_pointer>::modifiable_pointer> modifiable_pointer;
 	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const {
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const {
 		typename pointer_traits<U>::modifiable_pointer mp1 = pointer_traits<U>().cast_to_modifiable( ptr.get_edge() );
 		typename pointer_traits<U>::modifiable_pointer mp2 = pointer_traits<U>().cast_to_modifiable( ptr.get() );
 		return modifiable_pointer( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
@@ -255,9 +255,9 @@ struct pointer_traits< striding_ptr<T,U> > {
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
 	typedef striding_ptr<T,typename pointer_traits<U>::modifiable_pointer> modifiable_pointer;
 	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const { return modifiable_pointer( pointer_traits<U>().cast_to_modifiable( ptr.get() ), ptr.get_stride() ); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const { return modifiable_pointer( pointer_traits<U>().cast_to_modifiable( ptr.get() ), ptr.get_stride() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
 };
 
 template<typename T,typename U>
@@ -268,9 +268,9 @@ struct pointer_traits< const striding_ptr<T,U> > {
 	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
 	typedef striding_ptr<const T,typename pointer_traits<typename pointer_traits<U>::const_pointer>::modifiable_pointer> modifiable_pointer;
 	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__host__ __device__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__host__ __device__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const { return modifiable_pointer( pointer_traits<U>().cast_to_modifiable( ptr.get() ), ptr.get_stride() ); }
-	__host__ __device__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
+	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer cast_to_modifiable( const pointer& ptr ) const { return modifiable_pointer( pointer_traits<U>().cast_to_modifiable( ptr.get() ), ptr.get_stride() ); }
+	__HOST__ __DEVICE__ inline modifiable_pointer increment( const pointer& ptr, const int x ) const { return cast_to_modifiable(ptr)+x; }
 };
 
 } // namespace ecuda

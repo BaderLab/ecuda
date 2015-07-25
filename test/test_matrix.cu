@@ -43,8 +43,9 @@ int main( int argc, char* argv[] ) {
 
 		std::cout << "EQUAL " << ( deviceMatrix == deviceMatrix2 ? "true" : "false" ) << std::endl;
 		std::cout << "LESS THAN " << ( deviceMatrix < deviceMatrix2 ? "true" : "false" ) << std::endl;
-
 	}
+
+	ecuda::matrix_transpose( deviceMatrix );
 
 	{
 		//ecuda::matrix<int> deviceMatrix2( 2, 2 );

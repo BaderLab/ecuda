@@ -27,7 +27,7 @@ struct default_delete {
 	///
 	/// \brief Constructs an ecuda::default_delete object.
 	///
-	__host__ __device__ __CONSTEXPR__ default_delete() __NOEXCEPT__ {}
+	__HOST__ __DEVICE__ __CONSTEXPR__ default_delete() __NOEXCEPT__ {}
 
 	///
 	/// \brief Constructs an ecuda::default_delete object from another one.
@@ -35,13 +35,13 @@ struct default_delete {
 	/// This constructor will only participate in overload resolution
 	/// if U* is implicitly convertible to T*.
 	///
-	template<typename U> __host__ __device__ default_delete( const default_delete<U>& src ) __NOEXCEPT__ {}
+	template<typename U> __HOST__ __DEVICE__ default_delete( const default_delete<U>& src ) __NOEXCEPT__ {}
 
 	///
 	/// \brief Calls cudaFree() on a pointer.
 	/// \param ptr an object or array to delete
 	///
-	__host__ __device__ inline void operator()( T* ptr ) const {
+	__HOST__ __DEVICE__ inline void operator()( T* ptr ) const {
 		#ifdef __CUDA_ARCH__
 		//ptr = NULL;
 		#else

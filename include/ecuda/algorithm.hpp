@@ -20,7 +20,7 @@ namespace ecuda {
 
 
 template<class InputIterator,typename T>
-inline __host__ __device__ InputIterator find( InputIterator first, InputIterator last, const T& value ) {
+inline __HOST__ __DEVICE__ InputIterator find( InputIterator first, InputIterator last, const T& value ) {
 	while( first != last ) {
 		if( *first == value ) return first;
 		++first;
@@ -29,7 +29,7 @@ inline __host__ __device__ InputIterator find( InputIterator first, InputIterato
 }
 
 template<class InputIterator,class UnaryPredicate>
-inline __host__ __device__ InputIterator find_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
+inline __HOST__ __DEVICE__ InputIterator find_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	while( first != last ) {
 		if( p(*first) ) return first;
 		++first;
@@ -38,7 +38,7 @@ inline __host__ __device__ InputIterator find_if( InputIterator first, InputIter
 }
 
 template<class InputIterator,class UnaryPredicate>
-inline __host__ __device__ InputIterator find_if_not( InputIterator first, InputIterator last, UnaryPredicate p ) {
+inline __HOST__ __DEVICE__ InputIterator find_if_not( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	while( first != last ) {
 		if( !p(*first) ) return first;
 		++first;
@@ -48,25 +48,25 @@ inline __host__ __device__ InputIterator find_if_not( InputIterator first, Input
 
 
 template<class InputIterator,class UnaryPredicate>
-inline __host__ __device__ bool all_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+inline __HOST__ __DEVICE__ bool all_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	return ecuda::find_if_not( first, last, p ) == last;
 }
 
 template<class InputIterator,class UnaryPredicate>
-inline __host__ __device__ bool any_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+inline __HOST__ __DEVICE__ bool any_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	return ecuda::find_if( first, last, p ) != last;
 }
 
 template<class InputIterator,class UnaryPredicate>
-inline __host__ __device__ bool none_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
+inline __HOST__ __DEVICE__ bool none_of( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	return ecuda::find_if( first, last, p ) == last;
 }
 
 
 
-template<typename T> __host__ __device__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T& tmp = a; a = b; b = tmp; } // equivalent to std::swap
+template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T& tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
-template<class InputIterator,class UnaryFunction> __host__ __device__ inline UnaryFunction __for_each( InputIterator first, InputIterator last, UnaryFunction f, detail::__false_type ) {
+template<class InputIterator,class UnaryFunction> __HOST__ __DEVICE__ inline UnaryFunction __for_each( InputIterator first, InputIterator last, UnaryFunction f, detail::__false_type ) {
 	#ifdef __CUDA_ARCH__
 	return f; // never called from device code
 	#else
@@ -75,7 +75,7 @@ template<class InputIterator,class UnaryFunction> __host__ __device__ inline Una
 	#endif
 }
 
-template<class InputIterator,class UnaryFunction> __host__ __device__ inline UnaryFunction __for_each( InputIterator first, InputIterator last, UnaryFunction f, detail::__true_type ) {
+template<class InputIterator,class UnaryFunction> __HOST__ __DEVICE__ inline UnaryFunction __for_each( InputIterator first, InputIterator last, UnaryFunction f, detail::__true_type ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { f(*first); ++first; }
 	return f; // never called from device code
@@ -87,14 +87,14 @@ template<class InputIterator,class UnaryFunction> __host__ __device__ inline Una
 	return f;
 }
 
-template<class InputIterator,class UnaryFunction> __host__ __device__ inline UnaryFunction for_each( InputIterator first, InputIterator last, UnaryFunction f ) {
+template<class InputIterator,class UnaryFunction> __HOST__ __DEVICE__ inline UnaryFunction for_each( InputIterator first, InputIterator last, UnaryFunction f ) {
 	return __for_each( first, last, f, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
 
 
 template<class InputIterator,typename T>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count( InputIterator first, InputIterator last, const T& value, detail::__false_type ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count( InputIterator first, InputIterator last, const T& value, detail::__false_type ) {
 	#ifdef __CUDA_ARCH__
 	return 0; // never called from device code
 	#else
@@ -104,7 +104,7 @@ __host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::diffe
 }
 
 template<class InputIterator,typename T>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count( InputIterator first, InputIterator last, const T& value, detail::__true_type ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count( InputIterator first, InputIterator last, const T& value, detail::__true_type ) {
 	#ifdef __CUDA_ARCH__
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = 0;
 	while( first != last ) {
@@ -120,14 +120,14 @@ __host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::diffe
 }
 
 template<class InputIterator,typename T>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type count( InputIterator first, InputIterator last, const T& value ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type count( InputIterator first, InputIterator last, const T& value ) {
 	return __count( first, last, value, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
 
 
 template<class InputIterator,class UnaryPredicate>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count_if( InputIterator first, InputIterator last, UnaryPredicate p, detail::__false_type ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count_if( InputIterator first, InputIterator last, UnaryPredicate p, detail::__false_type ) {
 	#ifdef __CUDA_ARCH__
 	return 0; // never called from device code
 	#else
@@ -137,7 +137,7 @@ __host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::diffe
 }
 
 template<class InputIterator,class UnaryPredicate>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count_if( InputIterator first, InputIterator last, UnaryPredicate p, detail::__true_type ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type __count_if( InputIterator first, InputIterator last, UnaryPredicate p, detail::__true_type ) {
 	#ifdef __CUDA_ARCH__
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = 0;
 	while( first != last ) {
@@ -153,7 +153,7 @@ __host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::diffe
 }
 
 template<class InputIterator,class UnaryPredicate>
-__host__ __device__ inline typename ecuda::iterator_traits<InputIterator>::difference_type count_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
+__HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type count_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	return __count_if( first, last, p, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 

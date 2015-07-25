@@ -84,7 +84,7 @@ either expressed or implied, of the FreeBSD Project.
 #define __CONSTEXPR__
 #endif
 
-#define HOST __host__
-#define DEVICE __device__
+#define __HOST__ __host__
+#define __DEVICE__ __device__
 
 #endif

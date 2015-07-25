@@ -192,7 +192,7 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) :
+	__HOST__ cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) :
 		base_type( pointer(), numberRows*numberColumns, numberDepths ), numberRows(numberRows), allocator(allocator)
 	{
 		if( numberRows and numberColumns and numberDepths ) {
@@ -233,7 +233,7 @@ public:
 	///
 	/// \param src Another cube object of the same type, whose contents are copied.
 	///
-	HOST DEVICE cube( const cube& src ) : base_type( src ),
+	__HOST__ __DEVICE__ cube( const cube& src ) : base_type( src ),
 		numberRows(src.numberRows),
 		//#ifdef __CPP11_SUPPORTED__
 		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
@@ -251,30 +251,30 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST cube( cube&& src ) : base_type(src), numberRows(std::move(src.numberRows)), allocator(std::move(src.allocator)) {}
+	__HOST__ cube( cube&& src ) : base_type(src), numberRows(std::move(src.numberRows)), allocator(std::move(src.allocator)) {}
 	#endif
 
-	//HOST DEVICE virtual ~cube() {}
+	//__HOST__ __DEVICE__ virtual ~cube() {}
 
 	///
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-	HOST inline allocator_type get_allocator() const { return allocator; }
+	__HOST__ inline allocator_type get_allocator() const { return allocator; }
 
 /*
 private:
 	template<class Iterator>
-	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
+	__DEVICE__ inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
 		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
 	}
 
 	template<class Iterator>
-	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
+	__DEVICE__ inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
 
 	// dummy method to trick compiler, since device code will never use a non-device iterator
 	template<class Iterator,class SomeOtherCategory>
-	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
+	__DEVICE__ inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
 */
 
 public:
@@ -301,7 +301,7 @@ public:
 //	/// \throws std::length_error if number of elements doesn't match the size of the cube
 	///
 	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last ) {
+	__HOST__ __DEVICE__ void assign( Iterator first, Iterator last ) {
 		/// @todo reimplement range-checking
 		#ifdef __CUDA_ARCH__
 		ecuda::copy( first, last, begin() );
@@ -335,28 +335,28 @@ public:
 	///
 	/// \returns The number of rows in the container.
 	///
-	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
+	__HOST__ __DEVICE__ inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
 
 	///
 	/// \brief Returns the number of columns in the container.
 	///
 	/// \returns The number of columns in the container.
 	///
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; }
+	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; }
 
 	///
 	/// \brief Returns the number of depths in the container.
 	///
 	/// \returns The number of depths in the container.
 	///
-	HOST DEVICE inline size_type number_depths() const __NOEXCEPT__ { return base_type::number_columns(); }
+	__HOST__ __DEVICE__ inline size_type number_depths() const __NOEXCEPT__ { return base_type::number_columns(); }
 
 	///
 	/// \brief Returns the pitch of the underlying 2D device memory.
 	///
 	/// \returns The pitch (in bytes) of the underlying 2D device memory.
 	///
-//	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
+//	__HOST__ __DEVICE__ inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
 
 	///
 	/// \brief Returns the number of elements in the container.
@@ -365,27 +365,27 @@ public:
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
+	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
+	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !size(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-//	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
+//	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-//	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+//	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -394,7 +394,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -403,7 +403,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return base_type::end(); }
+	__HOST__ __DEVICE__ inline iterator end() __NOEXCEPT__ { return base_type::end(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -412,7 +412,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -421,7 +421,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return base_type::end(); }
+	__HOST__ __DEVICE__ inline const_iterator end() const __NOEXCEPT__ { return base_type::end(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -430,7 +430,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rbegin() __NOEXCEPT__ { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -440,7 +440,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -449,7 +449,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -459,13 +459,13 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
 	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
-	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return base_type::cend(); }
-	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
-	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crend(); }
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
+	__HOST__ __DEVICE__ inline const_iterator cend() const __NOEXCEPT__ { return base_type::cend(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crend(); }
 	#endif
 
 	///
@@ -475,7 +475,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
+	__HOST__ __DEVICE__ inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
@@ -494,7 +494,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
+	__HOST__ __DEVICE__ inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
@@ -512,7 +512,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-	HOST DEVICE inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
+	__HOST__ __DEVICE__ inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
@@ -528,7 +528,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
+	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
@@ -547,7 +547,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-	HOST DEVICE inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
+	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
@@ -565,7 +565,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-	HOST DEVICE inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
+	__HOST__ __DEVICE__ inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
@@ -580,7 +580,7 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
+	__HOST__ __DEVICE__ inline slice_yz_type get_yz( const size_type rowIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths();
@@ -598,7 +598,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
+	__HOST__ __DEVICE__ inline slice_xy_type get_xy( const size_type depthIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += depthIndex; // move to correct depth
@@ -617,7 +617,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
+	__HOST__ __DEVICE__ inline slice_xz_type get_xz( const size_type columnIndex ) {
 		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += columnIndex*number_depths(); // move to correct column
@@ -635,7 +635,7 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
+	__HOST__ __DEVICE__ inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths();
@@ -653,7 +653,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
+	__HOST__ __DEVICE__ inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += number_depths(); // move to correct depth
@@ -671,7 +671,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
+	__HOST__ __DEVICE__ inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
 		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
 		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
 		ptr += columnIndex*number_depths(); // move to correct column
@@ -688,14 +688,14 @@ public:
 	/// \param rowIndex index of the YZ-slice to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
+	__HOST__ __DEVICE__ inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
 	/// \returns view object for the specified row
 	///
-	HOST DEVICE inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
+	__HOST__ __DEVICE__ inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
 
 	///
 	/// \brief Returns a reference to the element at the specified cube location.
@@ -725,7 +725,7 @@ public:
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
+	__DEVICE__ inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// This method in STL containers like vector is differentiated from operator[]
@@ -753,7 +753,7 @@ public:
 	/// \param depthIndex index of the depth to get an element reference from
 	/// \returns reference to the specified element
 	///
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
+	__DEVICE__ inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
@@ -765,7 +765,7 @@ public:
 	/// \param newNumberDepths new number of depths
 	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
-	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() ) {
+	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() ) {
 		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
 		cube newCube( newNumberRows, newNumberColumns, newNumberDepths, value, get_allocator() );
 		for( size_type i = 0; i < std::min(newNumberRows,number_rows()); ++i ) {
@@ -784,7 +784,7 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE void fill( const value_type& value ) {
+	__HOST__ __DEVICE__ void fill( const value_type& value ) {
 		#ifdef __CUDA_ARCH__
 		ecuda::fill( begin(), end(), value );
 		#else
@@ -812,7 +812,7 @@ public:
 	/// \return A reference to this container.
 	///
 	template<class Alloc2>
-	HOST DEVICE cube<value_type,allocator_type>& operator=( const cube<value_type,Alloc2>& src ) {
+	__HOST__ __DEVICE__ cube<value_type,allocator_type>& operator=( const cube<value_type,Alloc2>& src ) {
 		#ifdef __CUDA_ARCH__
 		// shallow copy if called from device
 		numberRows = src.numberRows;
@@ -840,7 +840,7 @@ public:
 	/// of the first row, ...).
 	///
 	template<class Container>
-	HOST Container& operator>>( Container& dest ) const {
+	__HOST__ Container& operator>>( Container& dest ) const {
 		typename Container::iterator destIter = dest.begin();
 		for( typename base_type::size_type i = 0; i < base_type::number_rows(); ++i ) {
 			typename base_type::const_row_type row = base_type::get_row(i);
@@ -862,7 +862,7 @@ public:
 	/// \throws std::length_error if number of elements in src does not match the size of this matrix
 	///
 	template<class Container>
-	HOST cube& operator<<( const Container& src ) {
+	__HOST__ cube& operator<<( const Container& src ) {
 		typename Container::const_iterator srcBegin = src.begin();
 		typename ecuda::iterator_traits<typename Container::const_iterator>::difference_type len = ecuda::distance( src.begin(), src.end() );
 		if( len < 0 or static_cast<size_type>(len) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::cube::operator<<() provided with a container of non-matching size") );

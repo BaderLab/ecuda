@@ -12,11 +12,11 @@
 namespace ecuda {
 
 // forward declaration
-template<class InputIterator1,class InputIterator2> __host__ __device__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 );
+template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 );
 
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__false_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__false_type,detail::__false_type> ) {
 	#ifdef __CUDA_ARCH__
 	return false; // never actually gets called, just here to trick nvcc
 	#else
@@ -25,7 +25,7 @@ __host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 l
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__true_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__true_type,detail::__false_type> ) {
 	#ifdef __CUDA_ARCH__
 	return false; // never actually gets called, just here to trick nvcc
 	#else
@@ -37,14 +37,14 @@ __host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 l
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__false_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__false_type,detail::__true_type> ) {
 	InputIterator2 last2 = first2;
 	ecuda::advance( last2, ecuda::distance(first1,last1) );
 	return ecuda::equal( first2, last2, first1 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__true_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline bool __equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<detail::__true_type,detail::__true_type> ) {
 	#ifdef __CUDA_ARCH__
 	for( ; first1 != last1; ++first1, ++first2 ) if( !(*first1 == *first2) ) return false;
 	return true;
@@ -64,7 +64,7 @@ __host__ __device__ inline bool __equal( InputIterator1 first1, InputIterator1 l
 
 
 template<class InputIterator1,class InputIterator2>
-__host__ __device__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 ) {
+__HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 ) {
 	return __equal( first1, last1, first2, ecuda::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
 }
 

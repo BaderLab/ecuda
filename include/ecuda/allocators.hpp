@@ -232,25 +232,25 @@ public:
 	///
 	/// \brief Constructs a device allocator object.
 	///
-	__host__ __device__ device_allocator() throw() {}
+	__HOST__ __DEVICE__ device_allocator() throw() {}
 
 	///
 	/// \brief Constructs a device allocator object from another device allocator object.
 	/// \param alloc Allocator object.
 	///
-	__host__ __device__ device_allocator( const device_allocator& alloc ) throw() {}
+	__HOST__ __DEVICE__ device_allocator( const device_allocator& alloc ) throw() {}
 
 	///
 	/// \brief Constructs a device allocator object from another device allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-	__host__ __device__ device_allocator( const device_allocator<U>& alloc ) throw() {}
+	__HOST__ __DEVICE__ device_allocator( const device_allocator<U>& alloc ) throw() {}
 
 	///
 	/// \brief Destructs the device allocator object.
 	///
-	__host__ __device__ ~device_allocator() throw() {}
+	__HOST__ __DEVICE__ ~device_allocator() throw() {}
 
 	///
 	/// \brief Returns the address of x.
@@ -260,7 +260,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-	__host__ __device__ inline pointer address( reference x ) { return &x; }
+	__HOST__ __DEVICE__ inline pointer address( reference x ) { return &x; }
 
 	///
 	/// \brief Returns the address of x.
@@ -270,7 +270,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-	__host__ __device__ inline const_pointer address( const_reference x ) const { return &x; }
+	__HOST__ __DEVICE__ inline const_pointer address( const_reference x ) const { return &x; }
 
 	///
 	/// \brief Allocate block of storage.
@@ -292,7 +292,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__host__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
+	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
 		if( result != cudaSuccess ) throw std::bad_alloc();
@@ -310,7 +310,7 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
-	__host__ inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
+	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
 
 	///
 	/// \brief Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter)
@@ -320,7 +320,7 @@ public:
 	///
 	/// \return The nubmer of elements that might be allcoated as maximum by a call to member allocate.
 	///
-	__host__ __device__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
+	__HOST__ __DEVICE__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
@@ -329,7 +329,7 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_allocator<T>).
 	///
-	__host__ inline void construct( pointer ptr, const_reference val ) {
+	__HOST__ inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
 	}
 
@@ -338,7 +338,7 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-	__device__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
 
 };
 
@@ -370,25 +370,25 @@ public:
 	///
 	/// \brief Constructs a device pitched memory allocator object.
 	///
-	__host__ __device__ device_pitch_allocator() throw() {}
+	__HOST__ __DEVICE__ device_pitch_allocator() throw() {}
 
 	///
 	/// \brief Constructs a device pitched memory allocator object from another host allocator object.
 	/// \param alloc Allocator object.
 	///
-	__host__ __device__ device_pitch_allocator( const device_pitch_allocator& alloc ) throw() {}
+	__HOST__ __DEVICE__ device_pitch_allocator( const device_pitch_allocator& alloc ) throw() {}
 
 	///
 	/// \brief Constructs a device pitched memory allocator object from another device pitched memory allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-	__host__ __device__ device_pitch_allocator( const device_pitch_allocator<U>& alloc ) throw() {}
+	__HOST__ __DEVICE__ device_pitch_allocator( const device_pitch_allocator<U>& alloc ) throw() {}
 
 	///
 	/// \brief Destructs the device pitched memory allocator object.
 	///
-	__host__ __device__ ~device_pitch_allocator() throw() {}
+	__HOST__ __DEVICE__ ~device_pitch_allocator() throw() {}
 
 	///
 	/// \brief Returns the address of x.
@@ -398,7 +398,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-	__host__ __device__ inline pointer address( reference x ) { return &x; }
+	__HOST__ __DEVICE__ inline pointer address( reference x ) { return &x; }
 
 	///
 	/// \brief Returns the address of x.
@@ -408,7 +408,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-	__host__ __device__ inline const_pointer address( const_reference x ) const { return &x; }
+	__HOST__ __DEVICE__ inline const_pointer address( const_reference x ) const { return &x; }
 
 	///
 	/// \brief Allocate block of storage.
@@ -432,7 +432,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__host__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 ) {
+	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 ) {
 		typename pointer_traits<pointer>::naked_pointer ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
@@ -455,7 +455,7 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
-	__host__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
+	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
 		default_delete<value_type>()( pointer_traits<pointer>().undress(ptr) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(pointer_traits<pointer>().undress(ptr)) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) );
@@ -469,7 +469,7 @@ public:
 	///
 	/// \return The nubmer of elements that might be allcoated as maximum by a call to member allocate.
 	///
-	__host__ __device__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
+	__HOST__ __DEVICE__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
@@ -478,7 +478,7 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
-	__host__ inline void construct( pointer ptr, const_reference val ) {
+	__HOST__ inline void construct( pointer ptr, const_reference val ) {
 		CUDA_CALL(
 			cudaMemcpy(
 				detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<pointer>().undress(ptr) ),
@@ -495,7 +495,7 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-	__device__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
 
 	///
 	/// \brief Returns the address of a given coordinate.
@@ -509,7 +509,7 @@ public:
 	/// \param pitch
 	/// \return A pointer to the location.
 	///
-	__host__ __device__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const {
+	__HOST__ __DEVICE__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const {
 		return reinterpret_cast<const_pointer>( reinterpret_cast<typename pointer_traits<const_pointer>::char_pointer>(ptr) + x*pitch + y*sizeof(value_type) );
 		//return reinterpret_cast<const_pointer>( reinterpret_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 	}
@@ -525,7 +525,7 @@ public:
 	/// \param y
 	/// \return A pointer to the location.
 	///
-	__host__ __device__ inline pointer address( pointer ptr, size_type x, size_type y ) {
+	__HOST__ __DEVICE__ inline pointer address( pointer ptr, size_type x, size_type y ) {
 		ptr.operator+=(x*ptr.get_width()+y);
 		return ptr;
 		//return reinterpret_cast<pointer>( reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(ptr) + x*pitch + y*sizeof(value_type) );

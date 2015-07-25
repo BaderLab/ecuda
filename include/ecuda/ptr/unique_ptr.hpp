@@ -68,66 +68,66 @@ private:
 	deleter_type deleter;
 
 public:
-	__host__ __device__ __CONSTEXPR__ unique_ptr() __NOEXCEPT__ : current_ptr(NULL) {}
-	__host__ __device__ explicit unique_ptr( T* ptr ) __NOEXCEPT__ : current_ptr(ptr) {}
-	__host__ __device__ unique_ptr( T* ptr, Deleter deleter ) __NOEXCEPT__ : current_ptr(ptr), deleter(deleter) {}
+	__HOST__ __DEVICE__ __CONSTEXPR__ unique_ptr() __NOEXCEPT__ : current_ptr(NULL) {}
+	__HOST__ __DEVICE__ explicit unique_ptr( T* ptr ) __NOEXCEPT__ : current_ptr(ptr) {}
+	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) __NOEXCEPT__ : current_ptr(ptr), deleter(deleter) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
-	template<typename U,class E> __host__ __device__ unique_ptr( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
+	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
+	template<typename U,class E> __HOST__ __DEVICE__ unique_ptr( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
 	#endif
 
-	__host__ __device__ ~unique_ptr() { deleter(current_ptr); }
+	__HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
 
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
-	template<typename U,class E> __host__ __device__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
+	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
+	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
 	#endif
 
 	//template<typename U>
-	//__host__ __device__ inline unique_ptr& operator=( U* ptr ) {
+	//__HOST__ __DEVICE__ inline unique_ptr& operator=( U* ptr ) {
 	//	reset(release());
 	//	current_ptr = ptr;
 	//	return *this;
 	//}
 
-	__host__ __device__ inline pointer release() __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline pointer release() __NOEXCEPT__ {
 		pointer old_ptr = current_ptr;
 		current_ptr = NULL;
 		return old_ptr;
 	}
 
-	__host__ __device__ inline void reset( pointer ptr = pointer() ) __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline void reset( pointer ptr = pointer() ) __NOEXCEPT__ {
 		pointer old_ptr = current_ptr;
 		current_ptr = ptr;
 		if( old_ptr ) get_deleter()( old_ptr );
 	}
 
-	__host__ __device__ inline void swap( unique_ptr& other ) __NOEXCEPT__ { ::ecuda::swap( current_ptr, other.current_ptr ); }
+	__HOST__ __DEVICE__ inline void swap( unique_ptr& other ) __NOEXCEPT__ { ::ecuda::swap( current_ptr, other.current_ptr ); }
 
-	__host__ __device__ inline pointer get() const { return current_ptr; }
+	__HOST__ __DEVICE__ inline pointer get() const { return current_ptr; }
 
-	__host__ __device__ inline deleter_type& get_deleter() { return deleter; }
-	__host__ __device__ inline const deleter_type& get_deleter() const { return deleter; }
+	__HOST__ __DEVICE__ inline deleter_type& get_deleter() { return deleter; }
+	__HOST__ __DEVICE__ inline const deleter_type& get_deleter() const { return deleter; }
 
 	#ifdef __CPP11_SUPPORTED__
-	__host__ __device__ explicit operator bool() const { return get() != NULL; }
+	__HOST__ __DEVICE__ explicit operator bool() const { return get() != NULL; }
 	#else
-	__host__ __device__ operator bool() const { return get() != NULL; }
+	__HOST__ __DEVICE__ operator bool() const { return get() != NULL; }
 	#endif
 
-	__device__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
+	__DEVICE__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
 
-	__host__ __device__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
+	__HOST__ __DEVICE__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
 
-	__device__ inline typename std::add_lvalue_reference<T>::type operator[]( std::size_t i ) const { return *pointer_traits<pointer>().increment( current_ptr, i ); }
+	__DEVICE__ inline typename std::add_lvalue_reference<T>::type operator[]( std::size_t i ) const { return *pointer_traits<pointer>().increment( current_ptr, i ); }
 
-	template<typename T2,class D2> __host__ __device__ bool operator==( const unique_ptr<T2,D2>& other ) const { return get() == other.get(); }
-	template<typename T2,class D2> __host__ __device__ bool operator!=( const unique_ptr<T2,D2>& other ) const { return get() != other.get(); }
-	template<typename T2,class D2> __host__ __device__ bool operator< ( const unique_ptr<T2,D2>& other ) const { return get() <  other.get(); }
-	template<typename T2,class D2> __host__ __device__ bool operator> ( const unique_ptr<T2,D2>& other ) const { return get() >  other.get(); }
-	template<typename T2,class D2> __host__ __device__ bool operator<=( const unique_ptr<T2,D2>& other ) const { return get() <= other.get(); }
-	template<typename T2,class D2> __host__ __device__ bool operator>=( const unique_ptr<T2,D2>& other ) const { return get() >= other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator==( const unique_ptr<T2,D2>& other ) const { return get() == other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator!=( const unique_ptr<T2,D2>& other ) const { return get() != other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator< ( const unique_ptr<T2,D2>& other ) const { return get() <  other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator> ( const unique_ptr<T2,D2>& other ) const { return get() >  other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator<=( const unique_ptr<T2,D2>& other ) const { return get() <= other.get(); }
+	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator>=( const unique_ptr<T2,D2>& other ) const { return get() >= other.get(); }
 
 };
 

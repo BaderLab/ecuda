@@ -24,18 +24,18 @@ namespace ecuda {
 /// \param result
 /// \return
 ///
-template<class InputIterator,class OutputIterator> __host__ __device__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result );
+template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result );
 
 // definitions for the 4 possible device/host iterator pairs
-template<class InputIterator,class OutputIterator> __host__ __device__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__false_type );
-template<class InputIterator,class OutputIterator> __host__ __device__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__true_type );
-template<class InputIterator,class OutputIterator> __host__ __device__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__false_type );
-template<class InputIterator,class OutputIterator> __host__ __device__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__true_type );
+template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__false_type );
+template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__true_type );
+template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__false_type );
+template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__true_type );
 
 //namespace detail {
 //
 //template<class Iterator,typename Distance>
-//__host__ inline bool __is_contiguous( Iterator first, Iterator last, Distance dist ) { return ( last.operator->() - first.operator->() ) == dist; }
+//__HOST__ inline bool __is_contiguous( Iterator first, Iterator last, Distance dist ) { return ( last.operator->() - first.operator->() ) == dist; }
 //
 //} // namespace detail
 
@@ -45,7 +45,7 @@ template<class InputIterator,class OutputIterator> __host__ __device__ inline Ou
  */
 
 template<class InputIterator,class OutputIterator,typename T>
-__host__ __device__ inline OutputIterator __copy_device_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -67,7 +67,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_device_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -93,7 +93,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename ContiguousInput,typename ContiguousOutput,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_device_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -112,7 +112,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_device(
 
 
 template<class InputIterator,class OutputIterator>
-__host__ __device__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator __copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -136,7 +136,7 @@ __host__ __device__ inline OutputIterator __copy(
  */
 
 template<class InputIterator,class OutputIterator,typename T>
-__host__ __device__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -159,7 +159,7 @@ __host__ __device__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename ContiguousInput,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -176,7 +176,7 @@ __host__ __device__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename T>
-__host__ __device__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -200,7 +200,7 @@ __host__ __device__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename ContiguousInput,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -224,7 +224,7 @@ __host__ __device__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator>
-__host__ __device__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator __copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -247,7 +247,7 @@ __host__ __device__ inline OutputIterator __copy(
  */
 
 template<class InputIterator,class OutputIterator,class ContiguousOutput,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -264,7 +264,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -288,7 +288,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator,typename T>
-__host__ __device__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -312,7 +312,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__host__ __device__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -337,7 +337,7 @@ __host__ __device__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator>
-__host__ __device__ inline OutputIterator __copy( // device to host
+__HOST__ __DEVICE__ inline OutputIterator __copy( // device to host
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -360,7 +360,7 @@ __host__ __device__ inline OutputIterator __copy( // device to host
  */
 
 template<class InputIterator,class OutputIterator>
-__host__ __device__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator __copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -379,7 +379,7 @@ __host__ __device__ inline OutputIterator __copy(
 
 
 template<class InputIterator,class OutputIterator>
-__host__ __device__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
+__HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
 	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator is_input_device_iterator;
 	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator is_output_device_iterator;
 	return __copy( first, last,	result, is_input_device_iterator(), is_output_device_iterator() );

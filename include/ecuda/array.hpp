@@ -92,7 +92,7 @@ public:
 	///
 	/// Each element is a default-initialized value of T.
 	///
-	HOST array() : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
+	__HOST__ array() : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
 		fill( value_type() );
 	}
 
@@ -115,7 +115,7 @@ public:
 	///
 	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	HOST DEVICE array( const array& src ) : base_type(src) {}
+	__HOST__ __DEVICE__ array( const array& src ) : base_type(src) {}
 
 	/*
 	///
@@ -129,7 +129,7 @@ public:
 	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
 	///
 	template<std::size_t N2>
-	HOST array( const array<T,N2>& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
+	__HOST__ array( const array<T,N2>& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
 
 		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
@@ -144,14 +144,14 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	HOST array( array<T,N>&& src ) : base_type(src) {}
+	__HOST__ array( array<T,N>&& src ) : base_type(src) {}
 	#endif
 
 	/*
 	///
 	/// \brief Destructs the array object.
 	///
-	//HOST DEVICE virtual ~array() {}
+	//__HOST__ __DEVICE__ virtual ~array() {}
 	*/
 
 	///
@@ -160,7 +160,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline reference operator[]( size_type index ) { return base_type::operator[](index); }
+	__DEVICE__ inline reference operator[]( size_type index ) { return base_type::operator[](index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -168,7 +168,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	DEVICE inline const_reference operator[]( size_type index ) const { return base_type::operator[](index); }
+	__DEVICE__ inline const_reference operator[]( size_type index ) const { return base_type::operator[](index); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -177,7 +177,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline reference front() { return base_type::operator[](0); }
+	__DEVICE__ inline reference front() { return base_type::operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -186,7 +186,7 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline reference back() { return base_type::operator[](size()-1); }
+	__DEVICE__ inline reference back() { return base_type::operator[](size()-1); }
 	///
 	/// \brief Returns a reference to the first element in the container.
 	///
@@ -194,7 +194,7 @@ public:
 	///
 	/// \returns Reference to the first element.
 	///
-	DEVICE inline const_reference front() const { return base_type::operator[](0); }
+	__DEVICE__ inline const_reference front() const { return base_type::operator[](0); }
 
 	///
 	/// \brief Returns a reference to the last element in the container.
@@ -203,21 +203,21 @@ public:
 	///
 	/// \returns Reference to the last element.
 	///
-	DEVICE inline const_reference back() const { return base_type::operator[](size()-1); }
+	__DEVICE__ inline const_reference back() const { return base_type::operator[](size()-1); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	HOST DEVICE __CONSTEXPR__ inline bool empty() const { return size() == 0; }
+	__HOST__ __DEVICE__ __CONSTEXPR__ inline bool empty() const { return size() == 0; }
 
 	///
 	/// \brief Returns the number of elements in the container.
 	///
 	/// \returns The number of elements in the container.
 	///
-	HOST DEVICE __CONSTEXPR__ inline size_type size() const { return base_type::size(); }
+	__HOST__ __DEVICE__ __CONSTEXPR__ inline size_type size() const { return base_type::size(); }
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
@@ -225,7 +225,7 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	HOST __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
+	__HOST__ __CONSTEXPR__ inline size_type max_size() const { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -235,7 +235,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline pointer data() { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline pointer data() { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -245,7 +245,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	HOST DEVICE inline const_pointer data() const { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline const_pointer data() const { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -254,7 +254,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	HOST DEVICE inline iterator begin() { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline iterator begin() { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -263,7 +263,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline iterator end() { return base_type::end(); }
+	__HOST__ __DEVICE__ inline iterator end() { return base_type::end(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -271,7 +271,7 @@ public:
 	/// If the container is empty, the returned iterator will be equal to end().
 	///
 	/// \returns Iterator to the first element.
-	HOST DEVICE inline const_iterator begin() const { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -280,7 +280,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_iterator end() const { return base_type::end(); }
+	__HOST__ __DEVICE__ inline const_iterator end() const { return base_type::end(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -289,7 +289,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline reverse_iterator rbegin() { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rbegin() { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -299,7 +299,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline reverse_iterator rend() { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rend() { return base_type::rend(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -308,7 +308,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	HOST DEVICE inline const_reverse_iterator rbegin() const { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -318,13 +318,13 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	HOST DEVICE inline const_reverse_iterator rend() const { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const { return base_type::rend(); }
 
 	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
-	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return base_type::cend(); }
-	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
-	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crend(); }
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
+	__HOST__ __DEVICE__ inline const_iterator cend() const __NOEXCEPT__ { return base_type::cend(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crend(); }
 	#endif
 
 	///
@@ -332,7 +332,7 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	HOST DEVICE inline void fill( const value_type& value ) { ecuda::fill( begin(), end(), value ); }
+	__HOST__ __DEVICE__ inline void fill( const value_type& value ) { ecuda::fill( begin(), end(), value ); }
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -341,7 +341,7 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	HOST DEVICE inline void swap( array& other ) { base_type::swap( other ); }
+	__HOST__ __DEVICE__ inline void swap( array& other ) { base_type::swap( other ); }
 
 	///
 	/// \brief Checks if the contents of two arrays are equal.
@@ -352,7 +352,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	HOST DEVICE inline bool operator==( const array<T,N>& other ) const { return ecuda::equal( begin(), end(), other.begin() ); }
+	__HOST__ __DEVICE__ inline bool operator==( const array<T,N>& other ) const { return ecuda::equal( begin(), end(), other.begin() ); }
 
 	///
 	/// \brief Checks if the contents of two arrays are not equal.
@@ -363,7 +363,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are not equal, false otherwise
 	///
-	HOST DEVICE inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator!=( const array<T,N>& other ) const { return !operator==(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -371,7 +371,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<( const array<T,N>& other ) const { return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
+	__HOST__ __DEVICE__ inline bool operator<( const array<T,N>& other ) const { return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -379,7 +379,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>( const array<T,N>& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
+	__HOST__ __DEVICE__ inline bool operator>( const array<T,N>& other ) const { return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() ); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -387,7 +387,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically less than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
+	__HOST__ __DEVICE__ inline bool operator<=( const array<T,N>& other ) const { return !operator>(other); }
 
 	///
 	/// \brief Compares the contents of two arrays lexicographically.
@@ -395,7 +395,7 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this array are lexicographically greater than or equal to the other array, false otherwise
 	///
-	HOST DEVICE inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
 	///
 	/// \brief Copies the contents of this device array to another container.
@@ -403,7 +403,7 @@ public:
 	/// \param dest container to copy contents to
 	///
 	template<class Container>
-	HOST Container& operator>>( Container& dest ) const {
+	__HOST__ Container& operator>>( Container& dest ) const {
 		ecuda::copy( begin(), end(), dest.begin() );
 		return dest;
 	}
@@ -415,7 +415,7 @@ public:
 	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
 	///
 	template<class Container>
-	HOST array& operator<<( const Container& src ) {
+	__HOST__ array& operator<<( const Container& src ) {
 		if( ecuda::distance(src.begin(),src.end()) > static_cast<typename Container::difference_type>(size()) )
 			throw std::length_error( EXCEPTION_MSG("ecuda::array is not large enough to fit contents of provided container") );
 		ecuda::copy( src.begin(), src.end(), begin() );
@@ -435,7 +435,7 @@ public:
 	/// \param other Container whose contents are to be assigned to this container.
 	/// \return A reference to this container.
 	///
-	HOST DEVICE array& operator=( const array& other ) {
+	__HOST__ __DEVICE__ array& operator=( const array& other ) {
 		#ifdef __CUDA_ARCH__
 		// shallow copy if called from device
 		base_type::get_pointer() = other.get_pointer();
