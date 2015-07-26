@@ -39,6 +39,8 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_TYPE_TRAITS_HPP
 #define ECUDA_TYPE_TRAITS_HPP
 
+#include "global.hpp"
+
 /// \cond DEVELOPER_DOCUMENTATION
 
 #ifdef __CPP11_SUPPORTED__

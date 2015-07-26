@@ -32,6 +32,8 @@ int main( int argc, char* argv[] ) {
 		std::cout << "LESSTHAN " << ( deviceArray < deviceArray2 ? "true" : "false" ) << std::endl;
 	}
 
+	ecuda::reverse( deviceArray.begin(), deviceArray.end() );
+
 	return EXIT_SUCCESS;
 
 }

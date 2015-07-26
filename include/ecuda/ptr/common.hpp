@@ -11,8 +11,8 @@ namespace detail {
 // and casts it to void* so it can be used by the deleter dispose() method
 // and other places that call cudaFree
 template<typename T> struct __cast_void;
-template<typename T> struct __cast_void<const T*> { inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
-template<typename T> struct __cast_void { inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
+template<typename T> struct __cast_void<const T*> { __HOST__ __DEVICE__ inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
+template<typename T> struct __cast_void { __HOST__ __DEVICE__ inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
 
 } // namespace detail
 

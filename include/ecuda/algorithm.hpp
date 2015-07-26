@@ -10,14 +10,14 @@
 #include "algo/equal.hpp" // equivalent to std::equal
 #include "algo/fill.hpp" // equivalent to std::fill
 #include "algo/lexicographical_compare.hpp" // equivalent to std::lexicographical_compare
+// NOTE: there are additional includes at the end of the file;
+//       some algos require functions decleared in this file
 
 #include "iterator.hpp"
 #include <algorithm>
 #include <utility>
 
 namespace ecuda {
-
-
 
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator find( InputIterator first, InputIterator last, const T& value ) {
@@ -159,6 +159,9 @@ __HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::diffe
 
 
 } // namespace ecuda
+
+#include "algo/reverse.hpp" // equivalent to std::reverse
+
 
 #endif
 

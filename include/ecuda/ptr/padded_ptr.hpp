@@ -40,11 +40,27 @@ public:
 	__HOST__ __DEVICE__ inline size_type get_width() const { return width; }
 	__HOST__ __DEVICE__ inline pointer get() const { return ptr; }
 
+	__HOST__ __DEVICE__ inline size_type get_remaining_width() const { return width-(ptr-edge_ptr); }
+
 	__DEVICE__ inline reference operator*() { return *ptr; }
 	__DEVICE__ inline const_reference operator*() const { return *ptr; }
 	__DEVICE__ inline pointer operator->() const { return ptr; }
 	__DEVICE__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
 	__DEVICE__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
+
+	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if
+	__HOST__ __DEVICE__ inline difference_type operator-( Q ptr ) {
+		typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(ptr) );
+		typename pointer_traits<pointer>::naked_pointer stop = pointer_traits<pointer>().undress(ptr);
+		difference_type n = (stop-start)*sizeof(T); // bytes difference
+		n -= n/pitch * (pitch-width*sizeof(T)); // substract pads
+		// assumption comes into play here, where n/sizeof(T) should evaluate exactly
+		// i.e. ( n % sizeof(T) ) > 0 should never be true
+		n /= sizeof(T);
+		// delegate to underlying pointer specializations to allow it
+		// a chance to apply logic
+		return pointer(ptr.get()+n)-ptr;
+	}
 
 	__HOST__ __DEVICE__ inline padded_ptr& operator++() {
 		++ptr;

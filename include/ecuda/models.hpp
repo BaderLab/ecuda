@@ -276,15 +276,15 @@ public:
 ///
 /// \brief Base representation of a device-bound matrix where each row is contiguous.
 ///
-/// This class assumes the allocated memory represents each row in contiguous memory
-/// in order to function properly. It is not assumed that the row formation of the
-/// matrix is contiguous (e.g. padding between each row).
+/// This class enforces a pointer type of padded_ptr, which ensures the underlying
+/// memory is contiguous in repeating blocks, where each block is followed by some
+/// fixed padding.
 ///
-template<typename T,class PointerType>
-class __device_contiguous_row_matrix : public __device_matrix<T,PointerType>
+template<typename T,class P>
+class __device_contiguous_row_matrix : public __device_matrix< T, padded_ptr<T,P> > // NOTE: PointerType must be padded_ptr
 {
 private:
-	typedef __device_matrix<T,PointerType> base_type;
+	typedef __device_matrix< T, padded_ptr<T,P> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type;
@@ -294,10 +294,15 @@ public:
 	typedef typename base_type::size_type size_type;
 	typedef typename base_type::difference_type difference_type;
 
-	typedef typename base_type::iterator iterator;
-	typedef typename base_type::const_iterator const_iterator;
-	typedef typename base_type::reverse_iterator reverse_iterator;
-	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+	//typedef typename base_type::iterator iterator;
+	//typedef typename base_type::const_iterator const_iterator;
+	//typedef typename base_type::reverse_iterator reverse_iterator;
+	//typedef typename base_type::const_reverse_iterator const_reverse_iterator;
+
+	typedef device_contiguous_block_iterator<value_type,typename pointer_traits<P>::modifiable_pointer> iterator;
+	typedef device_contiguous_block_iterator<const value_type,typename pointer_traits<typename pointer_traits<P>::modifiable_pointer>::const_pointer> const_iterator;
+	typedef reverse_device_iterator<iterator> reverse_iterator;
+	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 	typedef __device_contiguous_sequence<value_type> row_type;
 	typedef __device_contiguous_sequence<const value_type> const_row_type;
