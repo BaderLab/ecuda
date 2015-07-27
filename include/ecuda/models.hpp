@@ -8,10 +8,19 @@
 namespace ecuda {
 
 ///
-/// \brief Base representation of a device-bound sequence.
+/// \brief Base representation of a sequence in device memory.
+///
+/// The class stores a pointer (raw or specialized) to the beginning of the sequence
+/// and the length of the sequence.
 ///
 /// This class makes no assumptions about the contiguity of the allocated memory.
-/// The pointer specialization is fully responsible for traversing the sequence.
+/// I.e. the ( stored pointer + length ) is doesn't neccessarily refer to an
+///      address length*size(T) away.
+///
+/// The pointer specialization is fully responsible for the logic required to traverse
+/// the sequence.
+///
+/// This base class is used to represent, for example, a matrix column.
 ///
 template<typename T,class PointerType>
 class __device_sequence
