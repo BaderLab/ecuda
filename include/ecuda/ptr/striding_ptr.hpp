@@ -9,6 +9,31 @@
 
 namespace ecuda {
 
+///
+/// \brief A specialized pointer to striding memory.
+///
+/// A specialized pointer to device memory where traversal of the data takes into a "stride", or a
+/// fixed number of elements that are skipped each time the pointer is incremented.
+///
+/// The specialization is used to create certain views of a matrix or cube (e.g. single matrix column).
+///
+/// Memory use can be conceptualized as:
+/// \code
+///   |--- stride ----| // in multiples of sizeof(T)
+///   +-+-------------+
+///   | |xxxxxxxxxxxxx|
+///   | |xxxxxxxxxxxxx| x = allocated but not used
+///   | |xxxxxxxxxxxxx|
+///   | |xxxxxxxxxxxxx|
+///   | |xxxxxxxxxxxxx|
+///   | |xxxxxxxxxxxxx| ... etc. (total size of the allocation is not known internally by striding_ptr)
+///   +-+--------+----+
+/// \endcode
+///
+/// For example, a pointer that will traverse the first column of a 10x5 matrix containing elements
+/// of type T could be represented with striding_ptr<T>(ptr,5), where ptr points to the first element
+/// of the matrix.
+///
 template<typename T,typename PointerType=typename type_traits<T>::pointer>
 class striding_ptr
 {

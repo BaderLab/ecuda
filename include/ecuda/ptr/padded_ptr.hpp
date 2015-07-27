@@ -9,6 +9,29 @@
 
 namespace ecuda {
 
+///
+/// \brief A specialized pointer to padded memory.
+///
+/// A specialized pointer to device memory where traversal of the data takes into account an ignorable region
+/// of padding after every fixed number of sequential elements.
+///
+/// The specialization is used to both represent 2D memory allocations using cudaMallocPitch() and to
+/// create certain views of a cube (e.g. single row or column).
+///
+/// Memory use can be conceptualized as:
+/// \code
+///   |- width --|      // in multiples of sizeof(T)
+///   |---- pitch ----| // in bytes
+///   +----------+----+
+///   |          |xxxx|
+///   |          |xxxx| x = allocated but not used
+///   |          |xxxx|
+///   |          |xxxx|
+///   |          |xxxx|
+///   |          |xxxx| ... etc. (total size of the allocation is not known internally by padded_ptr)
+///   +----------+----+
+/// \endcode
+///
 template<typename T,class PointerType=typename type_traits<T>::pointer>
 class padded_ptr
 {
