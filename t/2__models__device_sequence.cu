@@ -30,7 +30,7 @@ int main( int argc, char* argv[] ) {
 
 	// copy sequence to host
 	std::vector<double> hostSequence( deviceSequence.size() );
-	ecuda::copy( deviceSequence.begin(), deviceSequence.end(), hostSequence.begin() );
+//	ecuda::copy( deviceSequence.begin(), deviceSequence.end(), hostSequence.begin() );
 
 	{
 		std::vector<double> correctSequence( deviceSequence.size() );

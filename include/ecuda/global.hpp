@@ -88,6 +88,13 @@ either expressed or implied, of the FreeBSD Project.
 #define __DEVICE__ __device__
 
 
+//
+// Quick implementation of compile-time assertions. If C++11 is available, then
+// just use the new static_assert keyword.
+//
+// This approach was borrowed from the Eigen linear algebra template library
+// (http://eigen.tuxfamily.org).
+//
 #ifdef __CPP11_SUPPORTED__
 #define ECUDA_STATIC_ASSERT(x,msg) static_assert(x,#msg)
 #else
@@ -99,9 +106,8 @@ template<bool condition> struct static_assertion {};
 template<> struct static_assertion<true>
 {
 	enum {
-		ECUDA_COPY_CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION,
-		TEST_ENUM1,
-		TEST_ENUM2
+		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY,
+		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY
 	};
 };
 

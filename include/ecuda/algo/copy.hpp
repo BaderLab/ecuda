@@ -92,6 +92,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	#endif
 }
 
+/*
 template<class InputIterator,class OutputIterator,typename ContiguousInput,typename ContiguousOutput,typename T,typename U>
 __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	InputIterator first,
@@ -109,7 +110,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 	throw std::invalid_argument( EXCEPTION_MSG( "ecuda::copy() cannot copy to or from non-contiguous device iterator" ) );
 	#endif
 }
-
+*/
 
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator __copy(
@@ -124,6 +125,10 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 	while( first != last ) { *result = *first; ++first; ++result; }
 	return result;
 	#else
+	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,detail::__true_type>::value;
+	ECUDA_STATIC_ASSERT(isInputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY);
+	const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,detail::__true_type>::value;
+	ECUDA_STATIC_ASSERT(isOutputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
 	return __copy_device_to_device( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
@@ -236,9 +241,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// normalize types
+	const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,detail::__true_type>::value;
+	ECUDA_STATIC_ASSERT(isOutputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
-	ECUDA_STATIC_ASSERT(!typename ecuda::iterator_traits<OutputIterator>::is_contiguous(),ECUDA_COPY_CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION);
+	ECUDA_STATIC_ASSERT(!typename ecuda::iterator_traits<OutputIterator>::is_contiguous(),CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
 	return __copy_host_to_device( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
 	#endif
 }
@@ -247,6 +254,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
  * Device to host
  */
 
+/*
 template<class InputIterator,class OutputIterator,class ContiguousOutput,typename T,typename U>
 __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator first,
@@ -264,6 +272,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	throw std::invalid_argument( EXCEPTION_MSG( "ecuda::copy() cannot copy from non-contiguous device iterator" ) );
 	#endif
 }
+*/
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
 __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
@@ -376,6 +385,9 @@ __HOST__ __DEVICE__ inline OutputIterator __copy( // device to host
 	#ifdef __CUDA_ARCH__
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
+	// compile-time assertion that checks that the input device iterator is contiguous memory
+	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,detail::__true_type>::value;
+	ECUDA_STATIC_ASSERT(isInputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY);
 	// normalize types
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;

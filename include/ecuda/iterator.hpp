@@ -247,8 +247,8 @@ public:
 
 namespace detail {
 
-struct __true_type {};
-struct __false_type {};
+struct __true_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return true; } };
+struct __false_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return false; } };
 
 } // namespace detail
 
