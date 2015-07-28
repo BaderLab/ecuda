@@ -1,7 +1,7 @@
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/type_traits.hpp"
 
-#define THREADS 100
+#define THREADS 320
 
 template<typename T,class Alloc>
 __global__ void destroy( Alloc alloc, typename Alloc::pointer p, std::size_t n ) {
@@ -62,12 +62,10 @@ void test_device_memory_validity( PointerType ptr ) {
 	typedef typename ecuda::pointer_traits<PointerType>::element_type element_type;
 
 	// expect 10,000 element allocation
-	dim3 grid( (10000+THREADS-1)/THREADS ), block( THREADS );
+	dim3 grid( 1, (10000+THREADS-1)/THREADS ), block( 1, THREADS );
 	fill_with_sequential_values<element_type><<<grid,block>>>( ptr, 10000 );
 	CUDA_CHECK_ERRORS();
 	CUDA_CALL( cudaDeviceSynchronize() );
-
-
 
 }
 
@@ -98,8 +96,8 @@ int main( int argc, char* argv[] ) {
 		destroy<double><<<1,1000>>>( deviceAllocator, p, 1000 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		deviceAllocator.deallocate( p, 1000 );
 		test_device_memory_validity( p );
+		deviceAllocator.deallocate( p, 1000 );
 	}
 
 	{
@@ -108,13 +106,18 @@ int main( int argc, char* argv[] ) {
 		ecuda::device_pitch_allocator<int> deviceAllocator3( deviceAllocator2 );
 		//typename ecuda::device_pitch_allocator<double>::size_type pitch;
 		typename ecuda::device_pitch_allocator<double>::pointer p( deviceAllocator1.allocate( 100, 100 ) );
+std::cerr << p << std::endl;
 		typename ecuda::device_pitch_allocator<double>::pointer q( p );
-		for( std::size_t i = 0; i < 1000; ++i, ++q ) deviceAllocator.construct( q, static_cast<typename ecuda::device_pitch_allocator<double>::value_type>(i) );
+		for( std::size_t i = 0; i < 1000; ++i, ++q ) {
+			deviceAllocator1.construct( q, static_cast<typename ecuda::device_pitch_allocator<double>::value_type>(i) );
+			std::cerr << i << "\t" << std::dec << q.get() << std::endl;
+//			std::cerr << i << "\t" << q.get() << std::endl;
+		}
 		q = p;
-		destroy<double><<<1,1000>>>( deviceAllocator, p, 1000 );
+		destroy<double><<<1,1000>>>( deviceAllocator1, p, 1000 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
-		deviceAllocator.deallocate( p, 1000 );
+		deviceAllocator1.deallocate( p, 1000 );
 	}
 
 	return 0;
