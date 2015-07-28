@@ -34,8 +34,8 @@ public:
 	typedef std::size_t size_type;
 	typedef std::ptrdiff_t difference_type;
 
-	typedef device_iterator<value_type,typename pointer_traits<pointer>::modifiable_pointer> iterator;
-	typedef device_iterator<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer> const_iterator;
+	typedef device_iterator<value_type,typename pointer_traits<pointer>::unmanaged_pointer> iterator;
+	typedef device_iterator<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer> const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
@@ -62,12 +62,12 @@ public:
 	//__DEVICE__ inline reference operator[]( const size_type x ) { return *(pointer_traits<pointer>().undress(ptr)+x); }
 	//__DEVICE__ inline const_reference operator[]( const size_type x ) const { return *(pointer_traits<typename pointer_traits<pointer>::const_pointer>().undress(ptr)+x); }
 
-	__HOST__ __DEVICE__ inline iterator begin() { return iterator( pointer_traits<pointer>().cast_to_modifiable(ptr) ); }
+	__HOST__ __DEVICE__ inline iterator begin() { return iterator( pointer_traits<pointer>::cast_unmanaged(ptr) ); }
 	__HOST__ __DEVICE__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(ptr,size()) ); }
-	__HOST__ __DEVICE__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(ptr) ); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>::cast_unmanaged(ptr) ); }
 	__HOST__ __DEVICE__ inline const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(ptr,size()) ); }
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(ptr) ); }
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>::cast_unmanaged(ptr) ); }
 	__HOST__ __DEVICE__ inline const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(ptr,size()) ); }
 	#endif
 
@@ -237,10 +237,10 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator;
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
-	typedef __device_sequence<value_type,typename pointer_traits<pointer>::modifiable_pointer> row_type;
-	typedef __device_sequence<const value_type,typename pointer_traits<typename pointer_traits<pointer>::modifiable_pointer>::const_pointer> const_row_type;
-	typedef __device_sequence< value_type, striding_ptr<value_type,typename pointer_traits<pointer>::modifiable_pointer> > column_type;
-	typedef __device_sequence< const value_type, striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer> > const_column_type;
+	typedef __device_sequence<value_type,typename pointer_traits<pointer>::unmanaged_pointer> row_type;
+	typedef __device_sequence<const value_type,typename pointer_traits<typename pointer_traits<pointer>::unmanaged_pointer>::const_pointer> const_row_type;
+	typedef __device_sequence< value_type, striding_ptr<value_type,typename pointer_traits<pointer>::unmanaged_pointer> > column_type;
+	typedef __device_sequence< const value_type, striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer> > const_column_type;
 
 private:
 	size_type rows;
@@ -257,7 +257,7 @@ public:
 
 	__HOST__ __DEVICE__ inline column_type get_column( const size_type column ) {
 		return column_type( 
-			striding_ptr<value_type,typename pointer_traits<pointer>::modifiable_pointer>(
+			striding_ptr<value_type,typename pointer_traits<pointer>::unmanaged_pointer>(
 				pointer_traits<pointer>().increment( base_type::get_pointer(), column ),
 				number_columns() 
 			),
@@ -266,7 +266,7 @@ public:
 	}
 	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type column ) const {
 		return const_column_type( 
-			striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>(
+			striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer>(
 				pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), column ),
 				//pointer_traits<typename pointer_traits<pointer>::const_pointer>().make_offsetable( base_type::get_pointer() ) + column,
 				number_columns() 
@@ -308,8 +308,8 @@ public:
 	//typedef typename base_type::reverse_iterator reverse_iterator;
 	//typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
-	typedef device_contiguous_block_iterator<value_type,typename pointer_traits<P>::modifiable_pointer> iterator;
-	typedef device_contiguous_block_iterator<const value_type,typename pointer_traits<typename pointer_traits<P>::modifiable_pointer>::const_pointer> const_iterator;
+	typedef device_contiguous_block_iterator<value_type,typename pointer_traits<P>::unmanaged_pointer> iterator;
+	typedef device_contiguous_block_iterator<const value_type,typename pointer_traits<typename pointer_traits<P>::unmanaged_pointer>::const_pointer> const_iterator;
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
@@ -323,12 +323,12 @@ public:
 	__HOST__ __DEVICE__ __device_contiguous_row_matrix( const __device_contiguous_row_matrix& src ) : base_type(src) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ __device_contiguous_row_matrix( const __device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
 
-	__HOST__ __DEVICE__ inline iterator begin() { return iterator( pointer_traits<pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
+	__HOST__ __DEVICE__ inline iterator begin() { return iterator( pointer_traits<pointer>::cast_unmanaged(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
-	__HOST__ __DEVICE__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>::cast_unmanaged(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline const_iterator end() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().cast_to_modifiable(base_type::get_pointer()) ); }
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>::cast_unmanaged(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline const_iterator cend() const { return const_iterator( pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
 	#endif
 
@@ -343,25 +343,25 @@ public:
 
 
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type row ) {
-		typename pointer_traits<pointer>::modifiable_pointer mp = pointer_traits<pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
-		return row_type( pointer_traits<typename pointer_traits<pointer>::modifiable_pointer>().undress(mp), base_type::number_columns() );
+		typename pointer_traits<pointer>::unmanaged_pointer mp = pointer_traits<pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
+		return row_type( pointer_traits<typename pointer_traits<pointer>::unmanaged_pointer>().undress(mp), base_type::number_columns() );
 	}
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const {
-		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
-		return const_row_type( pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>().undress(mp), base_type::number_columns() );
+		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns() );
+		return const_row_type( pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer>().undress(mp), base_type::number_columns() );
 	}
 
 	__HOST__ __DEVICE__ inline row_type operator[]( const size_type row ) { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
 
 	__HOST__ __DEVICE__ inline reference at( const size_type row, const size_type column ) {
-		typename pointer_traits<pointer>::modifiable_pointer mp = pointer_traits<pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
-		return *pointer_traits<typename pointer_traits<pointer>::modifiable_pointer>::undress( mp );
+		typename pointer_traits<pointer>::unmanaged_pointer mp = pointer_traits<pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
+		return *pointer_traits<typename pointer_traits<pointer>::unmanaged_pointer>::undress( mp );
 	}
 
 	__HOST__ __DEVICE__ inline const_reference at( const size_type row, const size_type column ) const {
-		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
-		return *pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::modifiable_pointer>::undress( mp );
+		typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer mp = pointer_traits<typename pointer_traits<pointer>::const_pointer>().increment( base_type::get_pointer(), row*base_type::number_columns()+column );
+		return *pointer_traits<typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer>::undress( mp );
 	}
 
 };

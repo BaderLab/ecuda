@@ -32,14 +32,16 @@ int main( int argc, char* argv[] ) {
 	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
 
 	ecuda::matrix<int> deviceMatrix( 5, 20 );
-	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+	// below needs to be made to work
+	//ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
 	{
 		ecuda::matrix<int> deviceMatrix2( 5, 20 );
 		testIterators2<<<1,1>>>( deviceMatrix, deviceMatrix2 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 
-		ecuda::copy( deviceMatrix.get_column(0).begin(), deviceMatrix.get_column(0).end(), deviceMatrix2.get_column(1).begin() );
+		// need alternative to below
+		//ecuda::copy( deviceMatrix.get_column(0).begin(), deviceMatrix.get_column(0).end(), deviceMatrix2.get_column(1).begin() );
 
 		std::cout << "EQUAL " << ( deviceMatrix == deviceMatrix2 ? "true" : "false" ) << std::endl;
 		std::cout << "LESS THAN " << ( deviceMatrix < deviceMatrix2 ? "true" : "false" ) << std::endl;

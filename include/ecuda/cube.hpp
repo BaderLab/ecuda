@@ -476,8 +476,8 @@ public:
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
 		typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
 		return row_type( ptr2, number_rows() );
@@ -495,10 +495,10 @@ public:
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
 	__HOST__ __DEVICE__ inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		return column_type( pointer_traits<modifiable_pointer>().undress(ptr), number_columns() );
+		return column_type( pointer_traits<unmanaged_pointer>().undress(ptr), number_columns() );
 		//pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
 		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
 		//striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_depths() );
@@ -513,10 +513,10 @@ public:
 	/// \returns A view of the elements with the specified row and column indices.
 	///
 	__HOST__ __DEVICE__ inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
-		return depth_type( pointer_traits<modifiable_pointer>().undress(ptr), number_depths() );
+		return depth_type( pointer_traits<unmanaged_pointer>().undress(ptr), number_depths() );
 		//pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
 		//return depth_type( np, number_depths() );
 	}
@@ -529,8 +529,8 @@ public:
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
 		typename const_row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
 		return const_row_type( ptr2, number_rows() );
@@ -548,10 +548,10 @@ public:
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
 	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		return const_column_type( pointer_traits<modifiable_pointer>().undress(ptr), number_columns() );
+		return const_column_type( pointer_traits<unmanaged_pointer>().undress(ptr), number_columns() );
 		//const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
 		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
 		//striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_depths() );
@@ -566,10 +566,10 @@ public:
 	/// \returns A view of the elements with the specified row and column indices.
 	///
 	__HOST__ __DEVICE__ inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
-		return const_depth_type( pointer_traits<modifiable_pointer>().undress(ptr), number_depths() );
+		return const_depth_type( pointer_traits<unmanaged_pointer>().undress(ptr), number_depths() );
 		//const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
 		//return const_depth_type( np, number_depths() );
 	}
@@ -581,8 +581,8 @@ public:
 	/// \returns A view of the elements at the specified row.
 	///
 	__HOST__ __DEVICE__ inline slice_yz_type get_yz( const size_type rowIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths();
 		return slice_yz_type( ptr, number_columns(), number_depths() );
 		//pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
@@ -599,8 +599,8 @@ public:
 	/// \returns A view of the elements at the specified depth.
 	///
 	__HOST__ __DEVICE__ inline slice_xy_type get_xy( const size_type depthIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += depthIndex; // move to correct depth
 		//ptr += number_depths(); // move to correct depth
 		typename slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
@@ -618,8 +618,8 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	__HOST__ __DEVICE__ inline slice_xz_type get_xz( const size_type columnIndex ) {
-		typedef typename pointer_traits<typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += columnIndex*number_depths(); // move to correct column
 		typename slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
 		return slice_xz_type( ptr2, number_rows(), number_depths() );
@@ -636,8 +636,8 @@ public:
 	/// \returns A view of the elements at the specified row.
 	///
 	__HOST__ __DEVICE__ inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += rowIndex*number_columns()*number_depths();
 		return const_slice_yz_type( ptr, number_columns(), number_depths() );
 		//const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
@@ -654,8 +654,8 @@ public:
 	/// \returns A view of the elements at the specified depth.
 	///
 	__HOST__ __DEVICE__ inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += number_depths(); // move to correct depth
 		typename const_slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
 		return const_slice_xy_type( ptr2, number_rows(), number_columns() );
@@ -672,8 +672,8 @@ public:
 	/// \returns A view of the elements at the specified column.
 	///
 	__HOST__ __DEVICE__ inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
-		typedef typename pointer_traits<const typename base_type::pointer>::modifiable_pointer modifiable_pointer;
-		modifiable_pointer ptr = pointer_traits<const typename base_type::pointer>().cast_to_modifiable(base_type::get_pointer());
+		typedef typename pointer_traits<const typename base_type::pointer>::unmanaged_pointer unmanaged_pointer;
+		unmanaged_pointer ptr = pointer_traits<const typename base_type::pointer>::cast_unmanaged(base_type::get_pointer());
 		ptr += columnIndex*number_depths(); // move to correct column
 		typename const_slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
 		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
