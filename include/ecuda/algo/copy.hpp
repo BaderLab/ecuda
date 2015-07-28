@@ -418,7 +418,25 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 }
 
 
-
+///
+/// \brief Replacement for std::copy.
+///
+/// ecuda::copy is identical to std::copy, but can be a) called from device code, and b) supports
+/// device memory when called from host code.
+///
+/// Compile-time checks are performed to determine which action should be taken. If called from
+/// device code, then it must be true that both the input and output refer to device memory (otherwise
+/// nvcc will fail before evaluating the ecuda::copy call) and the copying is done on-device.
+/// If the called from host code and both the input and output refer to host memory, the evaluation
+/// is delegated to std::copy. If called from host code, and one or both of the input and output refers
+/// to device memory, there is a compile-time assertion that fails if the device memory is non-contiguous.
+/// Otherwise, a call to cudaMemcpy is performed with parameters depending on the input and output
+/// memory types (e.g. if input is host and if output is device, then cudaMemcpy is called with
+/// cudaMemcpyHostToDevice used as the cudaMemcpyKind parameter).
+///
+/// \returns true if the range [first1,last1) is equal to the range [first2,first2+(last1-first1)),
+/// and false otherwise.
+///
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
 	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator is_input_device_iterator;

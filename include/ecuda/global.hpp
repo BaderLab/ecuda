@@ -70,6 +70,17 @@ either expressed or implied, of the FreeBSD Project.
 ///
 #define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
 
+///
+/// Macro that calls a CUDA kernel function, waits for completion, and throws
+/// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
+///
+#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
+		__VA_ARGS__;\
+		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
+		cudaDeviceSynchronize();\
+		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
+	} while(0);
+
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
 #ifndef __CPP11_SUPPORTED__
 #define nullptr NULL

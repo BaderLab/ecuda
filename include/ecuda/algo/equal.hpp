@@ -63,6 +63,22 @@ __HOST__ __DEVICE__ inline bool __equal( InputIterator1 first1, InputIterator1 l
 }
 
 
+///
+/// \brief Replacement for std::equal.
+///
+/// ecuda::equal is identical to std::equal, but can be a) called from device code, and b) supports
+/// device memory when called from host code.
+///
+/// Compile-time checks are performed to determine which action should be taken. If called from
+/// device code, then it must be true that both ranges refer to device memory (otherwise nvcc will
+/// fail before evaluating the ecuda::equal call) and the comparison between ranges is done on-device.
+/// If the called from host code and both ranges refer to host memory, the evaluation is delegated
+/// to std::equal. If called from host code, and one or both ranges refer to device memory, the
+/// range(s) are copied to temporary host memory before delegating to std::equal.
+///
+/// \returns true if the range [first1,last1) is equal to the range [first2,first2+(last1-first1)),
+/// and false otherwise.
+///
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 ) {
 	return __equal( first1, last1, first2, ecuda::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
