@@ -87,4 +87,28 @@ either expressed or implied, of the FreeBSD Project.
 #define __HOST__ __host__
 #define __DEVICE__ __device__
 
+
+#ifdef __CPP11_SUPPORTED__
+#define ECUDA_STATIC_ASSERT(x,msg) static_assert(x,#msg)
+#else
+
+namespace ecuda {
+namespace impl {
+
+template<bool condition> struct static_assertion {};
+template<> struct static_assertion<true>
+{
+	enum {
+		ECUDA_COPY_CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION,
+		TEST_ENUM1,
+		TEST_ENUM2
+	};
+};
+
+} // namespace impl
+} // namespace ecuda
+
+#define ECUDA_STATIC_ASSERT(x,msg) if(ecuda::impl::static_assertion<static_cast<bool>(x)>::msg) {}
+#endif
+
 #endif

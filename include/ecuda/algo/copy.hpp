@@ -238,6 +238,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 	// normalize types
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
+	ECUDA_STATIC_ASSERT(!typename ecuda::iterator_traits<OutputIterator>::is_contiguous(),ECUDA_COPY_CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION);
 	return __copy_host_to_device( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
 	#endif
 }
