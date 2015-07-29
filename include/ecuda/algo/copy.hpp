@@ -55,8 +55,8 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//while( first != last ) { *result = *first; ++first; ++result; }
-	return result; // never actually gets called, just here to trick nvcc
+	while( first != last ) { *result = *first; ++first; ++result; }
+	return result;
 	#else
 	typedef typename std::iterator_traits<OutputIterator>::value_type value_type;
 	typename std::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
@@ -77,8 +77,8 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//while( first != last ) { *result = *first; ++first; ++result; }
-	return result; // never actually gets called, just here to trick nvcc
+	while( first != last ) { *result = *first; ++first; ++result; }
+	return result;
 	#else
 	if( std::is_same<T,U>::value ) throw std::runtime_error( "ecuda::__copy_host_to_device(InputIterator,InputIterator,OutputIterator,...) different type variety called but types are the same" );
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
@@ -151,6 +151,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets called, just here to trick nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -174,6 +175,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets called, just here to trick nvcc
 	#else
 	throw std::invalid_argument( EXCEPTION_MSG( "ecuda::copy() cannot copy to non-contiguous device iterator" ) );
@@ -191,6 +193,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets called, just here to trick nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -215,6 +218,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets called, just here to trick nvcc
 	#else
 	if( std::is_same<T,U>::value ) throw std::runtime_error( "ecuda::__copy_host_to_device(InputIterator,InputIterator,OutputIterator,...) different type variety called but types are the same" );
@@ -238,6 +242,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// normalize types
@@ -285,6 +290,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// create contiguous staging area for output
@@ -310,6 +316,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -337,6 +344,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	for( ; first != last; result += first.operator->().get_remaining_width(), first += first.operator->().get_remaining_width() )
@@ -358,6 +366,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	if( std::is_same<T,U>::value ) throw std::runtime_error( "ecuda::__copy_host_to_device(InputIterator,InputIterator,OutputIterator,...) different type variety called but types are the same" );
@@ -382,6 +391,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy( // device to host
 )
 {
 	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// compile-time assertion that checks that the input device iterator is contiguous memory
@@ -409,7 +419,8 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	return result; // never actually gets called, just here to trick nvcc
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// just defer to STL
 	return std::copy( first, last, result );
@@ -431,7 +442,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 /// to device memory, there is a compile-time assertion that fails if the device memory is non-contiguous.
 /// Otherwise, a call to cudaMemcpy is performed with parameters depending on the input and output
 /// memory types (e.g. if input is host and if output is device, then cudaMemcpy is called with
-/// cudaMemcpyHostToDevice used as the cudaMemcpyKind parameter).
+/// cudaMemcpyHostToDevice used as the cudaMemcpyKind parameter).  In addition, when one or both of the
+/// input and output iterators refers to device memory, a call to ecuda::copy from host code results in
+/// a compile-time check to determine if the value_type of the input and output iterator are the same.
+/// If not, and the call is on device code, host staging memory is allocated to perform the type
+/// conversion.
 ///
 /// \returns true if the range [first1,last1) is equal to the range [first2,first2+(last1-first1)),
 /// and false otherwise.
