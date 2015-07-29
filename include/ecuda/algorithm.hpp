@@ -10,6 +10,7 @@
 #include "algo/equal.hpp" // equivalent to std::equal
 #include "algo/fill.hpp" // equivalent to std::fill
 #include "algo/lexicographical_compare.hpp" // equivalent to std::lexicographical_compare
+#include "algo/max_element.hpp" // equivalent to std::max_element
 // NOTE: there are additional includes at the end of the file;
 //       some algos require functions decleared in this file
 

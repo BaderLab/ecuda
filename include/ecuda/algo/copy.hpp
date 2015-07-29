@@ -445,7 +445,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 /// cudaMemcpyHostToDevice used as the cudaMemcpyKind parameter).  In addition, when one or both of the
 /// input and output iterators refers to device memory, a call to ecuda::copy from host code results in
 /// a compile-time check to determine if the value_type of the input and output iterator are the same.
-/// If not, and the call is on device code, host staging memory is allocated to perform the type
+/// If not, and the call is on host code, host staging memory is allocated to perform the type
 /// conversion.
 ///
 /// \returns true if the range [first1,last1) is equal to the range [first2,first2+(last1-first1)),
