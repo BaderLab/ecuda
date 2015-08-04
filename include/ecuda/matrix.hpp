@@ -959,10 +959,11 @@ __HOST__ void matrix_transpose(
 		for( std::size_t j = 0; j < src.number_columns(); ++j, ++srcElement ) hostMatrix[j*src.number_rows()+i] = *srcElement; // transpose
 	}
 	src.resize( src.number_columns(), src.number_rows() ); // resize destination matrix
-	typename std::vector<T>::const_iterator srcRow = hostMatrix.begin();
-	for( typename matrix<T,Alloc>::size_type i = 0; i < src.number_rows(); ++i, srcRow += src.number_columns() ) {
-		ecuda::copy( srcRow, srcRow+src.number_columns(), src[i].begin() );
-	}
+	ecuda::copy( hostMatrix.begin(), hostMatrix.end(), src.begin() );
+	//typename std::vector<T>::const_iterator srcRow = hostMatrix.begin();
+	//for( typename matrix<T,Alloc>::size_type i = 0; i < src.number_rows(); ++i, srcRow += src.number_columns() ) {
+	//	ecuda::copy( srcRow, srcRow+src.number_columns(), src[i].begin() );
+	//}
 }
 
 } // namespace ecuda

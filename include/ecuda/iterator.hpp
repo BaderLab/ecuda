@@ -14,12 +14,12 @@ namespace ecuda {
 ///
 /// \brief Iterator category denoting device memory.
 ///
-struct device_iterator_tag : std::bidirectional_iterator_tag {};
+struct device_iterator_tag : ::std::bidirectional_iterator_tag {};
 
 ///
 /// \brief Iterator category denoting contiguous device memory.
 ///
-struct device_contiguous_iterator_tag : std::random_access_iterator_tag {}; // libc++ requires inheritance from one of the 5 STL iterator categories
+struct device_contiguous_iterator_tag : ::std::random_access_iterator_tag {}; // libc++ requires inheritance from one of the 5 STL iterator categories
 
 ///
 /// \brief Iterator category denoting device memory that is made of contiguous blocks (but the blocks themselves are non-contiguous).
@@ -37,16 +37,21 @@ private:
 	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_type;
 
 public:
-	typedef typename base_type::iterator_category iterator_category;
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::difference_type difference_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef Category iterator_category;
+	typedef T value_type;
+	typedef std::ptrdiff_t difference_type;
+	typedef PointerType pointer;
+	typedef typename std::add_lvalue_reference<T>::type reference;
+	//typedef typename base_type::iterator_category iterator_category;
+	//typedef typename base_type::value_type value_type;
+	//typedef typename base_type::difference_type difference_type;
+	//typedef typename base_type::pointer pointer;
+	//typedef typename base_type::reference reference;
 
 	template<typename T2,typename PointerType2,typename Category2> friend class device_iterator;
 	template<typename T2> friend class device_contiguous_iterator;
 
-private:
+protected:
 	pointer ptr;
 
 public:
@@ -245,13 +250,6 @@ public:
 
 };
 
-namespace detail {
-
-struct __true_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return true; } };
-struct __false_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return false; } };
-
-} // namespace detail
-
 template<class IteratorCategory> struct __is_contiguous { typedef detail::__false_type type; };
 template<> struct __is_contiguous<std::random_access_iterator_tag> { typedef detail::__true_type type; };
 template<typename T> struct __is_contiguous<T*> { typedef detail::__true_type type; };
@@ -296,15 +294,17 @@ struct iterator_traits< device_contiguous_iterator<T> > : std::iterator_traits< 
 	typedef typename detail::__true_type is_contiguous;
 };
 
-template<typename T,typename PointerType>
-struct iterator_traits< device_contiguous_block_iterator<T,PointerType> > : iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > {
-	typedef typename std::iterator_traits< iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > >::difference_type difference_type;
-	typedef typename std::iterator_traits< iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > >::iterator_category iterator_category;
-	typedef typename std::iterator_traits< iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > >::pointer pointer;
-	typedef typename std::iterator_traits< iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > >::reference reference;
-	typedef typename std::iterator_traits< iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> > >::value_type value_type;
-	typedef typename iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> >::is_device_iterator is_device_iterator;
-	typedef typename iterator_traits< device_iterator<T,PointerType,device_contiguous_block_iterator_tag> >::is_contiguous is_contiguous;
+template<typename T,typename P>
+struct iterator_traits< device_contiguous_block_iterator<T,P> > : iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> > {
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::difference_type difference_type;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::iterator_category iterator_category;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::pointer pointer;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::reference reference;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::value_type value_type;
+//	typedef typename detail::__true_type is_device_iterator;
+//	typedef typename detail::__true_type is_contiguous;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::is_device_iterator is_device_iterator;
+	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::is_contiguous is_contiguous;
 };
 
 template<typename Iterator>
@@ -318,7 +318,7 @@ struct iterator_traits< reverse_device_iterator<Iterator> > : std::iterator_trai
 	typedef typename detail::__false_type is_contiguous;
 };
 
-
+/*
 template<class InputIterator,typename Distance,class IsContiguous>
 __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__false_type, IsContiguous ) {
 	// just defer to STL
@@ -342,15 +342,61 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 	throw std::invalid_argument( EXCEPTION_MSG( "ecuda::advance() cannot advance non-contiguous device iterator from host code" ) );
 	#endif
 }
+*/
 
+template<class InputIterator, typename Distance>
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_iterator_tag ) {
+//	#ifdef __CUDA_ARCH__
+	for( Distance i = 0; i < n; ++i ) ++iterator;
+//	#else
+//	// never gets called
+//	#endif
+}
 
+template<class InputIterator, typename Distance>
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_contiguous_iterator_tag ) {
+//	#ifdef __CUDA_ARCH__
+	iterator += n;
+//	#else
+//	// never gets called
+//	#endif
+}
+
+template<class InputIterator, typename Distance>
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_contiguous_block_iterator_tag ) {
+//	#ifdef __CUDA_ARCH__
+	iterator += n;
+//	#else
+//	// never gets called
+//	#endif
+}
+
+template<class InputIterator, typename Distance>
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__device ) {
+//	#ifdef __CUDA_ARCH__
+//	#else
+	const bool isIteratorContiguous = !std::is_same<typename ecuda::iterator_traits<InputIterator>::iterator_category, device_iterator_tag>::value;
+	ECUDA_STATIC_ASSERT( isIteratorContiguous, CANNOT_ADVANCE_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE );
+	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::iterator_category() );
+//	#endif
+}
+
+template<class InputIterator, typename Distance>
+__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::__host ) {
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
+	#else
+	std::advance( iterator, n );
+	#endif
+}
 
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n ) {
-	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator(), typename ecuda::iterator_traits<InputIterator>::is_contiguous() );
+	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
+	//__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator(), typename ecuda::iterator_traits<InputIterator>::is_contiguous() );
 }
 
-
+/*
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__true_type, detail::__true_type ) {
 	return last-first;
@@ -376,10 +422,55 @@ __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_t
 	return std::distance( first, last );
 	#endif
 }
+*/
+
+template<class Iterator>
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_iterator_tag ) {
+//	#ifdef __CUDA_ARCH__
+	typename std::iterator_traits<Iterator>::difference_type n = 0;
+	while( first != last ) { ++n; ++first; }
+	return n;
+//	#else
+//	// never called
+//	#endif
+}
+
+template<class Iterator>
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_contiguous_iterator_tag ) {
+	return last - first;
+}
+
+template<class Iterator>
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_contiguous_block_iterator_tag ) {
+	return last - first;
+}
+
+template<class Iterator>
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__device ) {
+	//#ifdef __CUDA_ARCH__
+	//#else
+	const bool isIteratorContiguous = !std::is_same< typename ecuda::iterator_traits<Iterator>::iterator_category, device_iterator_tag >::value;
+	ECUDA_STATIC_ASSERT( isIteratorContiguous, CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE );
+	//#endif
+	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::iterator_category() );
+}
+
+
+template<class Iterator>
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::__host ) {
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
+	return 0;
+	#else
+	return std::distance( first, last );
+	#endif
+}
+
 
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) {
-	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator(), typename ecuda::iterator_traits<Iterator>::is_contiguous() );
+	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator() );
+	//return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator(), typename ecuda::iterator_traits<Iterator>::is_contiguous() );
 	//return __distance( first, last, typename detail::__iterator_contiguity<typename std::iterator_traits<Iterator>::iterator_category>::type() );
 }
 

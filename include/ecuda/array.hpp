@@ -67,6 +67,8 @@ template<typename T,std::size_t N>
 class array : private __device_fixed_sequence< T, N, shared_ptr<T> > {
 
 private:
+	///
+
 	typedef __device_fixed_sequence< T, N, shared_ptr<T> > base_type;
 
 public:
@@ -82,9 +84,6 @@ public:
 	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
-
-//private:
-//	device_ptr<value_type> deviceMemory; //!< smart pointer to video card memory
 
 public:
 	///

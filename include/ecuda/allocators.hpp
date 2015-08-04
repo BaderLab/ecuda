@@ -51,10 +51,11 @@ either expressed or implied, of the FreeBSD Project.
 namespace ecuda {
 
 ///
-/// \brief An STL allocator for page-locked host memory.
+/// \brief Allocator for page-locked host memory.
 ///
-/// The implementation uses the CUDA API functions cudaMallocHost and
-/// cudaFreeHost.
+/// Implementation follows the specification of an STL allocator. The main
+/// difference is that the CUDA API functions cudaMallocHost and cudaFreeHost
+/// are used internally to allocate/deallocate memory.
 ///
 /// Page-locked or "pinned" memory makes copying memory from the GPU (device)
 /// to the CPU (host) faster.  Using STL containers with this allocator makes
@@ -176,7 +177,8 @@ public:
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
 	inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
+		default_host_delete<value_type>()(pointer_traits<pointer>().undress( ptr ));
+		//if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
 	}
 
 	///
@@ -209,9 +211,16 @@ public:
 
 
 ///
-/// \brief An STL allocator for device memory.
+/// \brief Allocator for device memory.
 ///
-/// The implementation uses the CUDA API functions cudaMalloc and cudaFree.
+/// Implementation follows the specification of an STL allocator. The main
+/// difference is that the CUDA API functions cudaMalloc and cudaFree are 
+/// used internally to allocate/deallocate memory.
+///
+/// Unlike the standard std::allocator or ecuda::host_allocator, the
+/// allocator allocates device memory which is only accessible through device
+/// code. Therefore, ecuda::device_allocator cannot be used as a replacement
+/// allocator for the standard STL containers (e.g. vector).
 ///
 template<typename T>
 class device_allocator {
@@ -310,7 +319,10 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
-	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
+	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
+		default_delete<value_type>()( pointer_traits<pointer>().undress( ptr ) );
+		//if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); 
+	}
 
 	///
 	/// \brief Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter)
@@ -343,11 +355,23 @@ public:
 };
 
 ///
-/// \brief An STL allocator for hardware aligned device memory.
+/// \brief Allocator for hardware aligned device memory.
 ///
-/// The implementation uses the CUDA API functions cudaMallocPitch and cudaFree.
-/// This allocator is NOT strictly compatible with STL because the allocated
-/// memory is 2D and has padding to align the allocation in hardware memory.
+/// Implementation follows the specification of an STL allocator. The main
+/// difference is that the CUDA API functions cudaMallocPitch and cudaFree 
+/// are used internally to allocate/deallocate memory.
+///
+/// Unlike the standard std::allocator or ecuda::host_allocator, the
+/// allocator allocates device memory which is only accessible through device
+/// code. Therefore, ecuda::device_pitch_allocator cannot be used as a
+/// replacement allocator for the standard STL containers (e.g. vector).
+///
+/// This allocator is NOT strictly compatible with STL specification because the 
+/// allocated memory is 2D and has padding to align the allocation in hardware 
+/// memory. The allocator requires both a width and height to specify size,
+/// instead of a single length. The allocator uses the ecuda::padded_ptr 
+/// pointer specialization to store details on the padding of the allocated
+/// memory.
 ///
 template<typename T>
 class device_pitch_allocator {

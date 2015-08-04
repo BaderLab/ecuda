@@ -19,7 +19,12 @@ template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline b
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__false_type,detail::__false_type> ) {
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return false; // never actually gets called, just here to trick nvcc
+	#else
 	return std::lexicographical_compare( first1, last1, first2, last2 );
+	#endif
 }
 
 template<class InputIterator1,class InputIterator2>

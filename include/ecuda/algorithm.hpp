@@ -6,6 +6,18 @@
 
 #include "global.hpp"
 
+namespace ecuda {
+namespace detail {
+
+typedef __false_type __host;
+typedef __true_type __device;
+
+typedef __false_type __non_contiguous;
+typedef __true_type __contiguous;
+
+} // namespace impl
+} // namespace ecuda
+
 #include "algo/copy.hpp" // equivalent to std::copy
 #include "algo/equal.hpp" // equivalent to std::equal
 #include "algo/fill.hpp" // equivalent to std::fill

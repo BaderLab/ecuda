@@ -33,7 +33,7 @@ int main( int argc, char* argv[] ) {
 
 	ecuda::matrix<int> deviceMatrix( 5, 20 );
 	// below needs to be made to work
-	//ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
 	{
 		ecuda::matrix<int> deviceMatrix2( 5, 20 );
 		testIterators2<<<1,1>>>( deviceMatrix, deviceMatrix2 );

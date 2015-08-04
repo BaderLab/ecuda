@@ -131,8 +131,8 @@ struct pointer_traits<T*> {
 	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return ptr; }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::naked_pointer cast_naked( U* ptr ) { return ptr; }
 };
 
 template<typename T>
@@ -146,8 +146,8 @@ struct pointer_traits<const T*> {
 	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return ptr; }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::naked_pointer cast_naked( U* ptr ) { return ptr; }
 };
 
 template<typename T>
@@ -161,8 +161,8 @@ struct pointer_traits< naked_ptr<T> > {
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return ptr + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer& make_unmanaged( pointer& ptr ) const { return ptr; }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits< naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< naked_ptr<U> >::naked_pointer cast_naked( const naked_ptr<U>& ptr ) { return ptr.get(); }
 };
 
 template<typename T>
@@ -176,8 +176,8 @@ struct pointer_traits< const naked_ptr<T> > {
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return ptr.get() + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return ptr.get(); }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits< const naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const naked_ptr<U> >::naked_pointer cast_naked( const naked_ptr<U>& ptr ) { return ptr.get(); }
 };
 
 template<typename T,typename U>
@@ -191,8 +191,8 @@ struct pointer_traits< unique_ptr<T,U> > {
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return undress(ptr); }
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
+	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
+	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< unique_ptr<T2,U2> >::naked_pointer cast_naked( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
 };
 
 template<typename T,typename U>
@@ -206,8 +206,8 @@ struct pointer_traits< const unique_ptr<T,U> > {
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return undress(ptr); }
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< const unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
+	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
+	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const unique_ptr<T2, U2> >::naked_pointer cast_naked( const unique_ptr<T2, U2>& ptr ) { return ptr.get(); }
 };
 
 template<typename T>
@@ -221,8 +221,8 @@ struct pointer_traits< shared_ptr<T> > {
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
 	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const shared_ptr<T> ptr, const int x ) const { return ptr.get() + x; }
 	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return undress(ptr); }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits< shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< shared_ptr<U> >::naked_pointer cast_naked( const shared_ptr<U>& ptr ) { return ptr.get(); }
 };
 
 template<typename T>
@@ -233,8 +233,8 @@ struct pointer_traits< const shared_ptr<T> > {
 	typedef typename shared_ptr<T>::pointer naked_pointer;
 	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
 	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	template<typename U>
-	static __HOST__ __DEVICE__ typename pointer_traits< const shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
+	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const shared_ptr<U> >::naked_pointer cast_naked( const shared_ptr<U>& ptr ) { return ptr.get(); }
 };
 
 template<typename T,typename U>
@@ -258,6 +258,7 @@ struct pointer_traits< padded_ptr<T,U> > {
 		typename pointer_traits<U2>::unmanaged_pointer p2 = pointer_traits<U2>::cast_unmanaged( ptr.get() );
 		return typename pointer_traits< padded_ptr<T2,U2> >::unmanaged_pointer( p1, ptr.get_pitch(), ptr.get_width(), p2 );
 	}
+	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< padded_ptr<T2, U2> >::naked_pointer cast_naked( const padded_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
 };
 
 template<typename T,typename U>
@@ -281,6 +282,7 @@ struct pointer_traits< const padded_ptr<T,U> > {
 		typename pointer_traits<U2>::unmanaged_pointer p2 = pointer_traits<U2>::cast_unmanaged( ptr.get() );
 		return typename pointer_traits<U2>::unmanaged_pointer( p1, ptr.get_pitch(), ptr.get_width(), p2 );
 	}
+	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const padded_ptr<T2, U2> >::naked_pointer cast_naked( const padded_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
 };
 
 template<typename T,typename U>
@@ -298,6 +300,7 @@ struct pointer_traits< striding_ptr<T,U> > {
 	static __HOST__ __DEVICE__ typename pointer_traits< striding_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const striding_ptr<T2,U2>& ptr ) {
 		return typename pointer_traits< striding_ptr<T2,U2> >::unmanaged_pointer( pointer_traits<U2>::cast_unmanaged( ptr.get() ), ptr.get_stride() );
 	}
+	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< striding_ptr<T2, U2> >::naked_pointer cast_naked( const striding_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
 };
 
 template<typename T,typename U>
@@ -315,6 +318,7 @@ struct pointer_traits< const striding_ptr<T,U> > {
 	static __HOST__ __DEVICE__ typename pointer_traits< const striding_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const striding_ptr<T2,U2>& ptr ) {
 		return typename pointer_traits<U2>::unmanaged_pointer( typename pointer_traits<U2>::cast_unmanaged( ptr.get() ), ptr.get_stride() );
 	}
+	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const striding_ptr<T2, U2> >::naked_pointer cast_naked( const striding_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
 };
 
 } // namespace ecuda

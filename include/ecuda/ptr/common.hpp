@@ -52,6 +52,18 @@ struct default_delete {
 
 };
 
+template<typename T>
+struct default_host_delete {
+	__HOST__ __DEVICE__ __CONSTEXPR__ default_host_delete() __NOEXCEPT__ {}
+	template<typename U> __HOST__ __DEVICE__ default_host_delete( const default_host_delete<U>& src ) __NOEXCEPT__ {}
+	__HOST__ __DEVICE__ inline void operator()( T* ptr ) const {
+		#ifdef __CUDA_ARCH__
+		#else
+		if( ptr ) cudaFreeHost( detail::__cast_void<T*>()(ptr) );
+		#endif
+	}
+};
+
 } // namespace ecuda
 
 

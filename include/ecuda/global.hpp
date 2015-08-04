@@ -95,9 +95,23 @@ either expressed or implied, of the FreeBSD Project.
 #define __CONSTEXPR__
 #endif
 
+#ifdef _WIN32
+#define __HOST__
+#define __DEVICE__
+#else
 #define __HOST__ __host__
 #define __DEVICE__ __device__
+#endif
 
+// Used throughout the API for compile-time conditions.
+namespace ecuda {
+namespace detail {
+
+struct __true_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return true; } };
+struct __false_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return false; } };
+
+} // namespace detail
+} // namespace ecuda
 
 //
 // Quick implementation of compile-time assertions. If C++11 is available, then
@@ -111,6 +125,7 @@ either expressed or implied, of the FreeBSD Project.
 #else
 
 namespace ecuda {
+
 namespace impl {
 
 template<bool condition> struct static_assertion {};
@@ -120,7 +135,13 @@ template<> struct static_assertion<true>
 		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY,
 		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY,
 		CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
-		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_MAX_ELEMENT
+		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_MAX_ELEMENT,
+		COPY_IS_UNEXPECTEDLY_BETWEEN_IDENTICAL_TYPES,
+		CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
+		CANNOT_FILL_WITH_NONCONTIGUOUS_DEVICE_ITERATOR,
+		CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE,
+		CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE,
+		CANNOT_ADVANCE_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE
 	};
 };
 

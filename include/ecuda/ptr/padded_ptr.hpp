@@ -71,9 +71,34 @@ public:
 	__DEVICE__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
 	__DEVICE__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
 
+	#ifdef __CPP11_SUPPORTED__
+	///
+	/// \brief Checks if this stores a non-null pointer.
+	///
+	/// \return true if *this stores a pointer, false otherwise.
+	///
+	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ { return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL; }
+	#else
+	///
+	/// \brief Checks if this stores a non-null pointer.
+	///
+	/// \return true if *this stores a pointer, false otherwise.
+	///
+	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ { return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL; }
+	#endif
+
 	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if
-	__HOST__ __DEVICE__ inline difference_type operator-( Q ptr ) {
-		typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(ptr) );
+	__HOST__ __DEVICE__ inline difference_type operator-( Q other ) {
+		typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(other) );
+		typename pointer_traits<pointer>::naked_pointer stop  = pointer_traits<pointer>().undress(ptr);
+		difference_type n = (stop-start)*sizeof(T); // bytes difference
+		return n;
+	}
+
+/*
+	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if
+	__HOST__ __DEVICE__ inline difference_type operator-( Q p ) {
+		typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(p) );
 		typename pointer_traits<pointer>::naked_pointer stop = pointer_traits<pointer>().undress(ptr);
 		difference_type n = (stop-start)*sizeof(T); // bytes difference
 		n -= n/pitch * (pitch-width*sizeof(T)); // substract pads
@@ -82,9 +107,9 @@ public:
 		n /= sizeof(T);
 		// delegate to underlying pointer specializations to allow it
 		// a chance to apply logic
-		return pointer(ptr.get()+n)-ptr;
+		return pointer(ptr+n)-p;
 	}
-
+*/
 	__HOST__ __DEVICE__ inline padded_ptr& operator++() {
 		++ptr;
 		if( (ptr-edge_ptr) == width ) {
