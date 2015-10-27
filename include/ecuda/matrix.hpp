@@ -144,6 +144,15 @@ public:
 
 private:
 	allocator_type allocator;
+	template<typename U,class Alloc2> class device_matrix;
+
+public:
+	typedef device_matrix<T,Alloc> kernel;
+
+protected:
+	__HOST__ __DEVICE__ matrix( const base_type& src, allocator_type alloc ) : base_type(src), allocator(alloc) {
+		//ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
+	}
 
 public:
 	///
@@ -191,13 +200,14 @@ public:
 	///
 	/// \param src Another matrix object of the same type, whose contents are copied.
 	///
-	__HOST__ __DEVICE__ matrix( const matrix& src ) : base_type(src),
+	__HOST__ /*__DEVICE__*/ matrix( const matrix& src ) : base_type(src),
 		//#ifdef __CPP11_SUPPORTED__
 		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 		//#else
 		allocator(src.allocator)
 		//#endif
 	{
+		//TODO: add deep copy
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -864,6 +874,18 @@ public:
 		}
 		return *this;
 	}
+
+
+};
+
+template<typename T,class Alloc>
+class device_matrix : public matrix<T,Alloc> {
+
+private:
+	typedef matrix<T,Alloc> base_type;
+
+public:
+	device_matrix( const matrix<T,Alloc>& src ) : base_type( src, src.get_allocator() ) {}
 
 };
 

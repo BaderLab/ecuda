@@ -35,7 +35,7 @@ struct sp_counter_base {
 template<typename T>
 struct sp_counter_impl_p : sp_counter_base {
 	sp_counter_impl_p() : sp_counter_base() {}
-	virtual void dispose( void* p ) { if( p ) default_delete<void>()(p); } // cudaFree( p ); }
+	virtual void dispose( void* p ) { if( p ) ecuda::default_delete<void>()(p); } // cudaFree( p ); }
 };
 
 template<typename T,class Deleter>
@@ -43,7 +43,8 @@ struct sp_counter_impl_pd : sp_counter_base {
 	Deleter deleter;
 	sp_counter_impl_pd( Deleter deleter ) : sp_counter_base(), deleter(deleter) {}
 	virtual void dispose( void* p ) { if( p ) deleter(p); }
-	virtual void* get_deleter() { return deleter; }
+	//virtual void* get_deleter() { return deleter; }
+	virtual void* get_deleter() { return reinterpret_cast<void*>(&deleter); }
 };
 
 /*

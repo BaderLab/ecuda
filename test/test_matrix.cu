@@ -11,7 +11,7 @@
 #include "../include/ecuda/vector.hpp"
 
 template<typename T>
-__global__ void testIterators( const ecuda::matrix<T> src, ecuda::matrix<T> dest ) {
+__global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
 	typename ecuda::matrix<T>::iterator result = dest.begin();
 	//typename ecuda::matrix<T>::const_iterator result2 = result;
 	for( typename ecuda::matrix<T>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
