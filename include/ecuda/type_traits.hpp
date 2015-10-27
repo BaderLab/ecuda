@@ -69,6 +69,40 @@ template<typename T,typename F> struct conditional<false,T,F> { typedef F type; 
 template<bool B,typename T=void> struct enable_if {};
 template<typename T> struct enable_if<true,T> { typedef T type; };
 
+template<typename T,T v>
+struct integral_constant {
+	static const/*constexpr*/ T value = v;
+	typedef T value_type;
+	typedef integral_constant<T,v> type;
+	/*constexpr*/ operator T() { return v; }
+};
+
+typedef integral_constant<bool,true> true_type;
+typedef integral_constant<bool,false> false_type;
+
+
+template<typename T> struct is_integral { typedef std::false_type type; };
+template<> struct is_integral<bool> { typedef std::true_type type; };
+template<> struct is_integral<char> { typedef std::true_type type; };
+template<> struct is_integral<signed char> { typedef std::true_type type; };
+template<> struct is_integral<unsigned char> { typedef std::true_type type; };
+#ifdef _GLIBCXX_USE_WCHAR_T
+template<> struct is_integral<wchar_t> { typedef std::true_type type; };
+#endif
+#ifdef __CPP11_SUPPORTED__
+template<> struct is_integral<char16_t> { typedef std::true_type type; };
+template<> struct is_integral<char32_t> { typedef std::true_type type; };
+#endif
+template<> struct is_integral<short> { typedef std::true_type type; };
+template<> struct is_integral<unsigned short> { typedef std::true_type type; };
+template<> struct is_integral<int> { typedef std::true_type type; };
+template<> struct is_integral<unsigned int> { typedef std::true_type type; };
+template<> struct is_integral<long> { typedef std::true_type type; };
+template<> struct is_integral<unsigned long> { typedef std::true_type type; };
+template<> struct is_integral<long long> { typedef std::true_type type; };
+template<> struct is_integral<unsigned long long> { typedef std::true_type type; };
+
+
 } // namespace std
 #endif
 

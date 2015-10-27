@@ -15,8 +15,10 @@ namespace ecuda {
 // forward declaration
 template<class BidirectionalIterator> __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last );
 
+namespace impl {
+
 template<class BidirectionalIterator,class IsContiguous>
-__HOST__ __DEVICE__ inline void __reverse( BidirectionalIterator first, BidirectionalIterator last, ecuda::pair<detail::__false_type,IsContiguous> ) {
+__HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last, ecuda::pair<std::false_type,IsContiguous> ) {
 	#ifdef __CUDA_ARCH__
 	return; // never actually gets called, just here to trick nvcc
 	#else
@@ -26,7 +28,7 @@ __HOST__ __DEVICE__ inline void __reverse( BidirectionalIterator first, Bidirect
 }
 
 template<class BidirectionalIterator>
-__HOST__ __DEVICE__ inline void __reverse( BidirectionalIterator first, BidirectionalIterator last, ecuda::pair<detail::__true_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last, ecuda::pair<std::true_type,std::true_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( (first!=last) and (first!=--last) ) {
 		ecuda::swap( *first, *last );
@@ -42,7 +44,7 @@ __HOST__ __DEVICE__ inline void __reverse( BidirectionalIterator first, Bidirect
 }
 
 template<class ForwardIterator,typename T>
-__HOST__ __DEVICE__ inline void __reverse( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline void reverse( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<std::true_type,std::false_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( (first!=last) and (first!=--last) ) {
 		ecuda::swap( *first, *last );
@@ -53,9 +55,11 @@ __HOST__ __DEVICE__ inline void __reverse( ForwardIterator first, ForwardIterato
 	#endif
 }
 
+} // namespace impl
+
 template<class BidirectionalIterator>
 __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last ) {
-	__reverse(
+	impl::reverse(
 		first, last,
 		ecuda::pair<typename ecuda::iterator_traits<BidirectionalIterator>::is_device_iterator,typename ecuda::iterator_traits<BidirectionalIterator>::is_contiguous>()
 	);

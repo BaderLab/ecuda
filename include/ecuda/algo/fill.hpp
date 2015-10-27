@@ -14,8 +14,10 @@ namespace ecuda {
 // forward declaration
 template<class ForwardIterator,typename T> __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val );
 
+namespace impl {
+
 template<class ForwardIterator,typename T,class IsContiguous>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__false_type,IsContiguous> ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<std::false_type,IsContiguous> ) {
 	#ifdef __CUDA_ARCH__
 	return; // never actually gets called, just here to trick nvcc
 	#else
@@ -25,7 +27,7 @@ __HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator l
 }
 
 template<class ForwardIterator,typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<std::true_type,std::true_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = val; ++first; }
 	#else
@@ -35,7 +37,7 @@ __HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator l
 }
 
 template<class ForwardIterator,typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<detail::__true_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, ecuda::pair<std::true_type,std::false_type> ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = val; ++first; }
 	#else
@@ -54,7 +56,7 @@ __HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator l
 */
 
 template<class ForwardIterator, typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, device_contiguous_iterator_tag ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, device_contiguous_iterator_tag ) {
 	#ifdef __CUDA_ARCH__
 	// never gets called
 	#else
@@ -64,7 +66,7 @@ __HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator l
 }
 
 template<class ForwardIterator, typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, device_contiguous_block_iterator_tag ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, device_contiguous_block_iterator_tag ) {
 	#ifdef __CUDA_ARCH__
 	// never gets called
 	#else
@@ -78,29 +80,31 @@ __HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator l
 
 
 template<class ForwardIterator, typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, detail::__device ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, detail::device_type ) {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = *val; ++first; }
 	#else
 	const bool isIteratorContiguous = std::is_same<typename ecuda::iterator_traits<ForwardIterator>::iterator_category,device_iterator_tag>::value;
 	ECUDA_STATIC_ASSERT( isIteratorContiguous, CANNOT_FILL_WITH_NONCONTIGUOUS_DEVICE_ITERATOR );
-	__fill( first, last, val, typename ecuda::iterator_traits<ForwardIterator>::iterator_category() );
+	fill( first, last, val, typename ecuda::iterator_traits<ForwardIterator>::iterator_category() );
 	std::fill( first, last, val );
 	#endif
 }
 
 
 template<class ForwardIterator,typename T>
-__HOST__ __DEVICE__ inline void __fill( ForwardIterator first, ForwardIterator last, const T& val, detail::__host ) {
+__HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val, detail::host_type ) {
 	#ifdef __CUDA_ARCH__
 	#else
 	std::fill( first, last, val );
 	#endif
 }
 
+} // namespace impl
+
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val ) {
-	__fill(
+	impl::fill(
 		first, last,
 		val,
 		ecuda::pair<typename ecuda::iterator_traits<ForwardIterator>::is_device_iterator,typename ecuda::iterator_traits<ForwardIterator>::is_contiguous>()

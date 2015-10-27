@@ -117,10 +117,10 @@ namespace ecuda {
 /// next row, and so on...).
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix : private __device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > {
+class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > {
 
 private:
-	typedef __device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > base_type;
+	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< cell data type

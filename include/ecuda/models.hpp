@@ -7,6 +7,8 @@
 
 namespace ecuda {
 
+namespace impl {
+
 ///
 /// \brief Base representation of a sequence in device memory.
 ///
@@ -23,7 +25,7 @@ namespace ecuda {
 /// This base class is used to represent, for example, a matrix column.
 ///
 template<typename T,class PointerType>
-class __device_sequence
+class device_sequence
 {
 
 public:
@@ -43,16 +45,16 @@ private:
 	pointer ptr;
 	size_type length;
 
-	template<typename U,class PointerType2> friend class __device_sequence;
+	template<typename U,class PointerType2> friend class device_sequence;
 
 protected:
 	__HOST__ __DEVICE__ inline pointer& get_pointer() { return ptr; }
 	__HOST__ __DEVICE__ inline const pointer& get_pointer() const { return ptr; }
 
 public:
-	__HOST__ __DEVICE__ __device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
-	__HOST__ __DEVICE__ __device_sequence( const __device_sequence& src ) : ptr(src.ptr), length(src.length) {}
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ __device_sequence( const __device_sequence<U,PointerType2>& src ) : ptr(src.ptr), length(src.length) {}
+	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
+	__HOST__ __DEVICE__ device_sequence( const device_sequence& src ) : ptr(src.ptr), length(src.length) {}
+	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_sequence( const device_sequence<U,PointerType2>& src ) : ptr(src.ptr), length(src.length) {}
 
 	__HOST__ __DEVICE__ inline size_type size() const { return length; }
 
@@ -80,7 +82,7 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ void swap( __device_sequence& other ) {
+	__HOST__ __DEVICE__ void swap( device_sequence& other ) {
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
 		iterator iter2 = other.begin();
@@ -100,7 +102,7 @@ public:
 /// properly.
 ///
 template<typename T,std::size_t N,class PointerType=typename type_traits<T>::pointer>
-class __device_fixed_sequence
+class device_fixed_sequence
 {
 
 public:
@@ -124,8 +126,8 @@ protected:
 	__HOST__ __DEVICE__ inline const pointer& get_pointer() const { return ptr; }
 
 public:
-	__HOST__ __DEVICE__ __device_fixed_sequence( pointer ptr = pointer() ) : ptr(ptr) {}
-	__HOST__ __DEVICE__ __device_fixed_sequence( const __device_fixed_sequence& src ) : ptr(src.ptr) {}
+	__HOST__ __DEVICE__ device_fixed_sequence( pointer ptr = pointer() ) : ptr(ptr) {}
+	__HOST__ __DEVICE__ device_fixed_sequence( const device_fixed_sequence& src ) : ptr(src.ptr) {}
 
 	__HOST__ __DEVICE__ inline __CONSTEXPR__ size_type size() const { return N; }
 
@@ -150,7 +152,7 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ void swap( __device_fixed_sequence& other ) {
+	__HOST__ __DEVICE__ void swap( device_fixed_sequence& other ) {
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
 		iterator iter2 = other.begin();
@@ -169,10 +171,10 @@ public:
 /// properly.
 ///
 template<typename T,class PointerType=typename type_traits<T>::pointer>
-class __device_contiguous_sequence : public __device_sequence<T,PointerType>
+class device_contiguous_sequence : public device_sequence<T,PointerType>
 {
 private:
-	typedef __device_sequence<T,PointerType> base_type;
+	typedef device_sequence<T,PointerType> base_type;
 
 public:
 	typedef typename base_type::value_type value_type;
@@ -188,9 +190,9 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 public:
-	__HOST__ __DEVICE__ __device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
-	__HOST__ __DEVICE__ __device_contiguous_sequence( const __device_contiguous_sequence& src ) : base_type(src) {}
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ __device_contiguous_sequence( const __device_contiguous_sequence<U,PointerType2>& src ) : base_type(src) {}
+	__HOST__ __DEVICE__ device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
+	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence& src ) : base_type(src) {}
+	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence<U,PointerType2>& src ) : base_type(src) {}
 
 	__HOST__ __DEVICE__ iterator begin() { return iterator( pointer_traits<pointer>().undress(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ iterator end() { return iterator( pointer_traits<pointer>().undress(base_type::get_pointer()) + base_type::size() ); }
@@ -219,10 +221,10 @@ public:
 /// The pointer specialization is fully responsible for traversing the matrix.
 ///
 template<typename T,class PointerType>
-class __device_matrix : public __device_sequence<T,PointerType>
+class device_matrix : public device_sequence<T,PointerType>
 {
 private:
-	typedef __device_sequence<T,PointerType> base_type;
+	typedef device_sequence<T,PointerType> base_type;
 
 public:
 	typedef typename base_type::value_type value_type;
@@ -237,17 +239,17 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator;
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
-	typedef __device_sequence<value_type,typename pointer_traits<pointer>::unmanaged_pointer> row_type;
-	typedef __device_sequence<const value_type,typename pointer_traits<typename pointer_traits<pointer>::unmanaged_pointer>::const_pointer> const_row_type;
-	typedef __device_sequence< value_type, striding_ptr<value_type,typename pointer_traits<pointer>::unmanaged_pointer> > column_type;
-	typedef __device_sequence< const value_type, striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer> > const_column_type;
+	typedef device_sequence<value_type,typename pointer_traits<pointer>::unmanaged_pointer> row_type;
+	typedef device_sequence<const value_type,typename pointer_traits<typename pointer_traits<pointer>::unmanaged_pointer>::const_pointer> const_row_type;
+	typedef device_sequence< value_type, striding_ptr<value_type,typename pointer_traits<pointer>::unmanaged_pointer> > column_type;
+	typedef device_sequence< const value_type, striding_ptr<const value_type,typename pointer_traits<typename pointer_traits<pointer>::const_pointer>::unmanaged_pointer> > const_column_type;
 
 private:
 	size_type rows;
 
 public:
-	__HOST__ __DEVICE__ __device_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
-	__HOST__ __DEVICE__ __device_matrix( const __device_matrix& src ) : base_type(src), rows(src.rows) {}
+	__HOST__ __DEVICE__ device_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
+	__HOST__ __DEVICE__ device_matrix( const device_matrix& src ) : base_type(src), rows(src.rows) {}
 
 	__HOST__ __DEVICE__ inline size_type number_rows() const { return rows; }
 	__HOST__ __DEVICE__ inline size_type number_columns() const { return base_type::size()/rows; }
@@ -290,10 +292,10 @@ public:
 /// fixed padding.
 ///
 template<typename T,class P>
-class __device_contiguous_row_matrix : public __device_matrix< T, padded_ptr<T,P> > // NOTE: PointerType must be padded_ptr
+class device_contiguous_row_matrix : public device_matrix< T, padded_ptr<T,P> > // NOTE: PointerType must be padded_ptr
 {
 private:
-	typedef __device_matrix< T, padded_ptr<T,P> > base_type;
+	typedef device_matrix< T, padded_ptr<T,P> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type;
@@ -313,15 +315,15 @@ public:
 	typedef reverse_device_iterator<iterator> reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
-	typedef __device_contiguous_sequence<value_type> row_type;
-	typedef __device_contiguous_sequence<const value_type> const_row_type;
+	typedef device_contiguous_sequence<value_type> row_type;
+	typedef device_contiguous_sequence<const value_type> const_row_type;
 	typedef typename base_type::column_type column_type;
 	typedef typename base_type::const_column_type const_column_type;
 
 public:
-	__HOST__ __DEVICE__ __device_contiguous_row_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows,columns) {}
-	__HOST__ __DEVICE__ __device_contiguous_row_matrix( const __device_contiguous_row_matrix& src ) : base_type(src) {}
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ __device_contiguous_row_matrix( const __device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
+	__HOST__ __DEVICE__ device_contiguous_row_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows,columns) {}
+	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix& src ) : base_type(src) {}
+	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
 
 	__HOST__ __DEVICE__ inline iterator begin() { return iterator( pointer_traits<pointer>::cast_unmanaged(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline iterator end() { return iterator( pointer_traits<pointer>().increment(base_type::get_pointer(),base_type::size()) ); }
@@ -366,7 +368,7 @@ public:
 
 };
 
-
+} // namespace impl
 
 } // namespace ecuda
 

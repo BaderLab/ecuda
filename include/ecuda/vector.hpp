@@ -55,32 +55,33 @@ either expressed or implied, of the FreeBSD Project.
 #include "iterator.hpp"
 #include "memory.hpp"
 #include "models.hpp"
+#include "type_traits.hpp"
 
 namespace ecuda {
 
 /// \cond DEVELOPER_DOCUMENTATION
-
-template<typename T> struct __is_integer { typedef detail::__false_type __type; };
-template<> struct __is_integer<bool> { typedef detail::__true_type __type; };
-template<> struct __is_integer<char> { typedef detail::__true_type __type; };
-template<> struct __is_integer<signed char> { typedef detail::__true_type __type; };
-template<> struct __is_integer<unsigned char> { typedef detail::__true_type __type; };
+/*
+template<typename T> struct __is_integer { typedef std::false_type __type; };
+template<> struct __is_integer<bool> { typedef std::true_type __type; };
+template<> struct __is_integer<char> { typedef std::true_type __type; };
+template<> struct __is_integer<signed char> { typedef std::true_type __type; };
+template<> struct __is_integer<unsigned char> { typedef std::true_type __type; };
 #ifdef _GLIBCXX_USE_WCHAR_T
-template<> struct __is_integer<wchar_t> { typedef detail::__true_type __type; };
+template<> struct __is_integer<wchar_t> { typedef std::true_type __type; };
 #endif
 #ifdef __CPP11_SUPPORTED__
-template<> struct __is_integer<char16_t> { typedef detail::__true_type __type; };
-template<> struct __is_integer<char32_t> { typedef detail::__true_type __type; };
+template<> struct __is_integer<char16_t> { typedef std::true_type __type; };
+template<> struct __is_integer<char32_t> { typedef std::true_type __type; };
 #endif
-template<> struct __is_integer<short> { typedef detail::__true_type __type; };
-template<> struct __is_integer<unsigned short> { typedef detail::__true_type __type; };
-template<> struct __is_integer<int> { typedef detail::__true_type __type; };
-template<> struct __is_integer<unsigned int> { typedef detail::__true_type __type; };
-template<> struct __is_integer<long> { typedef detail::__true_type __type; };
-template<> struct __is_integer<unsigned long> { typedef detail::__true_type __type; };
-template<> struct __is_integer<long long> { typedef detail::__true_type __type; };
-template<> struct __is_integer<unsigned long long> { typedef detail::__true_type __type; };
-
+template<> struct __is_integer<short> { typedef std::true_type __type; };
+template<> struct __is_integer<unsigned short> { typedef std::true_type __type; };
+template<> struct __is_integer<int> { typedef std::true_type __type; };
+template<> struct __is_integer<unsigned int> { typedef std::true_type __type; };
+template<> struct __is_integer<long> { typedef std::true_type __type; };
+template<> struct __is_integer<unsigned long> { typedef std::true_type __type; };
+template<> struct __is_integer<long long> { typedef std::true_type __type; };
+template<> struct __is_integer<unsigned long long> { typedef std::true_type __type; };
+*/
 /// \endcond
 
 
@@ -96,10 +97,10 @@ template<> struct __is_integer<unsigned long long> { typedef detail::__true_type
 /// is doubled until the requested amount of memory is met or exceeded.
 ///
 template< typename T, class Alloc=device_allocator<T> >
-class vector : private __device_contiguous_sequence< T, shared_ptr<T> > {
+class vector : private impl::device_contiguous_sequence< T, shared_ptr<T> > {
 
 private:
-	typedef __device_contiguous_sequence< T, shared_ptr<T> > base_type;
+	typedef impl::device_contiguous_sequence< T, shared_ptr<T> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< cell data type
@@ -130,14 +131,14 @@ private:
 private:
 	__HOST__ void growMemory( size_type minimum );
 
-	__HOST__ void init( size_type len, const value_type& value, detail::__true_type ) {
+	__HOST__ void init( size_type len, const value_type& value, std::true_type ) {
 		growMemory( len );
 		n = len;
 		if( len ) ecuda::fill( begin(), end(), value );
 	}
 
 	template<class Iterator>
-	__HOST__ inline void init( Iterator first, Iterator last, detail::__false_type ) {
+	__HOST__ inline void init( Iterator first, Iterator last, std::false_type ) {
 		const size_type len = ::ecuda::distance(first,last);
 		growMemory( len );
 		ecuda::copy( first, last, begin() );
@@ -158,7 +159,7 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	__HOST__ explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type( shared_ptr<T>( allocator.allocate(n) ), n ), n(n), allocator(allocator) {
-		init( n, value, detail::__true_type() );
+		init( n, value, std::true_type() );
 	}
 
 	///
@@ -166,7 +167,7 @@ public:
 	/// \param n the size of the container
 	///
 	__HOST__ explicit vector( size_type n ) : base_type( shared_ptr<T>( Alloc().allocate(n) ) ), n(n) {
-		init( n, value_type(), detail::__true_type() );
+		init( n, value_type(), std::true_type() );
 	}
 
 	///
@@ -176,7 +177,8 @@ public:
 	///
 	template<class Iterator>
 	__HOST__ vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {
-		typedef typename __is_integer<Iterator>::__type _Integral;
+		typedef typename std::is_integral<Iterator>::type _Integral;
+		//typedef typename __is_integer<Iterator>::__type _Integral;
 		init( first, last, _Integral() );
 	}
 
@@ -186,16 +188,13 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container.  This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the << or >> operators, or use iterators.
-	/// For example:
+	/// of the container is required in host code, use ecuda::copy function. For example:
 	///
 	/// \code{.cpp}
 	/// ecuda::vector<int> vec( 10, 3 ); // create a vector of size 10 filled with 3s
 	/// ecuda::vector<int> newVec( vec ); // shallow copy
 	/// ecuda::vector<int> newVec( 10 );
-	/// newVec << vec; // deep copy
-	/// vec >> newVec; // deep copy
-	/// ecuda::vector<int> newVec2( vec.begin(), vec.end() ); // deep copy
+	/// ecuda::copy( vec.begin(), vec.end(), newVec.begin() ); // deep copy
 	/// \endcode
 	///
 	/// \param src Another vector object of the same type, whose contents are copied.
@@ -209,6 +208,7 @@ public:
 	{
 	}
 
+	/*
 	///
 	/// \brief Copy constructor. Constructs the container with the copy of the contents of the other.
 	/// \param src another container to be used as source to initialize the elements of the container with
@@ -218,6 +218,7 @@ public:
 	__HOST__ vector( const vector<value_type,Alloc2>& src, const allocator_type& allocator ) : base_type(shared_ptr<T>(allocator.allocate(src.size()))), n(src.n), allocator(allocator) {
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
+	*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -830,6 +831,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline bool operator>=( const vector& other ) const { return !operator<(other); }
 
+	/*
 	///
 	/// \brief Copies the contents of this device vector to another container.
 	///
@@ -851,6 +853,32 @@ public:
 		const size_type len = ecuda::distance(src.begin(),src.end());
 		growMemory(len);
 		ecuda::copy( src.begin(), src.end(), begin() );
+		return *this;
+	}
+	*/
+
+	///
+	/// \brief Shallow assign the contents of another vector to this vector.
+	///
+	/// Be careful to note that a shallow assignment means that only the pointer to the device
+	/// memory that holds the elements is copied to this container.  If a deep copy is required,
+	/// use the ecuda::copy function. For example:
+	///
+	/// \code{.cpp}
+	/// ecuda::vector<int> vec( 10 );
+	/// vec.fill( 3 ); // fill array with 3s
+	/// ecuda::vector<int> newVec( 10 );
+	/// newVec = vec; // shallow assignment
+	/// ecuda::copy( vec.begin(), vec.end(), newVec.begin() ); // deep copy
+	/// \endcode
+	///
+	/// \param src Container of the same type and size, whose contents are shallow assigned to this container.
+	/// \return A reference to this container.
+	///
+	__HOST__ __DEVICE__ vector& operator=( const vector& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		n = other.n;
+		allocator = other.allocator;
 		return *this;
 	}
 
@@ -896,7 +924,7 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
 	while( m2 < minimum ) m2 <<= 1;
 	// allocate larger chunk
 	shared_ptr<value_type> newMemory = get_allocator().allocate( m2 );
-	__device_contiguous_sequence< value_type, shared_ptr<value_type> > newSequence( newMemory, m2 );
+	impl::device_contiguous_sequence< value_type, shared_ptr<value_type> > newSequence( newMemory, m2 );
 	ecuda::copy( begin(), end(), newSequence.begin() );
 	base_type::swap( newSequence );
 }

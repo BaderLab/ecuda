@@ -64,12 +64,10 @@ namespace ecuda {
 /// accessors of general information can be performed on both the host and device.
 ///
 template<typename T,std::size_t N>
-class array : private __device_fixed_sequence< T, N, shared_ptr<T> > {
+class array : private impl::device_fixed_sequence< T, N, shared_ptr<T> > {
 
 private:
-	///
-
-	typedef __device_fixed_sequence< T, N, shared_ptr<T> > base_type;
+	typedef impl::device_fixed_sequence< T, N, shared_ptr<T> > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< cell data type
@@ -101,18 +99,17 @@ public:
 	/// Be careful to note that a shallow copy means that only the pointer to the device memory
 	/// that holds the elements is copied in the newly constructed container.  This allows
 	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the << or >> operators. For example:
+	/// of the container is required in host code, use the ecuda::copy function. For example:
 	///
 	/// \code{.cpp}
 	/// ecuda::array<int,10> arr;
 	/// arr.fill( 3 ); // fill array with 3s
 	/// ecuda::array<int,10> newArr( arr ); // shallow copy
 	/// ecuda::array<int,10> newArr;
-	/// newArr << arr; // deep copy
-	/// arr >> newArr; // deep copy
+	/// ecuda::copy( arr.begin(), arr.end(), newArr.begin() ); // deep copy
 	/// \endcode
 	///
-	/// \param src Another array object of the same type and size, whose contents are copied.
+	/// \param src Another array object of the same type and size, whose contents are shallow copied.
 	///
 	__HOST__ __DEVICE__ array( const array& src ) : base_type(src) {}
 
@@ -129,7 +126,6 @@ public:
 	///
 	template<std::size_t N2>
 	__HOST__ array( const array<T,N2>& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
-
 		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
 		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
 	}
@@ -396,6 +392,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
+	/*
 	///
 	/// \brief Copies the contents of this device array to another container.
 	///
@@ -406,7 +403,9 @@ public:
 		ecuda::copy( begin(), end(), dest.begin() );
 		return dest;
 	}
+	*/
 
+	/*
 	///
 	/// \brief Copies the contents of a container to this device array.
 	///
@@ -420,7 +419,32 @@ public:
 		ecuda::copy( src.begin(), src.end(), begin() );
 		return *this;
 	}
+	*/
 
+	///
+	/// \brief Shallow assign the contents of another array to this array.
+	///
+	/// Be careful to note that a shallow assignment means that only the pointer to the device
+	/// memory that holds the elements is copied to this container.  If a deep copy is required,
+	/// use the ecuda::copy function. For example:
+	///
+	/// \code{.cpp}
+	/// ecuda::array<int,10> arr;
+	/// arr.fill( 3 ); // fill array with 3s
+	/// ecuda::array<int,10> newArr;
+	/// newArr = arr; // shallow assignment
+	/// ecuda::copy( arr.begin(), arr.end(), newArr.begin() ); // deep copy
+	/// \endcode
+	///
+	/// \param src Container of the same type and size, whose contents are shallow assigned to this container.
+	/// \return A reference to this container.
+	///
+	__HOST__ __DEVICE__ array& operator=( const array& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		return *this;
+	}
+
+	/*
 	///
 	/// \brief Overwrites every element of the array with the corresponding element of another array.
 	///
@@ -444,6 +468,7 @@ public:
 		#endif
 		return *this;
 	}
+	*/
 
 };
 

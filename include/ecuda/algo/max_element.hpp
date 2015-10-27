@@ -13,8 +13,10 @@ namespace ecuda {
 // forward declaration
 template<class ForwardIterator> __HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last );
 
+namespace impl {
+
 template<class ForwardIterator>
-__HOST__ __DEVICE__ inline ForwardIterator __max_element( ForwardIterator first, ForwardIterator last, detail::__true_type ) {
+__HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last, std::true_type ) {
 	// is an iterator to device memory
 	#ifdef __CUDA_ARCH__
 	if( first == last ) return last;
@@ -25,7 +27,7 @@ __HOST__ __DEVICE__ inline ForwardIterator __max_element( ForwardIterator first,
 	}
 	return largest;
 	#else
-	const bool isIteratorContiguous = std::is_same<typename ecuda::iterator_traits<ForwardIterator>::is_contiguous,detail::__true_type>::value;
+	const bool isIteratorContiguous = std::is_same<typename ecuda::iterator_traits<ForwardIterator>::is_contiguous,std::true_type>::value;
 	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_MAX_ELEMENT);
 	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<typename ecuda::iterator_traits<ForwardIterator>::value_type> hostVector( n );
@@ -38,7 +40,7 @@ __HOST__ __DEVICE__ inline ForwardIterator __max_element( ForwardIterator first,
 
 
 template<class ForwardIterator>
-__HOST__ __DEVICE__ inline ForwardIterator __max_element( ForwardIterator first, ForwardIterator last, detail::__false_type ) {
+__HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last, std::false_type ) {
 	// not an iterator to device memory, delegate to STL
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MAX_ELEMENT_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -48,10 +50,11 @@ __HOST__ __DEVICE__ inline ForwardIterator __max_element( ForwardIterator first,
 	#endif
 }
 
+} // namespace impl
 
 template<class ForwardIterator>
 __HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last ) {
-	__max_element(
+	impl::max_element(
 		first, last,
 		typename ecuda::iterator_traits<ForwardIterator>::is_device_iterator()
 	);

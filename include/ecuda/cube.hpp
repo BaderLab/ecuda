@@ -112,10 +112,10 @@ namespace ecuda {
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube : private __device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > {
+class cube : private device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > {
 
 private:
-	typedef __device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > base_type;
+	typedef device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< cell data type
@@ -127,24 +127,24 @@ public:
 	typedef typename base_type::pointer pointer; //!< cell pointer type
 	typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
 
-	typedef __device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > row_type; //!< cube row container type
-	typedef __device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > column_type; //!< cube column container type
-	typedef __device_contiguous_sequence<value_type                                                     > depth_type; //!< cube depth container type
-	typedef __device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_row_type; //!< cube const row container type
-	typedef __device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_column_type; //!< cube const column container type
-	typedef __device_contiguous_sequence<const value_type                                                                 > const_depth_type; //!< cube const depth container type
+	typedef device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > row_type; //!< cube row container type
+	typedef device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > column_type; //!< cube column container type
+	typedef device_contiguous_sequence<value_type                                                     > depth_type; //!< cube depth container type
+	typedef device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_row_type; //!< cube const row container type
+	typedef device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_column_type; //!< cube const column container type
+	typedef device_contiguous_sequence<const value_type                                                                 > const_depth_type; //!< cube const depth container type
 
 	typedef typename base_type::iterator iterator; //!< iterator type
 	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef __device_matrix<                value_type, striding_ptr< value_type, padded_ptr<value_type> > > slice_xy_type; //!< xy section of a cube at a fixed depth
-	typedef __device_contiguous_row_matrix< value_type, padded_ptr< value_type,   padded_ptr<value_type> > > slice_xz_type; //!< xz section of a cube at a fixed column
-	typedef __device_contiguous_row_matrix< value_type, padded_ptr<value_type>                             > slice_yz_type; //!< yz section of a cube at a fixed row
-	typedef __device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
-	typedef __device_contiguous_row_matrix< const value_type, padded_ptr< const value_type,   padded_ptr<const value_type> > > const_slice_xz_type; //!< const xz section of a cube at a fixed column
-	typedef __device_contiguous_row_matrix< const value_type, padded_ptr<const value_type>                                   > const_slice_yz_type; //!< const yz section of a cube at a fixed row
+	typedef device_matrix<                value_type, striding_ptr< value_type, padded_ptr<value_type> > > slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef device_contiguous_row_matrix< value_type, padded_ptr< value_type,   padded_ptr<value_type> > > slice_xz_type; //!< xz section of a cube at a fixed column
+	typedef device_contiguous_row_matrix< value_type, padded_ptr<value_type>                             > slice_yz_type; //!< yz section of a cube at a fixed row
+	typedef device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
+	typedef device_contiguous_row_matrix< const value_type, padded_ptr< const value_type,   padded_ptr<const value_type> > > const_slice_xz_type; //!< const xz section of a cube at a fixed column
+	typedef device_contiguous_row_matrix< const value_type, padded_ptr<const value_type>                                   > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
 private:
 	allocator_type allocator;

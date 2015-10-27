@@ -104,6 +104,8 @@ either expressed or implied, of the FreeBSD Project.
 #endif
 
 // Used throughout the API for compile-time conditions.
+/*
+ * phase this out in favour of std::true_type,std::false_type
 namespace ecuda {
 namespace detail {
 
@@ -112,6 +114,7 @@ struct __false_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return 
 
 } // namespace detail
 } // namespace ecuda
+*/
 
 //
 // Quick implementation of compile-time assertions. If C++11 is available, then

@@ -15,10 +15,10 @@ namespace ecuda {
 // forward declaration
 template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 );
 
-
+namespace impl {
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__false_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::false_type,std::false_type> ) {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return false; // never actually gets called, just here to trick nvcc
@@ -28,17 +28,17 @@ __HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__true_type,detail::__false_type> ) {
+__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::true_type,std::false_type> ) {
 	return std::lexicographical_compare( first1, last1, first2, last2 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__false_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::false_type,std::true_type> ) {
 	return std::lexicographical_compare( first1, last1, first2, last2 );
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<detail::__true_type,detail::__true_type> ) {
+__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::true_type,std::true_type> ) {
 	#ifdef __CUDA_ARCH__
 	for( ; (first1 != last1) and (first2 != last2); ++first1, ++first2 ) {
 		if( *first1 < *first2 ) return true;
@@ -57,9 +57,11 @@ __HOST__ __DEVICE__ inline bool __lexicographical_compare( InputIterator1 first1
 	#endif
 }
 
+} // namespace impl
+
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 ) {
-	return __lexicographical_compare( first1, last1, first2, last2, pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
+	return impl::lexicographical_compare( first1, last1, first2, last2, pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );
 }
 
 } // namespace ecuda

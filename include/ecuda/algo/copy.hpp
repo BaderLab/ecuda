@@ -39,10 +39,10 @@ namespace ecuda {
 template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result );
 
 // definitions for the 4 possible device/host iterator pairs
-//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__false_type );
-//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__false_type, detail::__true_type );
-//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__false_type );
-//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, detail::__true_type,  detail::__true_type );
+//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::false_type, std::false_type );
+//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::false_type, std::true_type );
+//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::true_type,  std::false_type );
+//template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, std::true_type,  std::true_type );
 
 //namespace detail {
 //
@@ -51,16 +51,17 @@ template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline Ou
 //
 //} // namespace detail
 
+namespace impl {
 
 /**
  * Device to device
  */
 
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_device(
 	InputIterator first, InputIterator last,
 	OutputIterator result,
-	ecuda::pair<detail::__contiguous,detail::__contiguous>,
+	ecuda::pair<detail::contiguous_type,detail::contiguous_type>,
 	T, T
 )
 {
@@ -77,10 +78,10 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_device(
 	InputIterator first, InputIterator last,
 	OutputIterator result,
-	ecuda::pair<detail::__contiguous,detail::__contiguous>,
+	ecuda::pair<detail::contiguous_type,detail::contiguous_type>,
 	T, U
 )
 {
@@ -123,26 +124,26 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_device(
 */
 
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	ecuda::pair<detail::__device,detail::__device> // device -> device
+	ecuda::pair<detail::device_type,detail::device_type> // device -> device
 )
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *result = *first; ++first; ++result; }
 	return result;
 	#else
-	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,detail::__true_type>::value;
+	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,std::true_type>::value;
 	ECUDA_STATIC_ASSERT(isInputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY);
-	const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,detail::__true_type>::value;
+	const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,std::true_type>::value;
 	ECUDA_STATIC_ASSERT(isOutputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
 	typedef typename ecuda::iterator_traits<InputIterator>::is_contiguous input_contiguity;
 	typedef typename ecuda::iterator_traits<OutputIterator>::is_contiguous output_contiguity;
-	return __copy_device_to_device( first, last, result, ecuda::pair<input_contiguity,output_contiguity>(), T1(), T2() );
+	return copy_device_to_device( first, last, result, ecuda::pair<input_contiguity,output_contiguity>(), T1(), T2() );
 	#endif
 }
 
@@ -152,11 +153,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
  */
 
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	detail::__false_type, // is_contiguous
+	std::false_type, // is_contiguous
 	device_contiguous_iterator_tag,
 	T, T
 )
@@ -176,11 +177,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	detail::__true_type, // is_contiguous
+	std::true_type, // is_contiguous
 	device_contiguous_iterator_tag,
 	T, T
 )
@@ -193,7 +194,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	// explicitly confirm that the output iterator is contiguous
 	// @todo - in upcoming C++17 there is a ContiguousIterator type being proposed that will make this check unnecessary
-	if( !ecuda::iterator_traits<InputIterator>::confirm_contiguity( first, last, n ) ) return __copy_host_to_device( first, last, result, detail::__false_type(), detail::__true_type(), T(), T() );
+	if( !ecuda::iterator_traits<InputIterator>::confirm_contiguity( first, last, n ) ) return copy_host_to_device( first, last, result, std::false_type(), device_contiguous_iterator_tag(), T(), T() );
 	typename ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>::naked_pointer p =
 		ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>().undress( result.operator->() );
 	typename ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>::naked_pointer q =
@@ -213,11 +214,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	detail::__true_type, // is_contiguous
+	std::true_type, // is_contiguous
 	device_contiguous_block_iterator_tag,
 	T, T
 )
@@ -230,7 +231,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	const std::size_t width = result.operator->().get_width();
 	while( n > 0 ) {
-		result = __copy_host_to_device( first, first+width, result, detail::__true_type(), device_contiguous_iterator_tag(), T(), T() );
+		result = copy_host_to_device( first, first+width, result, std::true_type(), device_contiguous_iterator_tag(), T(), T() );
 		first += width;
 		n -= width;
 	}
@@ -239,7 +240,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator,typename ContiguousInput,typename DeviceIteratorTag,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
+__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
@@ -257,7 +258,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<U> v( static_cast<std::size_t>(n) );
 	std::copy( first, last, v.begin() );
-	return __copy_host_to_device( v.begin(), v.end(), result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), device_contiguous_block_iterator_tag(), U(), U() );
+	return copy_host_to_device( v.begin(), v.end(), result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), DeviceIteratorTag(), U(), U() );
 	//CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), &v.front(), static_cast<std::size_t>(n), cudaMemcpyHostToDevice ) );
 	//ecuda::advance( result, static_cast<std::size_t>(n) );
 	//return result;
@@ -265,18 +266,22 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_host_to_device(
 }
 
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator __copy( InputIterator first, InputIterator last, OutputIterator result, ecuda::pair<detail::__host,detail::__device> ) { // host -> device
+__HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result, ecuda::pair<detail::host_type,detail::device_type> ) { // host -> device
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// normalize types
-	const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,detail::__true_type>::value;
-	const bool isOutputIteratorBlockContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::iterator_category,ecuda::device_contiguous_block_iterator_tag>::value;
-	ECUDA_STATIC_ASSERT(isOutputIteratorContiguous or isOutputIteratorBlockContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
+	//const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,std::true_type>::value;
+	//const bool isOutputIteratorBlockContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::iterator_category,ecuda::device_contiguous_block_iterator_tag>::value;
+	const bool isSomeKindOfContiguous =
+		std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,std::true_type>::value ||
+		std::is_same<typename ecuda::iterator_traits<OutputIterator>::iterator_category,ecuda::device_contiguous_block_iterator_tag>::value;
+	//ECUDA_STATIC_ASSERT(isOutputIteratorContiguous || isOutputIteratorBlockContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
+	ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY);
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
-	return __copy_host_to_device( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::iterator_category(), T1(), T2() );
+	return copy_host_to_device( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::iterator_category(), T1(), T2() );
 	#endif
 }
 
@@ -291,7 +296,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	InputIterator last,
 	OutputIterator result,
 	device_iterator_tag,  // non-contiguous
-	//detail::__false_type, // is_contiguous
+	//std::false_type, // is_contiguous
 	ContiguousOutput,     // contiguity of output is irrelevant here
 	T, U
 )
@@ -305,13 +310,13 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 */
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
 	device_contiguous_iterator_tag, // contiguous
-	//detail::__true_type,  // is_contiguous
-	detail::__false_type, // is_contiguous
+	//std::true_type,  // is_contiguous
+	std::false_type, // is_contiguous
 	T, U
 )
 {
@@ -331,13 +336,13 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
 	device_contiguous_iterator_tag, // contiguous
-	//detail::__true_type, // is_contiguous
-	detail::__true_type, // is_contiguous
+	//std::true_type, // is_contiguous
+	std::true_type, // is_contiguous
 	T, T
 )
 {
@@ -349,7 +354,7 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	// explicitly confirm that the output iterator is contiguous
 	// @todo - in upcoming C++17 there is a ContiguousIterator type being proposed that will make this check unnecessary
-	if( !ecuda::iterator_traits<OutputIterator>::confirm_contiguity( result, result+n, n ) ) return __copy_device_to_host( first, last, result, device_contiguous_iterator_tag(), detail::__false_type(), T(), T() );
+	if( !ecuda::iterator_traits<OutputIterator>::confirm_contiguity( result, result+n, n ) ) return copy_device_to_host( first, last, result, device_contiguous_iterator_tag(), std::false_type(), T(), T() );
 	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
 	ecuda::advance( result, static_cast<std::size_t>(n) );
 	return result;
@@ -360,12 +365,12 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 /// \todo do this asap
 ///
 template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
 	device_contiguous_block_iterator_tag, // contiguous blocks
-	detail::__true_type, // is_contiguous
+	std::true_type, // is_contiguous
 	T, T
 )
 {
@@ -374,20 +379,20 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	for( ; first != last; result += first.operator->().get_remaining_width(), first += first.operator->().get_remaining_width() )
-		__copy_device_to_device( first, first+first.operator->().get_remaining_width(), result, device_contiguous_iterator_tag(), detail::__true_type(), T(), T() );
+		copy_device_to_device( first, first+first.operator->().get_remaining_width(), result, device_contiguous_iterator_tag(), std::true_type(), T(), T() );
 	return result;
 	#endif
 }
 
 
 template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
+__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
 	device_contiguous_iterator_tag, // contiguous
-	//detail::__true_type, // is_contiguous
-	detail::__true_type, // is_contiguous
+	//std::true_type, // is_contiguous
+	std::true_type, // is_contiguous
 	T, U
 )
 {
@@ -408,11 +413,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
 }
 
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	ecuda::pair<detail::__device,detail::__host> // device -> host
+	ecuda::pair<detail::device_type,detail::host_type> // device -> host
 )
 {
 	#ifdef __CUDA_ARCH__
@@ -420,13 +425,13 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// compile-time assertion that checks that the input device iterator is contiguous memory
-	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,detail::__true_type>::value;
+	const bool isInputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,std::true_type>::value;
 	ECUDA_STATIC_ASSERT(isInputIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY);
 	// normalize types
 	typedef typename ecuda::iterator_traits<InputIterator>::value_type T1;
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type T2;
 	//return __copy_device_to_host( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
-	return __copy_device_to_host( first, last, result, typename ecuda::iterator_traits<InputIterator>::iterator_category(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
+	return copy_device_to_host( first, last, result, typename ecuda::iterator_traits<InputIterator>::iterator_category(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
 	#endif
 }
 
@@ -435,11 +440,11 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
  */
 
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator __copy(
+__HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
 	InputIterator last,
 	OutputIterator result,
-	ecuda::pair<detail::__host,detail::__host> // host -> host
+	ecuda::pair<detail::host_type,detail::host_type> // host -> host
 )
 {
 	#ifdef __CUDA_ARCH__
@@ -451,12 +456,13 @@ __HOST__ __DEVICE__ inline OutputIterator __copy(
 	#endif
 }
 
+} // namespace impl
 
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
-	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator input_memory_type;   // __host is an alias for __false_type
-	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator output_memory_type; // __device is an alias for __true_type
-	return __copy( first, last,	result, ecuda::pair<input_memory_type,output_memory_type>() );
+	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator input_memory_type;   // host_type is an alias for std::false_type
+	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator output_memory_type; // device_type is an alias for std::true_type
+	return impl::copy( first, last, result, ecuda::pair<input_memory_type,output_memory_type>() );
 }
 
 } // namespace ecuda

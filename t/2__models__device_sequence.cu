@@ -8,16 +8,16 @@
 //#define CHECK_IF_DEVICE_DESTINATION_ASSERTION_CAUSES_FAILURE
 
 template<typename T,typename P>
-__global__ void fill_with_consecutive_values( ecuda::__device_sequence<T,P> sequence ) {
+__global__ void fill_with_consecutive_values( ecuda::device_sequence<T,P> sequence ) {
 	const std::size_t threadNum = blockIdx.x*blockDim.x+threadIdx.x;
 	if( !threadNum ) {
 		std::size_t index = 0;
-		for( typename ecuda::__device_sequence<T,P>::iterator iter = sequence.begin(); iter != sequence.end(); ++iter, ++index ) *iter = static_cast<T>(index);
+		for( typename ecuda::device_sequence<T,P>::iterator iter = sequence.begin(); iter != sequence.end(); ++iter, ++index ) *iter = static_cast<T>(index);
 	}
 }
 
 template<typename T,typename P>
-__global__ void reverse_copy( const ecuda::__device_sequence<T,P> src, ecuda::__device_sequence<T,P> dest ) {
+__global__ void reverse_copy( const ecuda::device_sequence<T,P> src, ecuda::device_sequence<T,P> dest ) {
 	const std::size_t threadNum = blockIdx.x*blockDim.x+threadIdx.x;
 	if( !threadNum ) ecuda::copy( src.begin(), src.end(), dest.rbegin() );
 }
@@ -30,14 +30,14 @@ int main( int argc, char* argv[] ) {
 	pointer_type ptr = deviceAllocator.allocate(1000);
 
 	// create sequence
-	ecuda::__device_sequence<double,pointer_type> deviceSequence( ptr, 1000 );
+	ecuda::device_sequence<double,pointer_type> deviceSequence( ptr, 1000 );
 
 	// fill sequence with consecutive values
 	CUDA_CALL_KERNEL_AND_WAIT( fill_with_consecutive_values<double><<<1,1>>>( deviceSequence ) );
 
 	// copy sequence and reverse
 	pointer_type ptr2 = deviceAllocator.allocate(1000);
-	ecuda::__device_sequence<double,pointer_type> deviceSequence2( ptr2, 1000 );
+	ecuda::device_sequence<double,pointer_type> deviceSequence2( ptr2, 1000 );
 	CUDA_CALL_KERNEL_AND_WAIT( reverse_copy<double><<<1,1>>>( deviceSequence, deviceSequence2 ) );
 
 	// copy sequence to host
