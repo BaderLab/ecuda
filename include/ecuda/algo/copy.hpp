@@ -195,10 +195,13 @@ __HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	// explicitly confirm that the output iterator is contiguous
 	// @todo - in upcoming C++17 there is a ContiguousIterator type being proposed that will make this check unnecessary
 	if( !ecuda::iterator_traits<InputIterator>::confirm_contiguity( first, last, n ) ) return copy_host_to_device( first, last, result, std::false_type(), device_contiguous_iterator_tag(), T(), T() );
-	typename ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>::naked_pointer p =
-		ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>().undress( result.operator->() );
-	typename ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>::naked_pointer q =
-		ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>().undress( first.operator->() );
+	typedef typename std::add_pointer<value_type>::type pointer;
+	pointer p = naked_cast<pointer>( result.operator->() );
+	pointer q = naked_cast<pointer>( first.operator->() );
+	//typename ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>::naked_pointer p =
+	//	ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>().undress( result.operator->() );
+	//typename ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>::naked_pointer q =
+	//	ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>().undress( first.operator->() );
 	CUDA_CALL(
 		cudaMemcpy<value_type>(
 			p, q,

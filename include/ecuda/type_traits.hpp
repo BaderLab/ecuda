@@ -48,22 +48,22 @@ either expressed or implied, of the FreeBSD Project.
 #else
 namespace std {
 
-template<typename T> struct remove_const { typedef T type; };
+template<typename T> struct remove_const          { typedef T type; };
 template<typename T> struct remove_const<const T> { typedef T type; };
 
 template<typename T,typename U> struct is_same { enum { value = 0 }; };
 template<typename T> struct is_same<T,T> { enum { value = 1 }; };
 
-template<typename T> struct remove_reference { typedef T type; };
-template<typename T> struct remove_reference<T&> { typedef T type; };
+template<typename T> struct remove_reference      { typedef T type; };
+template<typename T> struct remove_reference<T&>  { typedef T type; };
 #ifdef __CPP11_SUPPORTED__
 template<typename T> struct remove_reference<T&&> { typedef T type; };
 #endif
 
-template<typename T> struct add_lvalue_reference { typedef T& type; };
+template<typename T> struct add_lvalue_reference     { typedef T& type; };
 template<typename T> struct add_lvalue_reference<T&> { typedef T& type; };
 
-template<bool B,typename T,typename F> struct conditional { typedef T type; };
+template<bool B,typename T,typename F> struct conditional     { typedef T type; };
 template<typename T,typename F> struct conditional<false,T,F> { typedef F type; };
 
 template<bool B,typename T=void> struct enable_if {};
@@ -77,31 +77,38 @@ struct integral_constant {
 	/*constexpr*/ operator T() { return v; }
 };
 
-typedef integral_constant<bool,true> true_type;
+typedef integral_constant<bool,true>  true_type;
 typedef integral_constant<bool,false> false_type;
 
-
-template<typename T> struct is_integral { typedef std::false_type type; };
-template<> struct is_integral<bool> { typedef std::true_type type; };
-template<> struct is_integral<char> { typedef std::true_type type; };
-template<> struct is_integral<signed char> { typedef std::true_type type; };
-template<> struct is_integral<unsigned char> { typedef std::true_type type; };
+template<typename T> struct is_integral           { typedef std::false_type type; };
+template<> struct is_integral<bool>               { typedef std::true_type type; };
+template<> struct is_integral<char>               { typedef std::true_type type; };
+template<> struct is_integral<signed char>        { typedef std::true_type type; };
+template<> struct is_integral<unsigned char>      { typedef std::true_type type; };
 #ifdef _GLIBCXX_USE_WCHAR_T
-template<> struct is_integral<wchar_t> { typedef std::true_type type; };
+template<> struct is_integral<wchar_t>            { typedef std::true_type type; };
 #endif
 #ifdef __CPP11_SUPPORTED__
-template<> struct is_integral<char16_t> { typedef std::true_type type; };
-template<> struct is_integral<char32_t> { typedef std::true_type type; };
+template<> struct is_integral<char16_t>           { typedef std::true_type type; };
+template<> struct is_integral<char32_t>           { typedef std::true_type type; };
 #endif
-template<> struct is_integral<short> { typedef std::true_type type; };
-template<> struct is_integral<unsigned short> { typedef std::true_type type; };
-template<> struct is_integral<int> { typedef std::true_type type; };
-template<> struct is_integral<unsigned int> { typedef std::true_type type; };
-template<> struct is_integral<long> { typedef std::true_type type; };
-template<> struct is_integral<unsigned long> { typedef std::true_type type; };
-template<> struct is_integral<long long> { typedef std::true_type type; };
+template<> struct is_integral<short>              { typedef std::true_type type; };
+template<> struct is_integral<unsigned short>     { typedef std::true_type type; };
+template<> struct is_integral<int>                { typedef std::true_type type; };
+template<> struct is_integral<unsigned int>       { typedef std::true_type type; };
+template<> struct is_integral<long>               { typedef std::true_type type; };
+template<> struct is_integral<unsigned long>      { typedef std::true_type type; };
+template<> struct is_integral<long long>          { typedef std::true_type type; };
 template<> struct is_integral<unsigned long long> { typedef std::true_type type; };
 
+template<typename T> struct add_pointer          { typedef T* type; };
+template<typename T> struct add_pointer<const T> { typedef const T* type; }; // confirm this is needed
+
+template<typename T> struct remove_pointer                    { typedef T type; };
+template<typename T> struct remove_pointer<T*>                { typedef T type; };
+template<typename T> struct remove_pointer<T* const>          { typedef T type; };
+template<typename T> struct remove_pointer<T* volatile>       { typedef T type; };
+template<typename T> struct remove_pointer<T* const volatile> { typedef T type; };
 
 } // namespace std
 #endif
@@ -124,17 +131,17 @@ template<typename T,typename U> class striding_ptr; // forward declaration
 template<typename T,typename U> class unique_ptr; // forward declaration
 
 
-template<typename T> struct dereference;
-template<typename T> struct dereference<T*> { typedef T& type; };
-template<typename T> struct dereference<T* const> { typedef const T& type; };
-template<typename T> struct reference {
-	typedef T* pointer_type;
-	typedef T& reference_type;
-	typedef T element_type;
-};
+//template<typename T> struct dereference;
+//template<typename T> struct dereference<T*> { typedef T& type; };
+//template<typename T> struct dereference<T* const> { typedef const T& type; };
+//template<typename T> struct reference {
+//	typedef T* pointer_type;
+//	typedef T& reference_type;
+//	typedef T element_type;
+//};
 
-template<typename T> struct type_traits { typedef T* pointer; };
-template<typename T> struct type_traits<const T> { typedef const T* pointer; };
+//template<typename T> struct type_traits { typedef T* pointer; };
+//template<typename T> struct type_traits<const T> { typedef const T* pointer; };
 
 //template<typename T>
 //struct pointer_traits {
@@ -146,6 +153,126 @@ template<typename T> struct type_traits<const T> { typedef const T* pointer; };
 //	typedef const T* pointer;
 //};
 
+/*
+template<typename T>            T*                                  make_naked( T* ptr )                       { return ptr; }
+template<typename T>            const T*                            make_naked( const T* ptr )                 { return ptr; }
+template<typename T>            typename naked_ptr<T>::pointer      make_naked( const naked_ptr<T>& ptr )      { return make_naked(ptr.get()); }
+template<typename T,typename U> typename unique_ptr<T,U>::pointer   make_naked( const unique_ptr<T,U>& ptr )   { return make_naked(ptr.get()); }
+template<typename T>            typename shared_ptr<T>::pointer     make_naked( const shared_ptr<T>& ptr )     { return make_naked(ptr.get()); }
+template<typename T,typename U> typename padded_ptr<T,U>::pointer   make_naked( const padded_ptr<T,U>& ptr )   { return make_naked(ptr.get()); }
+template<typename T,typename U> typename striding_ptr<T,U>::pointer make_naked( const striding_ptr<T,U>& ptr ) { return make_naked(ptr.get()); }
+*/
+
+///
+/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a naked pointer.
+///
+/// The cast should be guaranteed regardless of how many layers of pointer management or
+/// pointer specialization are present.
+///
+/// \code{.cpp}
+/// padded_ptr< int,shared_ptr<int> > p;
+/// int* q = naked_cast<int*>( p );
+/// double* r = naked_cast<double*>( p ); // not sure why this would be needed, but it can be done
+/// \endcode
+///
+template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( U* ptr )                       { return reinterpret_cast<T>(ptr); }
+template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const naked_ptr<U>& ptr )      { return naked_cast<T>(ptr.get()); }
+template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const unique_ptr<U,V>& ptr )   { return naked_cast<T>(ptr.get()); }
+template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const shared_ptr<U>& ptr )     { return naked_cast<T>(ptr.get()); }
+template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const padded_ptr<U,V>& ptr )   { return naked_cast<T>(ptr.get()); }
+template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const striding_ptr<U,V>& ptr ) { return naked_cast<T>(ptr.get()); }
+
+///
+/// Gets the type of a pointer that has been stripped of any contribution by pointer management from unique_ptr or shared_ptr.
+///
+/// This is used in the API when a pointer that can be modified is needed. For example, a pointer to video memory
+/// that represents a matrix may or may not be managed by unique_ptr, but if the pointer is used to create a temporary
+/// structure to represent a row, then we must guarantee that the pointer is freed of any such management.
+///
+/// This operates recursively. For example:
+/// \code{.cpp}
+/// typedef shared_ptr<int> pointer_type1;
+/// typedef typename remove_pointer_management<pointer_type1>::type unmanaged_pointer_type1; // is of type int*
+/// typedef padded_ptr< int,shared_ptr<int> > pointer_type2;
+/// typedef typename remove_pointer_management<pointer_type2>::type unmanaged_pointer_type2; // is of type padded_ptr<int,int*>
+/// \endcode
+///
+template<typename T>            struct remove_pointer_management;
+template<typename T>            struct remove_pointer_management<T*>                        { typedef T* type; };
+template<typename T>            struct remove_pointer_management<const T*>                  { typedef const T* type; };
+template<typename T,typename U> struct remove_pointer_management< unique_ptr<T,U> >         { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T,typename U> struct remove_pointer_management< const unique_ptr<T,U> >   { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T>            struct remove_pointer_management< shared_ptr<T> >           { typedef typename std::add_pointer<T>::type type; };
+template<typename T>            struct remove_pointer_management< const shared_ptr<T> >     { typedef typename std::add_pointer<T>::type type; };
+template<typename T,typename U> struct remove_pointer_management< padded_ptr<T,U> >         { typedef padded_ptr<T,typename remove_pointer_management<U>::type> type; };
+template<typename T,typename U> struct remove_pointer_management< const padded_ptr<T,U> >   { typedef padded_ptr<T,typename remove_pointer_management<U>::type> type; };
+template<typename T,typename U> struct remove_pointer_management< striding_ptr<T,U> >       { typedef striding_ptr<T,typename remove_pointer_management<U>::type> type; };
+template<typename T,typename U> struct remove_pointer_management< const striding_ptr<T,U> > { typedef striding_ptr<T,typename remove_pointer_management<U>::type> type; };
+
+///
+/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is stripped of any management from unique_ptr or shared_ptr.
+///
+/// The type of the resulting pointer can be determined with ecuda::remove_pointer_management<T>::type.
+///
+/// The cast should be guaranteed regardless of how many layers of pointer management or
+/// pointer specialization are present.
+///
+/// \code{.cpp}
+/// padded_ptr< int,shared_ptr<int> > p;
+/// int* q = naked_cast<int*>( p );
+/// double* r = naked_cast<double*>( p ); // not sure why this would be needed, but it can be done
+/// \endcode
+///
+template<typename T> __HOST__ __DEVICE__ T* unmanaged_cast( T* ptr ) { return ptr; }
+
+template<typename T> __HOST__ __DEVICE__ naked_ptr<T> unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
+
+template<typename T,typename U>
+__HOST__ __DEVICE__
+typename remove_pointer_management<U>::type unmanaged_cast( const unique_ptr<T,U>& ptr ) {
+	return typename remove_pointer_management<U>::type( ptr.get() );
+}
+
+template<typename T>
+__HOST__ __DEVICE__
+typename remove_pointer_management< shared_ptr<T> >::type
+unmanaged_cast( const shared_ptr<T>& ptr ) {
+	return typename remove_pointer_management< shared_ptr<T> >::type( ptr.get() );
+}
+
+template<typename T,typename U>
+__HOST__ __DEVICE__
+padded_ptr<T,typename remove_pointer_management<U>::type>
+unmanaged_cast( const padded_ptr<T,U>& ptr ) {
+	typename remove_pointer_management<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
+	typename remove_pointer_management<U>::type mp2 = unmanaged_cast( ptr.get() );
+	return padded_ptr<T,typename remove_pointer_management<U>::type>( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
+}
+
+template<typename T,typename U>
+__HOST__ __DEVICE__
+striding_ptr<T,typename remove_pointer_management<U>::type>
+unmanaged_cast( const striding_ptr<T,U>& ptr ) {
+	typename remove_pointer_management<U>::type mp = unmanaged_cast( ptr.get() );
+	return striding_ptr<T,typename remove_pointer_management<U>::type>( mp, ptr.get_stride() );
+}
+
+template<typename T>            struct add_const_to_value_type;
+template<typename T>            struct add_const_to_value_type<T*>                        { typedef const T* type; };
+template<typename T>            struct add_const_to_value_type<const T*>                  { typedef const T* type; };
+template<typename T>            struct add_const_to_value_type< naked_ptr<T> >            { typedef naked_ptr<const T> type; };
+template<typename T>            struct add_const_to_value_type< naked_ptr<const T> >      { typedef naked_ptr<const T> type; };
+template<typename T,typename U> struct add_const_to_value_type< unique_ptr<T,U> >         { typedef unique_ptr<const T,U> type; };
+template<typename T,typename U> struct add_const_to_value_type< unique_ptr<const T,U> >   { typedef unique_ptr<const T,U> type; };
+template<typename T>            struct add_const_to_value_type< shared_ptr<T> >           { typedef shared_ptr<const T> type; };
+template<typename T>            struct add_const_to_value_type< shared_ptr<const T> >     { typedef shared_ptr<const T> type; };
+template<typename T,typename U> struct add_const_to_value_type< padded_ptr<T,U> >         { typedef padded_ptr<const T,U> type; };
+template<typename T,typename U> struct add_const_to_value_type< padded_ptr<const T,U> >   { typedef padded_ptr<const T,U> type; };
+template<typename T,typename U> struct add_const_to_value_type< striding_ptr<T,U> >       { typedef striding_ptr<const T,U> type; };
+template<typename T,typename U> struct add_const_to_value_type< striding_ptr<const T,U> > { typedef striding_ptr<const T,U> type; };
+
+
+
 template<typename T> struct pointer_traits {
 	template<typename U>
 	static U cast_unmanaged( T ptr ) { return pointer_traits<T>().make_unmanaged(ptr); }
@@ -153,6 +280,9 @@ template<typename T> struct pointer_traits {
 
 //template<typename T> typename pointer_traits<T>::unmanaged_pointer cast_unmanaged( T ptr );
 //template<typename T> typename pointer_traits<T*>::unmanaged_pointer cast_unmanaged( T* ptr ) { return ptr; }
+
+//template<typename T>
+
 
 template<typename T>
 struct pointer_traits<T*> {

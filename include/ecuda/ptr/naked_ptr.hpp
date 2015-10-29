@@ -15,7 +15,7 @@ class naked_ptr
 
 public:
 	typedef T element_type;
-	typedef typename type_traits<T>::pointer pointer;
+	typedef typename std::add_pointer<T>::type pointer;
 	//typedef typename __pointer_type<T>::pointer pointer;
 	typedef T& reference;
 	typedef const T& const_reference;

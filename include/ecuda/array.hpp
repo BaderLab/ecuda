@@ -76,7 +76,8 @@ public:
 	typedef typename base_type::reference reference; //!< cell reference type
 	typedef typename base_type::const_reference const_reference; //!< cell const reference type
 	typedef typename base_type::pointer pointer; //!< cell pointer type
-	typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
+	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
+	typedef typename add_const_to_value_type<pointer>::type const_pointer; //!< cell const pointer type
 
 	typedef typename base_type::iterator iterator; //!< iterator type
 	typedef typename base_type::const_iterator const_iterator; //!< const iterator type

@@ -177,7 +177,9 @@ public:
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
 	inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		default_host_delete<value_type>()(pointer_traits<pointer>().undress( ptr ));
+		//default_host_delete<value_type>()(pointer_traits<pointer>().undress( ptr ));
+		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		default_host_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		//if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
 	}
 
@@ -320,7 +322,9 @@ public:
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		default_delete<value_type>()( pointer_traits<pointer>().undress( ptr ) );
+		//default_delete<value_type>()( pointer_traits<pointer>().undress( ptr ) );
+		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		default_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); 
 	}
 
@@ -378,10 +382,11 @@ class device_pitch_allocator {
 
 public:
 	typedef T value_type; //!< element type
-	typedef padded_ptr<T,typename type_traits<T>::pointer> pointer; //!< pointer to element
+	typedef padded_ptr<T,typename std::add_pointer<T>::type> pointer; //!< pointer to element
 	//typedef T* pointer; //!< pointer to element
 	typedef T& reference; //!< reference to element
-	typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< pointer to constant element
+	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< pointer to constant element
+	typedef typename add_const_to_value_type<pointer>::type const_pointer; //!< pointer to constant element
 	//typedef const T* const_pointer; //!< pointer to constant element
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
@@ -480,7 +485,9 @@ public:
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		default_delete<value_type>()( pointer_traits<pointer>().undress(ptr) );
+		//default_delete<value_type>()( pointer_traits<pointer>().undress(ptr) );
+		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		default_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(pointer_traits<pointer>().undress(ptr)) );
 		//if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) );
 	}
@@ -503,9 +510,11 @@ public:
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
 	__HOST__ inline void construct( pointer ptr, const_reference val ) {
+		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
 		CUDA_CALL(
 			cudaMemcpy(
-				detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<pointer>().undress(ptr) ),
+				//detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<pointer>().undress(ptr) ),
+				detail::__cast_void<raw_pointer_type>()( naked_cast<raw_pointer_type>(ptr) ),
 				reinterpret_cast<const void*>(&val),
 				sizeof(val),
 				cudaMemcpyHostToDevice
@@ -534,7 +543,8 @@ public:
 	/// \return A pointer to the location.
 	///
 	__HOST__ __DEVICE__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const {
-		return reinterpret_cast<const_pointer>( reinterpret_cast<typename pointer_traits<const_pointer>::char_pointer>(ptr) + x*pitch + y*sizeof(value_type) );
+		//return reinterpret_cast<const_pointer>( reinterpret_cast<typename pointer_traits<const_pointer>::char_pointer>(ptr) + x*pitch + y*sizeof(value_type) );
+		return reinterpret_cast<const_pointer>( naked_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 		//return reinterpret_cast<const_pointer>( reinterpret_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 	}
 

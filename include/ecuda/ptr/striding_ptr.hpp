@@ -34,7 +34,7 @@ namespace ecuda {
 /// of type T could be represented with striding_ptr<T>(ptr,5), where ptr points to the first element
 /// of the matrix.
 ///
-template<typename T,typename PointerType=typename type_traits<T>::pointer>
+template<typename T,typename PointerType=typename std::add_pointer<T>::type>
 class striding_ptr
 {
 

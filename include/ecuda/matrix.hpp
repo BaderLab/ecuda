@@ -130,7 +130,8 @@ public:
 	typedef typename base_type::reference reference; //!< cell reference type
 	typedef typename base_type::const_reference const_reference; //!< cell const reference type
 	typedef typename base_type::pointer pointer; //!< cell pointer type
-	typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
+	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
+	typedef typename add_const_to_value_type<pointer>::type const_pointer; //!< cell const pointer type
 
 	typedef typename base_type::row_type row_type; //!< matrix row container type
 	typedef typename base_type::column_type column_type; //!< matrix column container type
@@ -168,7 +169,8 @@ public:
 			//typename Alloc::size_type pitch;
 			//typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows, pitch );
 			typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows );
-			shared_ptr<value_type> sp( pointer_traits<typename Alloc::pointer>().undress(p) );
+			//shared_ptr<value_type> sp( pointer_traits<typename Alloc::pointer>().undress(p) );
+			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
 			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberColumns );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, numberRows, numberColumns );

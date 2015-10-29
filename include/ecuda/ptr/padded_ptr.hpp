@@ -32,7 +32,7 @@ namespace ecuda {
 ///   +----------+----+
 /// \endcode
 ///
-template<typename T,class PointerType=typename type_traits<T>::pointer>
+template<typename T,class PointerType=typename std::add_pointer<T>::type>
 class padded_ptr
 {
 
