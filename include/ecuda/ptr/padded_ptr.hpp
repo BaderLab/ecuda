@@ -173,6 +173,9 @@ public:
 		return tmp;
 	}
 
+	__HOST__ __DEVICE__ inline padded_ptr operator+( std::size_t x ) const { return operator+( static_cast<int>(x) ); }
+	__HOST__ __DEVICE__ inline padded_ptr operator-( std::size_t x ) const { return operator-( static_cast<int>(x) ); }
+
 	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator==( const padded_ptr<T2,PointerType2>& other ) const { return ptr == other.ptr; }
 	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator!=( const padded_ptr<T2,PointerType2>& other ) const { return ptr != other.ptr; }
 	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator< ( const padded_ptr<T2,PointerType2>& other ) const { return ptr <  other.ptr; }

@@ -79,9 +79,9 @@ t/% :: t/%.cu
 unittests :: $(T_FILES)
 .PHONY: unittests
 
-benchmarks/% :: benchmarks/%.cu
-	@mkdir -p bin/benchmarks
-	@mkdir -p obj/benchmarks
+benchmark/% :: benchmark/%.cu
+	@mkdir -p bin/benchmark
+	@mkdir -p obj/benchmark
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
