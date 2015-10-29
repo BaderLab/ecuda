@@ -1,8 +1,11 @@
+#include <numeric>
+#include <vector>
+
 #include "../include/ecuda/event.hpp"
 #include "../include/ecuda/models.hpp"
 
-#define THREADS 100
-#define N 100000
+#define THREADS 480
+#define N 10000000
 #define ROUNDS 100
 
 template<typename T,typename P>
@@ -15,7 +18,7 @@ void fill_with_consecutive_values( ecuda::impl::device_sequence<T,P> sequence ) 
 template<typename T>
 __global__
 void fill_with_consecutive_values( T* ptr, const std::size_t n ) {
-	const std::size_t index = blockIdx.x*blockDim.x+threadIdx.x;
+	const std::size_t index = blockIdx.y*blockDim.x+threadIdx.x;
 	if( index < n ) *(ptr+index) = index;
 }
 
@@ -29,6 +32,7 @@ int main( int argc, char* argv[] ) {
 		start.record();
 		perform_tasks_old_school();
 		stop.record();
+		stop.synchronize();
 		std::cout << "EXECUTION TIME (CUDA API): " << (stop-start) << "ms" << std::endl;
 	}
 
@@ -37,6 +41,7 @@ int main( int argc, char* argv[] ) {
 		start.record();
 		perform_tasks_with_ecuda();
 		stop.record();
+		stop.synchronize();
 		std::cout << "EXECUTION TIME (ECUDA)   : " << (stop-start) << "ms" << std::endl;
 	}
 
@@ -65,10 +70,18 @@ void perform_tasks_with_ecuda() {
 	ecuda::impl::device_sequence<double,video_memory_pointer> deviceSequence( ptr, N );
 
 	// fill with values many times
+	std::vector<float> times( ROUNDS );
 	for( unsigned i = 0; i < ROUNDS; ++i ) {
+		ecuda::event start, stop;
+		start.record();
 		dim3 grid( 1, (N+THREADS-1)/THREADS ), threads( THREADS, 1 );
 		CUDA_CALL_KERNEL_AND_WAIT( fill_with_consecutive_values<double><<<grid,threads>>>( deviceSequence ) );
+		stop.record();
+		stop.synchronize();
+		times[i] = (stop-start);
 	}
+	const float totalTime = std::accumulate( times.begin(), times.end(), static_cast<float>(0) );
+	std::cout << "AVERAGE KERNEL TIME: " << std::fixed << (totalTime/static_cast<float>(ROUNDS)) << std::endl;
 
 	deviceAllocator.deallocate( ptr, N );
 
@@ -79,11 +92,19 @@ void perform_tasks_old_school() {
 	double* ptr;
 	cudaMalloc( reinterpret_cast<void**>(&ptr), N*sizeof(double) );
 
+	std::vector<float> times( ROUNDS );
 	for( unsigned i = 0; i < ROUNDS; ++i ) {
+		ecuda::event start, stop;
+		start.record();
 		dim3 grid( 1, (N+THREADS-1)/THREADS ), threads( THREADS, 1 );
 		fill_with_consecutive_values<double><<<grid,threads>>>( ptr, N );
 		cudaDeviceSynchronize();
+		stop.record();
+		stop.synchronize();
+		times[i] = (stop-start);
 	}
+	const float totalTime = std::accumulate( times.begin(), times.end(), static_cast<float>(0) );
+	std::cout << "AVERAGE KERNEL TIME: " << std::fixed << (totalTime/static_cast<float>(ROUNDS)) << std::endl;
 
 	cudaFree( ptr );
 

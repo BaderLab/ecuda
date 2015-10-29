@@ -41,6 +41,7 @@ CXXFLAGS = -Wall -flto -L/usr/local/cuda/lib64 -pedantic
 FC = gfortran
 NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -O3
+NVCCFLAGS += -Xptxas -v
 # for OpenMP support add to above: -X compiler -fopenmp
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart

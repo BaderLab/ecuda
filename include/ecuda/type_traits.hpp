@@ -223,7 +223,7 @@ template<typename T,typename U> struct remove_pointer_management< const striding
 /// double* r = naked_cast<double*>( p ); // not sure why this would be needed, but it can be done
 /// \endcode
 ///
-template<typename T> __HOST__ __DEVICE__ T* unmanaged_cast( T* ptr ) { return ptr; }
+template<typename T> __HOST__ __DEVICE__ inline T* unmanaged_cast( T* ptr ) { return ptr; }
 
 template<typename T> __HOST__ __DEVICE__ naked_ptr<T> unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
 
