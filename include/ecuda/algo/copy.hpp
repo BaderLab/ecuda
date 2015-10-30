@@ -197,7 +197,8 @@ __HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
 	if( !ecuda::iterator_traits<InputIterator>::confirm_contiguity( first, last, n ) ) return copy_host_to_device( first, last, result, std::false_type(), device_contiguous_iterator_tag(), T(), T() );
 	typedef typename std::add_pointer<value_type>::type pointer;
 	pointer p = naked_cast<pointer>( result.operator->() );
-	pointer q = naked_cast<pointer>( first.operator->() );
+	typedef typename std::add_pointer<const value_type>::type const_pointer;
+	const_pointer q = naked_cast<const_pointer>( first.operator->() );
 	//typename ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>::naked_pointer p =
 	//	ecuda::pointer_traits<typename ecuda::iterator_traits<OutputIterator>::pointer>().undress( result.operator->() );
 	//typename ecuda::pointer_traits<typename ecuda::iterator_traits<InputIterator>::pointer>::naked_pointer q =
@@ -358,7 +359,12 @@ __HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	// explicitly confirm that the output iterator is contiguous
 	// @todo - in upcoming C++17 there is a ContiguousIterator type being proposed that will make this check unnecessary
 	if( !ecuda::iterator_traits<OutputIterator>::confirm_contiguity( result, result+n, n ) ) return copy_device_to_host( first, last, result, device_contiguous_iterator_tag(), std::false_type(), T(), T() );
-	CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
+	typedef typename std::add_pointer<value_type>::type pointer;
+	pointer p = naked_cast<pointer>( result.operator->() );
+	typedef typename std::add_pointer<const value_type>::type const_pointer;
+	const_pointer q = naked_cast<const_pointer>( first.operator->() );
+	//CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
+	CUDA_CALL( cudaMemcpy<value_type>( p, q, static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
 	ecuda::advance( result, static_cast<std::size_t>(n) );
 	return result;
 	#endif
@@ -381,8 +387,16 @@ __HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
-	for( ; first != last; result += first.operator->().get_remaining_width(), first += first.operator->().get_remaining_width() )
-		copy_device_to_device( first, first+first.operator->().get_remaining_width(), result, device_contiguous_iterator_tag(), std::true_type(), T(), T() );
+	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
+	typedef typename std::add_pointer<value_type>::type naked_pointer_type;
+	typedef typename std::add_pointer<const value_type>::type const_naked_pointer_type;
+	for( ; first != last; result += first.operator->().get_remaining_width(), first += first.operator->().get_remaining_width() ) {
+		copy_device_to_host( first, first+first.operator->().get_remaining_width(), result, device_contiguous_iterator_tag(), std::true_type(), T(), T() );
+		// assume the pointers are padded_ptr of some variety
+		//const_naked_pointer_type pin = naked_cast<const_naked_pointer_type>( first.operator->() );
+		//naked_pointer_type pout = naked_cast<naked_pointer_type>( result.operator->() );
+		//CUDA_CALL( cudaMemcpy<value_type>( pout, pin, first.operator->().get_remaining_width(), cudaMemcpyDeviceToHost ) );
+	}
 	return result;
 	#endif
 }

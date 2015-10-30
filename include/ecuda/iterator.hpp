@@ -158,7 +158,7 @@ public:
 
 	__DEVICE__ inline reference operator[]( int x ) const { return *(base_type::ptr+x); }
 
-	//__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other ) { return base_type::ptr - other.ptr; }
+	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other ) { return base_type::ptr - other.ptr; }
 
 	__HOST__ __DEVICE__ inline bool operator<( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
 	__HOST__ __DEVICE__ inline bool operator>( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
@@ -304,7 +304,8 @@ struct iterator_traits< device_contiguous_block_iterator<T,P> > : iterator_trait
 //	typedef typename std::true_type is_device_iterator;
 //	typedef typename std::true_type is_contiguous;
 	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::is_device_iterator is_device_iterator;
-	typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::is_contiguous is_contiguous;
+	//typedef typename iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >::is_contiguous is_contiguous;
+	typedef typename std::true_type is_contiguous;
 };
 
 template<typename Iterator>
@@ -344,8 +345,10 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 }
 */
 
+namespace impl {
+
 template<class InputIterator, typename Distance>
-__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_iterator_tag ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n, device_iterator_tag ) {
 //	#ifdef __CUDA_ARCH__
 	for( Distance i = 0; i < n; ++i ) ++iterator;
 //	#else
@@ -354,7 +357,7 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 }
 
 template<class InputIterator, typename Distance>
-__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_contiguous_iterator_tag ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n, device_contiguous_iterator_tag ) {
 //	#ifdef __CUDA_ARCH__
 	iterator += n;
 //	#else
@@ -363,7 +366,7 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 }
 
 template<class InputIterator, typename Distance>
-__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, device_contiguous_block_iterator_tag ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n, device_contiguous_block_iterator_tag ) {
 //	#ifdef __CUDA_ARCH__
 	iterator += n;
 //	#else
@@ -372,17 +375,17 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 }
 
 template<class InputIterator, typename Distance>
-__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::device_type ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n, detail::device_type ) {
 //	#ifdef __CUDA_ARCH__
 //	#else
 	const bool isIteratorContiguous = !std::is_same<typename ecuda::iterator_traits<InputIterator>::iterator_category, device_iterator_tag>::value;
 	ECUDA_STATIC_ASSERT( isIteratorContiguous, CANNOT_ADVANCE_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE );
-	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::iterator_category() );
+	advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::iterator_category() );
 //	#endif
 }
 
 template<class InputIterator, typename Distance>
-__HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, detail::host_type ) {
+__HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n, detail::host_type ) {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
 	#else
@@ -390,9 +393,11 @@ __HOST__ __DEVICE__ inline void __advance( InputIterator& iterator, Distance n, 
 	#endif
 }
 
+} // namespace impl
+
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n ) {
-	__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
+	impl::advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 	//__advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator(), typename ecuda::iterator_traits<InputIterator>::is_contiguous() );
 }
 
@@ -424,8 +429,10 @@ __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_t
 }
 */
 
+namespace impl {
+
 template<class Iterator>
-__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_iterator_tag ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last, device_iterator_tag ) {
 //	#ifdef __CUDA_ARCH__
 	typename std::iterator_traits<Iterator>::difference_type n = 0;
 	while( first != last ) { ++n; ++first; }
@@ -436,28 +443,28 @@ __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_t
 }
 
 template<class Iterator>
-__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_contiguous_iterator_tag ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last, device_contiguous_iterator_tag ) {
 	return last - first;
 }
 
 template<class Iterator>
-__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, device_contiguous_block_iterator_tag ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last, device_contiguous_block_iterator_tag ) {
 	return last - first;
 }
 
 template<class Iterator>
-__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::device_type ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last, detail::device_type ) {
 	//#ifdef __CUDA_ARCH__
 	//#else
 	const bool isIteratorContiguous = !std::is_same< typename ecuda::iterator_traits<Iterator>::iterator_category, device_iterator_tag >::value;
 	ECUDA_STATIC_ASSERT( isIteratorContiguous, CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE );
 	//#endif
-	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::iterator_category() );
+	return distance( first, last, typename ecuda::iterator_traits<Iterator>::iterator_category() );
 }
 
 
 template<class Iterator>
-__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type __distance( Iterator first, Iterator last, detail::host_type ) {
+__HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last, detail::host_type ) {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
 	return 0;
@@ -466,10 +473,11 @@ __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_t
 	#endif
 }
 
+} // namespace impl
 
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last ) {
-	return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator() );
+	return impl::distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator() );
 	//return __distance( first, last, typename ecuda::iterator_traits<Iterator>::is_device_iterator(), typename ecuda::iterator_traits<Iterator>::is_contiguous() );
 	//return __distance( first, last, typename detail::__iterator_contiguity<typename std::iterator_traits<Iterator>::iterator_category>::type() );
 }

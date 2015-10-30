@@ -34,9 +34,9 @@ int main( int argc, char* argv[] ) {
 
 	ecuda::reverse( deviceArray.begin(), deviceArray.end() );
 
-	int* p = 0;
-	typename ecuda::pointer_traits<int*>::unmanaged_pointer q = ecuda::pointer_traits<int*>().make_unmanaged(p);
-	typename ecuda::pointer_traits<int*>::unmanaged_pointer r = ecuda::pointer_traits<int*>::cast_unmanaged(q);
+	//int* p = 0;
+	//typename ecuda::pointer_traits<int*>::unmanaged_pointer q = ecuda::pointer_traits<int*>().make_unmanaged(p);
+	//typename ecuda::pointer_traits<int*>::unmanaged_pointer r = ecuda::pointer_traits<int*>::cast_unmanaged(q);
 
 	return EXIT_SUCCESS;
 

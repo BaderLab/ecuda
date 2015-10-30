@@ -33,7 +33,7 @@ int main( int argc, char* argv[] ) {
 
 	ecuda::matrix<int> deviceMatrix( 5, 20 );
 	// below needs to be made to work
-	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
 	{
 		ecuda::matrix<int> deviceMatrix2( 5, 20 );
 		testIterators2<<<1,1>>>( deviceMatrix, deviceMatrix2 );
@@ -46,6 +46,8 @@ int main( int argc, char* argv[] ) {
 		std::cout << "EQUAL " << ( deviceMatrix == deviceMatrix2 ? "true" : "false" ) << std::endl;
 		std::cout << "LESS THAN " << ( deviceMatrix < deviceMatrix2 ? "true" : "false" ) << std::endl;
 	}
+
+	ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostVector.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
 
 	ecuda::matrix_transpose( deviceMatrix );
 

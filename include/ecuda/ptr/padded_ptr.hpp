@@ -100,6 +100,20 @@ public:
 	}
 	#endif
 
+	///
+	/// This method makes several assumptions which, if violated, cause undefined behavior:
+	/// 1) the width of this and other must be the same
+	/// 2) the difference between the edge_ptr of this and other must be zero or strict multiple (positive or negative) of pitch/sizeof(T)
+	///
+	__HOST__ __DEVICE__ difference_type operator-( const padded_ptr& other ) const {
+		//const difference_type remainder1 = static_cast<difference_type>(other.get_remaining_width());
+		//const difference_type remainder2 = static_cast<difference_type>(ptr-edge_ptr);
+		//const difference_type middle     = edge_ptr - other.edge_ptr - get_width();
+		//return remainder1+remainder2+middle;
+		return static_cast<difference_type>(other.get_remaining_width()) + ( ptr - other.edge_ptr ) - get_width();
+	}
+
+	/*
 	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if
 	__HOST__ __DEVICE__ inline difference_type operator-( Q other ) {
 		//typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(other) );
@@ -110,6 +124,7 @@ public:
 		difference_type n = (stop-start)*sizeof(T); // bytes difference
 		return n;
 	}
+	*/
 
 /*
 	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if

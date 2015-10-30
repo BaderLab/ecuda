@@ -51,8 +51,8 @@ namespace std {
 template<typename T> struct remove_const          { typedef T type; };
 template<typename T> struct remove_const<const T> { typedef T type; };
 
-template<typename T,typename U> struct is_same { enum { value = 0 }; };
-template<typename T> struct is_same<T,T> { enum { value = 1 }; };
+template<typename T,typename U> struct is_same      { enum { value = 0 }; };
+template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
 
 template<typename T> struct remove_reference      { typedef T type; };
 template<typename T> struct remove_reference<T&>  { typedef T type; };
@@ -166,14 +166,13 @@ template<typename T,typename U> typename striding_ptr<T,U>::pointer make_naked( 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a naked pointer.
 ///
-/// The cast should be guaranteed regardless of how many layers of pointer management or
-/// pointer specialization are present.
+/// This is used in the API when a raw pointer is required, but the specific representation is unknown
+/// in the implementation. Specifically, a raw pointer from T* is simply itself, but a raw pointer from
+/// unique_ptr<T> (and other specializations) is retrieved via a call from the get() method.
 ///
-/// \code{.cpp}
-/// padded_ptr< int,shared_ptr<int> > p;
-/// int* q = naked_cast<int*>( p );
-/// double* r = naked_cast<double*>( p ); // not sure why this would be needed, but it can be done
-/// \endcode
+/// The cast is guaranteed regardless of how many layers of pointer management or pointer specialization
+/// are present. For example, a variable ptr of type padded_ptr< int, shared_ptr<int> > will be unwound
+/// so that a cast to a naked pointer T* is achieved by reinterpret_cast<T*>(ptr.get().get()).
 ///
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( U* ptr )                       { return reinterpret_cast<T>(ptr); }
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const naked_ptr<U>& ptr )      { return naked_cast<T>(ptr.get()); }
@@ -183,7 +182,7 @@ template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( con
 template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const striding_ptr<U,V>& ptr ) { return naked_cast<T>(ptr.get()); }
 
 ///
-/// Gets the type of a pointer that has been stripped of any contribution by pointer management from unique_ptr or shared_ptr.
+/// Gets the type of a pointer that is guaranteed to be free of any pointer management by unique_ptr or shared_ptr.
 ///
 /// This is used in the API when a pointer that can be modified is needed. For example, a pointer to video memory
 /// that represents a matrix may or may not be managed by unique_ptr, but if the pointer is used to create a temporary
@@ -200,6 +199,8 @@ template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( con
 template<typename T>            struct make_unmanaged;
 template<typename T>            struct make_unmanaged<T*>                        { typedef T* type; };
 template<typename T>            struct make_unmanaged<const T*>                  { typedef const T* type; };
+template<typename T>            struct make_unmanaged< naked_ptr<T> >            { typedef naked_ptr<T> type; };
+template<typename T>            struct make_unmanaged< const naked_ptr<T> >      { typedef naked_ptr<T> type; };
 template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U> >         { typedef typename unique_ptr<T,U>::pointer type; };
 template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U> >   { typedef typename unique_ptr<T,U>::pointer type; };
 template<typename T>            struct make_unmanaged< shared_ptr<T> >           { typedef typename std::add_pointer<T>::type type; };
@@ -210,9 +211,9 @@ template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U> >      
 template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 
 ///
-/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is stripped of any management from unique_ptr or shared_ptr.
+/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is free of any management from unique_ptr or shared_ptr.
 ///
-/// The type of the resulting pointer can be determined with ecuda::remove_pointer_management<T>::type.
+/// The type of the resulting pointer can be determined with ecuda::make_unmanaged<T>::type.
 ///
 /// The cast should be guaranteed regardless of how many layers of pointer management or
 /// pointer specialization are present.
@@ -223,9 +224,9 @@ template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> >
 /// double* r = naked_cast<double*>( p ); // not sure why this would be needed, but it can be done
 /// \endcode
 ///
-template<typename T> __HOST__ __DEVICE__ inline T* unmanaged_cast( T* ptr ) { return ptr; }
+template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged<T*>::type unmanaged_cast( T* ptr ) { return ptr; }
 
-template<typename T> __HOST__ __DEVICE__ naked_ptr<T> unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
+template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged< naked_ptr<T> >::type unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
 
 template<typename T,typename U>
 __HOST__ __DEVICE__
@@ -257,6 +258,18 @@ unmanaged_cast( const striding_ptr<T,U>& ptr ) {
 	return striding_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_stride() );
 }
 
+///
+/// Gets the const-equivalent type of any raw or managed pointer, pointer specialization, or combination thereof.
+///
+/// This is used in the API when a const-equivalent pointer is needed. For example, a pointer that is used to
+/// construct a constant iterator. Normally, a raw pointer T* has a const-equivalent of const T*. However, the
+/// unique_ptr<T> specialization has a const-equivalent of unique_ptr<const T>, NOT const unique_ptr<T>. The
+/// make_const<T>::type abstracts this distinction away so the API can deal with different pointer types in
+/// the appropriate way at compile time.
+///
+/// The evaluation also operates recursively. For example, padded_ptr< T,shared_ptr<T> > will be properly
+/// evaluated as having a const-equivalent of padded_ptr< const T, shared_ptr<const T> >.
+///
 template<typename T>            struct make_const;
 template<typename T>            struct make_const<T*>                        { typedef const T* type; };
 template<typename T>            struct make_const<const T*>                  { typedef const T* type; };
@@ -271,26 +284,14 @@ template<typename T,typename U> struct make_const< padded_ptr<const T,U> >   { t
 template<typename T,typename U> struct make_const< striding_ptr<T,U> >       { typedef striding_ptr<const T,typename make_const<U>::type> type; };
 template<typename T,typename U> struct make_const< striding_ptr<const T,U> > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
 
-
+///
+/// Gets the unmanaged const-equivalent type of any raw of managed pointer, pointer specialization, or combination thereof.
+///
+/// This is effectively just an alias for a combination of the make_unmanaged<T> and make_const<T> type modifications.
+///
 template<typename T> struct make_unmanaged_const { typedef typename make_unmanaged<typename make_const<T>::type>::type type; };
 
 /*
-template<typename T>            struct add_const_to_value_type;
-template<typename T>            struct add_const_to_value_type<T*>                        { typedef const T* type; };
-template<typename T>            struct add_const_to_value_type<const T*>                  { typedef const T* type; };
-template<typename T>            struct add_const_to_value_type< naked_ptr<T> >            { typedef naked_ptr<const T> type; };
-template<typename T>            struct add_const_to_value_type< naked_ptr<const T> >      { typedef naked_ptr<const T> type; };
-template<typename T,typename U> struct add_const_to_value_type< unique_ptr<T,U> >         { typedef unique_ptr<const T,U> type; };
-template<typename T,typename U> struct add_const_to_value_type< unique_ptr<const T,U> >   { typedef unique_ptr<const T,U> type; };
-template<typename T>            struct add_const_to_value_type< shared_ptr<T> >           { typedef shared_ptr<const T> type; };
-template<typename T>            struct add_const_to_value_type< shared_ptr<const T> >     { typedef shared_ptr<const T> type; };
-template<typename T,typename U> struct add_const_to_value_type< padded_ptr<T,U> >         { typedef padded_ptr<const T,U> type; };
-template<typename T,typename U> struct add_const_to_value_type< padded_ptr<const T,U> >   { typedef padded_ptr<const T,U> type; };
-template<typename T,typename U> struct add_const_to_value_type< striding_ptr<T,U> >       { typedef striding_ptr<const T,U> type; };
-template<typename T,typename U> struct add_const_to_value_type< striding_ptr<const T,U> > { typedef striding_ptr<const T,U> type; };
-*/
-
-
 template<typename T> struct pointer_traits {
 	template<typename U>
 	static U cast_unmanaged( T ptr ) { return pointer_traits<T>().make_unmanaged(ptr); }
@@ -502,6 +503,8 @@ struct pointer_traits< const striding_ptr<T,U> > {
 	}
 	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const striding_ptr<T2, U2> >::naked_pointer cast_naked( const striding_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
 };
+
+*/
 
 } // namespace ecuda
 
