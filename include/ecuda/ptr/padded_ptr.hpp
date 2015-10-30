@@ -51,6 +51,13 @@ private:
 	size_type width;
 	pointer ptr;
 
+private:
+	template<typename U,typename V> struct change_type_keep_constness;
+	template<typename U,typename V> struct change_type_keep_constness<      U*,V*      > { typedef V* type; };
+	template<typename U,typename V> struct change_type_keep_constness<      U*,const V*> { typedef V* type; };
+	template<typename U,typename V> struct change_type_keep_constness<const U*,V*      > { typedef const V* type; };
+	template<typename U,typename V> struct change_type_keep_constness<const U*,const V*> { typedef const V* type; };
+
 public:
 	__HOST__ __DEVICE__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {
 		if( !ptr ) this->ptr = edge_ptr;
@@ -77,20 +84,29 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ { return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL; }
+	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ {
+		//return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL;
+		return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL;
+	}
 	#else
 	///
 	/// \brief Checks if this stores a non-null pointer.
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ { return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL; }
+	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ {
+		//return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL;
+		return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL;
+	}
 	#endif
 
 	template<class Q> // assumes sizeof(Q) is a strict multiple of sizeof(T) TODO: can probably enforce this with an enable_if
 	__HOST__ __DEVICE__ inline difference_type operator-( Q other ) {
-		typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(other) );
-		typename pointer_traits<pointer>::naked_pointer stop  = pointer_traits<pointer>().undress(ptr);
+		//typename pointer_traits<pointer>::naked_pointer start = reinterpret_cast<typename pointer_traits<pointer>::naked_pointer>( pointer_traits<Q>().undress(other) );
+		//typename pointer_traits<pointer>::naked_pointer stop  = pointer_traits<pointer>().undress(ptr);
+		typedef typename std::add_pointer<element_type>::type naked_pointer_type;
+		naked_pointer_type start = naked_cast<naked_pointer_type>( other );
+		naked_pointer_type stop  = naked_cast<naked_pointer_type>( ptr );
 		difference_type n = (stop-start)*sizeof(T); // bytes difference
 		return n;
 	}
@@ -114,7 +130,8 @@ public:
 		++ptr;
 		if( (ptr-edge_ptr) == width ) {
 			// skip padding
-			ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+pitch );
+			//ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+pitch );
+			ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
 			//ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)+pitch);
 			edge_ptr = ptr;
 		}
@@ -125,7 +142,8 @@ public:
 		--ptr;
 		if( ptr < edge_ptr ) {
 			// skip padding
-			edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-pitch );
+			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-pitch );
+			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-pitch ) );
 			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-pitch);
 			ptr = edge_ptr + width - 1;
 		}
@@ -141,7 +159,8 @@ public:
 			// skip padding(s)
 			const size_type nskips = (ptr-edge_ptr) / width;
 			const size_type offset = (ptr-edge_ptr) % width;
-			edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+nskips*pitch );
+			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+nskips*pitch );
+			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+nskips*pitch ) );
 			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)+nskips*pitch);
 			ptr = edge_ptr + offset;
 		}
@@ -154,7 +173,8 @@ public:
 			// skip padding(s)
 			const size_type nskips = (edge_ptr-ptr) / width;
 			const size_type offset = (edge_ptr-ptr) % width;
-			edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-nskips*pitch );
+			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-nskips*pitch );
+			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-nskips*pitch ) );
 			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-nskips*pitch);
 			ptr = edge_ptr + (width-offset);
 		}

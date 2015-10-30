@@ -47,6 +47,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "matrix.hpp"
 #include "memory.hpp"
 #include "models.hpp"
+#include "type_traits.hpp"
 
 namespace ecuda {
 
@@ -112,10 +113,10 @@ namespace ecuda {
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube : private impl::device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > {
+class cube : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ shared_ptr<T> /*>*/ > {
 
 private:
-	typedef impl::device_contiguous_row_matrix< T, padded_ptr< T, shared_ptr<T> > > base_type;
+	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ shared_ptr<T> /*>*/ > base_type;
 
 public:
 	typedef typename base_type::value_type value_type; //!< cell data type
@@ -126,7 +127,7 @@ public:
 	typedef typename base_type::const_reference const_reference; //!< cell const reference type
 	typedef typename base_type::pointer pointer; //!< cell pointer type
 	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
-	typedef typename add_const_to_value_type<pointer>::type const_pointer; //!< cell const pointer type
+	typedef typename make_const<pointer>::type const_pointer; //!< cell const pointer type
 
 	typedef impl::device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > row_type; //!< cube row container type
 	typedef impl::device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > column_type; //!< cube column container type
@@ -465,8 +466,8 @@ public:
 		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
 		//typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
 		//return row_type( ptr2, number_rows() );
-		typedef typename unmanaged_pointer<typename base_type::pointer>::type unmanaged_pointer;
-		unmanaged_pointer ptr = unmanaged_cast( base_type::get_pointer() );
+		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
 		typename row_type::pointer ptr2( ptr, number_columns()+number_depths() ); // give pointer correct stride
 		return row_type( ptr2, number_rows() );
@@ -489,8 +490,8 @@ public:
 		//ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
 		//return column_type( pointer_traits<unmanaged_pointer>().undress(ptr), number_columns() );
 
-		typedef typename remove_pointer_management<typename base_type::pointer>::type unmanaged_pointer;
-		unmanaged_pointer ptr = unmanaged_cast<unmanaged_pointer>( base_type::get_pointer() );
+		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
 		return column_type( ptr, number_columns() );
 
@@ -827,6 +828,7 @@ public:
 	}
 	*/
 
+	/*
 	///
 	/// \brief Copies the contents of this device cube to another container.
 	///
@@ -844,7 +846,9 @@ public:
 		}
 		return dest;
 	}
+	*/
 
+	/*
 	///
 	/// \brief Copies the contents of another container to this device matrix.
 	///
@@ -870,6 +874,7 @@ public:
 		}
 		return *this;
 	}
+	*/
 
 };
 

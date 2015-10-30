@@ -197,17 +197,17 @@ template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( con
 /// typedef typename remove_pointer_management<pointer_type2>::type unmanaged_pointer_type2; // is of type padded_ptr<int,int*>
 /// \endcode
 ///
-template<typename T>            struct remove_pointer_management;
-template<typename T>            struct remove_pointer_management<T*>                        { typedef T* type; };
-template<typename T>            struct remove_pointer_management<const T*>                  { typedef const T* type; };
-template<typename T,typename U> struct remove_pointer_management< unique_ptr<T,U> >         { typedef typename unique_ptr<T,U>::pointer type; };
-template<typename T,typename U> struct remove_pointer_management< const unique_ptr<T,U> >   { typedef typename unique_ptr<T,U>::pointer type; };
-template<typename T>            struct remove_pointer_management< shared_ptr<T> >           { typedef typename std::add_pointer<T>::type type; };
-template<typename T>            struct remove_pointer_management< const shared_ptr<T> >     { typedef typename std::add_pointer<T>::type type; };
-template<typename T,typename U> struct remove_pointer_management< padded_ptr<T,U> >         { typedef padded_ptr<T,typename remove_pointer_management<U>::type> type; };
-template<typename T,typename U> struct remove_pointer_management< const padded_ptr<T,U> >   { typedef padded_ptr<T,typename remove_pointer_management<U>::type> type; };
-template<typename T,typename U> struct remove_pointer_management< striding_ptr<T,U> >       { typedef striding_ptr<T,typename remove_pointer_management<U>::type> type; };
-template<typename T,typename U> struct remove_pointer_management< const striding_ptr<T,U> > { typedef striding_ptr<T,typename remove_pointer_management<U>::type> type; };
+template<typename T>            struct make_unmanaged;
+template<typename T>            struct make_unmanaged<T*>                        { typedef T* type; };
+template<typename T>            struct make_unmanaged<const T*>                  { typedef const T* type; };
+template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U> >         { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U> >   { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T>            struct make_unmanaged< shared_ptr<T> >           { typedef typename std::add_pointer<T>::type type; };
+template<typename T>            struct make_unmanaged< const shared_ptr<T> >     { typedef typename std::add_pointer<T>::type type; };
+template<typename T,typename U> struct make_unmanaged< padded_ptr<T,U> >         { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< const padded_ptr<T,U> >   { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U> >       { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is stripped of any management from unique_ptr or shared_ptr.
@@ -229,34 +229,52 @@ template<typename T> __HOST__ __DEVICE__ naked_ptr<T> unmanaged_cast( const nake
 
 template<typename T,typename U>
 __HOST__ __DEVICE__
-typename remove_pointer_management<U>::type unmanaged_cast( const unique_ptr<T,U>& ptr ) {
-	return typename remove_pointer_management<U>::type( ptr.get() );
+typename make_unmanaged<U>::type unmanaged_cast( const unique_ptr<T,U>& ptr ) {
+	return typename make_unmanaged<U>::type( ptr.get() );
 }
 
 template<typename T>
 __HOST__ __DEVICE__
-typename remove_pointer_management< shared_ptr<T> >::type
+typename make_unmanaged< shared_ptr<T> >::type
 unmanaged_cast( const shared_ptr<T>& ptr ) {
-	return typename remove_pointer_management< shared_ptr<T> >::type( ptr.get() );
+	return typename make_unmanaged< shared_ptr<T> >::type( ptr.get() );
 }
 
 template<typename T,typename U>
 __HOST__ __DEVICE__
-padded_ptr<T,typename remove_pointer_management<U>::type>
+padded_ptr<T,typename make_unmanaged<U>::type>
 unmanaged_cast( const padded_ptr<T,U>& ptr ) {
-	typename remove_pointer_management<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
-	typename remove_pointer_management<U>::type mp2 = unmanaged_cast( ptr.get() );
-	return padded_ptr<T,typename remove_pointer_management<U>::type>( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
+	typename make_unmanaged<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
+	typename make_unmanaged<U>::type mp2 = unmanaged_cast( ptr.get() );
+	return padded_ptr<T,typename make_unmanaged<U>::type>( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
 }
 
 template<typename T,typename U>
 __HOST__ __DEVICE__
-striding_ptr<T,typename remove_pointer_management<U>::type>
+striding_ptr<T,typename make_unmanaged<U>::type>
 unmanaged_cast( const striding_ptr<T,U>& ptr ) {
-	typename remove_pointer_management<U>::type mp = unmanaged_cast( ptr.get() );
-	return striding_ptr<T,typename remove_pointer_management<U>::type>( mp, ptr.get_stride() );
+	typename make_unmanaged<U>::type mp = unmanaged_cast( ptr.get() );
+	return striding_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_stride() );
 }
 
+template<typename T>            struct make_const;
+template<typename T>            struct make_const<T*>                        { typedef const T* type; };
+template<typename T>            struct make_const<const T*>                  { typedef const T* type; };
+template<typename T>            struct make_const< naked_ptr<T> >            { typedef naked_ptr<const T> type; };
+template<typename T>            struct make_const< naked_ptr<const T> >      { typedef naked_ptr<const T> type; };
+template<typename T,typename U> struct make_const< unique_ptr<T,U> >         { typedef unique_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< unique_ptr<const T,U> >   { typedef unique_ptr<const T,typename make_const<U>::type> type; };
+template<typename T>            struct make_const< shared_ptr<T> >           { typedef shared_ptr<const T> type; };
+template<typename T>            struct make_const< shared_ptr<const T> >     { typedef shared_ptr<const T> type; };
+template<typename T,typename U> struct make_const< padded_ptr<T,U> >         { typedef padded_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< padded_ptr<const T,U> >   { typedef padded_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< striding_ptr<T,U> >       { typedef striding_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< striding_ptr<const T,U> > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
+
+
+template<typename T> struct make_unmanaged_const { typedef typename make_unmanaged<typename make_const<T>::type>::type type; };
+
+/*
 template<typename T>            struct add_const_to_value_type;
 template<typename T>            struct add_const_to_value_type<T*>                        { typedef const T* type; };
 template<typename T>            struct add_const_to_value_type<const T*>                  { typedef const T* type; };
@@ -270,7 +288,7 @@ template<typename T,typename U> struct add_const_to_value_type< padded_ptr<T,U> 
 template<typename T,typename U> struct add_const_to_value_type< padded_ptr<const T,U> >   { typedef padded_ptr<const T,U> type; };
 template<typename T,typename U> struct add_const_to_value_type< striding_ptr<T,U> >       { typedef striding_ptr<const T,U> type; };
 template<typename T,typename U> struct add_const_to_value_type< striding_ptr<const T,U> > { typedef striding_ptr<const T,U> type; };
-
+*/
 
 
 template<typename T> struct pointer_traits {

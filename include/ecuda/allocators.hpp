@@ -386,7 +386,7 @@ public:
 	//typedef T* pointer; //!< pointer to element
 	typedef T& reference; //!< reference to element
 	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< pointer to constant element
-	typedef typename add_const_to_value_type<pointer>::type const_pointer; //!< pointer to constant element
+	typedef typename make_const<pointer>::type const_pointer; //!< pointer to constant element
 	//typedef const T* const_pointer; //!< pointer to constant element
 	typedef const T& const_reference; //!< reference to constant element
 	typedef std::size_t size_type; //!< quantities of elements
@@ -462,7 +462,8 @@ public:
 	/// \return A pointer to the initial element in the block of storage.
 	///
 	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 ) {
-		typename pointer_traits<pointer>::naked_pointer ptr = NULL;
+		//typename pointer_traits<pointer>::naked_pointer ptr = NULL;
+		typename std::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();

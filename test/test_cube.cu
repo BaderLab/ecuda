@@ -38,8 +38,10 @@ int main( int argc, char* argv[] ) {
 	std::cout << "deviceCube.number_columns()=" << deviceCube.number_columns() << std::endl;
 	std::cout << "deviceCube.number_depths()=" << deviceCube.number_depths() << std::endl;
 
-	hostVector.assign( hostVector.size(), 0 );
-	deviceCube >> hostVector;
+	std::fill( hostVector.begin(), hostVector.end(), 0 );
+	//hostVector.assign( hostVector.size(), 0 );
+	ecuda::copy( deviceCube.begin(), deviceCube.end(), hostVector.begin() );
+	//deviceCube >> hostVector;
 
 	for( std::size_t i = 0; i < hostVector.size(); ++i ) std::cout << "[" << i << "]=" << hostVector[i] << std::endl;
 
