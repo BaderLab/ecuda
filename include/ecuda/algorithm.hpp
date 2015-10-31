@@ -27,8 +27,10 @@ typedef __true_type __contiguous;
 } // namespace impl
 
 template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return b < a ? b : a; }
-template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return Compare(b,a) ? b : a; }
+template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b, Compare cmp ) { return cmp(b,a) ? b : a; }
 
+template<typename T>               __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b ) { return b > a ? b : a; }
+template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b, Compare cmp ) { return cmp(a,b) ? b : a; }
 
 } // namespace ecuda
 
