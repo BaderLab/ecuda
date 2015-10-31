@@ -233,16 +233,16 @@ private:
 	typedef device_sequence<T,PointerType> base_type;
 
 public:
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type      value_type;
+	typedef typename base_type::pointer         pointer;
+	typedef typename base_type::reference       reference;
 	typedef typename base_type::const_reference const_reference;
-	typedef typename base_type::size_type size_type;
+	typedef typename base_type::size_type       size_type;
 	typedef typename base_type::difference_type difference_type;
 
-	typedef typename base_type::iterator iterator;
-	typedef typename base_type::const_iterator const_iterator;
-	typedef typename base_type::reverse_iterator reverse_iterator;
+	typedef typename base_type::iterator               iterator;
+	typedef typename base_type::const_iterator         const_iterator;
+	typedef typename base_type::reverse_iterator       reverse_iterator;
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator;
 
 	typedef device_sequence< value_type,       typename make_unmanaged<pointer>::type                                      > row_type;
@@ -285,11 +285,11 @@ private:
 	typedef device_matrix< T, padded_ptr<T,P> > base_type;
 
 public:
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type      value_type;
+	typedef typename base_type::pointer         pointer;
+	typedef typename base_type::reference       reference;
 	typedef typename base_type::const_reference const_reference;
-	typedef typename base_type::size_type size_type;
+	typedef typename base_type::size_type       size_type;
 	typedef typename base_type::difference_type difference_type;
 
 	typedef device_contiguous_block_iterator<value_type,      typename make_unmanaged<P>::type      > iterator; // this iterator's 2nd template param is also padded_ptr<T,P>

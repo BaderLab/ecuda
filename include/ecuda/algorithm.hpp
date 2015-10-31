@@ -11,10 +11,10 @@ namespace ecuda {
 namespace detail {
 
 typedef std::false_type host_type;
-typedef std::true_type device_type;
+typedef std::true_type  device_type;
 
 typedef std::false_type non_contiguous_type;
-typedef std::true_type contiguous_type;
+typedef std::true_type  contiguous_type;
 
 /*
 typedef __false_type __host;
