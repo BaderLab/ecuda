@@ -44,6 +44,22 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	return ecuda::equal( first2, last2, first1 );
 }
 
+template<class InputIterator1,typename T,typename P>
+__HOST__ __DEVICE__ inline bool equal(
+	InputIterator1 first1, InputIterator1 last1,
+	device_contiguous_block_iterator<T,P> first2,
+	ecuda::pair<std::true_type,std::true_type>
+)
+{
+	while( first1 != last1 ) {
+		typename device_contiguous_block_iterator<T,P>::contiguous_iterator blockBegin = first2.contiguous_begin();
+		typename device_contiguous_block_iterator<T,P>::contiguous_iterator blockEnd = first2.contiguous_end();
+		if( !equal( blockBegin, blockEnd, first1 ) ) return false;
+		first1 += distance( blockBegin, blockEnd );
+	}
+	return true;
+}
+
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::true_type,std::true_type> ) {
 	#ifdef __CUDA_ARCH__
@@ -55,6 +71,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type valtype2;
 	InputIterator2 last2 = first2;
 	ecuda::advance( last2, ecuda::distance(first1,last1) );
+	// allocate temporary memory using host_allocator (i.e. cudaMallocHost) for potential performance improvement
 	std::vector< valtype1, host_allocator<valtype1> > v1( ecuda::distance( first1, last1 ) );
 	std::vector< valtype2, host_allocator<valtype2> > v2( ecuda::distance( first2, last2 ) );
 	ecuda::copy( first1, last1, v1.begin() );

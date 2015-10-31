@@ -5,11 +5,14 @@
 #include <iterator>
 
 #include "global.hpp"
+//#include "memory.hpp"
 #include "type_traits.hpp"
 
 namespace ecuda {
 
 // NOTE: libc++ requires inheritance from one of the 5 STL iterator categories (libstdc++ does not)
+
+template<typename T,typename U> class padded_ptr; // forward declaration
 
 ///
 /// \brief Iterator category denoting device memory.
@@ -139,10 +142,13 @@ private:
 
 public:
 	typedef typename base_type::iterator_category iterator_category;
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::difference_type difference_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type        value_type;
+	typedef typename base_type::difference_type   difference_type;
+	typedef typename base_type::pointer           pointer;
+	typedef typename base_type::reference         reference;
+
+	//typedef P                                 contiguous_pointer;
+	typedef device_contiguous_iterator<T>       contiguous_iterator;
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_block_iterator( const pointer& ptr = pointer() ) : base_type(ptr) {}
@@ -160,10 +166,15 @@ public:
 
 	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other ) { return base_type::ptr - other.ptr; }
 
-	__HOST__ __DEVICE__ inline bool operator<( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
-	__HOST__ __DEVICE__ inline bool operator>( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
+	__HOST__ __DEVICE__ inline bool operator< ( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
+	__HOST__ __DEVICE__ inline bool operator> ( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
 	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator<(other) or operator==(other); }
 	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
+
+	//@EXPERIMENTAL START
+	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_begin() const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename std::add_pointer<T>::type>( base_type::ptr.get() ) ); }
+	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename std::add_pointer<T>::type>( base_type::ptr.get() ) + base_type::ptr.get_remaining_width() ); }
+	//@EXPERIMENTAL END
 
 };
 

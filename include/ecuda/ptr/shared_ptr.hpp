@@ -6,9 +6,9 @@
 #include "../global.hpp"
 #include "common.hpp"
 #include "../algorithm.hpp"
-#include "../type_traits.hpp"
-#include "unique_ptr.hpp"
-#include "../utility.hpp"
+//#include "../type_traits.hpp"
+//#include "unique_ptr.hpp"
+//#include "../utility.hpp"
 
 //
 // Implementation is the approach used by boost::shared_ptr.
@@ -35,7 +35,7 @@ struct sp_counter_base {
 template<typename T>
 struct sp_counter_impl_p : sp_counter_base {
 	sp_counter_impl_p() : sp_counter_base() {}
-	virtual void dispose( void* p ) { if( p ) ecuda::default_delete<void>()(p); } // cudaFree( p ); }
+	virtual void dispose( void* p ) { if( p ) ecuda::default_delete<void>()(p); } // cudaFree( p );
 };
 
 template<typename T,class Deleter>
@@ -46,23 +46,6 @@ struct sp_counter_impl_pd : sp_counter_base {
 	//virtual void* get_deleter() { return deleter; }
 	virtual void* get_deleter() { return reinterpret_cast<void*>(&deleter); }
 };
-
-/*
-template<typename T>
-struct __shared_count {
-	sp_counter_base* counter;
-	template<class Deleter>
-	__shared_count( Deleter deleter ) {
-		std::allocator<sp_counter_impl_pd> allocator;
-		typename std::allocator<sp_counter_impl_pd>::pointer p = allocator.allocate(1);
-		allocator.construct( p, sp_counter_impl_pd(deleter) );
-	}
-	template<class Deleter,class Alloc>
-	__shared_count( Deleter deleter, Alloc allocator ) {
-
-	}
-};
-*/
 
 } // namespace detail
 
@@ -240,7 +223,7 @@ public:
 	///
 	template<typename U,class Deleter>
 	__HOST__ __DEVICE__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::__cast_void<T*>()(src.release())) {
-	   counter = current_ptr ? new detail::sp_counter_impl_pd<T,Deleter>( deleter ) : NULL;
+	   counter = current_ptr ? new detail::sp_counter_impl_pd<T,Deleter>( src.get_deleter() ) : NULL;
 	}
 	#endif
 
@@ -426,7 +409,7 @@ public:
 	/// (as opposed to value-based) order. The order is such that two smart pointers compare
 	/// equivalent only if they are both empty or if they both own the same object, even
 	/// if the values of the pointers obtained by get() are different (e.g. because they
-	/// point at different subobjects within the same object.
+	/// point at different subobjects within the same object).
 	///
 	/// The ordering is used to make shared pointers usable as keys in associative
 	/// containers, typically through ecuda::owner_less.

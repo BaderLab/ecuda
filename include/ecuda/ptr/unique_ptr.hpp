@@ -6,6 +6,7 @@
 #include "../global.hpp"
 #include "common.hpp"
 #include "../type_traits.hpp"
+//#include "../algorithm.hpp"
 
 namespace ecuda {
 
@@ -80,8 +81,17 @@ public:
 	__HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
-	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter(move(src.deleter)) {}
+	//TODO: review this block
+	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ {
+		current_ptr = ::ecuda::move(src.ptr);
+		deleter = ::ecuda::move(src.deleter);
+		return *this;
+	}
+	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ {
+		current_ptr = ::ecuda::move(src.ptr);
+		deleter = ::ecuda::move(src.deleter);
+		return *this;
+	}
 	#endif
 
 	//template<typename U>

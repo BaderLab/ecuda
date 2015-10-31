@@ -123,24 +123,23 @@ private:
 	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > base_type;
 
 public:
-	typedef typename base_type::value_type value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
-	typedef typename base_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_type::value_type      value_type;      //!< cell data type
+	typedef Alloc                               allocator_type;  //!< allocator type
+	typedef typename base_type::size_type       size_type;       //!< unsigned integral type
 	typedef typename base_type::difference_type difference_type; //!< signed integral type
-	typedef typename base_type::reference reference; //!< cell reference type
+	typedef typename base_type::reference       reference;       //!< cell reference type
 	typedef typename base_type::const_reference const_reference; //!< cell const reference type
-	typedef typename base_type::pointer pointer; //!< cell pointer type
-	//typedef typename pointer_traits<pointer>::const_pointer const_pointer; //!< cell const pointer type
-	typedef typename make_const<pointer>::type const_pointer; //!< cell const pointer type
+	typedef typename base_type::pointer         pointer;         //!< cell pointer type
+	typedef typename make_const<pointer>::type  const_pointer;   //!< cell const pointer type
 
-	typedef typename base_type::row_type row_type; //!< matrix row container type
-	typedef typename base_type::column_type column_type; //!< matrix column container type
-	typedef typename base_type::const_row_type const_row_type; //!< matrix const row container type
+	typedef typename base_type::row_type          row_type;          //!< matrix row container type
+	typedef typename base_type::column_type       column_type;       //!< matrix column container type
+	typedef typename base_type::const_row_type    const_row_type;    //!< matrix const row container type
 	typedef typename base_type::const_column_type const_column_type; //!< matrix const column container type
 
-	typedef typename base_type::iterator iterator; //!< iterator type
-	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
-	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_type::iterator               iterator;               //!< iterator type
+	typedef typename base_type::const_iterator         const_iterator;         //!< const iterator type
+	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
 private:
@@ -166,12 +165,12 @@ public:
 	///
 	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), Alloc allocator = Alloc() ) : base_type( pointer(), numberRows, numberColumns ), allocator(allocator) {
 		if( numberRows and numberColumns ) {
-			//typename Alloc::size_type pitch;
-			//typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows, pitch );
+			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
+			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
+			//       as the original - the device_contiguous_row_matrix second template parameter which
+			//       enforces a padded_ptr of some type is the reason
 			typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows );
-			//shared_ptr<value_type> sp( pointer_traits<typename Alloc::pointer>().undress(p) );
 			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
-			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, pitch, numberColumns );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, numberRows, numberColumns );
 			for( size_type i = 0; i < base.number_rows(); ++i ) {
@@ -222,8 +221,6 @@ public:
 	///
 	__HOST__ matrix( matrix<T>&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
 	#endif
-
-	//__HOST__ __DEVICE__ virtual ~matrix() {}
 
 	///
 	/// \brief Returns an iterator to the first element of the container.

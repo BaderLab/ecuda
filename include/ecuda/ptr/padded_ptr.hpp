@@ -188,9 +188,9 @@ public:
 			// skip padding(s)
 			const size_type nskips = (edge_ptr-ptr) / width;
 			const size_type offset = (edge_ptr-ptr) % width;
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-nskips*pitch );
+			//edge_ptr = reinterpret_cast<pointer>( reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-nskips*pitch );
 			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-nskips*pitch ) );
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-nskips*pitch);
+			//edge_ptr = reinterpret_cast<pointer>( reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-nskips*pitch);
 			ptr = edge_ptr + (width-offset);
 		}
 		return *this;
