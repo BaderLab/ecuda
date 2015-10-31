@@ -1,0 +1,13 @@
+///
+/// Justification: a clean C++ interface to CUDA is needed
+///
+/// The standard library (std::) contains a long established and required set
+/// of libaries.
+///
+/// Problem 1: CUDA device code cannot call std:: because __host__ is assumed
+/// Problem 2: CUDA has to pay attention to whether a pointer points to host or device memory
+/// Problem 3: CUDA has to pay attention to memory alignment on the device
+/// Problem 4: the multi-threaded nature of CUDA make container-type data structures more natural to represent as matrices
+///
+///
+///
