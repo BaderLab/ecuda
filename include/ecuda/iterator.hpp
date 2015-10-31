@@ -261,10 +261,10 @@ public:
 
 };
 
-template<class IteratorCategory> struct __is_contiguous { typedef std::false_type type; };
-template<> struct __is_contiguous<std::random_access_iterator_tag> { typedef std::true_type type; };
-template<typename T> struct __is_contiguous<T*> { typedef std::true_type type; };
-template<typename T> struct __is_contiguous<const T*> { typedef std::true_type type; };
+//template<class IteratorCategory> struct __is_contiguous { typedef std::false_type type; };
+//template<> struct __is_contiguous<std::random_access_iterator_tag> { typedef std::true_type type; };
+//template<typename T> struct __is_contiguous<T*> { typedef std::true_type type; };
+//template<typename T> struct __is_contiguous<const T*> { typedef std::true_type type; };
 
 template<class Iterator>
 struct iterator_traits : std::iterator_traits<Iterator> {
@@ -274,13 +274,13 @@ struct iterator_traits : std::iterator_traits<Iterator> {
 	typedef typename std::iterator_traits<Iterator>::reference reference;
 	typedef typename std::iterator_traits<Iterator>::value_type value_type;
 	typedef typename std::false_type is_device_iterator;
-	typedef typename __is_contiguous<typename std::iterator_traits<Iterator>::iterator_category>::type is_contiguous;
-	static bool confirm_contiguity( Iterator first, Iterator last, difference_type n ) {
-		if( !std::is_same<std::true_type,is_contiguous>::value ) return false;
-		const pointer pFirst = first.operator->();
-		const pointer pLast = last.operator->();
-		return ( pLast - pFirst ) == n;
-	}
+	//typedef typename __is_contiguous<typename std::iterator_traits<Iterator>::iterator_category>::type is_contiguous;
+	//static bool confirm_contiguity( Iterator first, Iterator last, difference_type n ) {
+	//	if( !std::is_same<std::true_type,is_contiguous>::value ) return false;
+	//	const pointer pFirst = first.operator->();
+	//	const pointer pLast = last.operator->();
+	//	return ( pLast - pFirst ) == n;
+	//}
 };
 
 template<typename T,typename PointerType,typename Category>

@@ -25,6 +25,11 @@ typedef __true_type __contiguous;
 */
 
 } // namespace impl
+
+template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return b < a ? b : a; }
+template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return Compare(b,a) ? b : a; }
+
+
 } // namespace ecuda
 
 #include "algo/copy.hpp" // equivalent to std::copy
@@ -186,7 +191,6 @@ template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type count_if( InputIterator first, InputIterator last, UnaryPredicate p ) {
 	return impl::count_if( first, last, p, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
-
 
 } // namespace ecuda
 
