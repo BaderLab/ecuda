@@ -83,6 +83,25 @@ namespace impl {
 // Start of DEVICE to DEVICE implementations
 //
 
+//
+// Source:      any device memory
+// Destination: any device memory
+// Value types: any
+// On Device  : element-by-element copy
+// On Host    : determine contiguity and data types of device memories, generate
+//              a compile-time error if called from the host and either of the
+//              memories are non-contiguous, otherwise delegate to a same-type
+//              copy or different-type copy as appropriate
+//
+template<class InputIterator,class OutputIterator>
+__HOST__ __DEVICE__ inline OutputIterator copy(
+	InputIterator first,
+	InputIterator last,
+	OutputIterator result,
+	ecuda::pair<detail::device_type,detail::device_type> // device -> device
+);
+// implementation makes calls to functions in the ecuda::impl::device_to_device namespace
+
 namespace device_to_device {
 
 //
@@ -131,6 +150,46 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
 	typedef device_contiguous_block_iterator<T,P> input_iterator_type;
+
+	{
+		// if there is any leading data before the memory becomes regularly aligned
+		// then copy it first
+		const std::size_t leading = first.operator->().get_remaining_width();
+		if( leading > 0 ) {
+			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
+			result = ::ecuda::copy( first2, first2 + leading, result );
+			::ecuda::advance( first, leading );
+		}
+	}
+
+	{
+		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
+		typedef typename std::add_pointer<value_type>::type pointer;
+		pointer dest = naked_cast<pointer>( result.operator->() );
+		typedef typename std::add_pointer<const value_type>::type const_pointer;
+		const_pointer src = naked_cast<const_pointer>( first.operator->() );
+
+		const size_t pitch = first.operator->().get_pitch();
+		const std::size_t width = first.operator->().get_width();
+		const std::size_t rows = ::ecuda::distance( first, last ) / width;
+
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest, width*sizeof(value_type), src, pitch, width, rows, cudaMemcpyDeviceToDevice ) );
+		::ecuda::advance( first, width*rows );
+		::ecuda::advance( result, width*rows );
+	}
+
+	{
+		// if there is any trailing data where the memory ceases to be regularly aligned
+		// then copy the rest of it
+		const std::size_t trailing = ::ecuda::distance( first, last ) % first.operator->().get_width();
+		if( trailing > 0 ) {
+			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
+			result = ::ecuda::copy( first2, first2 + trailing, result );
+		}
+	}
+
+	return result;
+	/*
 	typename ecuda::iterator_traits<input_iterator_type>::difference_type n = ecuda::distance( first, last );
 	while( n > 0 ) {
 		const std::size_t width = first.operator->().get_remaining_width();
@@ -140,6 +199,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		n -= copy_width;
 	}
 	return result;
+	*/
 	#endif
 }
 
@@ -163,6 +223,46 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 	#else
 	typedef device_contiguous_block_iterator<T,P> output_iterator_type;
 	typedef typename ecuda::iterator_traits<output_iterator_type>::value_type value_type;
+
+	{
+		// if there is any leading data before the memory becomes regularly aligned
+		// then copy it first
+		const std::size_t leading = result.operator->().get_remaining_width();
+		if( leading > 0 ) {
+			::ecuda::copy( first, first + leading, result.contiguous_begin() );
+			::ecuda::advance( first, leading );
+			::ecuda::advance( result, leading );
+		}
+	}
+
+	{
+		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
+		typedef typename std::add_pointer<value_type>::type pointer;
+		pointer dest = naked_cast<pointer>( result.operator->() );
+		typedef typename std::add_pointer<const value_type>::type const_pointer;
+		const_pointer src = naked_cast<const_pointer>( first.operator->() );
+
+		const size_t pitch = result.operator->().get_pitch();
+		const std::size_t width = result.operator->().get_width();
+		const std::size_t rows = ::ecuda::distance( first, last ) / width;
+
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest, pitch, src, width*sizeof(value_type), width, rows, cudaMemcpyDeviceToDevice ) );
+		::ecuda::advance( first, width*rows );
+		::ecuda::advance( result, width*rows );
+	}
+
+	{
+		// if there is any trailing data where the memory ceases to be regularly aligned
+		// then copy the rest of it
+		const std::size_t trailing = ::ecuda::distance( first, last ) % result.operator->().get_width();
+		if( trailing > 0 ) {
+			::ecuda::copy( first, first + trailing, result.contiguous_begin() );
+			::ecuda::advance( result, trailing );
+		}
+	}
+
+	return result;
+	/*
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	while( n > 0 ) {
 		const std::size_t width = result.operator->().get_remaining_width();
@@ -173,6 +273,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		n -= copy_width;
 	}
 	return result;
+	*/
 	#endif
 }
 
@@ -197,6 +298,56 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 	typedef device_contiguous_block_iterator<T,P> input_iterator_type;
 	typedef device_contiguous_block_iterator<U,Q> output_iterator_type;
 	typedef typename ecuda::iterator_traits<output_iterator_type>::value_type value_type;
+
+	if( ( first.operator->().get_width()           == result.operator->().get_width() ) &&
+		( first.operator->().get_remaining_width() == result.operator->().get_remaining_width() ) ) { // only when this is true can we do a cudaMemcpy2D call
+
+		{
+			// if there is any leading data before the memory becomes regularly aligned
+			// then copy it first
+			const std::size_t leading = result.operator->().get_remaining_width();
+			if( leading > 0 ) {
+				::ecuda::copy( first, first + leading, result.contiguous_begin() );
+				::ecuda::advance( first, leading );
+				::ecuda::advance( result, leading );
+			}
+		}
+
+		{
+			// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
+			typedef typename std::add_pointer<value_type>::type pointer;
+			pointer dest = naked_cast<pointer>( result.operator->() );
+			typedef typename std::add_pointer<const value_type>::type const_pointer;
+			const_pointer src = naked_cast<const_pointer>( first.operator->() );
+
+			const size_t src_pitch = first.operator->().get_pitch();
+			const size_t dest_pitch = result.operator->().get_pitch();
+			const std::size_t width = result.operator->().get_width();
+			const std::size_t rows = ::ecuda::distance( first, last ) / width;
+
+			CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest_pitch, src, src_pitch, width, rows, cudaMemcpyDeviceToDevice ) );
+			::ecuda::advance( first, width*rows );
+			::ecuda::advance( result, width*rows );
+		}
+
+		{
+			// if there is any trailing data where the memory ceases to be regularly aligned
+			// then copy the rest of it
+			const std::size_t trailing = ::ecuda::distance( first, last ) % result.operator->().get_width();
+			if( trailing > 0 ) {
+				::ecuda::copy( first, first + trailing, result.contiguous_begin() );
+				::ecuda::advance( result, trailing );
+			}
+		}
+
+		return result;
+
+	} // end case where both alignments are compatible
+
+	// this will copy pieces of differently aligned memory that
+	// will work, but requires (possibly many) calls to
+	// cudaMemcpy, so there will be a performance hit
+
 	typename input_iterator_type::difference_type n = ecuda::distance( first, last );
 	while( n > 0 ) {
 		const std::size_t width = ecuda::min( first.operator->().get_remaining_width(), result.operator->().get_remaining_width() );
@@ -204,76 +355,18 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 		typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 		typename output_iterator_type::contiguous_iterator result2 = result.contiguous_begin();
 		::ecuda::copy( first2, first2+copy_width, result2 );
-		first += copy_width;
-		result += copy_width;
+		first  += copy_width; // original input iterator has to catch up
+		result += copy_width; // original output iterator has to catch up
 		n -= copy_width;
 	}
 	return result;
 	#endif
 }
 
-/*
-//
-// Source:      contiguous device memory
-// Destination: contiguous device memory
-// Value types: different
-// On Device  : element-by-element copy
-// On Host    : call ecuda::cudaMemcpy to copy blocks
-//
-template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator copy(
-	InputIterator first, InputIterator last,
-	OutputIterator result,
-	//ecuda::pair<detail::contiguous_type,detail::contiguous_type>,
-	T, U
-)
-{
-	#ifdef __CUDA_ARCH__
-	while( first != last ) { *result = *first; ++first; ++result; }
-	return result;
-	#else
-	{
-		// compile-time check that T != U
-		const bool isSameTypes = std::is_same<T,U>::value;
-		ECUDA_STATIC_ASSERT(!isSameTypes,COPY_IS_UNEXPECTEDLY_BETWEEN_IDENTICAL_TYPES);
-	}
-	{
-		// compile-time check that InputIterator::value_type == T
-		typedef typename ecuda::iterator_traits<InputIterator>::value_type T2; // should always be T
-		const bool isSameTypes = std::is_same<T,T2>::value;
-		ECUDA_STATIC_ASSERT(!isSameTypes,COPY_ITERATOR_VALUE_TYPES_DO_NOT_MATCH_ARGUMENT_TYPES);
-	}
-	{
-		// compile-time check that OutputIterator::value_type == U
-		typedef typename ecuda::iterator_traits<OutputIterator>::value_type U2; // should always be U
-		const bool isSameTypes = std::is_same<U,U2>::value;
-		ECUDA_STATIC_ASSERT(!isSameTypes,COPY_ITERATOR_VALUE_TYPES_DO_NOT_MATCH_ARGUMENT_TYPES);
-	}
-	// different types
-	// - Rationale for using host_allocator is that pinned memory gains performance
-	//   when transferring to/from device, which occurs on both vectors. Assumes that
-	//   the host->host element-by-element recast and transfer is not too much
-	//   affected.
-	std::vector< T, host_allocator<T> > v1( static_cast<std::size_t>( ecuda::distance(first,last) ) );
-	ecuda::copy( first, last, v1.begin() );
-	std::vector< U, host_allocator<U> > v2( v1.size() );
-	std::copy( v1.begin(), v1.end(), v2.begin() );
-	return ecuda::copy( v2.begin(), v2.end(), result );
-	#endif
-}
-*/
-
 } // namespace device_to_device
 
 //
-// Source:      any device memory
-// Destination: any device memory
-// Value types: any
-// On Device  : element-by-element copy
-// On Host    : determine contiguity and data types of device memories, generate
-//              a compile-time error if called from the host and either of the
-//              memories are non-contiguous, otherwise delegate to a same-type
-//              copy or different-type copy as appropriate
+// Implementation only, function declaration and documentation above.
 //
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
@@ -292,8 +385,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	typedef typename ecuda::iterator_traits<InputIterator>::iterator_category input_iterator_category;
 	{
 		// compile-time check that input iterator traverses contiguous memory
-		//const bool isInputIteratorContiguous  = std::is_same<input_contiguity,std::true_type>::value;
-		//const bool isInputIteratorBlockContiguous = std::is_same<typename ecuda::iterator_traits<InputIterator>::iterator_category,device_contiguous_block_iterator_tag>::value;
 		const bool isSomeKindOfContiguous =
 			std::is_same<input_contiguity,std::true_type>::value ||
 			std::is_same<input_iterator_category,device_contiguous_block_iterator_tag>::value;
@@ -304,7 +395,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	typedef typename ecuda::iterator_traits<OutputIterator>::iterator_category output_iterator_category;
 	{
 		// compile-time check that output iterator traverses contiguous memory
-		//const bool isOutputIteratorContiguous = std::is_same<output_contiguity,std::true_type>::value;
 		const bool isSomeKindOfContiguous =
 			std::is_same<output_contiguity,std::true_type>::value ||
 			std::is_same<output_iterator_category,device_contiguous_block_iterator_tag>::value;
@@ -334,40 +424,27 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // Start of HOST to DEVICE implementations
 //
 
-namespace host_to_device {
-
-/*
 //
-// Source:      non-contiguous host memory
-// Destination: contiguous device memory
-// Value types: same
-// Overview   : copy the host memory sequence to a contiguous block, and
-//              call copy again
+// Source:      any host memory
+// Destination: any device memory
+// Value types: any
+// On Device  : compile-time assertion
+// On Host    : determine contiguity and data types of device memory, generate
+//              a compile-time error if called from the host and device memory
+//              is non-contiguous, perform a compile-time check for type equality
+//              and insert a conversion routine if necessary, then delegate to
+//              a device_contiguous or device_block_contiguous copy as
+//              appropriate
 //
-template<class InputIterator,class OutputIterator,typename T>
-__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
-	InputIterator first,
-	InputIterator last,
+template<class InputIterator,class OutputIterator>
+__HOST__ __DEVICE__ inline OutputIterator copy(
+	InputIterator first, InputIterator last,
 	OutputIterator result,
-	std::false_type, // not contiguous
-	device_contiguous_iterator_tag,
-	T, T
-)
-{
-	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return result; // never actually gets compiled, just here to satisfy nvcc
-	#else
-	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
-	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	std::vector<value_type> v( static_cast<std::size_t>(n) );
-	ecuda::copy( first, last, v.begin() ); // should resolve directly to std::copy
-	ecuda::copy( v.begin(), v.end(), result ); // call copy again using the contiguous host sequence
-	ecuda::advance( result, static_cast<std::size_t>(n) );
-	return result;
-	#endif
-}
-*/
+	ecuda::pair<detail::host_type,detail::device_type> memory_types
+);
+// implementation makes calls to functions in the ecuda::impl::host_to_device namespace
+
+namespace host_to_device {
 
 //
 // Source:      contiguous host memory
@@ -408,11 +485,11 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // On Device  : compile-time assertion
 // On Host    : call copy on each contiguous block of device memory
 //
-template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator copy(
+template<class InputIterator,typename T,typename P>
+__HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 	InputIterator first,
 	InputIterator last,
-	OutputIterator result,
+	device_contiguous_block_iterator<T,P> result,
 	device_contiguous_block_iterator_tag
 )
 {
@@ -420,7 +497,48 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets compiled, just here to satisfy nvcc
 	#else
-	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
+	typedef device_contiguous_block_iterator<T,P> output_iterator_type;
+	typedef typename ecuda::iterator_traits<output_iterator_type>::value_type value_type;
+
+	{
+		// if there is any leading data before the memory becomes regularly aligned
+		// then copy it first
+		const std::size_t leading = result.operator->().get_remaining_width();
+		if( leading > 0 ) {
+			::ecuda::copy( first, first + leading, result.contiguous_begin() );
+			::ecuda::advance( first, leading );
+			::ecuda::advance( result, leading );
+		}
+	}
+
+	{
+		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
+		typedef typename std::add_pointer<value_type>::type pointer;
+		pointer dest = naked_cast<pointer>( result.operator->() );
+		typedef typename std::add_pointer<const value_type>::type const_pointer;
+		const_pointer src = naked_cast<const_pointer>( first.operator->() );
+
+		const size_t pitch = result.operator->().get_pitch();
+		const std::size_t width = result.operator->().get_width();
+		const std::size_t rows = ::ecuda::distance( first, last ) / width;
+
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest, pitch, src, width*sizeof(value_type), width, rows, cudaMemcpyHostToDevice ) );
+		::ecuda::advance( first, width*rows );
+		::ecuda::advance( result, width*rows );
+	}
+
+	{
+		// if there is any trailing data where the memory ceases to be regularly aligned
+		// then copy the rest of it
+		const std::size_t trailing = ::ecuda::distance( first, last ) % result.operator->().get_width();
+		if( trailing > 0 ) {
+			::ecuda::copy( first, first + trailing, result.contiguous_begin() );
+			::ecuda::advance( result, trailing );
+		}
+	}
+
+	return result;
+	/*
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	const std::size_t width = result.operator->().get_width();
 	while( n > 0 ) {
@@ -429,60 +547,26 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		n -= width;
 	}
 	return result;
+	*/
 	#endif
 }
-
-/*
-template<class InputIterator,class OutputIterator,typename ContiguousInput,typename DeviceIteratorTag,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator copy_host_to_device(
-	InputIterator first,
-	InputIterator last,
-	OutputIterator result,
-	ContiguousInput,     // is_contiguous
-	DeviceIteratorTag,   // device iterator type doesn't matter yet
-	T, U
-)
-{
-	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return result; // never actually gets compiled, just here to satisfy nvcc
-	#else
-	//if( std::is_same<T,U>::value ) throw std::runtime_error( "ecuda::__copy_host_to_device(InputIterator,InputIterator,OutputIterator,...) different type variety called but types are the same" );
-	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
-	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	std::vector<U> v( static_cast<std::size_t>(n) );
-	std::copy( first, last, v.begin() );
-	return copy_host_to_device( v.begin(), v.end(), result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), DeviceIteratorTag(), U(), U() );
-	//CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), &v.front(), static_cast<std::size_t>(n), cudaMemcpyHostToDevice ) );
-	//ecuda::advance( result, static_cast<std::size_t>(n) );
-	//return result;
-	#endif
-}
-*/
 
 } // namespace host_to_device
 
 //
-// Source:      any host memory
-// Destination: any device memory
-// Value types: any
-// On Device  : compile-time assertion
-// On Host    : determine contiguity and data types of device memory, generate
-//              a compile-time error if called from the host and device memory
-//              is non-contiguous, perform a compile-time check for type equality
-//              and insert a conversion routine if necessary, then delegate to
-//              a device_contiguous or device_block_contiguous copy as
-//              appropriate
+// Implementation only, function declaration and documentation above.
 //
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result, ecuda::pair<detail::host_type,detail::device_type> memory_types ) { // host -> device
+__HOST__ __DEVICE__ inline OutputIterator copy(
+	InputIterator first, InputIterator last,
+	OutputIterator result,
+	ecuda::pair<detail::host_type,detail::device_type> memory_types // host -> device
+)
+{
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
-	// normalize types
-	//const bool isOutputIteratorContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::is_contiguous,std::true_type>::value;
-	//const bool isOutputIteratorBlockContiguous = std::is_same<typename ecuda::iterator_traits<OutputIterator>::iterator_category,ecuda::device_contiguous_block_iterator_tag>::value;
 	// is the device iterator contiguous?
 	{
 		// compile time check that device iterator traverses contiguous memory
@@ -522,54 +606,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterat
 
 namespace device_to_host {
 
-/*
-template<class InputIterator,class OutputIterator,class ContiguousOutput,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator __copy_device_to_host(
-	InputIterator first,
-	InputIterator last,
-	OutputIterator result,
-	device_iterator_tag,  // non-contiguous
-	//std::false_type, // is_contiguous
-	ContiguousOutput,     // contiguity of output is irrelevant here
-	T, U
-)
-{
-	#ifdef __CUDA_ARCH__
-	return result; // can never be called from device code, dummy return to satisfy nvcc
-	#else
-	throw std::invalid_argument( EXCEPTION_MSG( "ecuda::copy() cannot copy from non-contiguous device iterator" ) );
-	#endif
-}
-*/
-
-/*
-template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
-	InputIterator first,
-	InputIterator last,
-	OutputIterator result,
-	device_contiguous_iterator_tag, // contiguous
-	//std::true_type,  // is_contiguous
-	std::false_type, // is_contiguous
-	T, U
-)
-{
-	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return result; // can never be called from device code, dummy return to satisfy nvcc
-	#else
-	// create contiguous staging area for output
-	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
-	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	std::vector<value_type> v( static_cast<std::size_t>(n) );
-	ecuda::copy( first, last, v.begin() );
-	std::copy( v.begin(), v.end(), result );
-	ecuda::advance( result, static_cast<std::size_t>(n) );
-	return result;
-	#endif
-}
-*/
-
 //
 // Source:      contiguous device memory
 // Destination: contiguous host memory
@@ -590,19 +626,10 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
-	//const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	// explicitly confirm that the output iterator is contiguous
-	// @todo - in upcoming C++17 there is a ContiguousIterator type being proposed that will make this check unnecessary
-	//if( !ecuda::iterator_traits<OutputIterator>::confirm_contiguity( result, result+n, n ) ) return copy_device_to_host( first, last, result, device_contiguous_iterator_tag(), std::false_type(), T(), T() );
-	typedef typename std::add_pointer<const value_type>::type src_pointer_type;
-	typedef typename std::add_pointer<value_type>::type       dest_pointer_type;
+	typedef typename std::add_pointer<const value_type>::type           src_pointer_type;
+	typedef typename std::add_pointer<value_type>::type                 dest_pointer_type;
 	src_pointer_type src   = naked_cast<src_pointer_type>( first.operator->() );
 	dest_pointer_type dest = naked_cast<dest_pointer_type>( result.operator->() );
-	//typedef typename std::add_pointer<value_type>::type pointer;
-	//pointer p = naked_cast<pointer>( result.operator->() );
-	//typedef typename std::add_pointer<const value_type>::type const_pointer;
-	//const_pointer q = naked_cast<const_pointer>( first.operator->() );
-	//CUDA_CALL( cudaMemcpy<value_type>( result.operator->(), first.operator->(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	CUDA_CALL( cudaMemcpy<value_type>( dest, src, static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
 	ecuda::advance( result, static_cast<std::size_t>(n) );
@@ -617,10 +644,10 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // On Device  : compile-time assertion
 // On Host    : call copy on each contiguous block of device memory
 //
-template<class InputIterator,class OutputIterator>
+template<typename T,typename P,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
-	InputIterator first,
-	InputIterator last,
+	device_contiguous_block_iterator<T,P> first,
+	device_contiguous_block_iterator<T,P> last,
 	OutputIterator result,
 	device_contiguous_block_iterator_tag // contiguous blocks
 )
@@ -630,43 +657,54 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
-	//typedef typename std::add_pointer<value_type>::type naked_pointer_type;
-	//typedef typename std::add_pointer<const value_type>::type const_naked_pointer_type;
+	typedef device_contiguous_block_iterator<T,P> input_iterator_type;
+
+	{
+		// if there is any leading data before the memory becomes regularly aligned
+		// then copy it first
+		const std::size_t leading = first.operator->().get_remaining_width();
+		if( leading > 0 ) {
+			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
+			result = ::ecuda::copy( first2, first2 + leading, result );
+			::ecuda::advance( first, leading );
+		}
+	}
+
+	{
+		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
+		typedef typename std::add_pointer<value_type>::type pointer;
+		pointer dest = naked_cast<pointer>( result.operator->() );
+		typedef typename std::add_pointer<const value_type>::type const_pointer;
+		const_pointer src = naked_cast<const_pointer>( first.operator->() );
+
+		const size_t pitch = first.operator->().get_pitch();
+		const std::size_t width = first.operator->().get_width();
+		const std::size_t rows = ::ecuda::distance( first, last ) / width;
+
+		CUDA_CALL( cudaMemcpy2D<value_type>( dest, width*sizeof(value_type), src, pitch, width, rows, cudaMemcpyDeviceToHost ) );
+		::ecuda::advance( first, width*rows );
+		::ecuda::advance( result, width*rows );
+	}
+
+	{
+		// if there is any trailing data where the memory ceases to be regularly aligned
+		// then copy the rest of it
+		const std::size_t trailing = ::ecuda::distance( first, last ) % first.operator->().get_width();
+		if( trailing > 0 ) {
+			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
+			result = ::ecuda::copy( first2, first2 + trailing, result );
+		}
+	}
+
+	return result;
+	/*
 	for( ; first != last; result += first.operator->().get_remaining_width(), first += first.operator->().get_remaining_width() ) {
 		::ecuda::impl::device_to_host::copy( first, first+first.operator->().get_remaining_width(), result, device_contiguous_iterator_tag() );
 	}
 	return result;
+	*/
 	#endif
 }
-
-/*
-template<class InputIterator,class OutputIterator,typename T,typename U>
-__HOST__ __DEVICE__ inline OutputIterator copy_device_to_host(
-	InputIterator first,
-	InputIterator last,
-	OutputIterator result,
-	device_contiguous_iterator_tag, // contiguous
-	//std::true_type, // is_contiguous
-	std::true_type, // is_contiguous
-	T, U
-)
-{
-	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return result; // can never be called from device code, dummy return to satisfy nvcc
-	#else
-	if( std::is_same<T,U>::value ) throw std::runtime_error( "ecuda::__copy_host_to_device(InputIterator,InputIterator,OutputIterator,...) different type variety called but types are the same" );
-	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance(first,last);
-	std::vector<T> v1( static_cast<std::size_t>(n) );
-	CUDA_CALL( cudaMemcpy<T>( &v1.front(), first.operator->(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
-	std::vector<U> v2( v1.size() );
-	std::copy( v1.begin(), v1.end(), v2.begin() );
-	CUDA_CALL( cudaMemcpy<U>( result.operator->(), &v2.front(), static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
-	ecuda::advance( result, static_cast<std::size_t>(n) );
-	return result;
-	#endif
-}
-*/
 
 } // namespace device_to_host
 
@@ -730,8 +768,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	} else {
 		return device_to_host::copy( first, last, result, typename ecuda::iterator_traits<InputIterator>::iterator_category() );
 	}
-	//return __copy_device_to_host( first, last, result, typename ecuda::iterator_traits<InputIterator>::is_contiguous(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T1(), T2() );
-	//return copy_device_to_host( first, last, result, typename ecuda::iterator_traits<InputIterator>::iterator_category(), typename ecuda::iterator_traits<OutputIterator>::is_contiguous(), T(), U() );
 	#endif
 }
 
@@ -766,13 +802,14 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 } // namespace impl
 
 //
-// Start of ANY to ANY implementations
+// Entry point of the ecuda::copy function.
 //
 
 template<class InputIterator,class OutputIterator>
-__HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
-	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator  input_memory_type;   // host_type is an alias for std::false_type
-	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator output_memory_type; // device_type is an alias for std::true_type
+__HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result )
+{
+	typedef typename ecuda::iterator_traits<InputIterator>::is_device_iterator  input_memory_type;
+	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator output_memory_type;
 	return impl::copy( first, last, result, ecuda::pair<input_memory_type,output_memory_type>() );
 }
 

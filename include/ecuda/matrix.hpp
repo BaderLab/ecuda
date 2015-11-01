@@ -784,14 +784,14 @@ public:
 	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex ) {
 		//if( rowIndex >= row_size() ) throw std::out_of_range( "ecuda::matrix::at() rowIndex parameter is out of range" );	
 		//if( columnIndex >= column_size() ) throw std::out_of_range( "ecuda::matrix::at() columnIndex parameter is out of range" );	
-		return *allocator.address( data(), rowIndex, columnIndex, pitch ); 
+		return *allocator.address( data(), rowIndex, columnIndex, pitch );
 	}
 	__DEVICE__ inline reference at( size_type index ) { return at( index / numberColumns, index % numberColumns ); }
 
 	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const {
 		//if( rowIndex >= row_size() ) throw std::out_of_range( "ecuda::matrix::at() rowIndex parameter is out of range" );	
 		//if( columnIndex >= column_size() ) throw std::out_of_range( "ecuda::matrix::at() columnIndex parameter is out of range" );	
-		return *allocator.address( data(), rowIndex, columnIndex, pitch ); 
+		return *allocator.address( data(), rowIndex, columnIndex, pitch );
 	}
 	__DEVICE__ inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
 	*/

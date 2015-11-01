@@ -1,12 +1,59 @@
 ///
 /// Justification: a clean C++ interface to CUDA is needed
 ///
-/// The standard library (std::) contains a long established and required set
-/// of libaries.
+/// The standard library (std::) contains a long established and required set of libaries.
+/// Everyone knows its organization and semantic conventions.
 ///
 /// Problem 1: CUDA device code cannot call std:: because __host__ is assumed
-/// Problem 2: CUDA has to pay attention to whether a pointer points to host or device memory
-/// Problem 3: CUDA has to pay attention to memory alignment on the device
+///
+/// Example:
+/// \code{.cu}
+/// template<typename T>
+/// __device__ void reverse_sequence( const T* ptr, const std::size_t n ) {
+///     std::reverse( ptr, ptr+n );
+/// }
+/// \endcode
+///
+/// As natural as this function might be, it will, of course, fail to compile since std::reverse is assumed to be __host__.
+///
+/// Problem 2: Developer has to pay attention to whether a pointer points to host or device memory
+///
+/// Example:
+/// \code{.cpp}
+/// double* startPtr;
+/// cudaMalloc( &startPtr, sizeof(double)*1000 );
+/// const double* endPtr = startPtr + 1000;
+/// std::vector<double> v1( startPtr, endPtr ); // will segfault when any internal attempt to dereference a pointer is made
+/// std::vector<double> v2( endPtr-startPtr );
+/// std::copy( startPtr, endPtr, v2.begin() ); // will segfault when any internal attempt to dereference a pointer is made
+/// cudaFree( startPtr );
+/// \endcode
+///
+/// This will compile fine, but will segfault when run since the host cannot directly dereference a pointer to device memory.
+/// The CUDA device driver needs to be utilized. This sucks. We're forced to do something like:
+///
+/// \code{.cpp}
+/// double* startPtr;
+/// cudaMalloc( &startPtr, sizeof(double)*1000 );
+/// std::vector<double> v( 1000 );
+/// cudaMemcpy( &v.front(), startPtr, sizeof(double)*1000, cudaMemcpyDeviceToHost );
+/// cudaFree( startPtr );
+/// \endcode
+///
+/// Keeping a vigilant eye on whether a pointer is device or host memory above the additional risks of tossing around
+/// raw pointers too much is dangerous.  Ideally, this should be minimized in modern C++ anyway.
+///
+/// Problem 3: Developer has to pay attention to memory alignment on the device
+///
+/// Example:
+/// \code{.cpp}
+/// double* startPtr;
+/// size_t pitch;
+/// cudaMallocPitch( &startPtr, &pitch, 1000, 1000 );
+/// \endcode
+///
+///
+///
 /// Problem 4: the multi-threaded nature of CUDA make container-type data structures more natural to represent as matrices
 ///
 ///
