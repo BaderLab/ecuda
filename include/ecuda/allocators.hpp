@@ -515,7 +515,7 @@ public:
 		CUDA_CALL(
 			cudaMemcpy(
 				//detail::__cast_void<typename pointer_traits<pointer>::naked_pointer>()( pointer_traits<pointer>().undress(ptr) ),
-				detail::__cast_void<raw_pointer_type>()( naked_cast<raw_pointer_type>(ptr) ),
+				detail::void_cast<raw_pointer_type>()( naked_cast<raw_pointer_type>(ptr) ),
 				reinterpret_cast<const void*>(&val),
 				sizeof(val),
 				cudaMemcpyHostToDevice

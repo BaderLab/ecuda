@@ -10,9 +10,9 @@ namespace detail {
 // this is hacky structure that takes any pointer (const or not)
 // and casts it to void* so it can be used by the deleter dispose() method
 // and other places that call cudaFree
-template<typename T> struct __cast_void;
-template<typename T> struct __cast_void<const T*> { __HOST__ __DEVICE__ inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
-template<typename T> struct __cast_void { __HOST__ __DEVICE__ inline void* operator()( T ptr ) { return reinterpret_cast<void*>(ptr); } };
+template<typename T> struct void_cast;
+template<typename T> struct void_cast<const T*> { __HOST__ __DEVICE__ inline void* operator()( const T* ptr ) { return reinterpret_cast<void*>( const_cast<T*>(ptr) ); } };
+template<typename T> struct void_cast           { __HOST__ __DEVICE__ inline void* operator()( T ptr        ) { return reinterpret_cast<void*>(ptr); } };
 
 } // namespace detail
 
@@ -45,7 +45,7 @@ struct default_delete {
 		#ifdef __CUDA_ARCH__
 		//ptr = NULL;
 		#else
-		if( ptr ) cudaFree( detail::__cast_void<T*>()(ptr) );
+		if( ptr ) cudaFree( detail::void_cast<T*>()(ptr) );
 		//if( ptr ) cudaFree(ptr);
 		#endif
 	}
@@ -59,7 +59,7 @@ struct default_host_delete {
 	__HOST__ __DEVICE__ inline void operator()( T* ptr ) const {
 		#ifdef __CUDA_ARCH__
 		#else
-		if( ptr ) cudaFreeHost( detail::__cast_void<T*>()(ptr) );
+		if( ptr ) cudaFreeHost( detail::void_cast<T*>()(ptr) );
 		#endif
 	}
 };

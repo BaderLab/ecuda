@@ -7,7 +7,7 @@
 
 #include "../global.hpp"
 #include "../iterator.hpp"
-#include "../utility.hpp"
+//#include "../utility.hpp"
 
 namespace ecuda {
 
@@ -16,8 +16,13 @@ template<class ForwardIterator,typename T> __HOST__ __DEVICE__ inline void fill(
 
 namespace impl {
 
+namespace fill_device {
+
 template<class ForwardIterator,typename T>
-__HOST__ __DEVICE__ inline void fill_device( ForwardIterator first, ForwardIterator last, const T& val )
+__HOST__ __DEVICE__ inline void fill(
+	ForwardIterator first, ForwardIterator last,
+	const T& val
+)
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { *first = val; ++first; }
@@ -34,9 +39,8 @@ __HOST__ __DEVICE__ inline void fill_device( ForwardIterator first, ForwardItera
 }
 
 template<typename T,typename P>
-__HOST__ __DEVICE__ inline void fill_device(
-	device_contiguous_block_iterator<T,P> first,
-	device_contiguous_block_iterator<T,P> last,
+__HOST__ __DEVICE__ inline void fill(
+	device_contiguous_block_iterator<T,P> first, device_contiguous_block_iterator<T,P> last,
 	const T& val
 )
 {
@@ -53,6 +57,8 @@ __HOST__ __DEVICE__ inline void fill_device(
 	}
 	#endif
 }
+
+} // namespace fill_device
 
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill(
@@ -73,11 +79,11 @@ __HOST__ __DEVICE__ inline void fill(
 		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR);
 	}
 	if( std::is_same<typename ecuda::iterator_traits<ForwardIterator>::value_type,T>::value ) {
-		fill_device( first, last, val );
+		fill_device::fill( first, last, val );
 	} else {
 		typedef typename ecuda::iterator_traits<ForwardIterator>::value_type value_type;
 		const value_type val2( val );
-		fill_device( first, last, val2 );
+		fill_device::fill( first, last, val2 );
 	}
 	#endif
 }

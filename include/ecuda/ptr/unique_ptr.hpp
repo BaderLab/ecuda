@@ -51,11 +51,11 @@ class unique_ptr
 	 * relies on decltype which we don't have prior to C++11 but we can do without
 	 * this for now.
 	class _Pointer {
-		template<typename U> static typename U::pointer __test(typename U::pointer*);
-		template<typename U> static T* __test(...);
+		template<typename U> static typename U::pointer test(typename U::pointer*);
+		template<typename U> static T* test(...);
 		typedef typename std::remove_reference<Deleter>::type _Del;
 	public:
-		typedef decltype(__test<Deleter>(0)) type;
+		typedef decltype(test<Deleter>(0)) type;
 	};
 	*/
 
@@ -67,6 +67,9 @@ public:
 private:
 	pointer current_ptr;
 	deleter_type deleter;
+
+private:
+	__HOST__ __DEVICE__ unique_ptr( const unique_ptr& ); // disabled
 
 public:
 	__HOST__ __DEVICE__ __CONSTEXPR__ unique_ptr() __NOEXCEPT__ : current_ptr(NULL) {}

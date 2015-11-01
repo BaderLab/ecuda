@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../global.hpp"
+#include "../allocators.hpp"
 #include "../iterator.hpp"
 #include "../utility.hpp"
 
@@ -18,7 +19,12 @@ template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline b
 namespace impl {
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::false_type,std::false_type> ) {
+__HOST__ __DEVICE__ inline bool
+lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
+						 InputIterator2 first2, InputIterator2 last2,
+						 pair<std::false_type,std::false_type>
+)
+{
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return false; // never actually gets called, just here to trick nvcc
@@ -28,17 +34,54 @@ __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, 
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::true_type,std::false_type> ) {
-	return std::lexicographical_compare( first1, last1, first2, last2 );
+__HOST__ __DEVICE__ inline bool
+lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
+						 InputIterator2 first2, InputIterator2 last2,
+						 pair<std::true_type,std::false_type>
+)
+{
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return false; // never actually gets called, just here to trick nvcc
+	#else
+	return ::ecuda::lexicographical_compare( first2, last2, first1, last1 ); // switch positions to resolve to function below
+	#endif
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::false_type,std::true_type> ) {
-	return std::lexicographical_compare( first1, last1, first2, last2 );
+__HOST__ __DEVICE__ inline bool
+lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
+						 InputIterator2 first2, InputIterator2 last2,
+						 pair<std::false_type,std::true_type>
+)
+{
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return false; // never actually gets called, just here to trick nvcc
+	#else
+	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type;
+	std::vector< value_type, host_allocator<value_type> > v1( ecuda::distance( first2, last2 ) );
+	{
+		typedef typename ecuda::iterator_traits<InputIterator2>::iterator_category iterator_category;
+		typedef typename ecuda::iterator_traits<InputIterator2>::is_contiguous iterator_contiguity;
+		const bool isSomeKindOfContiguous =
+			std::is_same<iterator_contiguity,std::true_type>::value ||
+			std::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
+		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_NONCONTIGUOUS_DEVICE_MEMORY);
+	}
+	std::vector< value_type, host_allocator<value_type> > v( ::ecuda::distance(first2,last2) );
+	::ecuda::copy( first2, last2, v.begin() );
+	return ::ecuda::lexicographical_compare( first1, last1, v.begin(), v.end() );
+	#endif
 }
 
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, pair<std::true_type,std::true_type> ) {
+__HOST__ __DEVICE__ inline
+bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
+							  InputIterator2 first2, InputIterator2 last2,
+							  pair<std::true_type,std::true_type> // compare device to device
+)
+{
 	#ifdef __CUDA_ARCH__
 	for( ; (first1 != last1) and (first2 != last2); ++first1, ++first2 ) {
 		if( *first1 < *first2 ) return true;

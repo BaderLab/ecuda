@@ -108,7 +108,7 @@ public:
 	/// \param ptr a pointer to an object to manage
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::__cast_void<T*>()(ptr)) {
+	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::void_cast<T*>()(ptr)) {
 		#ifndef __CUDA_ARCH__
 		counter = new detail::sp_counter_impl_p<T>();
 		#endif
@@ -124,7 +124,7 @@ public:
 	/// \param deleter a deleter to use to destroy the object
 	///
 	template<typename U,class Deleter>
-	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::__cast_void<T*>()(ptr)) {
+	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::void_cast<T*>()(ptr)) {
 		#ifndef __CUDA_ARCH__
 		counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
 		#endif
