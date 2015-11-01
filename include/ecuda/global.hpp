@@ -95,13 +95,8 @@ either expressed or implied, of the FreeBSD Project.
 #define __CONSTEXPR__
 #endif
 
-#ifdef _WIN32
-#define __HOST__
-#define __DEVICE__
-#else
 #define __HOST__ __host__
 #define __DEVICE__ __device__
-#endif
 
 // Used throughout the API for compile-time conditions.
 /*

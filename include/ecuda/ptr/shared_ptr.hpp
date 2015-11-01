@@ -222,7 +222,7 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U,class Deleter>
-	__HOST__ __DEVICE__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::__cast_void<T*>()(src.release())) {
+	__HOST__ __DEVICE__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::void_cast<T*>()(src.release())) {
 	   counter = current_ptr ? new detail::sp_counter_impl_pd<T,Deleter>( src.get_deleter() ) : NULL;
 	}
 	#endif

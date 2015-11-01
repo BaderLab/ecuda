@@ -5,6 +5,7 @@
 
 #include "../global.hpp"
 #include "../type_traits.hpp"
+#include "../utility.hpp"
 #include "common.hpp"
 
 namespace ecuda {
@@ -32,17 +33,16 @@ namespace ecuda {
 ///   +----------+----+
 /// \endcode
 ///
-template<typename T,class PointerType=typename std::add_pointer<T>::type>
+template<typename T,class P=typename std::add_pointer<T>::type>
 class padded_ptr
 {
 
 public:
-	typedef T element_type;
-	typedef PointerType pointer;
-	//typedef typename __pointer_type<T>::pointer pointer;
-	typedef T& reference;
-	typedef const T& const_reference;
-	typedef std::size_t size_type;
+	typedef T              element_type;
+	typedef P              pointer;
+	typedef T&             reference;
+	typedef const T&       const_reference;
+	typedef std::size_t    size_type;
 	typedef std::ptrdiff_t difference_type;
 
 private:
@@ -59,23 +59,41 @@ private:
 	template<typename U,typename V> struct change_type_keep_constness<const U*,const V*> { typedef const V* type; };
 
 public:
-	__HOST__ __DEVICE__ padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) : edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr) {
+	__HOST__ __DEVICE__
+	padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) :
+		edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr)
+	{
 		if( !ptr ) this->ptr = edge_ptr;
 	}
-	template<typename T2,class PointerType2>
-	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,PointerType2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
 
-	__HOST__ __DEVICE__ inline pointer get_edge() const { return edge_ptr; }
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+
+	template<typename T2,class P2>
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : edge_ptr(ecuda::move(src.edge_ptr)), pitch(ecuda::move(src.pitch)), width(ecuda::move(src.width)), ptr(ecuda::move(src.ptr)) {}
+	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
+	{
+		edge_ptr = ecuda::move(src.edge_ptr);
+		pitch = ecuda::move(src.pitch);
+		width = ecuda::move(src.width);
+		ptr = ecuda::move(src.ptr);
+		return *this;
+	}
+	#endif
+
+	__HOST__ __DEVICE__ inline pointer   get_edge() const  { return edge_ptr; }
 	__HOST__ __DEVICE__ inline size_type get_pitch() const { return pitch; }
 	__HOST__ __DEVICE__ inline size_type get_width() const { return width; }
-	__HOST__ __DEVICE__ inline pointer get() const { return ptr; }
+	__HOST__ __DEVICE__ inline pointer   get() const       { return ptr; }
 
 	__HOST__ __DEVICE__ inline size_type get_remaining_width() const { return width-(ptr-edge_ptr); }
 
-	__DEVICE__ inline reference operator*() { return *ptr; }
-	__DEVICE__ inline const_reference operator*() const { return *ptr; }
-	__DEVICE__ inline pointer operator->() const { return ptr; }
-	__DEVICE__ inline reference operator[]( std::size_t i ) { return padded_ptr(*this).operator+=(i).operator*(); }
+	__DEVICE__ inline reference       operator*()                       { return *ptr; }
+	__DEVICE__ inline const_reference operator*() const                 { return *ptr; }
+	__DEVICE__ inline pointer         operator->() const                { return ptr; }
+	__DEVICE__ inline reference       operator[]( std::size_t i )       { return padded_ptr(*this).operator+=(i).operator*(); }
 	__DEVICE__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
 
 	#ifdef __CPP11_SUPPORTED__
@@ -84,20 +102,14 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ {
-		//return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL;
-		return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL;
-	}
+	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ { return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL; }
 	#else
 	///
 	/// \brief Checks if this stores a non-null pointer.
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ {
-		//return ecuda::pointer_traits<pointer>().undress( ptr ) != NULL;
-		return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL;
-	}
+	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ { return naked_cast<typename std::add_pointer<const element_type>::type>( ptr ) != NULL; }
 	#endif
 
 	///
@@ -141,25 +153,23 @@ public:
 		return pointer(ptr+n)-p;
 	}
 */
-	__HOST__ __DEVICE__ inline padded_ptr& operator++() {
+	__HOST__ __DEVICE__ inline padded_ptr& operator++()
+	{
 		++ptr;
 		if( (ptr-edge_ptr) == width ) {
 			// skip padding
-			//ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+pitch );
 			ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
-			//ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)+pitch);
 			edge_ptr = ptr;
 		}
 		return *this;
 	}
 
-	__HOST__ __DEVICE__ inline padded_ptr& operator--() {
+	__HOST__ __DEVICE__ inline padded_ptr& operator--()
+	{
 		--ptr;
 		if( ptr < edge_ptr ) {
 			// skip padding
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-pitch );
 			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-pitch ) );
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-pitch);
 			ptr = edge_ptr + width - 1;
 		}
 		return *this;
@@ -174,9 +184,7 @@ public:
 			// skip padding(s)
 			const size_type nskips = (ptr-edge_ptr) / width;
 			const size_type offset = (ptr-edge_ptr) % width;
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)+nskips*pitch );
 			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+nskips*pitch ) );
-			//edge_ptr = reinterpret_cast<pointer>(reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)+nskips*pitch);
 			ptr = edge_ptr + offset;
 		}
 		return *this;
@@ -188,9 +196,7 @@ public:
 			// skip padding(s)
 			const size_type nskips = (edge_ptr-ptr) / width;
 			const size_type offset = (edge_ptr-ptr) % width;
-			//edge_ptr = reinterpret_cast<pointer>( reinterpret_cast<typename pointer_traits<pointer>::char_pointer>(edge_ptr)-nskips*pitch );
 			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-nskips*pitch ) );
-			//edge_ptr = reinterpret_cast<pointer>( reinterpret_cast<typename __cast_to_char<pointer>::type>(edge_ptr)-nskips*pitch);
 			ptr = edge_ptr + (width-offset);
 		}
 		return *this;
@@ -211,12 +217,12 @@ public:
 	__HOST__ __DEVICE__ inline padded_ptr operator+( std::size_t x ) const { return operator+( static_cast<int>(x) ); }
 	__HOST__ __DEVICE__ inline padded_ptr operator-( std::size_t x ) const { return operator-( static_cast<int>(x) ); }
 
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator==( const padded_ptr<T2,PointerType2>& other ) const { return ptr == other.ptr; }
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator!=( const padded_ptr<T2,PointerType2>& other ) const { return ptr != other.ptr; }
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator< ( const padded_ptr<T2,PointerType2>& other ) const { return ptr <  other.ptr; }
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator> ( const padded_ptr<T2,PointerType2>& other ) const { return ptr >  other.ptr; }
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator<=( const padded_ptr<T2,PointerType2>& other ) const { return ptr <= other.ptr; }
-	template<typename T2,typename PointerType2> __HOST__ __DEVICE__ bool operator>=( const padded_ptr<T2,PointerType2>& other ) const { return ptr >= other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator==( const padded_ptr<T2,P2>& other ) const { return ptr == other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator!=( const padded_ptr<T2,P2>& other ) const { return ptr != other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator< ( const padded_ptr<T2,P2>& other ) const { return ptr <  other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator> ( const padded_ptr<T2,P2>& other ) const { return ptr >  other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator<=( const padded_ptr<T2,P2>& other ) const { return ptr <= other.ptr; }
+	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator>=( const padded_ptr<T2,P2>& other ) const { return ptr >= other.ptr; }
 
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr ) {
