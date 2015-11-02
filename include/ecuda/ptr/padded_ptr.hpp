@@ -33,10 +33,14 @@ namespace ecuda {
 ///   +----------+----+
 /// \endcode
 ///
+/// The template parameter P is the base pointer type. It will be T* by default, but can refer to other pointer
+/// specializations (i.e. shared_ptr). However, if any increment/decrement operation is intended on the padded_ptr
+/// then the type P must have a constructor that can take a raw pointer of type T* (otherwise P can't be realigned
+/// to the start of the next contiguous block of memory once it hits the padded region).
+///
 template<typename T,class P=typename std::add_pointer<T>::type>
 class padded_ptr
 {
-
 public:
 	typedef T              element_type;
 	typedef P              pointer;
@@ -46,6 +50,11 @@ public:
 	typedef std::ptrdiff_t difference_type;
 
 private:
+	//typedef char* address_type;
+	//typedef typename std::add_pointer<T>::type raw_pointer;
+
+private:
+	//address_type edge_address;
 	pointer edge_ptr;
 	size_type pitch;
 	size_type width;
@@ -57,6 +66,12 @@ private:
 	template<typename U,typename V> struct change_type_keep_constness<      U*,const V*> { typedef V* type; };
 	template<typename U,typename V> struct change_type_keep_constness<const U*,V*      > { typedef const V* type; };
 	template<typename U,typename V> struct change_type_keep_constness<const U*,const V*> { typedef const V* type; };
+
+	template<typename U> struct char_pointer;
+	template<typename U> struct char_pointer<U*>       { typedef char* type; };
+	template<typename U> struct char_pointer<const U*> { typedef const char* type; };
+	template<typename U> __HOST__ __DEVICE__ typename char_pointer<U*>::type       char_cast( U* ptr ) const       { return reinterpret_cast<char*>(ptr); }
+	template<typename U> __HOST__ __DEVICE__ typename char_pointer<const U*>::type char_cast( const U* ptr ) const { return reinterpret_cast<const char*>(ptr); }
 
 public:
 	__HOST__ __DEVICE__
@@ -158,8 +173,14 @@ public:
 		++ptr;
 		if( (ptr-edge_ptr) == width ) {
 			// skip padding
-			ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
+			typedef typename std::add_pointer<element_type>::type raw_pointer_type;
+			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+			charPtr += pitch; // advance to start of next contiguous region
+			ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
 			edge_ptr = ptr;
+			//ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
+			//edge_ptr = ptr;
 		}
 		return *this;
 	}

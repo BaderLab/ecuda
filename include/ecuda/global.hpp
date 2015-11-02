@@ -42,6 +42,8 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <sstream>
 
+//#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+
 #include "cuda_error.hpp"
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
@@ -53,7 +55,11 @@ either expressed or implied, of the FreeBSD Project.
 /// Function wrapper that capture and throw an exception on error.  All calls
 /// to functions in the CUDA API that return an error code should use this.
 ///
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+// cannot do CUDA calls when emulating with host only
+#else
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
+#endif
 
 #define S(x) #x
 #define S_(x) S(x)
@@ -68,18 +74,26 @@ either expressed or implied, of the FreeBSD Project.
 /// should be declared after any CUDA API calls that do not return an error code
 /// (e.g. after calling kernel functions).
 ///
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+// cannot check CUDA errors when emulating with host only
+#else
 #define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+#endif
 
 ///
 /// Macro that calls a CUDA kernel function, waits for completion, and throws
 /// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
 ///
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+// cannot do CUDA calls when emulating with host only
+#else
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 		cudaDeviceSynchronize();\
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 	} while(0);
+#endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
 #ifndef __CPP11_SUPPORTED__
@@ -95,21 +109,14 @@ either expressed or implied, of the FreeBSD Project.
 #define __CONSTEXPR__
 #endif
 
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+// strip all __host__ and __device__ declarations when using host only
+#define __HOST__
+#define __DEVICE__
+#else
 #define __HOST__ __host__
 #define __DEVICE__ __device__
-
-// Used throughout the API for compile-time conditions.
-/*
- * phase this out in favour of std::true_type,std::false_type
-namespace ecuda {
-namespace detail {
-
-struct __true_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return true; } };
-struct __false_type { __CONSTEXPR__ operator bool() const __NOEXCEPT__ { return false; } };
-
-} // namespace detail
-} // namespace ecuda
-*/
+#endif
 
 //
 // Quick implementation of compile-time assertions. If C++11 is available, then

@@ -42,6 +42,9 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "allocators.hpp"
 
+#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+// CUDA API calls are not available when using host only
+
 namespace ecuda {
 
 ///
@@ -132,5 +135,7 @@ inline cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, 
 }
 
 } // namespace ecuda
+
+#endif // ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 
 #endif
