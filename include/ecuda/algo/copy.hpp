@@ -155,7 +155,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
 		const std::size_t leading = first.operator->().get_remaining_width();
-		if( leading > 0 ) {
+		if( leading < first.operator->().get_width() ) { // leading with partial row
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + leading, result );
 			::ecuda::advance( first, leading );
@@ -227,7 +227,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
 		const std::size_t leading = result.operator->().get_remaining_width();
-		if( leading > 0 ) {
+		if( leading < result.operator->().get_width() ) { // leading with partial row
 			::ecuda::copy( first, first + leading, result.contiguous_begin() );
 			::ecuda::advance( first, leading );
 			::ecuda::advance( result, leading );
@@ -305,7 +305,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 			// if there is any leading data before the memory becomes regularly aligned
 			// then copy it first
 			const std::size_t leading = result.operator->().get_remaining_width();
-			if( leading > 0 ) {
+			if( leading < result.operator->().get_width() ) { // leading with partial row
 				::ecuda::copy( first, first + leading, result.contiguous_begin() );
 				::ecuda::advance( first, leading );
 				::ecuda::advance( result, leading );
@@ -661,7 +661,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
 		const std::size_t leading = first.operator->().get_remaining_width();
-		if( leading > 0 ) {
+		if( leading < first.operator->().get_width() ) { // leading with partial row
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + leading, result );
 			::ecuda::advance( first, leading );
