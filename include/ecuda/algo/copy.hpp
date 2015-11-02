@@ -172,7 +172,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		const size_t pitch = first.operator->().get_pitch();
 		const std::size_t width = first.operator->().get_width();
 		const std::size_t rows = ::ecuda::distance( first, last ) / width;
-
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, width*sizeof(value_type), src, pitch, width, rows, cudaMemcpyDeviceToDevice ) );
 		::ecuda::advance( first, width*rows );
 		::ecuda::advance( result, width*rows );

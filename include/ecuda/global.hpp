@@ -46,6 +46,14 @@ either expressed or implied, of the FreeBSD Project.
 
 #include "cuda_error.hpp"
 
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+enum cudaMemcpyKind {
+	cudaMemcpyDeviceToDevice,
+	cudaMemcpyDeviceToHost,
+	cudaMemcpyHostToDevice
+};
+#endif
+
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
 #define __CPP11_SUPPORTED__
@@ -57,6 +65,7 @@ either expressed or implied, of the FreeBSD Project.
 ///
 #ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // cannot do CUDA calls when emulating with host only
+#define CUDA_CALL(x) x
 #else
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 #endif
@@ -76,6 +85,7 @@ either expressed or implied, of the FreeBSD Project.
 ///
 #ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // cannot check CUDA errors when emulating with host only
+#define CUDA_CHECK_ERRORS() do {} while(0);
 #else
 #define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
 #endif
@@ -86,6 +96,9 @@ either expressed or implied, of the FreeBSD Project.
 ///
 #ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // cannot do CUDA calls when emulating with host only
+#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
+		__VA_ARGS__;\
+	} while(0);
 #else
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\

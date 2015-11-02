@@ -159,10 +159,14 @@ public:
 	/// \return A pointer to the initial element in the block of storage.
 	///
 	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
+		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		return std::allocator<value_type>().allocate( n, hint );
+		#else
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMallocHost( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		return ptr;
+		#endif
 	}
 
 	///
@@ -176,11 +180,13 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
-	inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		//default_host_delete<value_type>()(pointer_traits<pointer>().undress( ptr ));
+	inline void deallocate( pointer ptr, size_type n ) {
+		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		return std::allocator<value_type>().deallocate( ptr, n );
+		#else
 		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
 		default_host_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
-		//if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
+		#endif
 	}
 
 	///

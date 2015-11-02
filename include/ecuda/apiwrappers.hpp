@@ -42,8 +42,9 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "allocators.hpp"
 
-#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-// CUDA API calls are not available when using host only
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#include <algorithm>
+#endif
 
 namespace ecuda {
 
@@ -61,7 +62,12 @@ namespace ecuda {
 ///
 template<typename T>
 inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMemcpyKind kind ) {
+	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	std::copy( src, src+count, dest );
+	return true;
+	#else
 	return cudaMemcpy( reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
+	#endif
 }
 
 ///
@@ -82,7 +88,16 @@ inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMe
 ///
 template<typename T>
 inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind ) {
+	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	const char* csrc = reinterpret_cast<const char*>(src);
+	char* cdest = reinterpret_cast<char*>(dest);
+	for( size_t i = 0; i < height; ++i, csrc += spitch, cdest += dpitch ) {
+		std::copy( csrc, csrc+(width*sizeof(T)), cdest );
+	}
+	return true;
+	#else
 	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
+	#endif
 }
 
 
@@ -102,9 +117,14 @@ inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, con
 ///
 template<typename T>
 inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
+	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	std::fill( devPtr, devPtr+count, value );
+	return true;
+	#else
 	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
 	std::vector< T, host_allocator<T> > v( count, value );
 	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
+	#endif
 }
 
 ///
@@ -124,7 +144,14 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height ) {
+cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height ) {
+	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	for( size_t i = 0; i < height; ++i ) {
+		std::fill( devPtr, devPtr+width, value );
+		devPtr = reinterpret_cast<T*>(const_cast<char*>(devPtr)+pitch);
+	}
+	return true;
+	#else
 	std::vector< T, host_allocator<T> > v( width, value );
 	char* charPtr = reinterpret_cast<char*>(devPtr);
 	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {
@@ -132,10 +159,9 @@ inline cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, 
 		if( rc != cudaSuccess ) return rc;
 	}
 	return cudaSuccess;
+	#endif
 }
 
 } // namespace ecuda
-
-#endif // ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 
 #endif

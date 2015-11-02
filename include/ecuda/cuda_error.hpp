@@ -42,6 +42,10 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <string>
 
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+typedef bool cudaError_t;
+#endif
+
 namespace ecuda {
 
 ///
