@@ -503,7 +503,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
 		const std::size_t leading = result.operator->().get_remaining_width();
-		if( leading > 0 ) {
+		if( leading < result.operator->().get_width() ) {
 			::ecuda::copy( first, first + leading, result.contiguous_begin() );
 			::ecuda::advance( first, leading );
 			::ecuda::advance( result, leading );
@@ -520,7 +520,6 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		const size_t pitch = result.operator->().get_pitch();
 		const std::size_t width = result.operator->().get_width();
 		const std::size_t rows = ::ecuda::distance( first, last ) / width;
-
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, pitch, src, width*sizeof(value_type), width, rows, cudaMemcpyHostToDevice ) );
 		::ecuda::advance( first, width*rows );
 		::ecuda::advance( result, width*rows );

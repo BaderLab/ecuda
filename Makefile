@@ -46,6 +46,9 @@ NVCCFLAGS += -Xptxas -v
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
 
+# // example command for host only emulation, should incorporate this into the Makefile at some point:
+# g++ -x c++ -std=c++11 -Wall -flto -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -pedantic -O3 -march=native t/4__ptr__padded_ptr.cu -o bin/t/4__ptr__padded_ptr
+
 -include local-config.cfg
 
 ifeq ($(mode),debug)

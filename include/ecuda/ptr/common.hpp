@@ -45,8 +45,12 @@ struct default_delete {
 		#ifdef __CUDA_ARCH__
 		//ptr = NULL;
 		#else
+		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		delete [] reinterpret_cast<char*>(ptr); // hacky as hell but this should be valid for most test cases
+		#else
 		if( ptr ) cudaFree( detail::void_cast<T*>()(ptr) );
 		//if( ptr ) cudaFree(ptr);
+		#endif // ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		#endif
 	}
 
@@ -59,7 +63,11 @@ struct default_host_delete {
 	__HOST__ __DEVICE__ inline void operator()( T* ptr ) const {
 		#ifdef __CUDA_ARCH__
 		#else
+		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		delete [] reinterpret_cast<char*>(ptr);
+		#else
 		if( ptr ) cudaFreeHost( detail::void_cast<T*>()(ptr) );
+		#endif
 		#endif
 	}
 };

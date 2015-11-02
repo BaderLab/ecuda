@@ -92,7 +92,7 @@ inline __HOST__ __DEVICE__ bool none_of( InputIterator first, InputIterator last
 }
 
 
-template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T& tmp = a; a = b; b = tmp; } // equivalent to std::swap
+template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
 namespace impl {
 

@@ -477,12 +477,11 @@ public:
 	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 ) {
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		// emulate a 128-bit memory alignment (16 bytes)
-		typename std::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch = w*sizeof(value_type);
-		pitch += 16 - (pitch % 16);
+		pitch += (pitch % 16);
 		char* p = std::allocator<char>().allocate( pitch*h, hint );
 		typename std::add_pointer<value_type>::type p2 = reinterpret_cast<typename std::add_pointer<value_type>::type>( p );
-		return pointer( p, pitch, w, p );
+		return pointer( p2, pitch, w, p2 );
 		#else
 		typename std::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;

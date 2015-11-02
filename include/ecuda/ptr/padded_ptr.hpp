@@ -81,7 +81,15 @@ public:
 		if( !ptr ) this->ptr = edge_ptr;
 	}
 
-	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : edge_ptr(src.edge_ptr), pitch(src.pitch), width(src.width), ptr(src.ptr) {}
+
+	__HOST__ __DEVICE__ padded_ptr& operator=( const padded_ptr& src ) {
+		edge_ptr = src.edge_ptr;
+		pitch = src.pitch;
+		width = src.width;
+		ptr = src.ptr;
+		return *this;
+	}
 
 	template<typename T2,class P2>
 	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}

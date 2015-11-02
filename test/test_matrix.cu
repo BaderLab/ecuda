@@ -10,6 +10,7 @@
 #include "../include/ecuda/models.hpp"
 #include "../include/ecuda/vector.hpp"
 
+#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
 	typename ecuda::matrix<T>::iterator result = dest.begin();
@@ -25,6 +26,7 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 		ecuda::copy( srcColumn.begin(), srcColumn.end(), destColumn.begin() );
 	}
 }
+#endif
 
 int main( int argc, char* argv[] ) {
 
@@ -34,6 +36,7 @@ int main( int argc, char* argv[] ) {
 	ecuda::matrix<int> deviceMatrix( 5, 20 );
 	// below needs to be made to work
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
+	#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 	{
 		ecuda::matrix<int> deviceMatrix2( 5, 20 );
 		testIterators2<<<1,1>>>( deviceMatrix, deviceMatrix2 );
@@ -46,8 +49,16 @@ int main( int argc, char* argv[] ) {
 		std::cout << "EQUAL " << ( deviceMatrix == deviceMatrix2 ? "true" : "false" ) << std::endl;
 		std::cout << "LESS THAN " << ( deviceMatrix < deviceMatrix2 ? "true" : "false" ) << std::endl;
 	}
+	#endif
 
-	ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostVector.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
+	{
+		std::vector<int> tmp( 100 );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), tmp.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
+		unsigned mrkr = 0;
+		for( unsigned i = 0; i < 5; ++i ) {
+			std::cout << "ROW[" << i << "] ="; for( unsigned j = 0; j < 20; ++j, ++mrkr ) std::cout << " " << tmp[mrkr]; std::cout << std::endl;
+		}
+	}
 
 	ecuda::matrix_transpose( deviceMatrix );
 

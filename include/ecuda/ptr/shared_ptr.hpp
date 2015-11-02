@@ -108,9 +108,9 @@ public:
 	/// \param ptr a pointer to an object to manage
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::void_cast<T*>()(ptr)) {
+	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL) {
 		#ifndef __CUDA_ARCH__
-		counter = new detail::sp_counter_impl_p<T>();
+		if( ptr ) counter = new detail::sp_counter_impl_p<T>();
 		#endif
 	}
 
@@ -124,9 +124,9 @@ public:
 	/// \param deleter a deleter to use to destroy the object
 	///
 	template<typename U,class Deleter>
-	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::void_cast<T*>()(ptr)) {
+	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL) {
 		#ifndef __CUDA_ARCH__
-		counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
+		if( ptr ) counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
 		#endif
 	}
 
@@ -162,7 +162,7 @@ public:
 	///
 	__HOST__ __DEVICE__ shared_ptr( const shared_ptr& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
 		#ifndef __CUDA_ARCH__
-		++(counter->owner_count);
+		if( counter ) ++(counter->owner_count);
 		#endif
 	}
 
@@ -179,7 +179,7 @@ public:
 	template<typename U>
 	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
 		#ifndef __CUDA_ARCH__
-		++(counter->owner_count);
+		if( counter ) ++(counter->owner_count);
 		#endif
 	}
 
@@ -255,7 +255,11 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr& src ) __NOEXCEPT__ { shared_ptr(src).swap(*this); return *this; }
+	__HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr& src ) __NOEXCEPT__
+	{
+		shared_ptr(src).swap(*this);
+		return *this;
+	}
 
 	///
 	/// \brief Replaces the managed object.

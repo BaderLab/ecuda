@@ -91,8 +91,8 @@ public:
 		iterator iter2 = other.begin();
 		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
 		#else
-		std::swap( ptr, other.ptr );
-		std::swap( length, other.length );
+		::ecuda::swap( ptr, other.ptr );
+		::ecuda::swap( length, other.length );
 		#endif
 	}
 
