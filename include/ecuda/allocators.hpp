@@ -80,16 +80,17 @@ namespace ecuda {
 /// <tt>std::vector</tt> with the default STL allocator.
 ///
 template<typename T>
-class host_allocator {
+class host_allocator
+{
 
 public:
-	typedef T value_type; //!< element type
-	typedef T* pointer; //!< pointer to element
-	typedef T& reference; //!< reference to element
-	typedef const T* const_pointer; //!< pointer to constant element
-	typedef const T& const_reference; //!< reference to constant element
-	typedef std::size_t size_type; //!< quantities of elements
-	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
+	typedef T                                           value_type;      //!< element type
+	typedef typename std::add_pointer<T>::type          pointer;         //!< pointer to element
+	typedef typename std::add_lvalue_reference<T>::type reference;       //!< reference to element
+	typedef typename make_const<pointer>::type          const_pointer;   //!< pointer to constant element
+	typedef typename std::add_const<reference>::type    const_reference; //!< reference to constant element
+	typedef std::size_t                                 size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                              difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -158,7 +159,8 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
+	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		return std::allocator<value_type>().allocate( n, hint );
 		#else
@@ -180,7 +182,8 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
-	inline void deallocate( pointer ptr, size_type n ) {
+	inline void deallocate( pointer ptr, size_type n )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		return std::allocator<value_type>().deallocate( ptr, n );
 		#else
@@ -217,7 +220,6 @@ public:
 
 };
 
-
 ///
 /// \brief Allocator for device memory.
 ///
@@ -231,16 +233,17 @@ public:
 /// allocator for the standard STL containers (e.g. vector).
 ///
 template<typename T>
-class device_allocator {
+class device_allocator
+{
 
 public:
-	typedef T value_type; //!< element type
-	typedef T* pointer; //!< pointer to element
-	typedef T& reference; //!< reference to element
-	typedef const T* const_pointer; //!< pointer to constant element
-	typedef const T& const_reference; //!< reference to constant element
-	typedef std::size_t size_type; //!< quantities of elements
-	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
+	typedef T                                           value_type;      //!< element type
+	typedef typename std::add_pointer<T>::type          pointer;         //!< pointer to element
+	typedef typename std::add_lvalue_reference<T>::type reference;       //!< reference to element
+	typedef typename make_const<pointer>::type          const_pointer;   //!< pointer to constant element
+	typedef typename std::add_const<reference>::type    const_reference; //!< reference to constant element
+	typedef std::size_t                                 size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                              difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -309,7 +312,8 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
+	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		return std::allocator<value_type>().allocate( n, hint );
 		#else
@@ -331,7 +335,8 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
-	__HOST__ inline void deallocate( pointer ptr, size_type n ) {
+	__HOST__ inline void deallocate( pointer ptr, size_type n )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
@@ -357,7 +362,8 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_allocator<T>).
 	///
-	__HOST__ inline void construct( pointer ptr, const_reference val ) {
+	__HOST__ inline void construct( pointer ptr, const_reference val )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().construct( ptr, val );
 		#else
@@ -394,14 +400,15 @@ public:
 /// memory.
 ///
 template<typename T>
-class device_pitch_allocator {
+class device_pitch_allocator
+{
 
 public:
 	typedef T                                                value_type;      //!< element type
 	typedef padded_ptr<T,typename std::add_pointer<T>::type> pointer;         //!< pointer to element
-	typedef T&                                               reference;       //!< reference to element
+	typedef typename std::add_lvalue_reference<T>::type      reference;       //!< reference to element
 	typedef typename make_const<pointer>::type               const_pointer;   //!< pointer to constant element
-	typedef const T&                                         const_reference; //!< reference to constant element
+	typedef typename std::add_const<reference>::type         const_reference; //!< reference to constant element
 	typedef std::size_t                                      size_type;       //!< quantities of elements
 	typedef std::ptrdiff_t                                   difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
@@ -474,7 +481,8 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 ) {
+	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		// emulate a 128-bit memory alignment (16 bytes)
 		size_type pitch = w*sizeof(value_type);
@@ -502,7 +510,8 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
-	__HOST__ inline void deallocate( pointer ptr, size_type n ) {
+	__HOST__ inline void deallocate( pointer ptr, size_type n )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
@@ -528,7 +537,8 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
-	__HOST__ inline void construct( pointer ptr, const_reference val ) {
+	__HOST__ inline void construct( pointer ptr, const_reference val )
+	{
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().construct( ptr, val );
 		#else
@@ -563,7 +573,8 @@ public:
 	/// \param pitch
 	/// \return A pointer to the location.
 	///
-	__HOST__ __DEVICE__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const {
+	__HOST__ __DEVICE__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const
+	{
 		return reinterpret_cast<const_pointer>( naked_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 	}
 
@@ -578,15 +589,14 @@ public:
 	/// \param y
 	/// \return A pointer to the location.
 	///
-	__HOST__ __DEVICE__ inline pointer address( pointer ptr, size_type x, size_type y ) {
+	__HOST__ __DEVICE__ inline pointer address( pointer ptr, size_type x, size_type y )
+	{
 		ptr.operator+=(x*ptr.get_width()+y);
 		return ptr;
 	}
 
 };
 
-
 } // namespace ecuda
 
 #endif
-

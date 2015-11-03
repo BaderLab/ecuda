@@ -46,7 +46,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "allocators.hpp"
 #include "matrix.hpp"
 #include "memory.hpp"
-#include "models.hpp"
+#include "impl/models.hpp"
 #include "type_traits.hpp"
 
 namespace ecuda {

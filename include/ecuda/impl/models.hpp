@@ -2,8 +2,8 @@
 #ifndef ECUDA_MODELS_HPP
 #define ECUDA_MODELS_HPP
 
-#include "memory.hpp"
-#include "iterator.hpp"
+#include "../memory.hpp"
+#include "../iterator.hpp"
 
 ///
 /// ecuda models contain the lowest-level representation of data structures stored
@@ -29,16 +29,16 @@ namespace impl {
 ///
 /// This base class is used to represent, for example, a matrix column.
 ///
-template<typename T,class PointerType>
+template<typename T,class P>
 class device_sequence
 {
 
 public:
-	typedef T value_type;
-	typedef PointerType pointer;
-	typedef T& reference;
-	typedef const T& const_reference;
-	typedef std::size_t size_type;
+	typedef T              value_type;
+	typedef P              pointer;
+	typedef T&             reference;
+	typedef const T&       const_reference;
+	typedef std::size_t    size_type;
 	typedef std::ptrdiff_t difference_type;
 
 	typedef device_iterator<      value_type,typename make_unmanaged<pointer>::type      > iterator;
@@ -105,16 +105,16 @@ public:
 /// properly, otherwise any operations will be undefined. The caller is
 /// responsible for ensuring this.
 ///
-template<typename T,std::size_t N,class PointerType=typename std::add_pointer<T>::type>
+template<typename T,std::size_t N,class P=typename std::add_pointer<T>::type>
 class device_fixed_sequence
 {
 
 public:
-	typedef T value_type;
-	typedef PointerType pointer;
-	typedef T& reference;
-	typedef const T& const_reference;
-	typedef std::size_t size_type;
+	typedef T              value_type;
+	typedef P              pointer;
+	typedef T&             reference;
+	typedef const T&       const_reference;
+	typedef std::size_t    size_type;
 	typedef std::ptrdiff_t difference_type;
 
 	typedef device_contiguous_iterator<value_type      > iterator;
@@ -176,24 +176,24 @@ public:
 /// properly, otherwise any operations will be undefined. The caller is
 /// responsible for ensuring this.
 ///
-template<typename T,class PointerType=typename std::add_pointer<T>::type>
-class device_contiguous_sequence : public device_sequence<T,PointerType>
+template<typename T,class P=typename std::add_pointer<T>::type>
+class device_contiguous_sequence : public device_sequence<T,P>
 {
 private:
-	typedef device_sequence<T,PointerType> base_type;
+	typedef device_sequence<T,P> base_type;
 
 public:
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type      value_type;
+	typedef typename base_type::pointer         pointer;
+	typedef typename base_type::reference       reference;
 	typedef typename base_type::const_reference const_reference;
-	typedef typename base_type::size_type size_type;
+	typedef typename base_type::size_type       size_type;
 	typedef typename base_type::difference_type difference_type;
 
-	typedef device_contiguous_iterator<value_type> iterator;
+	typedef device_contiguous_iterator<value_type>       iterator;
 	typedef device_contiguous_iterator<const value_type> const_iterator;
-	typedef reverse_device_iterator<iterator> reverse_iterator;
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
+	typedef reverse_device_iterator<iterator>            reverse_iterator;
+	typedef reverse_device_iterator<const_iterator>      const_reverse_iterator;
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
@@ -226,11 +226,11 @@ public:
 /// This class makes no assumptions about the contiguity of the allocated memory.
 /// The pointer specialization is fully responsible for traversing the matrix.
 ///
-template<typename T,class PointerType>
-class device_matrix : public device_sequence<T,PointerType>
+template<typename T,class P>
+class device_matrix : public device_sequence<T,P>
 {
 private:
-	typedef device_sequence<T,PointerType> base_type;
+	typedef device_sequence<T,P> base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;
@@ -279,7 +279,7 @@ public:
 /// fixed padding.  This provides seamless support for device-aligned memory.
 ///
 template<typename T,class P>
-class device_contiguous_row_matrix : public device_matrix< T, padded_ptr<T,P> > // NOTE: PointerType must be padded_ptr
+class device_contiguous_row_matrix : public device_matrix< T, padded_ptr<T,P> > // NOTE: P must be padded_ptr
 {
 private:
 	typedef device_matrix< T, padded_ptr<T,P> > base_type;

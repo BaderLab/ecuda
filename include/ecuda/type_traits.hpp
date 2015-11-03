@@ -48,6 +48,9 @@ either expressed or implied, of the FreeBSD Project.
 #else
 namespace std {
 
+template<typename T> struct add_const     { typedef const T type; };
+template<typename T> struct add_const<T&> { typedef const T& type; };
+
 template<typename T> struct remove_const          { typedef T type; };
 template<typename T> struct remove_const<const T> { typedef T type; };
 
@@ -124,34 +127,11 @@ template<typename T> struct remove_pointer<T* const volatile> { typedef T type; 
 ///
 namespace ecuda {
 
-template<typename T> class naked_ptr; // forward declaration
-template<typename T,typename U> class padded_ptr; // forward declaration
-template<typename T> class shared_ptr; // forward declaration
+template<typename T>            class naked_ptr;    // forward declaration
+template<typename T,typename U> class padded_ptr;   // forward declaration
+template<typename T>            class shared_ptr;   // forward declaration
 template<typename T,typename U> class striding_ptr; // forward declaration
-template<typename T,typename U> class unique_ptr; // forward declaration
-
-
-//template<typename T> struct dereference;
-//template<typename T> struct dereference<T*> { typedef T& type; };
-//template<typename T> struct dereference<T* const> { typedef const T& type; };
-//template<typename T> struct reference {
-//	typedef T* pointer_type;
-//	typedef T& reference_type;
-//	typedef T element_type;
-//};
-
-//template<typename T> struct type_traits { typedef T* pointer; };
-//template<typename T> struct type_traits<const T> { typedef const T* pointer; };
-
-//template<typename T>
-//struct pointer_traits {
-//	typedef T* pointer;
-//};
-//
-//template<typename T>
-//struct pointer_traits<const T> {
-//	typedef const T* pointer;
-//};
+template<typename T,typename U> class unique_ptr;   // forward declaration
 
 /*
 template<typename T>            T*                                  make_naked( T* ptr )                       { return ptr; }
@@ -197,17 +177,17 @@ template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( con
 /// \endcode
 ///
 template<typename T>            struct make_unmanaged;
-template<typename T>            struct make_unmanaged<T*>                        { typedef T* type; };
-template<typename T>            struct make_unmanaged<const T*>                  { typedef const T* type; };
-template<typename T>            struct make_unmanaged< naked_ptr<T> >            { typedef naked_ptr<T> type; };
-template<typename T>            struct make_unmanaged< const naked_ptr<T> >      { typedef naked_ptr<T> type; };
-template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U> >         { typedef typename unique_ptr<T,U>::pointer type; };
-template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U> >   { typedef typename unique_ptr<T,U>::pointer type; };
-template<typename T>            struct make_unmanaged< shared_ptr<T> >           { typedef typename std::add_pointer<T>::type type; };
-template<typename T>            struct make_unmanaged< const shared_ptr<T> >     { typedef typename std::add_pointer<T>::type type; };
-template<typename T,typename U> struct make_unmanaged< padded_ptr<T,U> >         { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
-template<typename T,typename U> struct make_unmanaged< const padded_ptr<T,U> >   { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
-template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U> >       { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T>            struct make_unmanaged< T*                      > { typedef T* type; };
+template<typename T>            struct make_unmanaged< const T*                > { typedef const T* type; };
+template<typename T>            struct make_unmanaged< naked_ptr<T>            > { typedef naked_ptr<T> type; };
+template<typename T>            struct make_unmanaged< const naked_ptr<T>      > { typedef naked_ptr<T> type; };
+template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U>         > { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U>   > { typedef typename unique_ptr<T,U>::pointer type; };
+template<typename T>            struct make_unmanaged< shared_ptr<T>           > { typedef typename std::add_pointer<T>::type type; };
+template<typename T>            struct make_unmanaged< const shared_ptr<T>     > { typedef typename std::add_pointer<T>::type type; };
+template<typename T,typename U> struct make_unmanaged< padded_ptr<T,U>         > { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< const padded_ptr<T,U>   > { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U>       > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 
 ///
@@ -229,31 +209,35 @@ template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged<T*>::typ
 template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged< naked_ptr<T> >::type unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
 
 template<typename T,typename U>
-__HOST__ __DEVICE__
-typename make_unmanaged<U>::type unmanaged_cast( const unique_ptr<T,U>& ptr ) {
+__HOST__ __DEVICE__ inline
+typename make_unmanaged<U>::type unmanaged_cast( const unique_ptr<T,U>& ptr )
+{
 	return typename make_unmanaged<U>::type( ptr.get() );
 }
 
 template<typename T>
-__HOST__ __DEVICE__
+__HOST__ __DEVICE__ inline
 typename make_unmanaged< shared_ptr<T> >::type
-unmanaged_cast( const shared_ptr<T>& ptr ) {
+unmanaged_cast( const shared_ptr<T>& ptr )
+{
 	return typename make_unmanaged< shared_ptr<T> >::type( ptr.get() );
 }
 
 template<typename T,typename U>
-__HOST__ __DEVICE__
+__HOST__ __DEVICE__ inline
 padded_ptr<T,typename make_unmanaged<U>::type>
-unmanaged_cast( const padded_ptr<T,U>& ptr ) {
+unmanaged_cast( const padded_ptr<T,U>& ptr )
+{
 	typename make_unmanaged<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
 	typename make_unmanaged<U>::type mp2 = unmanaged_cast( ptr.get() );
 	return padded_ptr<T,typename make_unmanaged<U>::type>( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
 }
 
 template<typename T,typename U>
-__HOST__ __DEVICE__
+__HOST__ __DEVICE__ inline
 striding_ptr<T,typename make_unmanaged<U>::type>
-unmanaged_cast( const striding_ptr<T,U>& ptr ) {
+unmanaged_cast( const striding_ptr<T,U>& ptr )
+{
 	typename make_unmanaged<U>::type mp = unmanaged_cast( ptr.get() );
 	return striding_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_stride() );
 }
@@ -271,17 +255,17 @@ unmanaged_cast( const striding_ptr<T,U>& ptr ) {
 /// evaluated as having a const-equivalent of padded_ptr< const T, shared_ptr<const T> >.
 ///
 template<typename T>            struct make_const;
-template<typename T>            struct make_const<T*>                        { typedef const T* type; };
-template<typename T>            struct make_const<const T*>                  { typedef const T* type; };
-template<typename T>            struct make_const< naked_ptr<T> >            { typedef naked_ptr<const T> type; };
-template<typename T>            struct make_const< naked_ptr<const T> >      { typedef naked_ptr<const T> type; };
-template<typename T,typename U> struct make_const< unique_ptr<T,U> >         { typedef unique_ptr<const T,typename make_const<U>::type> type; };
-template<typename T,typename U> struct make_const< unique_ptr<const T,U> >   { typedef unique_ptr<const T,typename make_const<U>::type> type; };
-template<typename T>            struct make_const< shared_ptr<T> >           { typedef shared_ptr<const T> type; };
-template<typename T>            struct make_const< shared_ptr<const T> >     { typedef shared_ptr<const T> type; };
-template<typename T,typename U> struct make_const< padded_ptr<T,U> >         { typedef padded_ptr<const T,typename make_const<U>::type> type; };
-template<typename T,typename U> struct make_const< padded_ptr<const T,U> >   { typedef padded_ptr<const T,typename make_const<U>::type> type; };
-template<typename T,typename U> struct make_const< striding_ptr<T,U> >       { typedef striding_ptr<const T,typename make_const<U>::type> type; };
+template<typename T>            struct make_const< T*                      > { typedef const T* type; };
+template<typename T>            struct make_const< const T*                > { typedef const T* type; };
+template<typename T>            struct make_const< naked_ptr<T>            > { typedef naked_ptr<const T> type; };
+template<typename T>            struct make_const< naked_ptr<const T>      > { typedef naked_ptr<const T> type; };
+template<typename T,typename U> struct make_const< unique_ptr<T,U>         > { typedef unique_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< unique_ptr<const T,U>   > { typedef unique_ptr<const T,typename make_const<U>::type> type; };
+template<typename T>            struct make_const< shared_ptr<T>           > { typedef shared_ptr<const T> type; };
+template<typename T>            struct make_const< shared_ptr<const T>     > { typedef shared_ptr<const T> type; };
+template<typename T,typename U> struct make_const< padded_ptr<T,U>         > { typedef padded_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< padded_ptr<const T,U>   > { typedef padded_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< striding_ptr<T,U>       > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
 template<typename T,typename U> struct make_const< striding_ptr<const T,U> > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
 
 ///
@@ -290,221 +274,6 @@ template<typename T,typename U> struct make_const< striding_ptr<const T,U> > { t
 /// This is effectively just an alias for a combination of the make_unmanaged<T> and make_const<T> type modifications.
 ///
 template<typename T> struct make_unmanaged_const { typedef typename make_unmanaged<typename make_const<T>::type>::type type; };
-
-/*
-template<typename T> struct pointer_traits {
-	template<typename U>
-	static U cast_unmanaged( T ptr ) { return pointer_traits<T>().make_unmanaged(ptr); }
-};
-
-//template<typename T> typename pointer_traits<T>::unmanaged_pointer cast_unmanaged( T ptr );
-//template<typename T> typename pointer_traits<T*>::unmanaged_pointer cast_unmanaged( T* ptr ) { return ptr; }
-
-//template<typename T>
-
-
-template<typename T>
-struct pointer_traits<T*> {
-	typedef T element_type;
-	typedef T* pointer;
-	typedef const T* const_pointer;
-	typedef T* naked_pointer;
-	typedef T* unmanaged_pointer;
-	typedef char* char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return ptr; }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::naked_pointer cast_naked( U* ptr ) { return ptr; }
-};
-
-template<typename T>
-struct pointer_traits<const T*> {
-	typedef const T element_type;
-	typedef const T* pointer;
-	typedef const T* const_pointer;
-	typedef const T* naked_pointer;
-	typedef const T* unmanaged_pointer;
-	typedef const char* char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( pointer ptr ) const { return ptr; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer ptr, const int x ) const { return ptr + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return ptr; }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::unmanaged_pointer cast_unmanaged( U* ptr ) { return ptr; }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits<U*>::naked_pointer cast_naked( U* ptr ) { return ptr; }
-};
-
-template<typename T>
-struct pointer_traits< naked_ptr<T> > {
-	typedef typename naked_ptr<T>::element_type element_type;
-	typedef naked_ptr<T> pointer;
-	typedef naked_ptr<const T> const_pointer;
-	typedef typename naked_ptr<T>::pointer naked_pointer;
-	typedef naked_ptr<T> unmanaged_pointer;
-	typedef char* char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return ptr + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer& make_unmanaged( pointer& ptr ) const { return ptr; }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< naked_ptr<U> >::naked_pointer cast_naked( const naked_ptr<U>& ptr ) { return ptr.get(); }
-};
-
-template<typename T>
-struct pointer_traits< const naked_ptr<T> > {
-	typedef typename naked_ptr<T>::element_type element_type;
-	typedef const naked_ptr<T> pointer;
-	typedef const naked_ptr<const T> const_pointer;
-	typedef typename naked_ptr<T>::pointer naked_pointer;
-	typedef naked_pointer unmanaged_pointer;
-	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const naked_ptr<U> >::unmanaged_pointer cast_unmanaged( const naked_ptr<U>& ptr ) { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const naked_ptr<U> >::naked_pointer cast_naked( const naked_ptr<U>& ptr ) { return ptr.get(); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< unique_ptr<T,U> > {
-	typedef typename unique_ptr<T,U>::element_type element_type;
-	typedef unique_ptr<T,U> pointer;
-	typedef unique_ptr<const T,U> const_pointer;
-	typedef typename unique_ptr<T,U>::pointer naked_pointer;
-	typedef naked_pointer unmanaged_pointer;
-	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return undress(ptr); }
-	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
-	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< unique_ptr<T2,U2> >::naked_pointer cast_naked( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< const unique_ptr<T,U> > {
-	typedef typename unique_ptr<T,U>::element_type element_type;
-	typedef const unique_ptr<T,U> pointer;
-	typedef const unique_ptr<const T,U> const_pointer;
-	typedef typename unique_ptr<T,U>::pointer naked_pointer;
-	typedef naked_pointer unmanaged_pointer;
-	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( pointer& ptr, const int x ) const { return ptr.get() + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer& ptr ) const { return undress(ptr); }
-	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const unique_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const unique_ptr<T2,U2>& ptr ) { return ptr.get(); }
-	template<typename T2,typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const unique_ptr<T2, U2> >::naked_pointer cast_naked( const unique_ptr<T2, U2>& ptr ) { return ptr.get(); }
-};
-
-template<typename T>
-struct pointer_traits< shared_ptr<T> > {
-	typedef typename shared_ptr<T>::element_type element_type;
-	typedef shared_ptr<T> pointer;
-	typedef shared_ptr<const T> const_pointer;
-	typedef T* naked_pointer;
-	typedef naked_pointer unmanaged_pointer;
-	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const shared_ptr<T> ptr, const int x ) const { return ptr.get() + x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( pointer ptr ) const { return undress(ptr); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< shared_ptr<U> >::naked_pointer cast_naked( const shared_ptr<U>& ptr ) { return ptr.get(); }
-};
-
-template<typename T>
-struct pointer_traits< const shared_ptr<T> > {
-	typedef typename shared_ptr<T>::element_type element_type;
-	typedef const shared_ptr<T> pointer;
-	typedef const shared_ptr<const T> const_pointer;
-	typedef typename shared_ptr<T>::pointer naked_pointer;
-	typedef typename pointer_traits<naked_pointer>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const shared_ptr<U> >::unmanaged_pointer cast_unmanaged( const shared_ptr<U>& ptr ) { return ptr.get(); }
-	template<typename U> static __HOST__ __DEVICE__ typename pointer_traits< const shared_ptr<U> >::naked_pointer cast_naked( const shared_ptr<U>& ptr ) { return ptr.get(); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< padded_ptr<T,U> > {
-	typedef typename padded_ptr<T,U>::element_type element_type;
-	typedef padded_ptr<T,U> pointer;
-	typedef padded_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
-	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
-	typedef padded_ptr<T,typename pointer_traits<U>::unmanaged_pointer> unmanaged_pointer;
-	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return make_unmanaged(ptr)+x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( const pointer& ptr ) const {
-		typename pointer_traits<U>::unmanaged_pointer mp1 = pointer_traits<U>().make_unmanaged( ptr.get_edge() );
-		typename pointer_traits<U>::unmanaged_pointer mp2 = pointer_traits<U>().make_unmanaged( ptr.get() );
-		return unmanaged_pointer( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
-	}
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< padded_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const padded_ptr<T2,U2>& ptr ) {
-		typename pointer_traits<U2>::unmanaged_pointer p1 = pointer_traits<U2>::cast_unmanaged( ptr.get_edge() );
-		typename pointer_traits<U2>::unmanaged_pointer p2 = pointer_traits<U2>::cast_unmanaged( ptr.get() );
-		return typename pointer_traits< padded_ptr<T2,U2> >::unmanaged_pointer( p1, ptr.get_pitch(), ptr.get_width(), p2 );
-	}
-	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< padded_ptr<T2, U2> >::naked_pointer cast_naked( const padded_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< const padded_ptr<T,U> > {
-	typedef typename padded_ptr<T,U>::element_type element_type;
-	typedef const padded_ptr<T,U> pointer;
-	typedef const padded_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
-	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
-	typedef padded_ptr<const T,typename pointer_traits<typename pointer_traits<U>::const_pointer>::unmanaged_pointer> unmanaged_pointer;
-	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return make_unmanaged(ptr)+x; }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( const pointer& ptr ) const {
-		typename pointer_traits<U>::unmanaged_pointer mp1 = pointer_traits<U>().make_unmanaged( ptr.get_edge() );
-		typename pointer_traits<U>::unmanaged_pointer mp2 = pointer_traits<U>().make_unmanaged( ptr.get() );
-		return unmanaged_pointer( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
-	}
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< const padded_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const padded_ptr<T2,U2>& ptr ) {
-		typename pointer_traits<U2>::unmanaged_pointer p1 = pointer_traits<U2>::cast_unmanaged( ptr.get_edge() );
-		typename pointer_traits<U2>::unmanaged_pointer p2 = pointer_traits<U2>::cast_unmanaged( ptr.get() );
-		return typename pointer_traits<U2>::unmanaged_pointer( p1, ptr.get_pitch(), ptr.get_width(), p2 );
-	}
-	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const padded_ptr<T2, U2> >::naked_pointer cast_naked( const padded_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< striding_ptr<T,U> > {
-	typedef typename striding_ptr<T,U>::element_type element_type;
-	typedef striding_ptr<T,U> pointer;
-	typedef striding_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
-	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
-	typedef striding_ptr<T,typename pointer_traits<U>::unmanaged_pointer> unmanaged_pointer;
-	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( const pointer& ptr ) const { return unmanaged_pointer( pointer_traits<U>().make_unmanaged( ptr.get() ), ptr.get_stride() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return make_unmanaged(ptr)+x; }
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< striding_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const striding_ptr<T2,U2>& ptr ) {
-		return typename pointer_traits< striding_ptr<T2,U2> >::unmanaged_pointer( pointer_traits<U2>::cast_unmanaged( ptr.get() ), ptr.get_stride() );
-	}
-	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< striding_ptr<T2, U2> >::naked_pointer cast_naked( const striding_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
-};
-
-template<typename T,typename U>
-struct pointer_traits< const striding_ptr<T,U> > {
-	typedef typename striding_ptr<T,U>::element_type element_type;
-	typedef const striding_ptr<T,U> pointer;
-	typedef const striding_ptr<const T,typename pointer_traits<U>::const_pointer> const_pointer;
-	typedef typename pointer_traits<U>::naked_pointer naked_pointer;
-	typedef striding_ptr<const T,typename pointer_traits<typename pointer_traits<U>::const_pointer>::unmanaged_pointer> unmanaged_pointer;
-	typedef typename pointer_traits<U>::char_pointer char_pointer;
-	__HOST__ __DEVICE__ inline naked_pointer undress( const pointer& ptr ) const { return pointer_traits<U>().undress( ptr.get() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer make_unmanaged( const pointer& ptr ) const { return unmanaged_pointer( pointer_traits<U>().make_unmanaged( ptr.get() ), ptr.get_stride() ); }
-	__HOST__ __DEVICE__ inline unmanaged_pointer increment( const pointer& ptr, const int x ) const { return make_unmanaged(ptr)+x; }
-	template<typename T2,typename U2>
-	static __HOST__ __DEVICE__ typename pointer_traits< const striding_ptr<T2,U2> >::unmanaged_pointer cast_unmanaged( const striding_ptr<T2,U2>& ptr ) {
-		return typename pointer_traits<U2>::unmanaged_pointer( typename pointer_traits<U2>::cast_unmanaged( ptr.get() ), ptr.get_stride() );
-	}
-	template<typename T2, typename U2> static __HOST__ __DEVICE__ typename pointer_traits< const striding_ptr<T2, U2> >::naked_pointer cast_naked( const striding_ptr<T2, U2>& ptr ) { return pointer_traits<U2>::cast_naked( ptr.get() ); }
-};
-
-*/
 
 } // namespace ecuda
 

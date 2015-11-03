@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <list>
 //#include <initializer_list>
@@ -7,7 +8,7 @@
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/array.hpp"
 #include "../include/ecuda/matrix.hpp"
-#include "../include/ecuda/models.hpp"
+//#include "../include/ecuda/models.hpp"
 #include "../include/ecuda/vector.hpp"
 
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
@@ -30,15 +31,18 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 
 int main( int argc, char* argv[] ) {
 
-	std::vector<int> hostVector( 100 );
-	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
+	const std::size_t nRows = 5;
+	const std::size_t nCols = 21;
 
-	ecuda::matrix<int> deviceMatrix( 5, 20 );
+	std::vector<int> hostVector( nRows*nCols );
+	for( unsigned i = 0; i < hostVector.size(); ++i ) hostVector[i] = i;
+
+	ecuda::matrix<int> deviceMatrix( nRows, nCols );
 	// below needs to be made to work
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
 	#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 	{
-		ecuda::matrix<int> deviceMatrix2( 5, 20 );
+		ecuda::matrix<int> deviceMatrix2( nRows, nCols );
 		testIterators2<<<1,1>>>( deviceMatrix, deviceMatrix2 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
@@ -52,11 +56,11 @@ int main( int argc, char* argv[] ) {
 	#endif
 
 	{
-		std::vector<int> tmp( 100 );
+		std::vector<int> tmp( nRows*nCols );
 		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), tmp.begin() ); // TODO: confirm the pseudo-contiguous nature of deviceMatrix.begin() is being accounted for
 		unsigned mrkr = 0;
-		for( unsigned i = 0; i < 5; ++i ) {
-			std::cout << "ROW[" << i << "] ="; for( unsigned j = 0; j < 20; ++j, ++mrkr ) std::cout << " " << tmp[mrkr]; std::cout << std::endl;
+		for( unsigned i = 0; i < nRows; ++i ) {
+			std::cout << "ROW[" << i << "] ="; for( unsigned j = 0; j < nCols; ++j, ++mrkr ) std::cout << " " << std::setw(3) << tmp[mrkr]; std::cout << std::endl;
 		}
 	}
 

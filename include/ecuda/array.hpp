@@ -48,7 +48,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "allocators.hpp"
 #include "iterator.hpp"
 #include "memory.hpp"
-#include "models.hpp"
+#include "impl/models.hpp"
 
 namespace ecuda {
 
