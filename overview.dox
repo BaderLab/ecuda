@@ -2,7 +2,7 @@
 /// Justification: a clean C++ interface to CUDA is needed
 ///
 /// The standard library (std::) contains a long established and required set of libaries.
-/// Everyone knows its organization and semantic conventions.
+/// Most everyone knows its organization and semantic conventions.
 ///
 /// Problem 1: CUDA device code cannot call std:: because __host__ is assumed
 ///
@@ -49,10 +49,16 @@
 /// \code{.cpp}
 /// double* startPtr;
 /// size_t pitch;
-/// cudaMallocPitch( &startPtr, &pitch, 1000, 1000 );
+/// cudaMallocPitch( &startPtr, &pitch, 200, 1000 );
 /// \endcode
 ///
-///
+/// Here, we allocate a 200x1000=200,000 sized block of elements.  Typically, the dimensions correspond in some way to
+/// CUDA threads (i.e. there are 200 simultaneous threads, each responsible for performing some operation on its own
+/// set of 1000 elements).  However, the allocation is not completely contiguous as cudaMallocPitch will hardware align
+/// the start of each block of 200 elements, so there may be some padding between each block to achieve this.  Since this
+/// strategy is vital for reducing the number of memory read/write operations that must be performed by a pool of threads,
+/// we're normally forced to keep track of the "pitch" (the actual width of each row in bytes vs the 200 we explicitly
+/// desire).
 ///
 /// Problem 4: the multi-threaded nature of CUDA make container-type data structures more natural to represent as matrices
 ///
