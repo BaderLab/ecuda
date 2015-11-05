@@ -5,7 +5,6 @@
 #include "../include/ecuda/algorithm.hpp"
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/array.hpp"
-#include "../include/ecuda/models.hpp"
 
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T,std::size_t N>
@@ -16,6 +15,70 @@ __global__ void testIterators( const ecuda::array<T,N> src, ecuda::array<T,N> de
 #endif
 
 int main( int argc, char* argv[] ) {
+
+	{
+		std::cerr << "TESTING CONSTRUCTORS" << std::endl;
+		std::cerr << "--------------------" << std::endl;
+		{
+			const std::size_t N = 1000;
+			ecuda::array<double,N> deviceArray;
+			std::vector<double> hostVector( N );
+			std::cerr << "ecuda::array() : " << std::boolalpha << ecuda::equal( deviceArray.begin(), deviceArray.end(), hostVector.begin() ) << std::endl;
+		}
+		{
+			const std::size_t N = 1000;
+			ecuda::array<double,N> deviceArray1;
+			ecuda::array<double,N> deviceArray2( deviceArray1 );
+			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 ); // filling deviceArray1 should be reflected in deviceArray2
+			std::vector<double> hostVector( N, 99.0 );
+			std::cerr << "ecuda::array( const ecuda::array& ) : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+		}
+		#ifdef __CPP11_SUPPORTED__
+		{
+			std::cerr << "ecuda::array( ecuda::array&& ) : TEST NOT IMPLEMENTED" << std::endl;
+		}
+		#endif
+		std::cerr << std::endl;
+	}
+	{
+		std::cerr << "TESTING ACCESSORS" << std::endl;
+		std::cerr << "-----------------" << std::endl;
+		{
+			const std::size_t N = 1000;
+			ecuda::array<double,N> deviceArray;
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			for( typename ecuda::array<double,N>::size_type i = 0; i < deviceArray.size(); ++i ) deviceArray[i] = static_cast<double>(i);
+			std::cerr << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
+			std::cerr << "ecuda::array::front()    : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(0) ) << std::endl;
+			std::cerr << "ecuda::array::back()     : " << std::boolalpha << ( deviceArray.back() == static_cast<double>(N-1) ) << std::endl;
+			//std::vector<double> hostVector( N );
+			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
+			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
+			#else
+			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			#endif
+			std::cerr << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
+			std::cerr << "ecuda::array::size()     : " << std::boolalpha << ( deviceArray.size() == N ) << std::endl;
+			std::cerr << "ecuda::array::data()     : " << std::boolalpha << ( deviceArray.data() > 0 ) << std::endl;
+		}
+		std::cerr << std::endl;
+	}
+	{
+		std::cerr << "TESTING TRANSFORMS" << std::endl;
+		std::cerr << "------------------" << std::endl;
+		{
+			const std::size_t N = 1000;
+			ecuda::array<double,N> deviceArray1;
+			deviceArray1.fill( static_cast<double>(99) );
+			std::vector<double> hostVector1( N, static_cast<double>(99) );
+			std::cerr << "ecuda::array::fill() : " << std::boolalpha << ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector1.begin() ) << std::endl;
+			ecuda::array<double,N> deviceArray2;
+			deviceArray2.fill( static_cast<double>(66) );
+			deviceArray1.swap( deviceArray2 );
+			std::cerr << "ecuda::array::swap() : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector1.begin() ) << std::endl;
+		}
+		std::cerr << std::endl;
+	}
 
 	std::vector<int> hostVector( 100 );	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
 

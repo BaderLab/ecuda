@@ -64,3 +64,8 @@
 ///
 ///
 ///
+/// Caveats:
+///
+/// Container copy ctors are always shallow copies... (same with assignment operator)
+/// Reverse iterators of contiguous sequences are non-contiguous...
+///

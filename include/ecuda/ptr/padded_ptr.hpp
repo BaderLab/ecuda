@@ -145,7 +145,18 @@ public:
 		//const difference_type remainder2 = static_cast<difference_type>(ptr-edge_ptr);
 		//const difference_type middle     = edge_ptr - other.edge_ptr - get_width();
 		//return remainder1+remainder2+middle;
+//TODO: look for optimizations here
+		const difference_type leading  = static_cast<difference_type>( other.get_remaining_width() );
+		const difference_type trailing = static_cast<difference_type>( get_width() - get_remaining_width() );
+		const difference_type middle   = ( ( naked_cast<const char*>(edge_ptr) - naked_cast<const char*>(other.edge_ptr) ) / get_pitch() - 1 ) * get_width();
+		return ( leading + middle + trailing );
+/*
+		const difference_type remainder1 = static_cast<difference_type>()
+		std::cerr << "operator- other.get_remaining_width()=" << other.get_remaining_width() << std::endl;
+		std::cerr << "operator- (ptr - other.edge_ptr)=" << ( ptr - other.edge_ptr ) << std::endl;
+		std::cerr << "operator- get_width()=" << get_width() << std::endl;
 		return static_cast<difference_type>(other.get_remaining_width()) + ( ptr - other.edge_ptr ) - get_width();
+*/
 	}
 
 	/*

@@ -1,14 +1,12 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
-//#include <initializer_list>
 #include <vector>
 
 #include "../include/ecuda/algorithm.hpp"
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/array.hpp"
 #include "../include/ecuda/matrix.hpp"
-//#include "../include/ecuda/models.hpp"
 #include "../include/ecuda/vector.hpp"
 
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
@@ -30,6 +28,79 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 #endif
 
 int main( int argc, char* argv[] ) {
+
+	{
+		std::cerr << "TESTING CONSTRUCTORS" << std::endl;
+		std::cerr << "--------------------" << std::endl;
+		{
+			const std::size_t R = 5;
+			const std::size_t C = 21;
+			ecuda::matrix<double> deviceMatrix( R, C );
+			std::vector<double> hostVector( R*C );
+			std::cerr << "ecuda::matrix() : " << std::boolalpha << ecuda::equal( deviceMatrix.begin(), deviceMatrix.end(), hostVector.begin() ) << std::endl;
+		}
+		{
+			const std::size_t R = 5;
+			const std::size_t C = 21;
+			ecuda::matrix<double> deviceMatrix1( R, C );
+			ecuda::matrix<double> deviceMatrix2( deviceMatrix1 );
+			ecuda::fill( deviceMatrix1.begin(), deviceMatrix1.end(), 99.0 ); // filling deviceArray1 should be reflected in deviceArray2
+			std::vector<double> hostVector( R*C, 99.0 );
+			std::cerr << "ecuda::matrix( const ecuda::matrix& ) : " << std::boolalpha << ecuda::equal( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector.begin() ) << std::endl;
+		}
+		#ifdef __CPP11_SUPPORTED__
+		{
+			std::cerr << "ecuda::matrix( ecuda::matrix&& ) : TEST NOT IMPLEMENTED" << std::endl;
+		}
+		#endif
+		std::cerr << std::endl;
+	}
+	{
+		std::cerr << "TESTING ACCESSORS" << std::endl;
+		std::cerr << "-----------------" << std::endl;
+		{
+			const std::size_t R = 5;
+			const std::size_t C = 21;
+			ecuda::matrix<double> deviceMatrix( R, C );
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			//for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.size(); ++i ) deviceMatrix[i] = static_cast<double>(i);
+			for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.number_rows(); ++i )
+				for( typename ecuda::matrix<double>::size_type j = 0; j < deviceMatrix.number_columns(); ++j )
+					deviceMatrix[i][j] = static_cast<double>(i*deviceMatrix.number_columns()+j);
+			//std::cerr << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
+			std::cerr << "ecuda::matrix::front()    : " << std::boolalpha << ( deviceMatrix.front() == static_cast<double>(0) ) << std::endl;
+			std::cerr << "ecuda::matrix::back()     : " << std::boolalpha << ( deviceMatrix.back() == static_cast<double>(R*C-1) ) << std::endl;
+			//std::vector<double> hostVector( N );
+			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
+			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
+			#else
+			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			#endif
+			std::cerr << "ecuda::matrix::empty()    : " << std::boolalpha << ( !deviceMatrix.empty() ) << std::endl;
+			std::cerr << "ecuda::matrix::size()     : " << std::boolalpha << ( deviceMatrix.size() == (R*C) ) << std::endl;
+			//std::cerr << "ecuda::matrix::data()     : " << std::boolalpha << ( deviceMatrix.data() > 0 ) << std::endl;
+		}
+		std::cerr << std::endl;
+	}
+	{
+		std::cerr << "TESTING TRANSFORMS" << std::endl;
+		std::cerr << "------------------" << std::endl;
+		{
+			const std::size_t R = 5;
+			const std::size_t C = 21;
+			ecuda::matrix<double> deviceMatrix1( R, C );
+			deviceMatrix1.fill( static_cast<double>(99) );
+			std::vector<double> hostVector1( R*C, static_cast<double>(99) );
+			std::cerr << "ecuda::matrix::fill() : " << std::boolalpha << ecuda::equal( deviceMatrix1.begin(), deviceMatrix1.end(), hostVector1.begin() ) << std::endl;
+			ecuda::matrix<double> deviceMatrix2;
+			deviceMatrix2.fill( static_cast<double>(66) );
+			deviceMatrix1.swap( deviceMatrix2 );
+			std::cerr << "ecuda::matrix::swap() : " << std::boolalpha << ecuda::equal( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector1.begin() ) << std::endl;
+		}
+		std::cerr << std::endl;
+	}
+
+	/*
 
 	const std::size_t nRows = 5;
 	const std::size_t nCols = 21;
@@ -70,8 +141,8 @@ int main( int argc, char* argv[] ) {
 		//ecuda::matrix<int> deviceMatrix2( 2, 2 );
 		//deviceMatrix2.assign( { 1, 2, 3, 4 } );
 	}
+	*/
 
 	return EXIT_SUCCESS;
 
 }
-

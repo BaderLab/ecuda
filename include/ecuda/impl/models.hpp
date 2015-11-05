@@ -5,6 +5,8 @@
 #include "../memory.hpp"
 #include "../iterator.hpp"
 
+#include <typeinfo> // del asap
+
 ///
 /// ecuda models contain the lowest-level representation of data structures stored
 /// in video memory.

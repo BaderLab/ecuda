@@ -394,7 +394,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 	typedef typename ecuda::iterator_traits<Iterator>::is_contiguous     iterator_contiguity;
 	const bool isIteratorSomeKindOfContiguous =
 		std::is_same<iterator_contiguity,std::true_type>::value ||
-		std::is_same< iterator_category, device_contiguous_block_iterator_tag >::value;
+		std::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
 	#ifdef __CUDA_ARCH__
 	if( isIteratorSomeKindOfContiguous ) {
 		return ( last - first );

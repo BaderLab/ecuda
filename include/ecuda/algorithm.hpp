@@ -329,7 +329,7 @@ namespace impl {
 
 template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, std::false_type ) // host memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::false_type,std::false_type> ) // host/host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -342,7 +342,40 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, st
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, std::true_type ) // device memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::false_type,std::true_type> ) // host/device memory
+{
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
+	#else
+	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
+	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
+	vector_type2 v2( ecuda::distance(first1,last1) );
+	ecuda::copy( first2, first2+v2.size(), v2.size() );
+	std::pair<InputIterator1,typename vector_type2::iterator> p = std::mismatch( first1, last1, v2.begin() );
+	ecuda::advance( first2, ecuda::distance(v2.begin(),p.second) );
+	return ecuda::pair<InputIterator1,InputIterator2>( p.first, first2 );
+	#endif
+}
+
+template<class InputIterator1,class InputIterator2>
+__HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::true_type,std::false_type> ) // device/host memory
+{
+	#ifdef __CUDA_ARCH__
+	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
+	#else
+	InputIterator2 last2 = first2;
+	ecuda::advance( last2, ecuda::distance(first1,last1) );
+	ecuda::pair<InputIterator2,InputIterator1> p = mismatch( first2, last2, first1 );
+	return ecuda::pair<InputIterator1,InputIterator2>( p.second, p.first );
+	#endif
+}
+
+template<class InputIterator1,class InputIterator2>
+__HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::true_type,std::true_type> ) // device/device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( (first1 != last1) && (*first1 == *first2) ) { ++first1; ++first2; }
@@ -355,9 +388,13 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, st
 	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
 	vector_type2 v2( v1.size() );
 	ecuda::copy( first1, last1, v1.begin() );
-	ecuda::copy( first2, first2+v2.size(), v2.begin() );
+	InputIterator2 last2 = first2;
+	ecuda::advance( last2, ecuda::distance(first1,last1) );
+	ecuda::copy( first2, last2, v2.begin() );
 	std::pair<typename vector_type1::iterator,typename vector_type2::iterator> p = std::mismatch( v1.begin(), v1.end(), v2.begin() );
-	return ecuda::pair<InputIterator1,InputIterator2>( first1+std::distance(v1.begin(),p.first), first2+std::distance(v2.begin(),p.second) );
+	ecuda::advance( first1, ecuda::distance(v1.begin(),p.first) );
+	ecuda::advance( first2, ecuda::distance(v2.begin(),p.second) );
+	return ecuda::pair<InputIterator1,InputIterator2>( first1, first2 );
 	#endif
 }
 
@@ -367,8 +404,11 @@ template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 )
 {
-	ECUDA_STATIC_ASSERT(false,NEED_TO_IMPLEMENT_DEVICE_CHECKS_ON_BOTH_SEQUENCES);
-	return impl::mismatch( first1, last1, first2, typename ecuda::iterator_traits<InputIterator1>::is_device_iterator() );
+	return impl::mismatch(
+					first1, last1,
+					first2,
+					ecuda::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator(),typename ecuda::iterator_traits<InputIterator2>::is_device_iterator()>()
+				);
 }
 
 } // namespace ecuda
