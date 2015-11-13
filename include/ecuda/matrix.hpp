@@ -54,6 +54,12 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+namespace impl {
+
+template<typename T,class Alloc> class matrix_device_argument; // forward declaration
+
+} // namespace impl
+
 ///
 /// \brief A resizable matrix stored in device memory.
 ///
@@ -142,12 +148,20 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
+	typedef impl::matrix_device_argument<T,Alloc> kernel_argument;
+
 private:
 	allocator_type allocator;
 	template<typename U,class Alloc2> class device_matrix;
 
-public:
-	typedef device_matrix<T,Alloc> kernel;
+protected:
+	__HOST__ __DEVICE__ matrix( const matrix& src, std::true_type ) : base_type(src), allocator(src.allocator) {}
+	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		allocator = other.allocator;
+		return *this;
+	}
+
 
 protected:
 	__HOST__ __DEVICE__ matrix( const base_type& src, allocator_type alloc ) : base_type(src), allocator(alloc) {
@@ -163,7 +177,8 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), Alloc allocator = Alloc() ) : base_type( pointer(), numberRows, numberColumns ), allocator(allocator) {
+	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), Alloc allocator = Alloc() ) : base_type( pointer(), numberRows, numberColumns ), allocator(allocator)
+	{
 		if( numberRows and numberColumns ) {
 			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
 			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
@@ -182,33 +197,28 @@ public:
 	}
 
 	///
-	/// \brief Constructs a matrix with a shallow copy of each of the elements in src.
+	/// \brief Copy constructor.
 	///
-	/// Be careful to note that a shallow copy means that only the pointer to the device memory
-	/// that holds the elements is copied in the newly constructed container. This allows
-	/// containers to be passed-by-value to kernel functions with minimal overhead. If a deep copy
-	/// of the container is required in host code, use the << or >> operators, or use iterators.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// ecuda::matrix<int> matrix( 5, 10, 99 ); // create a matrix of dimensions 5x10 filled with 99
-	/// ecuda::matrix<int> newMatrix( matrix ); // shallow copy (changes to newMatrix reflected in matrix)
-	/// ecuda::matrix<int> newMatrix( 5, 10 );
-	/// newMatrix << matrix; // deep copy
-	/// matrix >> newMatrix; // deep copy
-	/// newMatrix.assign( matrix.begin(), matrix.end() ); // deep copy
-	/// \endcode
+	/// Constructs the matrix with a copy of the contents of src.
 	///
 	/// \param src Another matrix object of the same type, whose contents are copied.
 	///
-	__HOST__ /*__DEVICE__*/ matrix( const matrix& src ) : base_type(src),
+	__HOST__ matrix( const matrix& src ) : base_type(src),
 		//#ifdef __CPP11_SUPPORTED__
 		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 		//#else
 		allocator(src.allocator)
 		//#endif
 	{
-		//TODO: add deep copy
+		ecuda::copy( src.begin(), src.end(), begin() );
+	}
+
+	__HOST__ matrix& operator=( const matrix& other )
+	{
+		allocator = other.allocator;
+		resize( other.number_rows(), other.number_columns() );
+		ecuda::copy( other.begin(), other.end(), begin() );
+		return *this;
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -350,7 +360,8 @@ public:
 	/// \param newNumberColumns new number of columns
 	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
-	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const value_type& value = value_type() ) {
+	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const value_type& value = value_type() )
+	{
 		if( number_rows() == newNumberRows and number_columns() == newNumberColumns ) return; // no resize needed
 		// create new model
 		matrix newMatrix( newNumberRows, newNumberColumns, value, get_allocator() );
@@ -831,62 +842,24 @@ public:
 	}
 	*/
 
-	///
-	/// \brief Copies the contents of this device matrix to another container.
-	///
-	/// The matrix is converted into a row-major linearized form (all columns
-	/// of the first row, then all columns of the second row, ...).
-	///
-	template<class Container>
-	__HOST__ Container& operator>>( Container& dest ) const {
-		typename Container::iterator destIter = dest.begin();
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			const_row_type row = get_row(i);
-			ecuda::copy( row.begin(), row.end(), destIter );
-			ecuda::advance( destIter, number_columns() );
-		}
-		return dest;
-	}
+};
 
-	///
-	/// \brief Copies the contents of another container to this device matrix.
-	///
-	/// The size of the container must match the number of elements in this
-	/// matrix (number_rows()*number_columns()). The source container is assumed to
-	/// be in row-major linear form (all columns of the first row, then all
-	/// columns of the second row, ...).
-	///
-	/// \param src container to copy data from
-	/// \throws std::length_error if number of elements in src does not match the size of this matrix
-	///
-	template<class Container>
-	__HOST__ matrix& operator<<( const Container& src ) {
-		typename Container::const_iterator srcIter = src.begin();
-		typename ecuda::iterator_traits<typename Container::const_iterator>::difference_type len = ecuda::distance( src.begin(), src.end() );
-		if( len < 0 or static_cast<size_type>(len) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::matrix::operator<<() provided with a container of non-matching size") );
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			row_type row = get_row(i);
-			typename Container::const_iterator srcEnd = srcIter;
-			ecuda::advance( srcEnd, number_columns() );
-			row.assign( srcIter, srcEnd );
-			srcIter = srcEnd;
-		}
+namespace impl {
+
+template< typename T, class Alloc=device_pitch_allocator<T> >
+class matrix_device_argument : public matrix<T,Alloc> {
+
+public:
+	matrix_device_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	matrix_device_argument& operator=( const matrix<T,Alloc>& src ) {
+		matrix<T,Alloc>::shallow_assign( src );
 		return *this;
 	}
 
-
 };
 
-template<typename T,class Alloc>
-class device_matrix : public matrix<T,Alloc> {
-
-private:
-	typedef matrix<T,Alloc> base_type;
-
-public:
-	device_matrix( const matrix<T,Alloc>& src ) : base_type( src, src.get_allocator() ) {}
-
-};
+} // namespace impl
 
 
 ///

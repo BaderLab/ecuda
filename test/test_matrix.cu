@@ -25,6 +25,20 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 		ecuda::copy( srcColumn.begin(), srcColumn.end(), destColumn.begin() );
 	}
 }
+
+template<typename T,class Alloc>
+__global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest ) {
+							   //ecuda::impl::matrix_device_argument<T,Alloc> dest ) {
+//		const typename ecuda::matrix<T,Alloc>::argument src, typename ecuda::matrix<T,Alloc>::argument dest ) {
+	//typedef ecuda::matrix<T,Alloc1> src_matrix_type;
+	//typedef ecuda::matrix<U,Alloc2> dest_matrix_type;
+	//for( typename src_matrix_type::size_type i = 0; i < src.number_rows(); ++i ) {
+	//	for( typename src_matrix_type::size_type j = 0; j < src.number_columns(); ++j ) {
+	//		dest[i][j] = src[i][j];
+	//	}
+	//}
+}
+
 #endif
 
 int main( int argc, char* argv[] ) {
@@ -74,7 +88,16 @@ int main( int argc, char* argv[] ) {
 			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
 			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
 			#else
-			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			ecuda::matrix<double> deviceMatrix2( R, C );
+			{
+				ecuda::matrix<double> arg1( deviceMatrix );
+				ecuda::matrix<double> arg2( deviceMatrix2 );
+				//testAccessors< double, ecuda::device_pitch_allocator<double> ><<<1,1>>>( arg1, arg2 );
+				//CUDA_CHECK_ERRORS();
+				//CUDA_CALL( cudaDeviceSynchronize() );
+				CUDA_CALL_KERNEL_AND_WAIT( testAccessors< double, ecuda::device_pitch_allocator<double> ><<<1,1>>>( arg1, arg2 ) );
+			}
+			//ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
 			#endif
 			std::cerr << "ecuda::matrix::empty()    : " << std::boolalpha << ( !deviceMatrix.empty() ) << std::endl;
 			std::cerr << "ecuda::matrix::size()     : " << std::boolalpha << ( deviceMatrix.size() == (R*C) ) << std::endl;

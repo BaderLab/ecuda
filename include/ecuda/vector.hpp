@@ -59,31 +59,11 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-/// \cond DEVELOPER_DOCUMENTATION
-/*
-template<typename T> struct __is_integer { typedef std::false_type __type; };
-template<> struct __is_integer<bool> { typedef std::true_type __type; };
-template<> struct __is_integer<char> { typedef std::true_type __type; };
-template<> struct __is_integer<signed char> { typedef std::true_type __type; };
-template<> struct __is_integer<unsigned char> { typedef std::true_type __type; };
-#ifdef _GLIBCXX_USE_WCHAR_T
-template<> struct __is_integer<wchar_t> { typedef std::true_type __type; };
-#endif
-#ifdef __CPP11_SUPPORTED__
-template<> struct __is_integer<char16_t> { typedef std::true_type __type; };
-template<> struct __is_integer<char32_t> { typedef std::true_type __type; };
-#endif
-template<> struct __is_integer<short> { typedef std::true_type __type; };
-template<> struct __is_integer<unsigned short> { typedef std::true_type __type; };
-template<> struct __is_integer<int> { typedef std::true_type __type; };
-template<> struct __is_integer<unsigned int> { typedef std::true_type __type; };
-template<> struct __is_integer<long> { typedef std::true_type __type; };
-template<> struct __is_integer<unsigned long> { typedef std::true_type __type; };
-template<> struct __is_integer<long long> { typedef std::true_type __type; };
-template<> struct __is_integer<unsigned long long> { typedef std::true_type __type; };
-*/
-/// \endcond
+namespace impl {
 
+template<typename T,class Alloc> class vector_device_argument; // forward declaration
+
+} // namespace impl
 
 ///
 /// \brief A resizable vector stored in device memory.
@@ -124,9 +104,21 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
+	typedef impl::vector_device_argument<T,Alloc> kernel_argument;
+
 private:
 	size_type n; //!< number of elements currently stored
 	allocator_type allocator;
+
+protected:
+	__HOST__ __DEVICE__ vector( const vector& src, std::true_type ) : base_type(src), n(src.n), allocator(src.allocator) {}
+	__HOST__ __DEVICE__ vector& shallow_assign( const vector& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		n = other.n;
+		allocator = other.allocator;
+		return *this;
+	}
+
 
 private:
 	__HOST__ void growMemory( size_type minimum );
@@ -928,6 +920,22 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
 	ecuda::copy( begin(), end(), newSequence.begin() );
 	base_type::swap( newSequence );
 }
+
+namespace impl {
+
+template<typename T,class Alloc>
+class vector_device_argument : public vector<T,Alloc> {
+
+public:
+	vector_device_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, std::true_type() ) {}
+	vector_device_argument& operator=( const vector<T,Alloc>& src ) {
+		vector<T,Alloc>::shallow_assign( src );
+		return *this;
+	}
+
+};
+
+} // namespace impl
 
 } // namespace ecuda
 

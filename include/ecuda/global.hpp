@@ -42,17 +42,19 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <sstream>
 
+///
+/// \cond DEVELOPER_DOCUMENTATION
+///
+///
+///
+/// \endcond
+///
+
 //#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 
 #include "cuda_error.hpp"
 
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-enum cudaMemcpyKind {
-	cudaMemcpyDeviceToDevice,
-	cudaMemcpyDeviceToHost,
-	cudaMemcpyHostToDevice
-};
-#endif
+#include "impl/host_emulation.hpp"
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
@@ -60,13 +62,15 @@ enum cudaMemcpyKind {
 #endif
 
 ///
-/// Function wrapper that capture and throw an exception on error.  All calls
-/// to functions in the CUDA API that return an error code should use this.
-///
+/// Macro function that captures a CUDA error code and then does something
+/// with it.  All calls to functions in the CUDA API that return an error code
+/// should use this.
 #ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // cannot do CUDA calls when emulating with host only
 #define CUDA_CALL(x) x
 #else
+/// Macro function currently throws an ecuda::cuda_error exception containing a
+/// description of the problem error code.
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 #endif
 
@@ -81,7 +85,8 @@ enum cudaMemcpyKind {
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
 /// should be declared after any CUDA API calls that do not return an error code
-/// (e.g. after calling kernel functions).
+/// (e.g. after calling kernel functions). Calling this when a CUDA API call
+/// has not been made is safe.
 ///
 #ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // cannot check CUDA errors when emulating with host only
@@ -150,19 +155,19 @@ template<bool condition> struct static_assertion {};
 template<> struct static_assertion<true>
 {
 	enum {
+		CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE,
+		CANNOT_ADVANCE_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE,
 		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY,
 		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY,
 		CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
 		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_MAX_ELEMENT,
 		COPY_IS_UNEXPECTEDLY_BETWEEN_IDENTICAL_TYPES,
-		CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
-		CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_NONCONTIGUOUS_DEVICE_MEMORY,
 		CANNOT_FILL_WITH_NONCONTIGUOUS_DEVICE_ITERATOR,
-		CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE,
 		CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE,
-		CANNOT_ADVANCE_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE,
 		COPY_ITERATOR_VALUE_TYPES_DO_NOT_MATCH_ARGUMENT_TYPES,
 		CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR,
+		CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
+		CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_NONCONTIGUOUS_DEVICE_MEMORY,
 		CANNOT_CALL_FILL_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
 		CANNOT_CALL_REVERSE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE,
 		CANNOT_CALL_REVERSE_ON_NONCONTIGUOUS_DEVICE_MEMORY,

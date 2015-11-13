@@ -8,7 +8,8 @@
 
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T,std::size_t N>
-__global__ void testIterators( const ecuda::array<T,N> src, ecuda::array<T,N> dest ) {
+//__global__ void testIterators( const typename ecuda::array<T,N>::argument src, ecuda::array<T,N> dest ) {
+__global__ void testIterators( const typename ecuda::array<T,N>::argument src, typename ecuda::array<T,N>::argument dest ) {
 	typename ecuda::array<T,N>::iterator result = dest.begin();
 	for( typename ecuda::array<T,N>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
 }
@@ -55,7 +56,7 @@ int main( int argc, char* argv[] ) {
 			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
 			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
 			#else
-			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+//			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
 			#endif
 			std::cerr << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
 			std::cerr << "ecuda::array::size()     : " << std::boolalpha << ( deviceArray.size() == N ) << std::endl;
@@ -91,7 +92,7 @@ int main( int argc, char* argv[] ) {
 	#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 	{
 		ecuda::array<int,100> deviceArray2;
-		testIterators<<<1,1>>>( deviceArray, deviceArray2 );
+		testIterators<int,100><<<1,1>>>( deviceArray, deviceArray2 );
 		CUDA_CHECK_ERRORS();
 		CUDA_CALL( cudaDeviceSynchronize() );
 		std::cout << "EQUAL " << ( deviceArray == deviceArray2 ? "true" : "false" ) << std::endl;

@@ -74,7 +74,7 @@ namespace ecuda {
 /// ecuda::vector<int> deviceVector(1000);
 /// // do work on device vector using the GPU...
 /// std::vector< int, ecuda::host_allocator<int> > hostVector( 1000 );
-/// deviceVector >> hostVector; // copy results from device to host
+/// ecuda::copy( deviceVector.begin(), deviceVector.end(), hostVector.begin() ); // copy results from device to host
 /// \endcode
 /// This would potentially be a faster transfer than one would get using a
 /// <tt>std::vector</tt> with the default STL allocator.
@@ -143,7 +143,7 @@ public:
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
+	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
@@ -296,11 +296,11 @@ public:
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
+	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
+	/// The block of storage is allocated using cudaMalloc and throws std::bad_alloc if it cannot
 	/// allocate the total amount of storage requested.
 	///
 	/// \param n Number of elements (each of size sizeof(value_type)) to be allocated.
@@ -463,16 +463,15 @@ public:
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
+	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
+	/// The block of storage is allocated using cudaMallocPitch and throws std::bad_alloc if it cannot
 	/// allocate the total amount of storage requested.
 	///
 	/// \param w Width of the matrix (each of size sizeof(value_type)) to be allocated.
 	/// \param h Height of the matrix to be allocated.
-	/// \param[out] pitch Pitch resulting from the 2D memory allocation.
 	/// \param hint Either 0 or a value previously obtained by another call to allocate and not
 	///             yet freed with deallocate.  For standard memory allocation, a non-zero value may
 	///             used as a hint to improve performance by allocating the new block near the one

@@ -51,6 +51,12 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+namespace impl {
+
+template<typename T,class Alloc> class cube_device_argument; // forward declaration
+
+} // namespace impl
+
 ///
 /// \brief A resizable cube stored in device memory.
 ///
@@ -148,9 +154,20 @@ public:
 	typedef impl::device_contiguous_row_matrix< const value_type, padded_ptr< const value_type,   padded_ptr<const value_type> > > const_slice_xz_type; //!< const xz section of a cube at a fixed column
 	typedef impl::device_contiguous_row_matrix< const value_type, padded_ptr<const value_type>                                   > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
+	typedef impl::cube_device_argument<T,Alloc> kernel_argument;
+
 private:
 	allocator_type allocator;
 	size_type numberRows; //!< number of rows
+
+protected:
+	__HOST__ __DEVICE__ cube( const cube& src, std::true_type ) : base_type(src), allocator(src.allocator), numberRows(src.numberRows) {}
+	__HOST__ __DEVICE__ cube& shallow_assign( const cube& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		allocator = other.allocator;
+		numberRows = other.numberRows;
+		return *this;
+	}
 
 /*
 private:
@@ -901,6 +918,23 @@ public:
 	*/
 
 };
+
+namespace impl {
+
+template< typename T, class Alloc=device_pitch_allocator<T> >
+class cube_device_argument : public cube<T,Alloc> {
+
+public:
+	cube_device_argument( const cube<T,Alloc>& src ) : cube<T,Alloc>( src, std::true_type() ) {}
+	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	cube_device_argument& operator=( const cube<T,Alloc>& src ) {
+		cube<T,Alloc>::shallow_assign( src );
+		return *this;
+	}
+
+};
+
+} // namespace impl
 
 } // namespace ecuda
 

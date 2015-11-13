@@ -6,7 +6,6 @@
 #include "../include/ecuda/algorithm.hpp"
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/cube.hpp"
-#include "../include/ecuda/models.hpp"
 
 template<typename T>
 __global__ void testIterators( const ecuda::cube<T> src, ecuda::cube<T> dest ) {

@@ -52,6 +52,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+namespace impl {
+
+template<typename T,std::size_t N> class array_device_argument; // forward declaration
+
+} // namespace impl
+
+
 ///
 /// \brief A fixed-size array stored in device memory.
 ///
@@ -84,6 +91,15 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
+	typedef impl::array_device_argument<T,N> kernel_argument;
+
+protected:
+	__HOST__ __DEVICE__ array( const array& src, std::true_type ) : base_type(src) {}
+	__HOST__ __DEVICE__ array& shallow_assign( const array& other ) {
+		base_type::get_pointer() = other.get_pointer();
+		return *this;
+	}
+
 public:
 	///
 	/// \brief Constructs a fixed-size array with N elements.
@@ -112,7 +128,28 @@ public:
 	///
 	/// \param src Another array object of the same type and size, whose contents are shallow copied.
 	///
-	__HOST__ __DEVICE__ array( const array& src ) : base_type(src) {}
+//	__HOST__ __DEVICE__ array( const array& src ) : base_type(src) {}
+	__HOST__ array( const array& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(src.size()) ) ) {
+		ecuda::copy( src.begin(), src.end(), begin() );
+	}
+
+	///
+	/// \brief Overwrites every element of the array with the corresponding element of another array.
+	///
+	/// Note that the behaviour differs depending on whether the assignment occurs on the
+	/// host or the device. If called from the host, a deep copy is performed: additional
+	/// memory is allocated in this container and the contents of other are copied there.
+	/// If called from the device, a shallow copy is performed: the pointer to the device
+	/// memory is copied only.  Therefore any changes made to this container are reflected
+	/// in other as well, and vice versa.
+	///
+	/// \param other Container whose contents are to be assigned to this container.
+	/// \return A reference to this container.
+	///
+	__HOST__ array& operator=( const array& other ) {
+		ecuda::copy( other.begin(), other.end(), begin() );
+		return *this;
+	}
 
 	/*
 	///
@@ -422,6 +459,7 @@ public:
 	}
 	*/
 
+	/*
 	///
 	/// \brief Shallow assign the contents of another array to this array.
 	///
@@ -444,34 +482,25 @@ public:
 		base_type::get_pointer() = other.get_pointer();
 		return *this;
 	}
-
-	/*
-	///
-	/// \brief Overwrites every element of the array with the corresponding element of another array.
-	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
-	///
-	/// \param other Container whose contents are to be assigned to this container.
-	/// \return A reference to this container.
-	///
-	__HOST__ __DEVICE__ array& operator=( const array& other ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		base_type::get_pointer() = other.get_pointer();
-		#else
-		// deep copy if called from host
-		ecuda::copy( other.begin(), other.end(), begin() );
-		#endif
-		return *this;
-	}
 	*/
 
 };
+
+namespace impl {
+
+template<typename T,std::size_t N>
+class array_device_argument : public array<T,N> {
+
+public:
+	array_device_argument( const array<T,N>& src ) : array<T,N>( src, std::true_type() ) {}
+	array_device_argument& operator=( const array<T,N>& src ) {
+		array<T,N>::shallow_assign( src );
+		return *this;
+	}
+
+};
+
+} // namespace impl
 
 } // namespace ecuda
 
