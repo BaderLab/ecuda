@@ -711,3 +711,12 @@ Talk about passing arguments as container::kernel_argument
 /// Container copy ctors are always shallow copies... (same with assignment operator)
 /// Reverse iterators of contiguous sequences are non-contiguous...
 ///
+/// Changes from ecuda 1.0:
+/// the ::kernel_argument typedef / copy ctor/assignment operator actually do as expected / copy ctor is now host only
+/// array no longer provides a copy ctor for another sized array
+/// removal of << and >> container operators (use ecuda::copy)
+/// deprecated cube::get_pitch() (now use cube::data().get_pitch())
+/// deprecated cube::assign(Iterator,Iterator) since it doesn't really apply given that knowledge of row/col size is needed
+///
+
+

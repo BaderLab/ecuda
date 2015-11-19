@@ -56,7 +56,7 @@ namespace ecuda {
 
 namespace impl {
 
-template<typename T,class Alloc> class matrix_device_argument; // forward declaration
+template<typename T,class Alloc> class matrix_kernel_argument; // forward declaration
 
 } // namespace impl
 
@@ -148,7 +148,7 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::matrix_device_argument<T,Alloc> kernel_argument;
+	typedef impl::matrix_kernel_argument<T,Alloc> kernel_argument;
 
 private:
 	allocator_type allocator;
@@ -203,12 +203,9 @@ public:
 	///
 	/// \param src Another matrix object of the same type, whose contents are copied.
 	///
-	__HOST__ matrix( const matrix& src ) : base_type(src),
-		//#ifdef __CPP11_SUPPORTED__
-		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		//#else
-		allocator(src.allocator)
-		//#endif
+	__HOST__ matrix( const matrix& src ) :
+		base_type( pointer(), src.number_rows(), src.number_columns() ),
+		std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator())
 	{
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
@@ -216,7 +213,8 @@ public:
 	__HOST__ matrix& operator=( const matrix& other )
 	{
 		allocator = other.allocator;
-		resize( other.number_rows(), other.number_columns() );
+		if( number_rows() != other.number_rows() or number_columns() != other.number_columns() )
+			resize( other.number_rows(), other.number_columns() );
 		ecuda::copy( other.begin(), other.end(), begin() );
 		return *this;
 	}
@@ -229,7 +227,12 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	__HOST__ matrix( matrix<T>&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
+	__HOST__ matrix( matrix&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
+
+	__HOST__ matrix& operator( matrix&& src ) {
+		base_type::operator=(src);
+		return *this;
+	}
 	#endif
 
 	///
@@ -847,12 +850,12 @@ public:
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix_device_argument : public matrix<T,Alloc> {
+class matrix_kernel_argument : public matrix<T,Alloc> {
 
 public:
-	matrix_device_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	matrix_kernel_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
 	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
-	matrix_device_argument& operator=( const matrix<T,Alloc>& src ) {
+	matrix_kernel_argument& operator=( const matrix<T,Alloc>& src ) {
 		matrix<T,Alloc>::shallow_assign( src );
 		return *this;
 	}

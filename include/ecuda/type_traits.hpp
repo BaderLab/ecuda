@@ -46,6 +46,11 @@ either expressed or implied, of the FreeBSD Project.
 #ifdef __CPP11_SUPPORTED__
 #include <type_traits>
 #else
+///
+/// Reimplementations of various C++11 tools contained in the
+/// <type_traits> header so that we can use them even if the
+/// compiler is pre-C++11.
+///
 namespace std {
 
 template<typename T> struct add_const     { typedef const T type; };
@@ -116,32 +121,16 @@ template<typename T> struct remove_pointer<T* const volatile> { typedef T type; 
 } // namespace std
 #endif
 
-///
-/// Metaprogramming trick to get the type of a dereferenced pointer. Helpful
-/// for implementing the strategy required to make const/non-const iterators.
-/// C++11 type_traits would allow this to be done inline, but nvcc currently
-/// lacks C++11 support. Example:
-///
-///   typedef int* pointer;
-///   ecuda::dereference<pointer>::type value; // equivalent to int& value;
-///
 namespace ecuda {
 
+///
+/// Forward declarations of the five pointer specializations used in the API.
+///
 template<typename T>            class naked_ptr;    // forward declaration
 template<typename T,typename U> class padded_ptr;   // forward declaration
 template<typename T>            class shared_ptr;   // forward declaration
 template<typename T,typename U> class striding_ptr; // forward declaration
 template<typename T,typename U> class unique_ptr;   // forward declaration
-
-/*
-template<typename T>            T*                                  make_naked( T* ptr )                       { return ptr; }
-template<typename T>            const T*                            make_naked( const T* ptr )                 { return ptr; }
-template<typename T>            typename naked_ptr<T>::pointer      make_naked( const naked_ptr<T>& ptr )      { return make_naked(ptr.get()); }
-template<typename T,typename U> typename unique_ptr<T,U>::pointer   make_naked( const unique_ptr<T,U>& ptr )   { return make_naked(ptr.get()); }
-template<typename T>            typename shared_ptr<T>::pointer     make_naked( const shared_ptr<T>& ptr )     { return make_naked(ptr.get()); }
-template<typename T,typename U> typename padded_ptr<T,U>::pointer   make_naked( const padded_ptr<T,U>& ptr )   { return make_naked(ptr.get()); }
-template<typename T,typename U> typename striding_ptr<T,U>::pointer make_naked( const striding_ptr<T,U>& ptr ) { return make_naked(ptr.get()); }
-*/
 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a naked pointer.
@@ -191,7 +180,8 @@ template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U>       >
 template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 
 ///
-/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is free of any management from unique_ptr or shared_ptr.
+/// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is free of any
+/// management from unique_ptr or shared_ptr.
 ///
 /// The type of the resulting pointer can be determined with ecuda::make_unmanaged<T>::type.
 ///

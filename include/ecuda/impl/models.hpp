@@ -63,6 +63,20 @@ public:
 	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
 	__HOST__ __DEVICE__ device_sequence( const device_sequence& src ) : ptr(src.ptr), length(src.length) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_sequence( const device_sequence<U,PointerType2>& src ) : ptr(src.ptr), length(src.length) {}
+	__HOST__ device_sequence& operator=( const device_sequence& src ) {
+		ptr = src.ptr;
+		length = src.length;
+		return *this;
+	}
+
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ device_sequence( device_sequence&& src ) : ptr(std::move(src.ptr)), length(std::move(src.length)) {}
+	__HOST__ device_sequence& operator=( device_sequence&& src ) {
+		ptr = std::move(src.ptr);
+		length = std::move(src.length);
+		return *this;
+	}
+	#endif
 
 	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return length; }
 
@@ -135,6 +149,17 @@ protected:
 public:
 	__HOST__ __DEVICE__ device_fixed_sequence( pointer ptr = pointer() ) : ptr(ptr) {}
 	__HOST__ __DEVICE__ device_fixed_sequence( const device_fixed_sequence& src ) : ptr(src.ptr) {}
+	__HOST__ device_fixed_sequence& operator=( const device_fixed_sequence& src ) {
+		ptr = src.ptr;
+		return *this;
+	}
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ device_fixed_sequence( device_fixed_sequence&& src ) : ptr(std::move(src.ptr)) {}
+	__HOST__ device_fixed_sequence& operator( device_fixed_sequence&& src ) {
+		ptr = std::move(src.ptr);
+		return *this;
+	}
+	#endif
 
 	__HOST__ __DEVICE__ inline __CONSTEXPR__ size_type size() const { return N; }
 
@@ -201,6 +226,17 @@ public:
 	__HOST__ __DEVICE__ device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
 	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence& src ) : base_type(src) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence<U,PointerType2>& src ) : base_type(src) {}
+	__HOST__ device_contiguous_sequence& operator=( const device_contiguous_sequence& src ) {
+		base_type::operator=(src);
+		return *this;
+	}
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ device_contiguous_sequence( device_contiguous_sequence&& src ) : base_type(src) {}
+	__HOST__ device_contiguous_sequence& operator=( device_contiguous_sequence&& src ) {
+		base_type::operator=(src);
+		return *this;
+	}
+	#endif
 
 	__HOST__ __DEVICE__ inline iterator       begin()        { return iterator( unmanaged_cast(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline iterator       end()          { return iterator( unmanaged_cast(base_type::get_pointer()) + base_type::size() ); }
@@ -258,6 +294,19 @@ private:
 public:
 	__HOST__ __DEVICE__ device_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
 	__HOST__ __DEVICE__ device_matrix( const device_matrix& src ) : base_type(src), rows(src.rows) {}
+	__HOST__ device_matrix& operator=( const device_matrix& src ) {
+		base_type::operator=(src);
+		rows = src.rows;
+		return *this;
+	}
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ device_matrix( device_matrix&& src ) : base_type(src), rows(std::move(src.rows)) {}
+	__HOST__ device_matrix& operator=( device_matrix&& src ) {
+		base_type::operator=( src );
+		rows = std::move(src.rows);
+		return *this;
+	}
+	#endif
 
 	__HOST__ __DEVICE__ inline size_type number_rows() const    __NOEXCEPT__ { return rows; }
 	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/rows; }
@@ -309,6 +358,18 @@ public:
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows,columns) {}
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix& src ) : base_type(src) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
+	__HOST__ device_contiguous_row_matrix& operator=( const device_contiguous_row_matrix& src ) {
+		base_type::operator=(src);
+		return *this;
+	}
+
+	#ifdef __CPP11_SUPPORTED__
+	__HOST__ device_contiguous_row_matrix( device_contiguous_row_matrix&& src ) : base_type(src) {}
+	__HOST__ device_contiguous_row_matrix& operator=( device_contiguous_row_matrix&& src ) {
+		base_type::operator=(srC);
+		return *this;
+	}
+	#endif
 
 	__HOST__ __DEVICE__ inline iterator       begin()        __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline iterator       end()          __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }

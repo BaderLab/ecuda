@@ -61,7 +61,7 @@ namespace ecuda {
 
 namespace impl {
 
-template<typename T,class Alloc> class vector_device_argument; // forward declaration
+template<typename T,class Alloc> class vector_kernel_argument; // forward declaration
 
 } // namespace impl
 
@@ -104,7 +104,7 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::vector_device_argument<T,Alloc> kernel_argument;
+	typedef impl::vector_kernel_argument<T,Alloc> kernel_argument;
 
 private:
 	size_type n; //!< number of elements currently stored
@@ -175,29 +175,26 @@ public:
 	}
 
 	///
-	/// \brief Constructs a vector with a shallow copy of each of the elements in src.
+	/// \brief Copy constructor.
 	///
-	/// Be careful to note that a shallow copy means that only the pointer to the device memory
-	/// that holds the elements is copied in the newly constructed container.  This allows
-	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use ecuda::copy function. For example:
+	/// Constructs a vector with a copy of the contents of src.
 	///
-	/// \code{.cpp}
-	/// ecuda::vector<int> vec( 10, 3 ); // create a vector of size 10 filled with 3s
-	/// ecuda::vector<int> newVec( vec ); // shallow copy
-	/// ecuda::vector<int> newVec( 10 );
-	/// ecuda::copy( vec.begin(), vec.end(), newVec.begin() ); // deep copy
-	/// \endcode
+	/// \param src Another vector object of the same type and size, whose contents are copied.
 	///
-	/// \param src Another vector object of the same type, whose contents are copied.
-	///
-	__HOST__ vector( const vector<value_type>& src ) : base_type(src), n(src.n),
-		//#ifdef __CPP11_SUPPORTED__
-		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		//#else
-		allocator(src.allocator)
-		//#endif
+	__HOST__ vector( const vector& src ) :
+		base_type(),
+		n(src.n),
+		std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator())
 	{
+		if( size() != src.size() ) resize( src.size() );
+		ecuda::copy( src.begin(), src.end(), begin() );
+	}
+
+	__HOST__ vector& operator=( const vector& src ) {
+		if( size() != src.size() ) resize( src.size() );
+		allocator = src.allocator;
+		ecuda::copy( src.begin(), src.end(), begin() );
+		return *this;
 	}
 
 	/*
@@ -237,9 +234,13 @@ public:
 	__HOST__ vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : base_type(shared_ptr<T>(allocator.allocate(il.size()))), n(il.size()), allocator(allocator) {
 		ecuda::copy( il.begin(), il.end(), begin() );
 	}
-	#endif
 
-	//__HOST__ __DEVICE__ ~vector() {}
+	__HOST__ vector& operator=( vector&& src ) {
+		base_type::operator=(src);
+		n = std::move(src.n);
+		return *this;
+	}
+	#endif
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -823,89 +824,6 @@ public:
 	///
 	__HOST__ __DEVICE__ inline bool operator>=( const vector& other ) const { return !operator<(other); }
 
-	/*
-	///
-	/// \brief Copies the contents of this device vector to another container.
-	///
-	/// \param dest container to copy contents to
-	///
-	template<class Container>
-	__HOST__ Container& operator>>( Container& dest ) const {
-		ecuda::copy( begin(), end(), dest.begin() );
-		return dest;
-	}
-
-	///
-	/// \brief Copies the contents of a container to this device array.
-	///
-	/// \param src container to copy contents from
-	///
-	template<class Container>
-	__HOST__ vector& operator<<( const Container& src ) {
-		const size_type len = ecuda::distance(src.begin(),src.end());
-		growMemory(len);
-		ecuda::copy( src.begin(), src.end(), begin() );
-		return *this;
-	}
-	*/
-
-	///
-	/// \brief Shallow assign the contents of another vector to this vector.
-	///
-	/// Be careful to note that a shallow assignment means that only the pointer to the device
-	/// memory that holds the elements is copied to this container.  If a deep copy is required,
-	/// use the ecuda::copy function. For example:
-	///
-	/// \code{.cpp}
-	/// ecuda::vector<int> vec( 10 );
-	/// vec.fill( 3 ); // fill array with 3s
-	/// ecuda::vector<int> newVec( 10 );
-	/// newVec = vec; // shallow assignment
-	/// ecuda::copy( vec.begin(), vec.end(), newVec.begin() ); // deep copy
-	/// \endcode
-	///
-	/// \param src Container of the same type and size, whose contents are shallow assigned to this container.
-	/// \return A reference to this container.
-	///
-	__HOST__ __DEVICE__ vector& operator=( const vector& other ) {
-		base_type::get_pointer() = other.get_pointer();
-		n = other.n;
-		allocator = other.allocator;
-		return *this;
-	}
-
-	/*
-	///
-	/// \brief Assignment operator.
-	///
-	/// Copies the contents of other into this container.
-	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
-	///
-	/// \param other Container whose contents are to be assigned to this container.
-	/// \return A reference to this container.
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ vector<value_type,allocator_type>& operator=( const vector<value_type,Alloc2>& other ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		n = other.n;
-		m = other.m;
-		deviceMemory = other.deviceMemory;
-		#else
-		// deep copy if called from host
-		deviceMemory = device_ptr<value_type>( this->allocator.allocate(m) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), other.deviceMemory.get(), m, cudaMemcpyDeviceToDevice ) );
-		#endif
-		return *this;
-	}
-	*/
-
 };
 
 template<typename T,class Alloc>
@@ -924,11 +842,11 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
 namespace impl {
 
 template<typename T,class Alloc>
-class vector_device_argument : public vector<T,Alloc> {
+class vector_kernel_argument : public vector<T,Alloc> {
 
 public:
-	vector_device_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, std::true_type() ) {}
-	vector_device_argument& operator=( const vector<T,Alloc>& src ) {
+	vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, std::true_type() ) {}
+	vector_kernel_argument& operator=( const vector<T,Alloc>& src ) {
 		vector<T,Alloc>::shallow_assign( src );
 		return *this;
 	}

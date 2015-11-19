@@ -54,7 +54,7 @@ namespace ecuda {
 
 namespace impl {
 
-template<typename T,std::size_t N> class array_device_argument; // forward declaration
+template<typename T,std::size_t N> class array_kernel_argument; // forward declaration
 
 } // namespace impl
 
@@ -91,7 +91,7 @@ public:
 	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::array_device_argument<T,N> kernel_argument;
+	typedef impl::array_kernel_argument<T,N> kernel_argument;
 
 protected:
 	__HOST__ __DEVICE__ array( const array& src, std::true_type ) : base_type(src) {}
@@ -111,63 +111,20 @@ public:
 	}
 
 	///
-	/// \brief Constructs an array with a shallow copy of each of the elements in src.
+	/// \brief Copy constructor.
 	///
-	/// Be careful to note that a shallow copy means that only the pointer to the device memory
-	/// that holds the elements is copied in the newly constructed container.  This allows
-	/// containers to be passed-by-value to kernel functions with minimal overhead.  If a copy
-	/// of the container is required in host code, use the ecuda::copy function. For example:
+	/// Constructs an array with a copy of the contents of src.
 	///
-	/// \code{.cpp}
-	/// ecuda::array<int,10> arr;
-	/// arr.fill( 3 ); // fill array with 3s
-	/// ecuda::array<int,10> newArr( arr ); // shallow copy
-	/// ecuda::array<int,10> newArr;
-	/// ecuda::copy( arr.begin(), arr.end(), newArr.begin() ); // deep copy
-	/// \endcode
+	/// \param src Another array object of the same type and size, whose contents are copied.
 	///
-	/// \param src Another array object of the same type and size, whose contents are shallow copied.
-	///
-//	__HOST__ __DEVICE__ array( const array& src ) : base_type(src) {}
 	__HOST__ array( const array& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(src.size()) ) ) {
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
-	///
-	/// \brief Overwrites every element of the array with the corresponding element of another array.
-	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
-	///
-	/// \param other Container whose contents are to be assigned to this container.
-	/// \return A reference to this container.
-	///
 	__HOST__ array& operator=( const array& other ) {
 		ecuda::copy( other.begin(), other.end(), begin() );
 		return *this;
 	}
-
-	/*
-	///
-	/// \brief Constructs an array with a copy of each of the elements in src, in the same order.
-	///
-	/// Note that the size template argument N2 in the source array can be different from the size template
-	/// argument N in the constructed array.  If N2>N then only the first N elements are copied.  If N2<N then
-	/// only the first N2 elements are copied while the remained are undefined (NB: this is in contrast to the
-	/// behaviour of other constructors).
-	///
-	/// \param src Another array object of the same type (with the same class template argument T), whose contents are copied.
-	///
-	template<std::size_t N2>
-	__HOST__ array( const array<T,N2>& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) ) {
-		deviceMemory = device_ptr<value_type>( device_allocator<value_type>().allocate(N) );
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), src.data(), std::min(N,N2), cudaMemcpyDeviceToDevice ) );
-	}
-	*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -177,15 +134,19 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	__HOST__ array( array<T,N>&& src ) : base_type(src) {}
-	#endif
+	__HOST__ array( array&& src ) : base_type(src) {}
 
-	/*
 	///
-	/// \brief Destructs the array object.
+	/// \brief Move assignment operator.
 	///
-	//__HOST__ __DEVICE__ virtual ~array() {}
-	*/
+	/// Replaces the contents with those of src using move semantics (i.e. the data in src is moved from
+	/// src into this container.
+	///
+	__HOST__ array& operator=( array&& src ) {
+		base_type::operator=( src );
+		return *this;
+	}
+	#endif
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -430,70 +391,16 @@ public:
 	///
 	__HOST__ __DEVICE__ inline bool operator>=( const array<T,N>& other ) const { return !operator<(other); }
 
-	/*
-	///
-	/// \brief Copies the contents of this device array to another container.
-	///
-	/// \param dest container to copy contents to
-	///
-	template<class Container>
-	__HOST__ Container& operator>>( Container& dest ) const {
-		ecuda::copy( begin(), end(), dest.begin() );
-		return dest;
-	}
-	*/
-
-	/*
-	///
-	/// \brief Copies the contents of a container to this device array.
-	///
-	/// \param src container to copy the contents from
-	/// \exception std::length_error thrown if this array is not large enough to hold the given vector's contents
-	///
-	template<class Container>
-	__HOST__ array& operator<<( const Container& src ) {
-		if( ecuda::distance(src.begin(),src.end()) > static_cast<typename Container::difference_type>(size()) )
-			throw std::length_error( EXCEPTION_MSG("ecuda::array is not large enough to fit contents of provided container") );
-		ecuda::copy( src.begin(), src.end(), begin() );
-		return *this;
-	}
-	*/
-
-	/*
-	///
-	/// \brief Shallow assign the contents of another array to this array.
-	///
-	/// Be careful to note that a shallow assignment means that only the pointer to the device
-	/// memory that holds the elements is copied to this container.  If a deep copy is required,
-	/// use the ecuda::copy function. For example:
-	///
-	/// \code{.cpp}
-	/// ecuda::array<int,10> arr;
-	/// arr.fill( 3 ); // fill array with 3s
-	/// ecuda::array<int,10> newArr;
-	/// newArr = arr; // shallow assignment
-	/// ecuda::copy( arr.begin(), arr.end(), newArr.begin() ); // deep copy
-	/// \endcode
-	///
-	/// \param src Container of the same type and size, whose contents are shallow assigned to this container.
-	/// \return A reference to this container.
-	///
-	__HOST__ __DEVICE__ array& operator=( const array& other ) {
-		base_type::get_pointer() = other.get_pointer();
-		return *this;
-	}
-	*/
-
 };
 
 namespace impl {
 
 template<typename T,std::size_t N>
-class array_device_argument : public array<T,N> {
+class array_kernel_argument : public array<T,N> {
 
 public:
-	array_device_argument( const array<T,N>& src ) : array<T,N>( src, std::true_type() ) {}
-	array_device_argument& operator=( const array<T,N>& src ) {
+	array_kernel_argument( const array<T,N>& src ) : array<T,N>( src, std::true_type() ) {}
+	array_kernel_argument& operator=( const array<T,N>& src ) {
 		array<T,N>::shallow_assign( src );
 		return *this;
 	}
