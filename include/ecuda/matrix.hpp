@@ -148,7 +148,7 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::matrix_kernel_argument<T,Alloc> kernel_argument;
+	typedef impl::matrix_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
 
 private:
 	allocator_type allocator;
@@ -156,16 +156,12 @@ private:
 
 protected:
 	__HOST__ __DEVICE__ matrix( const matrix& src, std::true_type ) : base_type(src), allocator(src.allocator) {}
-	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other ) {
+
+	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other )
+	{
 		base_type::get_pointer() = other.get_pointer();
 		allocator = other.allocator;
 		return *this;
-	}
-
-
-protected:
-	__HOST__ __DEVICE__ matrix( const base_type& src, allocator_type alloc ) : base_type(src), allocator(alloc) {
-		//ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
 	}
 
 public:
@@ -177,7 +173,9 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const T& value = T(), Alloc allocator = Alloc() ) : base_type( pointer(), numberRows, numberColumns ), allocator(allocator)
+	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const value_type& value = value_type(), const allocator_type& allocator = allocator_type() ) :
+		base_type( pointer(), numberRows, numberColumns ),
+		allocator(allocator)
 	{
 		if( numberRows and numberColumns ) {
 			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
@@ -205,7 +203,22 @@ public:
 	///
 	__HOST__ matrix( const matrix& src ) :
 		base_type( pointer(), src.number_rows(), src.number_columns() ),
-		std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator())
+		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+	{
+		ecuda::copy( src.begin(), src.end(), begin() );
+	}
+
+	///
+	/// \brief Copy constructor.
+	///
+	/// Constructs the matrix with a copy of the contents of src.
+	///
+	/// \param src Another matrix object of the same type, whose contents are copied.
+	/// \param alloc Allocator to use for all memory allocations of this container.
+	///
+	__HOST__ matrix( const matrix& src, const allocator_type& alloc ) :
+		base_type( pointer(), src.number_rows(), src.number_columns() ),
+		allocator(alloc)
 	{
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
@@ -229,8 +242,10 @@ public:
 	///
 	__HOST__ matrix( matrix&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
 
-	__HOST__ matrix& operator( matrix&& src ) {
-		base_type::operator=(src);
+	__HOST__ matrix& operator=( matrix&& src )
+	{
+		base_type::operator=(std::move(src));
+		allocator = std::move(src.allocator);
 		return *this;
 	}
 	#endif
@@ -310,10 +325,10 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
-	__HOST__ __DEVICE__ inline const_iterator cend() const __NOEXCEPT__ { return base_type::cend(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crend(); }
+	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const __NOEXCEPT__ { return base_type::cbegin();  }
+	__HOST__ __DEVICE__ inline const_iterator         cend()    const __NOEXCEPT__ { return base_type::cend();    }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       __NOEXCEPT__ { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend()         __NOEXCEPT__ { return base_type::crend();   }
 	#endif
 
 	///
@@ -491,7 +506,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-//	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
+	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -501,7 +516,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-//	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
+	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return base_type::get_pointer(); }
 
 	///
 	/// \brief Replaces the contents of the container.
@@ -517,7 +532,8 @@ public:
 	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
-	__HOST__ __DEVICE__ void assign( Iterator first, Iterator last ) {
+	__HOST__ __DEVICE__ void assign( Iterator first, Iterator last )
+	{
 		#ifdef __CUDA_ARCH__
 		ecuda::copy( first, last, begin() );
 		#else
@@ -537,7 +553,8 @@ public:
 	/// \throws std::length_error if the number of elements in the initializer list does not match the number of elements in this container
 	/// \param il initializer list to initialize the elements of the container with
 	///
-	__HOST__ inline void assign( std::initializer_list<T> il ) {
+	__HOST__ inline void assign( std::initializer_list<T> il )
+	{
 		//host_array_proxy<const T> proxy( il.begin(), il.size() );
 		//assign( proxy.begin(), proxy.end() );
 		assign( il.begin(), il.end() );
@@ -549,7 +566,8 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	__HOST__ __DEVICE__ void fill( const value_type& value ) {
+	__HOST__ __DEVICE__ void fill( const value_type& value )
+	{
 		#ifdef __CUDA_ARCH__
 		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
 		#else
@@ -589,7 +607,8 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator==( const matrix<value_type,Alloc2>& other ) const {
+	__HOST__ __DEVICE__ bool operator==( const matrix<value_type,Alloc2>& other ) const
+	{
 		#ifdef __CUDA_ARCH__
 		return ecuda::equal( begin(), end(), other.begin() );
 		#else
@@ -602,26 +621,6 @@ public:
 		}
 		return true;
 		#endif
-		/*
-		#ifdef __CUDA_ARCH__
-		const_iterator iter1 = begin();
-		const_iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) if( !( *iter1 == *iter2 ) ) return false;
-		return true;
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			const_row_type row1 = get_row(i);
-			typename matrix<value_type,Alloc2>::const_row_type row2 = other.get_row(i);
-			ecuda::copy( row1.begin(), row1.end(), v1.begin() );
-			ecuda::copy( row2.begin(), row2.end(), v2.begin() );
-			if( v1 == v2 ) continue;
-			return false;
-		}
-		return true;
-		#endif
-		*/
 	}
 
 	///
@@ -647,26 +646,8 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically less than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator<( const matrix<value_type,Alloc2>& other ) const {
-		/*
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			if( i >= other.number_rows() ) return false;
-			std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-			std::vector< value_type, host_allocator<value_type> > v2( other.number_columns() );
-			const_row_type row1 = get_row(i);
-			typename matrix<value_type,Alloc2>::const_row_type row2 = other.get_row(i);
-			ecuda::copy( row1.begin(), row1.end(), v1.begin() );
-			ecuda::copy( row2.begin(), row2.end(), v2.begin() );
-			if( ecuda::lexicographical_compare( v1.begin(), v1.end(), v2.begin(), v2.end() ) ) return true;
-			if( v1.size() == v2.size() and ecuda::equal( v1.begin(), v1.end(), v2.begin() ) ) continue;
-			return false;
-		}
-		return false;
-		#endif
-		*/
+	__HOST__ __DEVICE__ bool operator<( const matrix<value_type,Alloc2>& other ) const
+	{
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
@@ -693,7 +674,8 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically greater than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator>( const matrix<value_type,Alloc2>& other ) const {
+	__HOST__ __DEVICE__ bool operator>( const matrix<value_type,Alloc2>& other ) const
+	{
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else
@@ -808,41 +790,6 @@ public:
 		return *allocator.address( data(), rowIndex, columnIndex, pitch );
 	}
 	__DEVICE__ inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
-	*/
-
-	/*
-	///
-	/// \brief Assignment operator.
-	///
-	/// Copies the contents of other into this container.
-	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
-	///
-	/// \param src Container whose contents are to be assigned to this container.
-	/// \return A reference to this container.
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ matrix<value_type,allocator_type>& operator=( const matrix<value_type,Alloc2>& src ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		pitch = src.pitch;
-		deviceMemory = src.deviceMemory;
-		#else
-		// deep copy if called from host
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		deviceMemory = device_ptr<value_type>( allocator.allocate( numberColumns, numberRows, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberColumns, numberRows, cudaMemcpyDeviceToDevice ) );
-		#endif
-		return *this;
-	}
 	*/
 
 };

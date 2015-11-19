@@ -7,6 +7,7 @@
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/cube.hpp"
 
+#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T>
 __global__ void testIterators( const ecuda::cube<T> src, ecuda::cube<T> dest ) {
 	typename ecuda::cube<T>::iterator result = dest.begin();
@@ -24,6 +25,7 @@ __global__ void testIterators2( const ecuda::cube<T> src, ecuda::cube<T> dest ) 
 		}
 	}
 }
+#endif
 
 int main( int argc, char* argv[] ) {
 

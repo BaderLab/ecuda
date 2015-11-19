@@ -52,7 +52,6 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "algorithm.hpp"
 #include "allocators.hpp"
-#include "iterator.hpp"
 #include "memory.hpp"
 #include "impl/models.hpp"
 #include "type_traits.hpp"
@@ -83,28 +82,28 @@ private:
 	typedef impl::device_contiguous_sequence< T, shared_ptr<T> > base_type;
 
 public:
-	typedef typename base_type::value_type value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
-	typedef typename base_type::size_type size_type; //!< unsigned integral type
+	typedef typename base_type::value_type      value_type;      //!< cell data type
+	typedef Alloc                               allocator_type;  //!< allocator type
+	typedef typename base_type::size_type       size_type;       //!< unsigned integral type
 	typedef typename base_type::difference_type difference_type; //!< signed integral type
 	#ifdef __CPP11_SUPPORTED__
-	typedef typename base_type::reference reference; //!< cell reference type
-	typedef typename base_type::const_reference const_reference; //!< cell const reference type
-	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
-	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
+	typedef typename base_type::reference                        reference;       //!< cell reference type
+	typedef typename base_type::const_reference                  const_reference; //!< cell const reference type
+	typedef typename std::allocator_traits<Alloc>::pointer       pointer;         //!< cell pointer type
+	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer;   //!< cell const pointer type
 	#else
-	typedef typename Alloc::reference reference; //!< cell reference type
+	typedef typename Alloc::reference       reference;       //!< cell reference type
 	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
-	typedef typename Alloc::pointer pointer; //!< cell pointer type
-	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
+	typedef typename Alloc::pointer         pointer;         //!< cell pointer type
+	typedef typename Alloc::const_pointer   const_pointer;   //!< cell const pointer type
 	#endif
 
-	typedef typename base_type::iterator iterator; //!< iterator type
-	typedef typename base_type::const_iterator const_iterator; //!< const iterator type
-	typedef typename base_type::reverse_iterator reverse_iterator; //!< reverse iterator type
+	typedef typename base_type::iterator               iterator;               //!< iterator type
+	typedef typename base_type::const_iterator         const_iterator;         //!< const iterator type
+	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::vector_kernel_argument<T,Alloc> kernel_argument;
+	typedef impl::vector_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
 
 private:
 	size_type n; //!< number of elements currently stored
@@ -112,7 +111,9 @@ private:
 
 protected:
 	__HOST__ __DEVICE__ vector( const vector& src, std::true_type ) : base_type(src), n(src.n), allocator(src.allocator) {}
-	__HOST__ __DEVICE__ vector& shallow_assign( const vector& other ) {
+
+	__HOST__ __DEVICE__ vector& shallow_assign( const vector& other )
+	{
 		base_type::get_pointer() = other.get_pointer();
 		n = other.n;
 		allocator = other.allocator;
@@ -123,14 +124,16 @@ protected:
 private:
 	__HOST__ void growMemory( size_type minimum );
 
-	__HOST__ void init( size_type len, const value_type& value, std::true_type ) {
+	__HOST__ void init( size_type len, const value_type& value, std::true_type )
+	{
 		growMemory( len );
 		n = len;
 		if( len ) ecuda::fill( begin(), end(), value );
 	}
 
 	template<class Iterator>
-	__HOST__ inline void init( Iterator first, Iterator last, std::false_type ) {
+	__HOST__ inline void init( Iterator first, Iterator last, std::false_type )
+	{
 		const size_type len = ::ecuda::distance(first,last);
 		growMemory( len );
 		ecuda::copy( first, last, begin() );
@@ -150,7 +153,8 @@ public:
 	/// \param value the value to initialize elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	__HOST__ explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type( shared_ptr<T>( allocator.allocate(n) ), n ), n(n), allocator(allocator) {
+	__HOST__ explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type( shared_ptr<T>( allocator.allocate(n) ), n ), n(n), allocator(allocator)
+	{
 		init( n, value, std::true_type() );
 	}
 
@@ -158,7 +162,8 @@ public:
 	/// \brief Constructs the container with n default-inserted instances of T. No copies are made.
 	/// \param n the size of the container
 	///
-	__HOST__ explicit vector( size_type n ) : base_type( shared_ptr<T>( Alloc().allocate(n) ) ), n(n) {
+	__HOST__ explicit vector( size_type n ) : base_type( shared_ptr<T>( Alloc().allocate(n) ) ), n(n)
+	{
 		init( n, value_type(), std::true_type() );
 	}
 
@@ -168,9 +173,9 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
 	template<class Iterator>
-	__HOST__ vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator) {
+	__HOST__ vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator)
+	{
 		typedef typename std::is_integral<Iterator>::type _Integral;
-		//typedef typename __is_integer<Iterator>::__type _Integral;
 		init( first, last, _Integral() );
 	}
 
@@ -190,24 +195,13 @@ public:
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
-	__HOST__ vector& operator=( const vector& src ) {
+	__HOST__ vector& operator=( const vector& src )
+	{
 		if( size() != src.size() ) resize( src.size() );
 		allocator = src.allocator;
 		ecuda::copy( src.begin(), src.end(), begin() );
 		return *this;
 	}
-
-	/*
-	///
-	/// \brief Copy constructor. Constructs the container with the copy of the contents of the other.
-	/// \param src another container to be used as source to initialize the elements of the container with
-	/// \param allocator allocator to use for all memory allocations of this container
-	///
-	template<class Alloc2>
-	__HOST__ vector( const vector<value_type,Alloc2>& src, const allocator_type& allocator ) : base_type(shared_ptr<T>(allocator.allocate(src.size()))), n(src.n), allocator(allocator) {
-		ecuda::copy( src.begin(), src.end(), begin() );
-	}
-	*/
 
 	#ifdef __CPP11_SUPPORTED__
 	///
@@ -231,11 +225,13 @@ public:
 	/// \param il initializer list to initialize the elements of the container with
 	/// \param allocator allocator to use for all memory allocations of this container
 	///
-	__HOST__ vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : base_type(shared_ptr<T>(allocator.allocate(il.size()))), n(il.size()), allocator(allocator) {
+	__HOST__ vector( std::initializer_list<value_type> il, const allocator_type& allocator = allocator_type() ) : base_type(shared_ptr<T>(allocator.allocate(il.size()))), n(il.size()), allocator(allocator)
+	{
 		ecuda::copy( il.begin(), il.end(), begin() );
 	}
 
-	__HOST__ vector& operator=( vector&& src ) {
+	__HOST__ vector& operator=( vector&& src )
+	{
 		base_type::operator=(src);
 		n = std::move(src.n);
 		return *this;
@@ -317,10 +313,10 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return base_type::cbegin(); }
-	__HOST__ __DEVICE__ inline const_iterator cend() const __NOEXCEPT__ { return base_type::cbegin()+size(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend() __NOEXCEPT__ { return base_type::crbegin()+size(); }
+	__HOST__ __DEVICE__ inline const_iterator         cbegin() const __NOEXCEPT__ { return base_type::cbegin();         }
+	__HOST__ __DEVICE__ inline const_iterator         cend() const   __NOEXCEPT__ { return base_type::cbegin()+size();  }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()      __NOEXCEPT__ { return base_type::crbegin();        }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend()        __NOEXCEPT__ { return base_type::crbegin()+size(); }
 	#endif
 
 	///
@@ -347,7 +343,8 @@ public:
 	/// \param newSize new size of the container
 	/// \param value the value to initialize the new elements with
 	///
-	__HOST__ void resize( size_type newSize, const value_type& value = value_type() ) {
+	__HOST__ void resize( size_type newSize, const value_type& value = value_type() )
+	{
 		if( size() == newSize ) return;
 		if( size() > newSize ) { n = newSize; return; }
 		growMemory( newSize ); // make sure enough device memory is allocated
@@ -383,6 +380,54 @@ public:
 	__HOST__ inline void reserve( size_type newCapacity ) { growMemory(newCapacity); }
 
 	///
+	/// \brief Returns a reference to the element at specified location index, with bounds checking.
+	///
+	/// If index is not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline reference at( size_type index )
+	{
+		if( !(index < size()) ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::vector::at() index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::operator[](index);
+	}
+
+	///
+	/// \brief Returns a reference to the element at specified location index, with bounds checking.
+	///
+	/// If index is not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline const_reference at( size_type index ) const
+	{
+		if( !(index < size()) ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::vector::at() index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::operator[](index);
+	}
+
+	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
 	///
 	/// \param index position of the element to return
@@ -397,15 +442,6 @@ public:
 	/// \returns Reference to the requested element.
 	///
 	__DEVICE__ inline const_reference operator[]( const size_type index ) const { return base_type::operator[](index); }
-
-	/*
-	 * Deprecating these functions since the STL standard seems to specify that at() accessors
-	 * must implement range checking that throws an exception on failure.  Since exceptions are
-	 * not supported within a CUDA kernel, this cannot be satisfied.
-	 *
-	__DEVICE__ inline reference at( const size_type index ) { return deviceMemory[index]; }
-	__DEVICE__ inline const_reference at( const size_type index ) const { return deviceMemory[index]; }
-	*/
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -468,7 +504,8 @@ public:
 	/// \param newSize the new size of the container
 	/// \param value the value to initialize elements of the container with
 	///
-	__HOST__ void assign( size_type newSize, const value_type& value = value_type() ) {
+	__HOST__ void assign( size_type newSize, const value_type& value = value_type() )
+	{
 		growMemory(newSize); // make sure enough device memory is allocated
 		ecuda::fill( begin(), end(), value );
 		n = newSize;
@@ -479,7 +516,8 @@ public:
 	/// \param first,last the range to copy the elements from
 	///
 	template<class Iterator>
-	__HOST__ void assign( Iterator first, Iterator last ) {
+	__HOST__ void assign( Iterator first, Iterator last )
+	{
 		typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
 		growMemory( len ); // make sure enough device memory is allocated
 		ecuda::copy( first, last, begin() );
@@ -494,7 +532,8 @@ public:
 	///
 	/// \param il initializer list to copy the values from
 	///
-	__HOST__ inline void assign( std::initializer_list<value_type> il ) {
+	__HOST__ inline void assign( std::initializer_list<value_type> il )
+	{
 		assign( il.begin(), il.end() );
 		//host_array_proxy<const value_type> proxy( il.begin(), il.size() );
 		//assign( proxy.begin(), proxy.end() );
@@ -505,27 +544,12 @@ public:
 	/// \brief Appends the given element value to the end of the container.
 	/// \param value the value of the element to append
 	///
-	__HOST__ void push_back( const value_type& value ) {
+	__HOST__ void push_back( const value_type& value )
+	{
 		growMemory(n+1);
 		ecuda::copy( &value, (&value)+1, begin()+n );
 		++n;
 	}
-
-	/*
-	 * Not implementing this function since a move operation isn't possible because the item
-	 * must be copied from host to device memory.
-	 *
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Appends the given element value to the end of the container.
-	///
-	/// This method is only available if the compiler is configured to allow C++11.
-	///
-	/// \param value the value of the element to append
-	///
-	__HOST__ void push_back( value_type&& value );
-	#endif
-	*/
 
 	///
 	/// \brief Removes the last element of the container.
@@ -550,7 +574,8 @@ public:
 	/// \param value element value to insert
 	/// \return iterator pointing to the inserted value
 	///
-	__HOST__ iterator insert( const_iterator position, const value_type& value ) {
+	__HOST__ iterator insert( const_iterator position, const value_type& value )
+	{
 		std::vector< value_type, host_allocator<value_type> > v( ::ecuda::distance(position,end())+1 ); // allocate staging memory
 		v.front() = value; // put new element at front of staging
 		::ecuda::copy( position, end(), v.begin()+1 ); // copy trailing elements to staging
@@ -576,7 +601,8 @@ public:
 	/// \param value element value to insert
 	/// \return iterator pointing to the inserted value
 	///
-	__HOST__ iterator insert( const_iterator position, const size_type count, const value_type& value ) {
+	__HOST__ iterator insert( const_iterator position, const size_type count, const value_type& value )
+	{
 		std::vector< value_type, host_allocator<value_type> > v( ::ecuda::distance(position,end())+count, value ); // allocate staging memory
 		::ecuda::copy( position, end(), v.begin()+count ); // copy trailing elements to staging
 		const size_type index = ::ecuda::distance(begin(),position); // get index of insert position
@@ -621,7 +647,8 @@ public:
 	/// \param first,last the range of elements to insert, can't be iterators into container for which insert is called
 	///
 	template<class InputIterator>
-	__HOST__ void insert( const_iterator position, InputIterator first, InputIterator last ) {
+	__HOST__ void insert( const_iterator position, InputIterator first, InputIterator last )
+	{
 		const std::vector< value_type, host_allocator<value_type> > v( first, last ); // allocate staging memory and put new content there
 		const size_type len = v.size(); // number of new elements
 		v.resize( v.size()+::ecuda::distance(position,end()) ); // make room for trailing elements
@@ -648,10 +675,9 @@ public:
 	/// \param position iterator before which the content will be inserted. position may be the end() iterator
 	/// \param il initializer list to insert values from
 	///
-	__HOST__ inline void insert( const_iterator position, std::initializer_list<value_type> il ) {
+	__HOST__ inline void insert( const_iterator position, std::initializer_list<value_type> il )
+	{
 		return insert( position, il.begin(), il.end() );
-//		host_array_proxy<const value_type> proxy( il.begin(), il.size() );
-//		return insert( position, proxy.begin(), proxy.end() );
 	}
 	#endif
 
@@ -667,7 +693,8 @@ public:
 	/// \returns Iterator following the last removed element. If the iterator position refers
 	///          to the last element, the end() iterator is returned.
 	///
-	__HOST__ iterator erase( const_iterator position ) {
+	__HOST__ iterator erase( const_iterator position )
+	{
 		vector<value_type> v( position+1, end() ); // copy trailing elements to another device vector
 		ecuda::copy( v.begin(), v.end(), position ); // overwrite erase position
 		--n;
@@ -687,7 +714,8 @@ public:
 	/// \returns Iterator following the last removed element. If the iterator position refers
 	///          to the last element, the end() iterator is returned.
 	///
-	__HOST__ iterator erase( const_iterator first, const_iterator last ) {
+	__HOST__ iterator erase( const_iterator first, const_iterator last )
+	{
 		vector<value_type> v( last, end() ); // copy trailing elements to another device vector
 		ecuda::copy( v.begin(), v.end(), first ); // overwrite erased elements
 		n -= ecuda::distance(first,last);
@@ -705,7 +733,8 @@ public:
 	///
 	/// \param other container to exchange the contents with
 	///
-	__HOST__ __DEVICE__ void swap( vector& other ) {
+	__HOST__ __DEVICE__ void swap( vector& other )
+	{
 		base_type::swap( other );
 		ecuda::swap( n, other.n );
 	}
@@ -735,7 +764,8 @@ public:
 	/// implementation, the request is always fulfilled. All iterators, including the past
 	/// the end iterator, are potentially invalidated.
 	///
-	__HOST__ void shrink_to_fit() {
+	__HOST__ void shrink_to_fit()
+	{
 		if( size() == capacity() ) return;
 		vector v( n );
 		ecuda::copy( begin(), end(), v.begin() );
@@ -751,7 +781,8 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents are equal, false otherwise
 	///
-	__HOST__ __DEVICE__ bool operator==( const vector& other ) const {
+	__HOST__ __DEVICE__ bool operator==( const vector& other ) const
+	{
 		if( size() != other.size() ) return false;
 		#ifdef __CUDA_ARCH__
 		const_iterator iter1 = begin();
@@ -780,7 +811,8 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this vector are lexicographically less than the other vector, false otherwise
 	///
-	__HOST__ __DEVICE__ inline bool operator<( const vector& other ) const {
+	__HOST__ __DEVICE__ inline bool operator<( const vector& other ) const
+	{
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
@@ -797,7 +829,8 @@ public:
 	/// \param other container to compare contents with
 	/// \returns true if the contents of this vector are lexicographically greater than the other vector, false otherwise
 	///
-	__HOST__ __DEVICE__ inline bool operator>( const vector& other ) const {
+	__HOST__ __DEVICE__ inline bool operator>( const vector& other ) const
+	{
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else

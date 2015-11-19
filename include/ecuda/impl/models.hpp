@@ -56,8 +56,8 @@ private:
 	template<typename U,class PointerType2> friend class device_sequence;
 
 protected:
-	__HOST__ __DEVICE__ inline pointer&       get_pointer()       { return ptr; }
-	__HOST__ __DEVICE__ inline const pointer& get_pointer() const { return ptr; }
+	__HOST__ __DEVICE__ inline pointer&       get_pointer()       __NOEXCEPT__ { return ptr; }
+	__HOST__ __DEVICE__ inline const pointer& get_pointer() const __NOEXCEPT__ { return ptr; }
 
 public:
 	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
@@ -155,7 +155,7 @@ public:
 	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_fixed_sequence( device_fixed_sequence&& src ) : ptr(std::move(src.ptr)) {}
-	__HOST__ device_fixed_sequence& operator( device_fixed_sequence&& src ) {
+	__HOST__ device_fixed_sequence& operator=( device_fixed_sequence&& src ) {
 		ptr = std::move(src.ptr);
 		return *this;
 	}
@@ -366,7 +366,7 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_contiguous_row_matrix( device_contiguous_row_matrix&& src ) : base_type(src) {}
 	__HOST__ device_contiguous_row_matrix& operator=( device_contiguous_row_matrix&& src ) {
-		base_type::operator=(srC);
+		base_type::operator=(src);
 		return *this;
 	}
 	#endif

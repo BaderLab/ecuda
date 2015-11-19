@@ -28,7 +28,6 @@ struct allocator_traits {
 
 #endif
 
-
 ///
 /// \cond DEVELOPER_DOCUMENTATION
 ///
@@ -71,7 +70,8 @@ template<typename T> struct owner_less;
 ///
 ///
 template<typename T>
-struct owner_less< shared_ptr<T> > {
+struct owner_less< shared_ptr<T> >
+{
 	typedef bool result_type;
 	typedef shared_ptr<T> first_argument_type;
 	typedef shared_ptr<T> second_argument_type;

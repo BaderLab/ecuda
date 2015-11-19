@@ -40,16 +40,11 @@ private:
 	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_type;
 
 public:
-	typedef Category iterator_category;
-	typedef T value_type;
-	typedef std::ptrdiff_t difference_type;
-	typedef PointerType pointer;
+	typedef Category                                    iterator_category;
+	typedef T                                           value_type;
+	typedef std::ptrdiff_t                              difference_type;
+	typedef PointerType                                 pointer;
 	typedef typename std::add_lvalue_reference<T>::type reference;
-	//typedef typename base_type::iterator_category iterator_category;
-	//typedef typename base_type::value_type value_type;
-	//typedef typename base_type::difference_type difference_type;
-	//typedef typename base_type::pointer pointer;
-	//typedef typename base_type::reference reference;
 
 	template<typename T2,typename PointerType2,typename Category2> friend class device_iterator;
 	template<typename T2> friend class device_contiguous_iterator;
@@ -60,18 +55,19 @@ protected:
 public:
 	__HOST__ __DEVICE__ device_iterator( const pointer& ptr = pointer() ) : ptr(ptr) {}
 	__HOST__ __DEVICE__ device_iterator( const device_iterator& src ) : ptr(src.ptr) {}
-	template<typename T2,typename PointerType2>
-	__HOST__ __DEVICE__ device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.ptr) {}
+	template<typename T2,typename PointerType2>	__HOST__ __DEVICE__ device_iterator( const device_iterator<T2,PointerType2,Category>& src ) : ptr(src.ptr) {}
 
 	__HOST__ __DEVICE__ inline device_iterator& operator++() { ++ptr; return *this; }
-	__HOST__ __DEVICE__ inline device_iterator operator++( int ) {
+	__HOST__ __DEVICE__ inline device_iterator operator++( int )
+	{
 		device_iterator tmp(*this);
 		++(*this);
 		return tmp;
 	}
 
 	__HOST__ __DEVICE__ inline device_iterator& operator--() { --ptr; return *this; }
-	__HOST__ __DEVICE__ inline device_iterator operator--( int ) {
+	__HOST__ __DEVICE__ inline device_iterator operator--( int )
+	{
 		device_iterator tmp(*this);
 		--(*this);
 		return tmp;
@@ -83,13 +79,15 @@ public:
 	__DEVICE__ inline reference operator*() { return *ptr; }
 	__HOST__ __DEVICE__ inline pointer operator->() const { return ptr; }
 
-	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator& other ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator& other )
+	{
 		ptr = other.ptr;
 		return *this;
 	}
 
 	template<typename U,typename PointerType2>
-	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator<U,PointerType2,Category>& other ) {
+	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator<U,PointerType2,Category>& other )
+	{
 		ptr = other.ptr;
 		return *this;
 	}
@@ -105,16 +103,15 @@ private:
 
 public:
 	typedef typename base_type::iterator_category iterator_category;
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::difference_type difference_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type        value_type;
+	typedef typename base_type::difference_type   difference_type;
+	typedef typename base_type::pointer           pointer;
+	typedef typename base_type::reference         reference;
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_iterator( const pointer& ptr = pointer() ) : base_type(ptr) {}
 	__HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator& src ) : base_type(src) {}
-	template<typename U>
-	__HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator<U>& src ) : base_type(src) {}
+	template<typename U> __HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator<U>& src ) : base_type(src) {}
 
 	__HOST__ __DEVICE__ inline device_contiguous_iterator operator+( int x ) const { return device_contiguous_iterator( base_type::ptr + x ); }
 	__HOST__ __DEVICE__ inline device_contiguous_iterator operator-( int x ) const { return device_contiguous_iterator( base_type::ptr - x ); }
@@ -186,12 +183,12 @@ private:
 	typedef std::iterator<device_iterator_tag,typename Iterator::value_type,typename Iterator::difference_type,typename Iterator::pointer> base_type;
 
 public:
-	typedef Iterator iterator_type;
+	typedef Iterator                              iterator_type;
 	typedef typename base_type::iterator_category iterator_category;
-	typedef typename base_type::value_type value_type;
-	typedef typename base_type::difference_type difference_type;
-	typedef typename base_type::pointer pointer;
-	typedef typename base_type::reference reference;
+	typedef typename base_type::value_type        value_type;
+	typedef typename base_type::difference_type   difference_type;
+	typedef typename base_type::pointer           pointer;
+	typedef typename base_type::reference         reference;
 
 private:
 	Iterator parentIterator;

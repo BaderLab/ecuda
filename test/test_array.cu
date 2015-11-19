@@ -29,14 +29,21 @@ int main( int argc, char* argv[] ) {
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray1;
+			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 );
 			ecuda::array<double,N> deviceArray2( deviceArray1 );
-			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 ); // filling deviceArray1 should be reflected in deviceArray2
 			std::vector<double> hostVector( N, 99.0 );
 			std::cerr << "ecuda::array( const ecuda::array& ) : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
 		}
 		#ifdef __CPP11_SUPPORTED__
 		{
-			std::cerr << "ecuda::array( ecuda::array&& ) : TEST NOT IMPLEMENTED" << std::endl;
+			const std::size_t N = 1000;
+			ecuda::array<double,N> deviceArray1;
+			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 );
+			ecuda::array<double,N> deviceArray2( std::move(deviceArray1) );
+			std::vector<double> hostVector( N, 99.0 );
+			std::cerr << "ecuda::array( ecuda::array&& ) :" << std::endl;
+			std::cerr << "  destination has contents : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+			std::cerr << "  source now empty         : " << std::boolalpha << !static_cast<bool>(deviceArray1.data()) << std::endl;
 		}
 		#endif
 		std::cerr << std::endl;
@@ -60,7 +67,7 @@ int main( int argc, char* argv[] ) {
 			#endif
 			std::cerr << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
 			std::cerr << "ecuda::array::size()     : " << std::boolalpha << ( deviceArray.size() == N ) << std::endl;
-			std::cerr << "ecuda::array::data()     : " << std::boolalpha << ( deviceArray.data() > 0 ) << std::endl;
+			std::cerr << "ecuda::array::data()     : " << std::boolalpha << static_cast<bool>(deviceArray.data()) << std::endl;
 		}
 		std::cerr << std::endl;
 	}

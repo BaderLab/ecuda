@@ -51,6 +51,11 @@ LDLIBS = -lcudart
 
 -include local-config.cfg
 
+ifeq ($(std),c++11)
+	CXXFLAGS += -std=c++11
+	NVCCFLAGS += -std=c++11
+endif
+
 ifeq ($(mode),debug)
 	CXXFLAGS += -g
 	CFLAGS += -g
@@ -69,6 +74,10 @@ test/% :: test/%.cu
 	@mkdir -p obj/test
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
+
+test/cpu/% :: test/%.cu
+	@mkdir -p bin/test/cpu
+	$(CXX) $(CXXFLAGS) -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -x c++ $< -o bin/$@
 
 T_FILES = $(basename $(shell find t -name '*.cu'))
 
@@ -96,6 +105,8 @@ docs: FORCE
 	doxygen doxygen.cfg
 
 tests: test/test_array test/test_cube test/test_matrix test/test_vector
+
+cpu_tests: test/cpu/test_array test/cpu/test_cube test/cpu/test_matrix test/cpu/test_vector
 
 benchmarks: benchmarks/array benchmarks/matrix
 

@@ -24,7 +24,8 @@ namespace ecuda {
 
 namespace detail {
 
-struct sp_counter_base {
+struct sp_counter_base
+{
 	std::size_t owner_count;
 	sp_counter_base() : owner_count(1) {}
 	virtual ~sp_counter_base() {}
@@ -33,13 +34,15 @@ struct sp_counter_base {
 };
 
 template<typename T>
-struct sp_counter_impl_p : sp_counter_base {
+struct sp_counter_impl_p : sp_counter_base
+{
 	sp_counter_impl_p() : sp_counter_base() {}
 	virtual void dispose( void* p ) { if( p ) ecuda::default_delete<void>()(p); } // cudaFree( p );
 };
 
 template<typename T,class Deleter>
-struct sp_counter_impl_pd : sp_counter_base {
+struct sp_counter_impl_pd : sp_counter_base
+{
 	Deleter deleter;
 	sp_counter_impl_pd( Deleter deleter ) : sp_counter_base(), deleter(deleter) {}
 	virtual void dispose( void* p ) { if( p ) deleter(p); }
@@ -108,7 +111,8 @@ public:
 	/// \param ptr a pointer to an object to manage
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL) {
+	__HOST__ __DEVICE__ explicit shared_ptr( U* ptr ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL)
+	{
 		#ifndef __CUDA_ARCH__
 		if( ptr ) counter = new detail::sp_counter_impl_p<T>();
 		#endif
@@ -124,7 +128,8 @@ public:
 	/// \param deleter a deleter to use to destroy the object
 	///
 	template<typename U,class Deleter>
-	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL) {
+	__HOST__ __DEVICE__ shared_ptr( U* ptr, Deleter deleter ) : current_ptr(detail::void_cast<T*>()(ptr)), counter(NULL)
+	{
 		#ifndef __CUDA_ARCH__
 		if( ptr ) counter = new detail::sp_counter_impl_pd<T,Deleter>( deleter );
 		#endif
@@ -146,7 +151,8 @@ public:
 	/// \param ptr a pointer to an object to manage
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src, T* ptr ) __NOEXCEPT__ : current_ptr(ptr), counter(src.counter) {
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src, T* ptr ) __NOEXCEPT__ : current_ptr(ptr), counter(src.counter)
+	{
 		#ifndef __CUDA_ARCH__
 		++(counter->owner_count);
 		#endif
@@ -160,7 +166,8 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	{
 		#ifndef __CUDA_ARCH__
 		if( counter ) ++(counter->owner_count);
 		#endif
@@ -177,7 +184,8 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	{
 		#ifndef __CUDA_ARCH__
 		if( counter ) ++(counter->owner_count);
 		#endif
@@ -192,7 +200,8 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	{
 		src.current_ptr = NULL;
 		src.counter = NULL;
 	}
@@ -207,7 +216,8 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter) {
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	{
 		src.current_ptr = NULL;
 		src.counter = NULL;
 	}
@@ -222,7 +232,8 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U,class Deleter>
-	__HOST__ __DEVICE__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::void_cast<T*>()(src.release())) {
+	__HOST__ __DEVICE__ shared_ptr( ecuda::unique_ptr<U,Deleter>&& src ) : current_ptr(detail::void_cast<T*>()(src.release()))
+	{
 	   counter = current_ptr ? new detail::sp_counter_impl_pd<T,Deleter>( src.get_deleter() ) : NULL;
 	}
 	#endif
@@ -235,13 +246,15 @@ public:
 	/// pointers that shared ownership with *this, if any, will report a use_count()
 	/// that is one less than the previous value.
 	///
-	__HOST__ __DEVICE__ ~shared_ptr() {
+	__HOST__ __DEVICE__ ~shared_ptr()
+	{
 		#ifndef __CUDA_ARCH__
 		if( counter ) {
 			--(counter->owner_count);
 			if( counter->owner_count == 0 ) {
 				counter->dispose( current_ptr );
 				delete counter;
+				counter = NULL;
 			}
 		}
 		#endif
@@ -342,7 +355,8 @@ public:
 	///
 	/// \param other smart pointer to exchange the contents with
 	///
-	__HOST__ __DEVICE__ inline void swap( shared_ptr& other ) __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline void swap( shared_ptr& other ) __NOEXCEPT__
+	{
 		::ecuda::swap( current_ptr, other.current_ptr );
 		::ecuda::swap( counter, other.counter );
 	}
@@ -440,7 +454,8 @@ public:
 	/// \return out
 	///
 	template<typename U,typename V>
-	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const shared_ptr& ptr ) {
+	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const shared_ptr& ptr )
+	{
 		out << ptr.get();
 		return out;
 	}
