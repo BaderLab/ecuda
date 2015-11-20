@@ -96,6 +96,7 @@ public:
 
 protected:
 	__HOST__ __DEVICE__ array( const array& src, std::true_type ) : base_type(src) {}
+
 	__HOST__ __DEVICE__ array& shallow_assign( const array& other )
 	{
 		base_type::get_pointer() = other.get_pointer();
@@ -131,6 +132,9 @@ public:
 		return *this;
 	}
 
+	//__HOST__ array( const array& );
+	//__HOST__ array& operator=( const array& );
+
 	#ifdef __CPP11_SUPPORTED__
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
@@ -149,7 +153,7 @@ public:
 	///
 	__HOST__ array& operator=( array&& src )
 	{
-		base_type::operator=( std::move(src) );
+		base_type::operator=(std::move(src));
 		return *this;
 	}
 	#endif
@@ -457,22 +461,41 @@ public:
 namespace impl {
 
 template<typename T,std::size_t N>
-class array_kernel_argument : public array<T,N> {
+class array_kernel_argument : public array<T,N>
+{
 
 private:
 	typedef array<T,N> base_type;
 
 public:
-	array_kernel_argument( const array<T,N>& src ) : base_type( src, std::true_type() ) {}
-	array_kernel_argument& operator=( const array<T,N>& src ) {
+	array_kernel_argument( const array<T,N>& src ) : base_type( src, std::true_type() )
+	{
+		//#if (__CUDACC_VER_MAJOR__ >= 6)
+		//#warning consider replacing array::kernel_argument with array&
+		//#endif
+	}
+	array_kernel_argument& operator=( const array<T,N>& src )
+	{
+		//#if (__CUDACC_VER_MAJOR__ >= 6)
+		//#warning consider replacing array::kernel_argument with array&
+		//#endif
 		base_type::shallow_assign(src);
 		return *this;
 	}
 
 	#ifdef __CPP11_SUPPORTED__
-	array_kernel_argument( array_kernel_argument&& src ) : base_type( src ) {}
-	array_kernel_argument& operator=( array_kernel_argument&& src ) {
-		base_type::operator=(src);
+	array_kernel_argument( array_kernel_argument&& src ) : base_type(std::move(src))
+	{
+		//#if (__CUDACC_VER_MAJOR__ >= 6)
+		//#warning consider replacing array::kernel_argument with array&
+		//#endif
+	}
+	array_kernel_argument& operator=( array_kernel_argument&& src )
+	{
+		//#if (__CUDACC_VER_MAJOR__ >= 6)
+		//#warning consider replacing array::kernel_argument with array&
+		//#endif
+		base_type::operator=(std::move(src));
 		return *this;
 	}
 	#endif

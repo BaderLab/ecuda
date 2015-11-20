@@ -588,6 +588,58 @@ public:
 	}
 
 	///
+	/// \brief Returns a reference to the element at specified row, column, and depth index, with bounds checking.
+	///
+	/// If the row, column, and depth are not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param rowIndex position of the row to return
+	/// \param columnIndex position of the column to return
+	/// \param depthIndex position of the depth to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex )
+	{
+		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::cube::at() row, column and/or depth index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
+	}
+
+	///
+	/// \brief Returns a constant reference to the element at specified row, column, and depth index, with bounds checking.
+	///
+	/// If the row, column, and depth are not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param rowIndex position of the row to return
+	/// \param columnIndex position of the column to return
+	/// \param depthIndex position of the depth to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) const
+	{
+		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::cube::at() row, column and/or depth index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
+	}
+
+	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
 	/// \returns view object for the specified row
@@ -601,6 +653,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
 
+	/*
 	///
 	/// \brief Returns a reference to the element at the specified cube location.
 	///
@@ -658,6 +711,7 @@ public:
 	/// \returns reference to the specified element
 	///
 	__DEVICE__ inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
+	*/
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.

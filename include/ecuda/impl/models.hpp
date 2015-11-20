@@ -1,11 +1,46 @@
+/*
+Copyright (c) 2014-2015, Scott Zuyderduyn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the FreeBSD Project.
+*/
+
+//----------------------------------------------------------------------------
+// impl/models.hpp
+//
+// Lowest-level representations of data structures stored in video memory.
+//
+// Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
+//----------------------------------------------------------------------------
+
 #pragma once
 #ifndef ECUDA_MODELS_HPP
 #define ECUDA_MODELS_HPP
 
 #include "../memory.hpp"
 #include "../iterator.hpp"
-
-#include <typeinfo> // del asap
 
 ///
 /// ecuda models contain the lowest-level representation of data structures stored
@@ -23,25 +58,24 @@ namespace impl {
 /// and the length of the sequence.
 ///
 /// This class makes no assumptions about the contiguity of the allocated memory.
-/// I.e. the ( stored pointer + length ) is doesn't neccessarily refer to an
+/// I.e. ( stored pointer + length ) doesn't necessarily refer to an
 ///      address length*size(T) away.
 ///
-/// The pointer specialization is fully responsible for the logic required to traverse
-/// the sequence.
-///
-/// This base class is used to represent, for example, a matrix column.
+/// Responsibility for the logic required to traverse the sequence element-by-element
+/// is delegated to the pointer specialization. This allows higher-level classes to
+/// re-use this structure to represent arrays, matrix rows and columns, and so on.
 ///
 template<typename T,class P>
 class device_sequence
 {
 
 public:
-	typedef T              value_type;
-	typedef P              pointer;
-	typedef T&             reference;
-	typedef const T&       const_reference;
-	typedef std::size_t    size_type;
-	typedef std::ptrdiff_t difference_type;
+	typedef T                                           value_type;
+	typedef P                                           pointer;
+	typedef typename std::add_lvalue_reference<T>::type reference;
+	typedef typename std::add_const<reference>::type    const_reference;
+	typedef std::size_t                                 size_type;
+	typedef std::ptrdiff_t                              difference_type;
 
 	typedef device_iterator<      value_type,typename make_unmanaged<pointer>::type      > iterator;
 	typedef device_iterator<const value_type,typename make_unmanaged_const<pointer>::type> const_iterator;
@@ -63,7 +97,8 @@ public:
 	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
 	__HOST__ __DEVICE__ device_sequence( const device_sequence& src ) : ptr(src.ptr), length(src.length) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_sequence( const device_sequence<U,PointerType2>& src ) : ptr(src.ptr), length(src.length) {}
-	__HOST__ device_sequence& operator=( const device_sequence& src ) {
+	__HOST__ device_sequence& operator=( const device_sequence& src )
+	{
 		ptr = src.ptr;
 		length = src.length;
 		return *this;
@@ -71,7 +106,8 @@ public:
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_sequence( device_sequence&& src ) : ptr(std::move(src.ptr)), length(std::move(src.length)) {}
-	__HOST__ device_sequence& operator=( device_sequence&& src ) {
+	__HOST__ device_sequence& operator=( device_sequence&& src )
+	{
 		ptr = std::move(src.ptr);
 		length = std::move(src.length);
 		return *this;
@@ -101,7 +137,8 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ void swap( device_sequence& other ) {
+	__HOST__ __DEVICE__ void swap( device_sequence& other )
+	{
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
 		iterator iter2 = other.begin();
@@ -126,12 +163,12 @@ class device_fixed_sequence
 {
 
 public:
-	typedef T              value_type;
-	typedef P              pointer;
-	typedef T&             reference;
-	typedef const T&       const_reference;
-	typedef std::size_t    size_type;
-	typedef std::ptrdiff_t difference_type;
+	typedef T                                           value_type;
+	typedef P                                           pointer;
+	typedef typename std::add_lvalue_reference<T>::type reference;
+	typedef typename std::add_const<reference>::type    const_reference;
+	typedef std::size_t                                 size_type;
+	typedef std::ptrdiff_t                              difference_type;
 
 	typedef device_contiguous_iterator<value_type      > iterator;
 	typedef device_contiguous_iterator<const value_type> const_iterator;
@@ -149,13 +186,15 @@ protected:
 public:
 	__HOST__ __DEVICE__ device_fixed_sequence( pointer ptr = pointer() ) : ptr(ptr) {}
 	__HOST__ __DEVICE__ device_fixed_sequence( const device_fixed_sequence& src ) : ptr(src.ptr) {}
-	__HOST__ device_fixed_sequence& operator=( const device_fixed_sequence& src ) {
+	__HOST__ device_fixed_sequence& operator=( const device_fixed_sequence& src )
+	{
 		ptr = src.ptr;
 		return *this;
 	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_fixed_sequence( device_fixed_sequence&& src ) : ptr(std::move(src.ptr)) {}
-	__HOST__ device_fixed_sequence& operator=( device_fixed_sequence&& src ) {
+	__HOST__ device_fixed_sequence& operator=( device_fixed_sequence&& src )
+	{
 		ptr = std::move(src.ptr);
 		return *this;
 	}
@@ -184,7 +223,8 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ void swap( device_fixed_sequence& other ) {
+	__HOST__ __DEVICE__ void swap( device_fixed_sequence& other )
+	{
 		#ifdef __CUDA_ARCH__
 		iterator iter1 = begin();
 		iterator iter2 = other.begin();
@@ -226,13 +266,15 @@ public:
 	__HOST__ __DEVICE__ device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
 	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence& src ) : base_type(src) {}
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence<U,PointerType2>& src ) : base_type(src) {}
-	__HOST__ device_contiguous_sequence& operator=( const device_contiguous_sequence& src ) {
+	__HOST__ device_contiguous_sequence& operator=( const device_contiguous_sequence& src )
+	{
 		base_type::operator=(src);
 		return *this;
 	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_contiguous_sequence( device_contiguous_sequence&& src ) : base_type(src) {}
-	__HOST__ device_contiguous_sequence& operator=( device_contiguous_sequence&& src ) {
+	__HOST__ device_contiguous_sequence& operator=( device_contiguous_sequence&& src )
+	{
 		base_type::operator=(src);
 		return *this;
 	}
@@ -301,7 +343,8 @@ public:
 	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_matrix( device_matrix&& src ) : base_type(src), rows(std::move(src.rows)) {}
-	__HOST__ device_matrix& operator=( device_matrix&& src ) {
+	__HOST__ device_matrix& operator=( device_matrix&& src )
+	{
 		base_type::operator=( src );
 		rows = std::move(src.rows);
 		return *this;
@@ -365,7 +408,8 @@ public:
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_contiguous_row_matrix( device_contiguous_row_matrix&& src ) : base_type(src) {}
-	__HOST__ device_contiguous_row_matrix& operator=( device_contiguous_row_matrix&& src ) {
+	__HOST__ device_contiguous_row_matrix& operator=( device_contiguous_row_matrix&& src )
+	{
 		base_type::operator=(src);
 		return *this;
 	}
@@ -389,13 +433,15 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ inline row_type get_row( const size_type row ) {
+	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
+	{
 		typedef typename make_unmanaged<pointer>::type unmanaged_pointer;
 		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() );
 		mp += row*base_type::number_columns();
 		return row_type( naked_cast<typename std::add_pointer<value_type>::type>( mp ), base_type::number_columns() );
 	}
-	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const {
+	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const
+	{
 		typedef typename make_unmanaged<typename make_const<pointer>::type>::type unmanaged_pointer;
 		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() );
 		mp += row*base_type::number_columns();
@@ -405,12 +451,14 @@ public:
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
 
-	__HOST__ __DEVICE__ inline reference at( const size_type row, const size_type column ) {
+	__HOST__ __DEVICE__ inline reference at( const size_type row, const size_type column )
+	{
 		typename make_unmanaged<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
 		return *naked_cast<typename std::add_pointer<value_type>::type>(mp);
 	}
 
-	__HOST__ __DEVICE__ inline const_reference at( const size_type row, const size_type column ) const {
+	__HOST__ __DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
+	{
 		typename make_unmanaged_const<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
 		return *naked_cast<typename std::add_pointer<const value_type>::type>(mp);
 	}

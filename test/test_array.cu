@@ -8,8 +8,8 @@
 
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T,std::size_t N>
-//__global__ void testIterators( const typename ecuda::array<T,N>::argument src, ecuda::array<T,N> dest ) {
-__global__ void testIterators( const typename ecuda::array<T,N>::kernel_argument src, typename ecuda::array<T,N>::kernel_argument dest ) {
+__global__ void kernel_test_iterators( const typename ecuda::array<T,N>::kernel_argument src, typename ecuda::array<T,N>::kernel_argument dest )
+{
 	typename ecuda::array<T,N>::iterator result = dest.begin();
 	for( typename ecuda::array<T,N>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
 }
@@ -18,13 +18,13 @@ __global__ void testIterators( const typename ecuda::array<T,N>::kernel_argument
 int main( int argc, char* argv[] ) {
 
 	{
-		std::cerr << "TESTING CONSTRUCTORS" << std::endl;
-		std::cerr << "--------------------" << std::endl;
+		std::cout << "TESTING CONSTRUCTORS" << std::endl;
+		std::cout << "--------------------" << std::endl;
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray;
 			std::vector<double> hostVector( N );
-			std::cerr << "ecuda::array() : " << std::boolalpha << ecuda::equal( deviceArray.begin(), deviceArray.end(), hostVector.begin() ) << std::endl;
+			std::cout << "ecuda::array() : " << std::boolalpha << ecuda::equal( deviceArray.begin(), deviceArray.end(), hostVector.begin() ) << std::endl;
 		}
 		{
 			const std::size_t N = 1000;
@@ -32,7 +32,7 @@ int main( int argc, char* argv[] ) {
 			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 );
 			ecuda::array<double,N> deviceArray2( deviceArray1 );
 			std::vector<double> hostVector( N, 99.0 );
-			std::cerr << "ecuda::array( const ecuda::array& ) : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+			std::cout << "ecuda::array( const ecuda::array& ) : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
 		}
 		#ifdef __CPP11_SUPPORTED__
 		{
@@ -41,16 +41,16 @@ int main( int argc, char* argv[] ) {
 			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 );
 			ecuda::array<double,N> deviceArray2( std::move(deviceArray1) );
 			std::vector<double> hostVector( N, 99.0 );
-			std::cerr << "ecuda::array( ecuda::array&& ) :" << std::endl;
-			std::cerr << "  destination has contents : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
-			std::cerr << "  source now empty         : " << std::boolalpha << !static_cast<bool>(deviceArray1.data()) << std::endl;
+			std::cout << "ecuda::array( ecuda::array&& ) :" << std::endl;
+			std::cout << "  destination has contents : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+			std::cout << "  source now empty         : " << std::boolalpha << !static_cast<bool>(deviceArray1.data()) << std::endl;
 		}
 		#endif
-		std::cerr << std::endl;
+		std::cout << std::endl;
 	}
 	{
-		std::cerr << "TESTING ASSIGNMENT OPERATORS" << std::endl;
-		std::cerr << "----------------------------" << std::endl;
+		std::cout << "TESTING ASSIGNMENT OPERATORS" << std::endl;
+		std::cout << "----------------------------" << std::endl;
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray1;
@@ -58,9 +58,9 @@ int main( int argc, char* argv[] ) {
 			ecuda::array<double,N> deviceArray2 = deviceArray1;
 			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 0.0 );
 			std::vector<double> hostVector( N, 99.0 );
-			std::cerr << "ecuda::array::operator=(const array&) :" << std::endl;
-			std::cerr << "  assignment destination equal: " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
-			std::cerr << "  assignment source unequal   : " << std::boolalpha << !ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector.begin() ) << std::endl;
+			std::cout << "ecuda::array::operator=(const array&) :" << std::endl;
+			std::cout << "  assignment destination equal : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+			std::cout << "  assignment source unequal    : " << std::boolalpha << !ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector.begin() ) << std::endl;
 		}
 		#ifdef __CPP11_SUPPORTED__
 		{
@@ -69,85 +69,87 @@ int main( int argc, char* argv[] ) {
 			ecuda::fill( deviceArray1.begin(), deviceArray1.end(), 99.0 );
 			ecuda::array<double,N> deviceArray2 = std::move(deviceArray1);
 			std::vector<double> hostVector( N, 99.0 );
-			std::cerr << "ecuda::array::operator=(array&&) : " << std::endl;
-			std::cerr << "  destination has contents : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
-			std::cerr << "  source now empty         : " << std::boolalpha << !static_cast<bool>(deviceArray1.data()) << std::endl;
+			std::cout << "ecuda::array::operator=(array&&) : " << std::endl;
+			std::cout << "  destination has contents : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
+			std::cout << "  source now empty         : " << std::boolalpha << !static_cast<bool>(deviceArray1.data()) << std::endl;
 		}
 		#endif
-		std::cerr << std::endl;
+		std::cout << std::endl;
 	}
 	{
-		std::cerr << "TESTING ACCESSORS" << std::endl;
-		std::cerr << "-----------------" << std::endl;
+		std::cout << "TESTING ACCESSORS" << std::endl;
+		std::cout << "-----------------" << std::endl;
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray;
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 			for( typename ecuda::array<double,N>::size_type i = 0; i < deviceArray.size(); ++i ) deviceArray[i] = static_cast<double>(i);
 			try {
-				std::cerr << "ecuda::array::at()       : " << std::boolalpha << ( deviceArray.at(10) == static_cast<double>(10) ) << std::endl;
+				std::cout << "ecuda::array::at()       : " << std::boolalpha << ( deviceArray.at(10) == static_cast<double>(10) ) << std::endl;
 				deviceArray.at( N );
+				std::cout << "ecuda::array::at(N)      : exception NOT thrown as expected" << std::endl;
 			} catch( std::out_of_range& ex ) {
-				std::cerr << "ecuda::array::at() exception thrown as expected" << std::endl;
+				std::cout << "ecuda::array::at(N)      : exception thrown as expected" << std::endl;
 			}
-			std::cerr << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
-			std::cerr << "ecuda::array::front()    : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(0) ) << std::endl;
-			std::cerr << "ecuda::array::back()     : " << std::boolalpha << ( deviceArray.back() == static_cast<double>(N-1) ) << std::endl;
+			std::cout << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
+			std::cout << "ecuda::array::front()    : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(0) ) << std::endl;
+			std::cout << "ecuda::array::back()     : " << std::boolalpha << ( deviceArray.back() == static_cast<double>(N-1) ) << std::endl;
 			#else
-//			ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			//ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
 			#endif
-			std::cerr << "ecuda::array::data()     : " << std::boolalpha << static_cast<bool>(deviceArray.data()) << std::endl;
-			std::cerr << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
-			std::cerr << "ecuda::array::size()     : " << std::boolalpha << ( deviceArray.size() == N ) << std::endl;
+			std::cout << "ecuda::array::data()     : " << std::boolalpha << static_cast<bool>(deviceArray.data()) << std::endl;
+			std::cout << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
+			std::cout << "ecuda::array::size()     : " << std::boolalpha << ( deviceArray.size() == N ) << std::endl;
 		}
-		std::cerr << std::endl;
+		std::cout << std::endl;
 	}
 	{
-		std::cerr << "TESTING ITERATORS" << std::endl;
-		std::cerr << "-----------------" << std::endl;
+		std::cout << "TESTING ITERATORS" << std::endl;
+		std::cout << "-----------------" << std::endl;
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray;
-			std::cerr << "ecuda::array::end()-ecuda::array::begin()   : " << std::boolalpha << ( ( deviceArray.end()-deviceArray.begin() ) == N ) << std::endl;
-			std::cerr << "ecuda::array::rend()-ecuda::array::rbegin() : " << std::boolalpha << ( ( deviceArray.rbegin()-deviceArray.rend() ) == N ) << std::endl;
+			std::cout << "ecuda::array::end()-ecuda::array::begin()   : " << std::boolalpha << ( ( deviceArray.end()-deviceArray.begin() ) == N ) << std::endl;
+			std::cout << "ecuda::array::rend()-ecuda::array::rbegin() : " << std::boolalpha << ( ( deviceArray.rbegin()-deviceArray.rend() ) == N ) << std::endl;
 			//std::vector<double> hostVector( N );
 			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
 		}
-		std::cerr << std::endl;
+		std::cout << std::endl;
 	}
 	{
-		std::cerr << "TESTING TRANSFORMS" << std::endl;
-		std::cerr << "------------------" << std::endl;
+		std::cout << "TESTING TRANSFORMS" << std::endl;
+		std::cout << "------------------" << std::endl;
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray1;
 			deviceArray1.fill( static_cast<double>(99) );
 			std::vector<double> hostVector1( N, static_cast<double>(99) );
-			std::cerr << "ecuda::array::fill() : " << std::boolalpha << ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector1.begin() ) << std::endl;
+			std::cout << "ecuda::array::fill() : " << std::boolalpha << ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector1.begin() ) << std::endl;
 			ecuda::array<double,N> deviceArray2;
 			deviceArray2.fill( static_cast<double>(66) );
 			deviceArray1.swap( deviceArray2 );
-			std::cerr << "ecuda::array::swap() : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector1.begin() ) << std::endl;
+			std::cout << "ecuda::array::swap() : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector1.begin() ) << std::endl;
 		}
-		std::cerr << std::endl;
+		std::cout << std::endl;
 	}
 
-	std::vector<int> hostVector( 100 );	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
-
-	//ecuda::array<int,100> deviceArray; deviceArray.operator<<( hostVector );
-	//if( !ecuda::equal( hostVector.begin(), hostVector.end(), deviceArray.begin() ) ) throw std::runtime_error( "operator<< failed" );
-
-	ecuda::array<int,100> deviceArray;
+	const std::size_t N = 1000;
+	std::vector<int> hostVector( N ); for( int i = 0; i < static_cast<int>(N); ++i ) hostVector[i] = i;
+	ecuda::array<int,N> deviceArray;
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceArray.begin() );
 
 	#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 	{
-		ecuda::array<int,100> deviceArray2;
-		testIterators<int,100><<<1,1>>>( deviceArray, deviceArray2 );
-		CUDA_CHECK_ERRORS();
-		CUDA_CALL( cudaDeviceSynchronize() );
-		std::cout << "EQUAL " << ( deviceArray == deviceArray2 ? "true" : "false" ) << std::endl;
-		std::cout << "LESSTHAN " << ( deviceArray < deviceArray2 ? "true" : "false" ) << std::endl;
+		std::cout << "TESTING KERNELS" << std::endl;
+		std::cout << "---------------" << std::endl;
+		{
+			ecuda::array<int,N> deviceArray2;
+			CUDA_CALL_KERNEL_AND_WAIT( kernel_test_iterators<int,N><<<1,1>>>( deviceArray, deviceArray2 ) );
+			//CUDA_CHECK_ERRORS();
+			//CUDA_CALL( cudaDeviceSynchronize() );
+			std::cout << "ecuda::array::iterator : " << std::boolalpha << ecuda::equal( deviceArray.begin(), deviceArray.end(), deviceArray2.begin() ) << std::endl;
+		}
+		std::cout << std::endl;
 	}
 	#endif
 

@@ -709,6 +709,8 @@ Talk about passing arguments as container::kernel_argument
 /// Caveats:
 ///
 /// Container copy ctors are always shallow copies... (same with assignment operator)
+/// Must use the ::kernel_argument when specifying a kernel argument (unfortunately, forgetting this might not cause a compile-time problem)
+///  unless CUDA >= 6.0 when container references can be used as arguments without issue
 /// Reverse iterators of contiguous sequences are non-contiguous...
 ///
 /// Changes from ecuda 1.0:

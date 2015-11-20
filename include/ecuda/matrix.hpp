@@ -360,15 +360,6 @@ public:
 	///
 	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_columns(); }
 
-	/*
-	///
-	/// \brief Returns the pitch of the underlying 2D device memory.
-	///
-	/// \returns THe pitch of the underlying 2D device memory (in bytes).
-	///
-	__HOST__ __DEVICE__ inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
-	*/
-
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns.
 	///
@@ -447,6 +438,56 @@ public:
 	/// \returns view object for the specified column
 	///
 	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type columnIndex ) const { return base_type::get_column(columnIndex); }
+
+	///
+	/// \brief Returns a reference to the element at specified row and column index, with bounds checking.
+	///
+	/// If the row and column are not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param rowIndex position of the row to return
+	/// \param columnIndex position of the column to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex )
+	{
+		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::matrix::at() row and/or column index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::at( rowIndex, columnIndex );
+	}
+
+	///
+	/// \brief Returns a constant reference to the element at specified row and column index, with bounds checking.
+	///
+	/// If the row and column are not within the range of the container, the current kernel will exit and
+	/// cudaGetLastError will return cudaErrorUnknown.
+	///
+	/// \param rowIndex position of the row to return
+	/// \param columnIndex position of the column to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const
+	{
+		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
+			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			throw std::out_of_range( "ecuda::matrix::at() row and/or column index parameter is out of range" );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			__threadfence();
+			asm("trap;");
+			#endif
+		}
+		return base_type::at( rowIndex, columnIndex );
+	}
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
@@ -716,6 +757,7 @@ public:
 	template<class Alloc2>
 	__HOST__ __DEVICE__ inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return !operator<(other); }
 
+	/*
 	///
 	/// \brief Returns a reference to the element at the specified matrix location.
 	///
@@ -771,6 +813,7 @@ public:
 	/// \returns reference to the specified element
 	///
 	__DEVICE__ inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return base_type::at( rowIndex, columnIndex ); }
+	*/
 
 	/*
 	 * Deprecating this function since the STL standard seems to specify that the at() accessor
