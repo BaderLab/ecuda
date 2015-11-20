@@ -12,9 +12,18 @@ The original motivation for creating the API was to avoid a lot of the headaches
 
 For example, here's some typical code one might use to create a matrix in device memory, and then calculate the column sums using the GPU:
 
+<table>
+<tr>
+<td>
 \code{.cpp}
 // forward declaration of kernel function
-__global__ void kernel_sum_columns( const char* matrix, const size_t pitch, const size_t width, const size_t height, double* columnSums );
+__global__ void kernel_sum_columns(
+    const char*,
+    const size_t,
+    const size_t,
+    const size_t,
+    double*
+);
 
 int main( int argc, char* argv[] )
 {
@@ -28,18 +37,20 @@ int main( int argc, char* argv[] )
     size_t pitch;
     cudaMalloc2D( &deviceMatrix, &pitch, width*sizeof(double), height );
 
-    // create a matrix in host memory (page-locked so transfer to device is faster)
+    // create a matrix in host memory
+    // (page-locked so transfer to device is faster)
     double* hostMatrix;
     cudaMallocHost( &hostMatrix, width*height*sizeof(double) );
+
     // ... fill up the host memory with data from somewhere
 
     // copy matrix from host to device
     cudaMemcpy2D( deviceMatrix, pitch, hostMatrix, width*sizeof(double), width*sizeof(double), height, cudaMemcpyHostToDevice );
 
-    // create an array in device memory to hold results
+    // create a zero-initialized array in device memory to hold results
     double* deviceColumnSums;
     cudaMalloc( &deviceColumnSums, width*sizeof(double) );
-    cudaMemset( deviceColumnSums, 0, width*sizeof(double) ); // fill array with zeros
+    cudaMemset( deviceColumnSums, 0, width*sizeof(double) );
 
     // run kernel
     kernel_sum_columns<<<1,width>>>( deviceMatrix, pitch, width, height, deviceColumnSums );
@@ -60,7 +71,13 @@ int main( int argc, char* argv[] )
 
 }
 
-__global__ void kernel_sum_columns( const char* matrix, const size_t pitch, const size_t width, const size_t height, double* columnSums )
+__global__ void kernel_sum_columns(
+    const char* matrix,
+    const size_t pitch,
+    const size_t width,
+    const size_t height,
+    double* columnSums
+)
 {
     const int t = threadIdx.x; // current thread index
     if( t < width ) {
@@ -75,10 +92,17 @@ __global__ void kernel_sum_columns( const char* matrix, const size_t pitch, cons
     }
 }
 \endcode
-
+</td>
+<td>
 \code{.cpp}
 // forward declaration of kernel function
-__global__ void kernel_sum_columns( const ecuda::matrix<double>::kernel_argument matrix, const ecuda::vector<double>::kernel_argument columnSums );
+__global__ void kernel_sum_columns(
+    const ecuda::matrix<double>::kernel_argument,
+    ecuda::vector<double>::kernel_argument
+);
+
+
+
 
 int main( int argc, char* argv[] )
 {
@@ -90,19 +114,28 @@ int main( int argc, char* argv[] )
     // create a matrix in device memory that is hardware-aligned
     ecuda::matrix<double> deviceMatrix( width, height );
 
-    // create a matrix in host memory (page-locked so transfer to device is faster)
+
+
+    // create a matrix in host memory
+    // (page-locked so transfer to device is faster)
     std::vector< double, ecuda::host_allocator<double> > hostMatrix( width*height );
+
+
     // ... fill up the host memory with data from somewhere
 
     // copy matrix from host to device
     ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
 
-    // create an array in device memory to hold results
-    ecuda::vector<double> deviceColumnSums( width, 0 ); // fill array with zeros
+
+    // create a zero-initialized array in device memory to hold results
+    ecuda::vector<double> deviceColumnSums( width, 0 );
+
+
 
     // run kernel
     kernel_sum_columns<<<1,width>>>( deviceMatrix, deviceColumnSums );
     cudaDeviceSynchronize();
+
 
     // create an array in host memory to hold results
     std::vector<double> hostColumnSums( width );
@@ -110,20 +143,34 @@ int main( int argc, char* argv[] )
     // copy results from device to host
     ecuda::copy( deviceColumnSums.begin(), deviceColumnSums.end(), hostColumnSums.begin() );
 
+
+
     return 0;
 
 }
 
-__global__ void kernel_sum_columns( const ecuda::matrix<double>::kernel_argument matrix, const ecuda::vector<double>::kernel_argument columnSums )
+__global__ void kernel_sum_columns(
+    const ecuda::matrix<double>::kernel_argument matrix,
+    ecuda::vector<double>::kernel_argument columnSums
+
+
+
+)
 {
     const int t = threadIdx.x; // current thread index
     if( t < matrix.number_columns() ) {
 	typename ecuda::matrix<double>::const_column column = matrix.get_column(t);
 	columnSums[t] = ecuda::accumulate( column.begin(), column.end(), static_cast<double>(0) );
     }
+
+
+
+
 }
 \endcode
-
+</td>
+</tr>
+</table>
 
 The following code is invalid when using CUDA:
 
@@ -837,5 +884,5 @@ Talk about passing arguments as container::kernel_argument
 /// deprecated cube::get_pitch() (now use cube::data().get_pitch())
 /// deprecated cube::assign(Iterator,Iterator) since it doesn't really apply given that knowledge of row/col size is needed
 ///
-
+/// GO OVER PREPROCESSOR DEFINES LIKE ECUDA_EMULATE_CUDA_ON_CPU and the /cpu/ build targets in Makefile
 
