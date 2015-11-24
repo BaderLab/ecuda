@@ -44,6 +44,7 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace detail {
 
 typedef std::false_type host_type;
@@ -53,6 +54,7 @@ typedef std::true_type  device_type;
 //typedef std::true_type  contiguous_type;
 
 } // namespace detail
+/// \endcond
 
 template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return b < a ? b : a; }
 template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b, Compare cmp ) { return cmp(b,a) ? b : a; }

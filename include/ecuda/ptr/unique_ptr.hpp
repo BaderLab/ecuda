@@ -43,7 +43,7 @@ namespace ecuda {
 /// lvalue reference to function, callable with an argument of type
 /// unique_ptr<T,Deleter>::pointer.
 ///
-template< typename T, class Deleter=default_delete<T> >
+template< typename T, class Deleter=default_device_delete<T> >
 class unique_ptr
 {
 

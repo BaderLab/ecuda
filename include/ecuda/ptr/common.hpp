@@ -5,6 +5,7 @@
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace detail {
 
 // this is hacky structure that takes any pointer (const or not)
@@ -15,27 +16,28 @@ template<typename T> struct void_cast<const T*> { __HOST__ __DEVICE__ inline voi
 template<typename T> struct void_cast           { __HOST__ __DEVICE__ inline void* operator()( T ptr        ) { return reinterpret_cast<void*>(ptr); } };
 
 } // namespace detail
+/// \endcond
 
 ///
-/// \brief The default destruction policy used by smart pointers.
+/// \brief The default destruction policy used by smart pointers to device memory.
 ///
 /// The CUDA API function cudaFree() is used to deallocate memory.
 ///
 template<typename T>
-struct default_delete {
+struct default_device_delete {
 
 	///
-	/// \brief Constructs an ecuda::default_delete object.
+	/// \brief Constructs an ecuda::default_device_delete object.
 	///
-	__HOST__ __DEVICE__ __CONSTEXPR__ default_delete() __NOEXCEPT__ {}
+	__HOST__ __DEVICE__ default_device_delete() __NOEXCEPT__ {}
 
 	///
-	/// \brief Constructs an ecuda::default_delete object from another one.
+	/// \brief Constructs an ecuda::default_device_delete object from another one.
 	///
 	/// This constructor will only participate in overload resolution
 	/// if U* is implicitly convertible to T*.
 	///
-	template<typename U> __HOST__ __DEVICE__ default_delete( const default_delete<U>& src ) __NOEXCEPT__ {}
+	template<typename U> __HOST__ __DEVICE__ default_device_delete( const default_device_delete<U>& src ) __NOEXCEPT__ {}
 
 	///
 	/// \brief Calls cudaFree() on a pointer.
@@ -56,6 +58,11 @@ struct default_delete {
 
 };
 
+///
+/// \brief The default destruction policy used by smart pointers to page-locked host memory.
+///
+/// The CUDA API function cudaFreeHost() is used to deallocate memory.
+///
 template<typename T>
 struct default_host_delete {
 	__HOST__ __DEVICE__ __CONSTEXPR__ default_host_delete() __NOEXCEPT__ {}

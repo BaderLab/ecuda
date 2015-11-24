@@ -77,6 +77,7 @@ namespace ecuda {
 ///
 template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 //
@@ -798,6 +799,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 }
 
 } // namespace impl
+/// \endcond
 
 //
 // Entry point of the ecuda::copy function.

@@ -171,7 +171,7 @@ public:
 	{
 		if( !(index < size()) ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::array::at() index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -195,7 +195,7 @@ public:
 	{
 		if( !(index < size()) ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::array::at() index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully

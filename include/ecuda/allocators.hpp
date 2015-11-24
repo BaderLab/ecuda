@@ -341,7 +341,7 @@ public:
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
 		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
-		default_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
+		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		#endif
 	}
 
@@ -520,7 +520,7 @@ public:
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
 		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
-		default_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
+		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		#endif
 	}
 

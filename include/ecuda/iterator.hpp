@@ -12,7 +12,7 @@ namespace ecuda {
 
 // NOTE: libc++ requires inheritance from one of the 5 STL iterator categories (libstdc++ does not)
 
-template<typename T,typename U> class padded_ptr; // forward declaration
+template<typename T,typename P> class padded_ptr; // forward declaration
 
 ///
 /// \brief Iterator category denoting device memory.

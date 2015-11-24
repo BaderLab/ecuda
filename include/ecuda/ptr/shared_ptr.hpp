@@ -22,6 +22,7 @@
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace detail {
 
 struct sp_counter_base
@@ -37,7 +38,7 @@ template<typename T>
 struct sp_counter_impl_p : sp_counter_base
 {
 	sp_counter_impl_p() : sp_counter_base() {}
-	virtual void dispose( void* p ) { if( p ) ecuda::default_delete<void>()(p); } // cudaFree( p );
+	virtual void dispose( void* p ) { if( p ) ecuda::default_device_delete<void>()(p); } // cudaFree( p );
 };
 
 template<typename T,class Deleter>
@@ -51,6 +52,7 @@ struct sp_counter_impl_pd : sp_counter_base
 };
 
 } // namespace detail
+/// \endcond
 
 ///
 /// \brief A smart pointer that retains shared ownership of an object in device memory.
@@ -62,7 +64,7 @@ struct sp_counter_impl_pd : sp_counter_base
 /// - the last remaining shared_ptr owning the object is destroyed
 /// - the last remaining shared_ptr owning the object is assigned another pointer via operator= or reset().
 ///
-/// The object is destroyed using ecuda::default_delete or a custom deleter that is supplied to shared_ptr
+/// The object is destroyed using ecuda::default_device_delete or a custom deleter that is supplied to shared_ptr
 /// during construction.
 ///
 /// A shared_ptr can share ownership of an object while storing a pointer to another object. This feature
@@ -106,7 +108,7 @@ public:
 	/// \brief Constructs a shared_ptr with a pointer to the managed object.
 	///
 	/// U must be a complete type and ptr must be convertible to T*.
-	/// Additionally, uses ecuda::default_delete as the deleter.
+	/// Additionally, uses ecuda::default_device_delete as the deleter.
 	///
 	/// \param ptr a pointer to an object to manage
 	///
@@ -122,7 +124,7 @@ public:
 	/// \brief Constructs a shared_ptr with a pointer to the managed object.
 	///
 	/// U must be a complete type and ptr must be convertible to T*.
-	/// Additionally, uses ecuda::default_delete as the deleter.
+	/// Additionally, uses ecuda::default_device_delete as the deleter.
 	///
 	/// \param ptr a pointer to an object to manage
 	/// \param deleter a deleter to use to destroy the object
@@ -200,10 +202,10 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
 	{
-		src.current_ptr = NULL;
-		src.counter = NULL;
+		//src.current_ptr = NULL;
+		//src.counter = NULL;
 	}
 
 	///
@@ -216,10 +218,10 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
 	{
-		src.current_ptr = NULL;
-		src.counter = NULL;
+		//src.current_ptr = NULL;
+		//src.counter = NULL;
 	}
 
 	///
@@ -331,8 +333,8 @@ public:
 	/// \brief Replaces the managed object with another.
 	///
 	/// Replaces the managed object with an object pointed to by ptr. U must be a complete
-	/// type and implicitly convertible to T. Additionally, uses ecuda::default_delete as
-	/// the deleter.
+	/// type and implicitly convertible to T. Additionally, uses ecuda::default_device_delete
+	/// as the deleter.
 	///
 	/// \param ptr pointer to an object to acquire ownership of
 	///

@@ -170,6 +170,19 @@ protected:
 		return *this;
 	}
 
+private:
+	__HOST__ void init()
+	{
+		if( number_rows() and number_columns() and number_depths() ) {
+			typename Alloc::pointer p = get_allocator().allocate( number_depths(), base_type::size() /* aka nr*nc */ );
+			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
+			base_type base( pp, base_type::size(), number_depths() );
+			base_type::swap( base );
+		}
+	}
+
 public:
 	///
 	/// \brief Constructs a cube with dimensions numberRows x numberColumns x numberDepths filled with copies of elements with value value.
@@ -186,15 +199,8 @@ public:
 		const Alloc& allocator = Alloc()
 	) :	base_type( pointer(), numberRows*numberColumns, numberDepths ), numberRows(numberRows), allocator(allocator)
 	{
-		if( numberRows and numberColumns and numberDepths ) {
-			typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberColumns*numberRows );
-			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
-			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, numberRows*numberColumns, numberDepths );
-			ecuda::fill( base.begin(), base.end(), value );
-			base_type::swap( base );
-		}
+		init();
+		ecuda::fill( begin(), end(), value );
 	}
 
 	///
@@ -209,15 +215,8 @@ public:
 		numberRows( src.numberRows ),
 		allocator( std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()) )
 	{
-		if( !src.empty() ) {
-			typename Alloc::pointer p = get_allocator().allocate( src.number_depths(), src.number_columns()*src.number_rows() );
-			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
-			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, src.number_rows()*src.number_columns(), src.number_depths() );
-			base_type::swap( base );
-			ecuda::copy( src.begin(), src.end(), begin() );
-		}
+		init();
+		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	///
@@ -233,15 +232,8 @@ public:
 		numberRows(src.numberRows),
 		allocator(alloc)
 	{
-		if( !src.empty() ) {
-			typename Alloc::pointer p = get_allocator().allocate( src.number_depths(), src.number_columns()*src.number_rows() );
-			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
-			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, src.number_rows()*src.number_columns(), src.number_depths() );
-			base_type::swap( base );
-			ecuda::copy( src.begin(), src.end(), begin() );
-		}
+		init();
+		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	__HOST__ cube& operator=( const cube& src )
@@ -605,7 +597,7 @@ public:
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::cube::at() row, column and/or depth index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -631,7 +623,7 @@ public:
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::cube::at() row, column and/or depth index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully

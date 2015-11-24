@@ -14,6 +14,7 @@ namespace ecuda {
 // forward declaration
 template<class ForwardIterator,typename T> __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 namespace fill_device {
@@ -103,6 +104,7 @@ __HOST__ __DEVICE__ inline void fill(
 }
 
 } // namespace impl
+/// \endcond
 
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val )

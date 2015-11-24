@@ -164,6 +164,22 @@ protected:
 		return *this;
 	}
 
+private:
+	__HOST__ void init()
+	{
+		if( number_rows() and number_columns() ) {
+			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
+			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
+			//       as the original - the device_contiguous_row_matrix second template parameter which
+			//       enforces a padded_ptr of some type is the reason
+			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
+			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
+			base_type base( pp, number_rows(), number_columns() );
+			base_type::swap( base );
+		}
+	}
+
 public:
 	///
 	/// \brief Constructs a matrix with dimensions numberRows x numberColumns filled with copies of elements with value value.
@@ -177,21 +193,8 @@ public:
 		base_type( pointer(), numberRows, numberColumns ),
 		allocator(allocator)
 	{
-		if( numberRows and numberColumns ) {
-			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
-			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
-			//       as the original - the device_contiguous_row_matrix second template parameter which
-			//       enforces a padded_ptr of some type is the reason
-			typename Alloc::pointer p = get_allocator().allocate( numberColumns, numberRows );
-			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, numberRows, numberColumns );
-			for( size_type i = 0; i < base.number_rows(); ++i ) {
-				typename base_type::row_type row = base.get_row(i);
-				ecuda::fill( row.begin(), row.end(), value );
-			}
-			base_type::swap( base );
-		}
+		init();
+		ecuda::fill( begin(), end(), value );
 	}
 
 	///
@@ -205,13 +208,7 @@ public:
 		base_type( pointer(), src.number_rows(), src.number_columns() ),
 		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 	{
-		if( number_rows() and number_columns() ) {
-			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
-			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, number_rows(), number_columns() );
-			base_type::swap( base );
-		}
+		init();
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
@@ -227,6 +224,7 @@ public:
 		base_type( pointer(), src.number_rows(), src.number_columns() ),
 		allocator(alloc)
 	{
+		init();
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
@@ -247,7 +245,7 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	__HOST__ matrix( matrix&& src ) : base_type(src), allocator(std::move(src.allocator)) {}
+	__HOST__ matrix( matrix&& src ) : base_type(std::move(src)), allocator(std::move(src.allocator)) {}
 
 	__HOST__ matrix& operator=( matrix&& src )
 	{
@@ -460,7 +458,7 @@ public:
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::matrix::at() row and/or column index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -485,7 +483,7 @@ public:
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
 			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			throw std::out_of_range( "ecuda::matrix::at() row and/or column index parameter is out of range" );
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -616,14 +614,7 @@ public:
 	///
 	__HOST__ __DEVICE__ void fill( const value_type& value )
 	{
-		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-		#else
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			row_type row = get_row(i);
-			ecuda::fill( row.begin(), row.end(), value );
-		}
-		#endif
+		ecuda::fill( begin(), end(), value );
 	}
 
 	///
@@ -657,6 +648,8 @@ public:
 	template<class Alloc2>
 	__HOST__ __DEVICE__ bool operator==( const matrix<value_type,Alloc2>& other ) const
 	{
+		return ecuda::equal( begin(), end(), other.begin() );
+		/*
 		#ifdef __CUDA_ARCH__
 		return ecuda::equal( begin(), end(), other.begin() );
 		#else
@@ -669,6 +662,7 @@ public:
 		}
 		return true;
 		#endif
+		*/
 	}
 
 	///
@@ -696,6 +690,8 @@ public:
 	template<class Alloc2>
 	__HOST__ __DEVICE__ bool operator<( const matrix<value_type,Alloc2>& other ) const
 	{
+		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
+		/*
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
 		#else
@@ -710,6 +706,7 @@ public:
 		}
 		return false;
 		#endif
+		*/
 	}
 
 	///
@@ -724,6 +721,8 @@ public:
 	template<class Alloc2>
 	__HOST__ __DEVICE__ bool operator>( const matrix<value_type,Alloc2>& other ) const
 	{
+		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
+		/*
 		#ifdef __CUDA_ARCH__
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
 		#else
@@ -738,6 +737,7 @@ public:
 		}
 		return false;
 		#endif
+		*/
 	}
 
 	///

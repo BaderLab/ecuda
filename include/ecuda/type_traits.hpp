@@ -127,10 +127,10 @@ namespace ecuda {
 /// Forward declarations of the five pointer specializations used in the API.
 ///
 template<typename T>            class naked_ptr;    // forward declaration
-template<typename T,typename U> class padded_ptr;   // forward declaration
+template<typename T,typename P> class padded_ptr;   // forward declaration
 template<typename T>            class shared_ptr;   // forward declaration
-template<typename T,typename U> class striding_ptr; // forward declaration
-template<typename T,typename U> class unique_ptr;   // forward declaration
+template<typename T,typename P> class striding_ptr; // forward declaration
+template<typename T,typename P> class unique_ptr;   // forward declaration
 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a naked pointer.

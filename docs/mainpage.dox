@@ -12,65 +12,104 @@ The original motivation for creating the API was to avoid a lot of the headaches
 
 For example, here's some typical code one might use to create a matrix in device memory, and then calculate the column sums using the GPU:
 
-<table>
-<tr>
-<td>
+Let us define some constants:
 \code{.cpp}
-// forward declaration of kernel function
-__global__ void kernel_sum_columns(
-    const char*,
-    const size_t,
-    const size_t,
-    const size_t,
-    double*
-);
+const size_t width = 100;
+const size_t height = 100;
+\endcode
 
-int main( int argc, char* argv[] )
-{
+<table>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
+double* deviceMatrix;
+size_t pitch;
+cudaMalloc2D( &deviceMatrix, &pitch, width*sizeof(double), height );
+\endcode
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
+\code{.cpp}
+ecuda::matrix<double> deviceMatrix( width, height );
+\endcode
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
+double* hostMatrix;
+cudaMallocHost( &hostMatrix, width*height*sizeof(double) );
+// ... fill up host memory with data somehow
+cudaMemcpy( deviceMatrix, pitch, hostMatrix, width*sizeof(double), width*sizeof(double), height, cudaMemcpyHostToDevice );
+\endcode
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
+\code{.cpp}
+std::vector< double, ecuda::host_allocator<double> > hostMatrix( width*height );
+// ... fill up host memory with data somehow
+ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+\endcode
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
+double* deviceColumnSums;
+cudaMalloc( &deviceColumnSums, width*sizeof(double) );
+cudaMemset( deviceColumnSums, 0, width*sizeof(double) );
+\endcode
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
+\code{.cpp}
+ecuda::vector<double> deviceColumnSums( width, 0.0 );
+\endcode
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
+kernel_sum_columns<<<1,width>>>( deviceMatrix, pitch, width, height, deviceColumnSums );
+cudaDeviceSynchronize();
 
-    // the dimensions of the matrix
-    const size_t width = 100;
-    const size_t height = 100;
+std::vector<double> hostColumnSums( width );
+cudaMemcpy( &hostColumnSums.front(), deviceColumnSums, width*sizeof(double), cudaMemcpyDeviceToHost );
+\endcode
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
+\code{.cpp}
+kernel_sum_columns<<<1,width>>>( deviceMatrix, deviceColumnSums );
+cudaDeviceSynchronize();
 
-    // create a matrix in device memory that is hardware-aligned
-    double* deviceMatrix;
-    size_t pitch;
-    cudaMalloc2D( &deviceMatrix, &pitch, width*sizeof(double), height );
+std::vector<double> hostColumnSums( width );
+ecuda::copy( deviceColumnSums.begin(), deviceColumnSums.end(), hostColumnSums.begin() );
+\endcode
+</td></tr>
 
-    // create a matrix in host memory
-    // (page-locked so transfer to device is faster)
-    double* hostMatrix;
-    cudaMallocHost( &hostMatrix, width*height*sizeof(double) );
+<tr><td>&nbsp;</td></tr>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
+// clean up
+cudaFreeHost( hostMatrix );
+cudaFree( deviceColumnSums );
+cudaFree( deviceMatrix );
+\endcode
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
+\code{.cpp}
+// no cleanup needed
+\endcode
+</td></tr>
 
-    // ... fill up the host memory with data from somewhere
 
-    // copy matrix from host to device
-    cudaMemcpy2D( deviceMatrix, pitch, hostMatrix, width*sizeof(double), width*sizeof(double), height, cudaMemcpyHostToDevice );
-
-    // create a zero-initialized array in device memory to hold results
-    double* deviceColumnSums;
-    cudaMalloc( &deviceColumnSums, width*sizeof(double) );
-    cudaMemset( deviceColumnSums, 0, width*sizeof(double) );
-
-    // run kernel
-    kernel_sum_columns<<<1,width>>>( deviceMatrix, pitch, width, height, deviceColumnSums );
-    cudaDeviceSynchronize();
-
-    // create an array in host memory to hold results
-    std::vector<double> hostColumnSums( width );
-
-    // copy results from device to host
-    cudaMemcpy( &hostColumnSums.front(), deviceColumnSums, width*sizeof(double), cudaMemcpyDeviceToHost );
-
-    // clean up
-    cudaFreeHost( hostMatrix );
-    cudaFree( deviceColumnSums );
-    cudaFree( deviceMatrix );
-
-    return 0;
-
-}
-
+<tr><td>&nbsp;</td></tr>
+<tr><th>CUDA</th></tr>
+<tr><td>
+\code{.cpp}
 __global__ void kernel_sum_columns(
     const char* matrix,
     const size_t pitch,
@@ -92,69 +131,13 @@ __global__ void kernel_sum_columns(
     }
 }
 \endcode
-</td>
-<td>
+</td></tr>
+<tr><th>ecuda</th></tr>
+<tr><td>
 \code{.cpp}
-// forward declaration of kernel function
-__global__ void kernel_sum_columns(
-    const ecuda::matrix<double>::kernel_argument,
-    ecuda::vector<double>::kernel_argument
-);
-
-
-
-
-int main( int argc, char* argv[] )
-{
-
-    // the dimensions of the matrix
-    const size_t width = 100;
-    const size_t height = 100;
-
-    // create a matrix in device memory that is hardware-aligned
-    ecuda::matrix<double> deviceMatrix( width, height );
-
-
-
-    // create a matrix in host memory
-    // (page-locked so transfer to device is faster)
-    std::vector< double, ecuda::host_allocator<double> > hostMatrix( width*height );
-
-
-    // ... fill up the host memory with data from somewhere
-
-    // copy matrix from host to device
-    ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
-
-
-    // create a zero-initialized array in device memory to hold results
-    ecuda::vector<double> deviceColumnSums( width, 0 );
-
-
-
-    // run kernel
-    kernel_sum_columns<<<1,width>>>( deviceMatrix, deviceColumnSums );
-    cudaDeviceSynchronize();
-
-
-    // create an array in host memory to hold results
-    std::vector<double> hostColumnSums( width );
-
-    // copy results from device to host
-    ecuda::copy( deviceColumnSums.begin(), deviceColumnSums.end(), hostColumnSums.begin() );
-
-
-
-    return 0;
-
-}
-
 __global__ void kernel_sum_columns(
     const ecuda::matrix<double>::kernel_argument matrix,
     ecuda::vector<double>::kernel_argument columnSums
-
-
-
 )
 {
     const int t = threadIdx.x; // current thread index
@@ -162,19 +145,10 @@ __global__ void kernel_sum_columns(
         typename ecuda::matrix<double>::const_column column = matrix.get_column(t);
         columnSums[t] = ecuda::accumulate( column.begin(), column.end(), static_cast<double>(0) );
     }
-
-
-
-
 }
 \endcode
-</td>
-</tr>
+</td></tr>
 </table>
-
-
-
-
 
 The following code is invalid when using CUDA:
 
