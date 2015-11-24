@@ -39,6 +39,7 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_MODELS_HPP
 #define ECUDA_MODELS_HPP
 
+#include "../global.hpp"
 #include "../memory.hpp"
 #include "../iterator.hpp"
 
@@ -137,12 +138,16 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 	#endif
 
+	//TODO: think about this - worth considering for user access
+	//__HOST__ __DEVICE__ inline pointer data() const { return ptr; }
+
 	__HOST__ __DEVICE__ void swap( device_sequence& other )
 	{
 		#ifdef __CUDA_ARCH__
-		iterator iter1 = begin();
-		iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
+		ECUDA_STATIC_ASSERT(false,IMPLEMENTATION_NEEDS_TO_BE_DONE_HERE_TO_SWAP_TWO_SEQUENCES_ON_DEVICE);
+		//iterator iter1 = begin();
+		//iterator iter2 = other.begin();
+		//for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
 		#else
 		::ecuda::swap( ptr, other.ptr );
 		::ecuda::swap( length, other.length );
@@ -363,6 +368,12 @@ public:
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
 
+	__HOST__ __DEVICE__ void swap( device_matrix& other )
+	{
+		base_type::swap( other );
+		::ecuda::swap( rows, other.rows );
+	}
+
 };
 
 ///
@@ -373,7 +384,7 @@ public:
 /// fixed padding.  This provides seamless support for device-aligned memory.
 ///
 template<typename T,class P>
-class device_contiguous_row_matrix : public device_matrix< T, padded_ptr<T,P> > // NOTE: P must be padded_ptr
+class device_contiguous_row_matrix : public device_matrix< T, padded_ptr<T,P> >
 {
 private:
 	typedef device_matrix< T, padded_ptr<T,P> > base_type;
@@ -393,8 +404,8 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 	typedef device_contiguous_sequence<value_type      > row_type;
-	typedef device_contiguous_sequence<const value_type> const_row_type;
 	typedef typename base_type::column_type              column_type;
+	typedef device_contiguous_sequence<const value_type> const_row_type;
 	typedef typename base_type::const_column_type        const_column_type;
 
 public:

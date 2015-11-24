@@ -488,6 +488,11 @@ public:
 		pitch += (pitch % 16);
 		char* p = std::allocator<char>().allocate( pitch*h, hint );
 		typename std::add_pointer<value_type>::type p2 = reinterpret_cast<typename std::add_pointer<value_type>::type>( p );
+		if( (w*sizeof(value_type)) == pitch ) {
+			std::cerr << "ecuda::device_pitch_allocator::allocate is emulating device memory on host but the resulting" << std::endl;
+			std::cerr << "                                        pitch is the same as a contiguous block so internal API" << std::endl;
+			std::cerr << "                                        logic that considers memory pitch may not be properly tested" << std::endl;
+		}
 		return pointer( p2, pitch, w, p2 );
 		#else
 		typename std::add_pointer<value_type>::type ptr = NULL;

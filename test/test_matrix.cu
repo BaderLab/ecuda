@@ -41,6 +41,22 @@ __global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_arg
 
 #endif
 
+template<typename T>
+struct coord_t
+{
+	T x, y;
+	coord_t( T x, T y ) : x(x), y(y) {}
+	coord_t() : x(0), y(0) {}
+	bool operator==( const coord_t& other ) const { return x == other.x and y == other.y; }
+};
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const coord_t<T>& src )
+{
+	out << "(" << src.x << "," << src.y << ")";
+	return out;
+}
+
 int main( int argc, char* argv[] ) {
 
 	{
@@ -57,8 +73,8 @@ int main( int argc, char* argv[] ) {
 			const std::size_t R = 5;
 			const std::size_t C = 21;
 			ecuda::matrix<double> deviceMatrix1( R, C );
+			ecuda::fill( deviceMatrix1.begin(), deviceMatrix1.end(), 99.0 );
 			ecuda::matrix<double> deviceMatrix2( deviceMatrix1 );
-			ecuda::fill( deviceMatrix1.begin(), deviceMatrix1.end(), 99.0 ); // filling deviceArray1 should be reflected in deviceArray2
 			std::vector<double> hostVector( R*C, 99.0 );
 			std::cerr << "ecuda::matrix( const ecuda::matrix& ) : " << std::boolalpha << ecuda::equal( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector.begin() ) << std::endl;
 		}
@@ -104,6 +120,40 @@ int main( int argc, char* argv[] ) {
 			//std::cerr << "ecuda::matrix::data()     : " << std::boolalpha << ( deviceMatrix.data() > 0 ) << std::endl;
 		}
 		std::cerr << std::endl;
+	}
+	{
+		std::cerr << "TESTING ROWS" << std::endl;
+		std::cerr << "------------" << std::endl;
+		const std::size_t R = 5;
+		const std::size_t C = 21;
+		std::vector< coord_t<int> > hostVector;
+		hostVector.reserve( R*C );
+		for( std::size_t i = 0; i < R; ++i )
+			for( std::size_t j = 0; j < C; ++j )
+				hostVector.push_back( coord_t<int>(i,j) );
+		ecuda::matrix< coord_t<int> > deviceMatrix( R, C );
+		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+		for( std::size_t i = 0; i < R; ++i ) {
+			typename ecuda::matrix< coord_t<int> >::row_type row = deviceMatrix[i];
+			std::cerr << "row[" << i << "]=" << std::boolalpha << std::equal( row.begin(), row.end(), hostVector.begin()+(i*C) ) << std::endl;
+		}
+	}
+	{
+		std::cerr << "TESTING COLUMNS" << std::endl;
+		std::cerr << "---------------" << std::endl;
+		const std::size_t R = 5;
+		const std::size_t C = 21;
+		std::vector< coord_t<int> > hostVector;
+		hostVector.reserve( R*C );
+		for( std::size_t i = 0; i < R; ++i )
+			for( std::size_t j = 0; j < C; ++j )
+				hostVector.push_back( coord_t<int>(i,j) );
+		ecuda::matrix< coord_t<int> > deviceMatrix( R, C );
+		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+		for( std::size_t i = 0; i < C; ++i ) {
+			typename ecuda::matrix< coord_t<int> >::column_type col = deviceMatrix.get_column(i);
+			std::cerr << "column[" << i << "]"; for( std::size_t j = 0; j < col.size(); ++j ) std::cerr << " " << col[j]; std::cerr << std::endl;
+		}
 	}
 	{
 		std::cerr << "TESTING TRANSFORMS" << std::endl;

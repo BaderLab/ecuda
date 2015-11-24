@@ -146,17 +146,18 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::device_matrix<                value_type, striding_ptr< value_type, padded_ptr<value_type> > > slice_xy_type; //!< xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< value_type, padded_ptr< value_type,   padded_ptr<value_type> > > slice_xz_type; //!< xz section of a cube at a fixed column
-	typedef impl::device_contiguous_row_matrix< value_type, padded_ptr<value_type>                             > slice_yz_type; //!< yz section of a cube at a fixed row
+	typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> > > slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef impl::device_contiguous_row_matrix< value_type,       typename std::add_pointer<value_type>::type        > slice_xz_type; //!< xz section of a cube at a fixed column
+	typedef impl::device_contiguous_row_matrix< value_type,       typename std::add_pointer<value_type>::type        > slice_yz_type; //!< yz section of a cube at a fixed row
 	typedef impl::device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< const value_type, padded_ptr< const value_type,   padded_ptr<const value_type> > > const_slice_xz_type; //!< const xz section of a cube at a fixed column
-	typedef impl::device_contiguous_row_matrix< const value_type, padded_ptr<const value_type>                                   > const_slice_yz_type; //!< const yz section of a cube at a fixed row
+	typedef impl::device_contiguous_row_matrix< const value_type, typename std::add_pointer<const value_type>::type              > const_slice_xz_type; //!< const xz section of a cube at a fixed row
+	typedef impl::device_contiguous_row_matrix< const value_type, typename std::add_pointer<const value_type>::type              > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
 	typedef impl::cube_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
 
 private:
 	allocator_type allocator;
+	//size_type numberDepths; //!< number of depths
 	size_type numberRows; //!< number of rows
 
 protected:
@@ -195,19 +196,17 @@ public:
 	///
 	__HOST__ cube(
 		const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0,
-		const value_type& value = value_type(), const Alloc& allocator = Alloc()
+		const value_type& value = value_type(),
+		const Alloc& allocator = Alloc()
 	) :	base_type( pointer(), numberRows*numberColumns, numberDepths ), allocator(allocator), numberRows(numberRows)
 	{
 		if( numberRows and numberColumns and numberDepths ) {
-			typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberRows*numberColumns );
+			typename Alloc::pointer p = get_allocator().allocate( numberDepths, numberColumns*numberRows );
 			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, numberRows*numberColumns, numberDepths );
-			for( size_type i = 0; i < base.number_rows(); ++i ) {
-				typename base_type::row_type row = base.get_row(i);
-				ecuda::fill( row.begin(), row.end(), value );
-			}
+			ecuda::fill( base.begin(), base.end(), value );
 			base_type::swap( base );
 		}
 	}
@@ -221,8 +220,8 @@ public:
 	///
 	__HOST__ cube( const cube& src ) :
 		base_type( pointer(), src.number_rows()*src.number_columns(), src.number_depths() ),
-		numberRows(src.numberRows),
-		allocator(std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()))
+		numberRows( src.numberRows ),
+		allocator( std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()) )
 	{
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
@@ -260,10 +259,10 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	__HOST__ cube( cube&& src ) : base_type(src), numberRows(std::move(src.numberRows)), allocator(std::move(src.allocator)) {}
+	__HOST__ cube( cube&& src ) : base_type(std::move(src)), numberRows(std::move(src.numberRows)), allocator(std::move(src.allocator)) {}
 
 	__HOST__ cube& operator=( cube&& src ) {
-		base_type::operator=(src);
+		base_type::operator=(std::move(src));
 		allocator = std::move(src.allocator);
 		numberRows = std::move(src.numberRows);
 		return *this;
@@ -288,7 +287,10 @@ public:
 	///
 	/// \returns The number of columns in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; }
+	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ {
+		//std::cout << "number_columns() = " << base_type::number_rows() << "/" << numberRows << std::endl;
+		return base_type::number_rows()/numberRows;
+	}
 
 	///
 	/// \brief Returns the number of depths in the container.
@@ -419,7 +421,7 @@ public:
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
-		typename row_type::pointer ptr2( ptr, number_columns()+number_depths() ); // give pointer correct stride
+		typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
 		return row_type( ptr2, number_rows() );
 	}
 
@@ -435,7 +437,8 @@ public:
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		return column_type( ptr, number_columns() );
+		typename column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+		return column_type( ptr2, number_columns() );
 	}
 
 	///
@@ -481,7 +484,9 @@ public:
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		return const_column_type( naked_cast<typename std::add_pointer<const value_type>::type>(ptr), number_columns() );
+		typename const_column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+		return const_column_type( ptr2, number_columns() );
+//					naked_cast<typename std::add_pointer<const value_type>::type>(ptr), number_columns() );
 	}
 
 	///
@@ -539,7 +544,9 @@ public:
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += columnIndex*number_depths(); // move to correct column
-		typename slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
+		typename slice_xz_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch(), number_depths() ); // expand padding to include columns
+		//typename slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
+		//typename slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_depths() ); // make pointer skip over rest of columns
 		return slice_xz_type( ptr2, number_rows(), number_depths() );
 	}
 
@@ -583,7 +590,8 @@ public:
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += columnIndex*number_depths(); // move to correct column
-		typename const_slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
+		typename const_slice_xz_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch(), number_depths() ); // expand padding to include columns
+		//typename const_slice_xz_type::pointer ptr2( ptr, number_columns()*number_depths()*sizeof(value_type), number_columns()*number_depths() ); // make pointer skip over rest of columns
 		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
 	}
 

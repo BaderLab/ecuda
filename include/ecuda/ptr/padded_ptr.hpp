@@ -222,10 +222,21 @@ public:
 		ptr += x;
 		if( (ptr-edge_ptr) >= width ) {
 			// skip padding(s)
+			//if( width == 0 ) throw std::runtime_error("width is zero");
 			const size_type nskips = (ptr-edge_ptr) / width;
 			const size_type offset = (ptr-edge_ptr) % width;
-			edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+nskips*pitch ) );
+			typedef typename std::add_pointer<element_type>::type raw_pointer_type;
+			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+			charPtr += nskips * pitch;
+			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+			charPtr += offset;
 			ptr = edge_ptr + offset;
+			//char* p = naked_cast<char*>( ptr );
+			//p += nskips * pitch;
+			//edge_ptr = pointer( p );
+			//edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+nskips*pitch ) );
+			//ptr = edge_ptr + offset;
 		}
 		return *this;
 	}

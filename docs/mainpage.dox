@@ -81,14 +81,14 @@ __global__ void kernel_sum_columns(
 {
     const int t = threadIdx.x; // current thread index
     if( t < width ) {
-	double columnSum = 0;
-	const char* pRow = matrix;
-	for( size_t i = 0; i < height; ++i ) {
-	    pRow += pitch; // move pointer to next row
-	    const double* pElement = reinterpret_cast<const double*>(ptr); // cast to proper type
-	    columnSum += pElement[t];
-	}
-	columnSums[t] = columnSum;
+        double columnSum = 0;
+        const char* pRow = matrix;
+        for( size_t i = 0; i < height; ++i ) {
+            pRow += pitch; // move pointer to next row
+            const double* pElement = reinterpret_cast<const double*>(ptr); // cast to proper type
+            columnSum += pElement[t];
+        }
+        columnSums[t] = columnSum;
     }
 }
 \endcode
@@ -159,8 +159,8 @@ __global__ void kernel_sum_columns(
 {
     const int t = threadIdx.x; // current thread index
     if( t < matrix.number_columns() ) {
-	typename ecuda::matrix<double>::const_column column = matrix.get_column(t);
-	columnSums[t] = ecuda::accumulate( column.begin(), column.end(), static_cast<double>(0) );
+        typename ecuda::matrix<double>::const_column column = matrix.get_column(t);
+        columnSums[t] = ecuda::accumulate( column.begin(), column.end(), static_cast<double>(0) );
     }
 
 
@@ -171,6 +171,10 @@ __global__ void kernel_sum_columns(
 </td>
 </tr>
 </table>
+
+
+
+
 
 The following code is invalid when using CUDA:
 

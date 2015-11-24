@@ -205,6 +205,13 @@ public:
 		base_type( pointer(), src.number_rows(), src.number_columns() ),
 		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 	{
+		if( number_rows() and number_columns() ) {
+			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
+			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
+			base_type base( pp, number_rows(), number_columns() );
+			base_type::swap( base );
+		}
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 

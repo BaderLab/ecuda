@@ -157,7 +157,7 @@ int main( int argc, char* argv[] ) {
 
 	std::cout << "HOST   VECTOR ="; for( unsigned i = 0; i < hostVector.size(); ++i ) std::cout << " " << hostVector[i]; std::cout << std::endl;
 	{
-		std::vector<int> tmp( 100 );
+		std::vector<int> tmp( N );
 		ecuda::copy( deviceArray.begin(), deviceArray.end(), tmp.begin() );
 		std::cout << "DEVICE VECTOR ="; for( unsigned i = 0; i < tmp.size(); ++i ) std::cout << " " << tmp[i]; std::cout << std::endl;
 	}
