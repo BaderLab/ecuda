@@ -124,9 +124,9 @@ template<typename T> struct remove_pointer<T* const volatile> { typedef T type; 
 namespace ecuda {
 
 ///
-/// Forward declarations of the five pointer specializations used in the API.
+/// Forward declarations of the four pointer specializations used in the API.
 ///
-template<typename T>            class naked_ptr;    // forward declaration
+//template<typename T>            class naked_ptr;    // forward declaration // deprecated
 template<typename T,typename P> class padded_ptr;   // forward declaration
 template<typename T>            class shared_ptr;   // forward declaration
 template<typename T,typename P> class striding_ptr; // forward declaration
@@ -144,7 +144,7 @@ template<typename T,typename P> class unique_ptr;   // forward declaration
 /// so that a cast to a naked pointer T* is achieved by reinterpret_cast<T*>(ptr.get().get()).
 ///
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( U* ptr )                       { return reinterpret_cast<T>(ptr); }
-template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const naked_ptr<U>& ptr )      { return naked_cast<T>(ptr.get()); }
+//template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const naked_ptr<U>& ptr )      { return naked_cast<T>(ptr.get()); }
 template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const unique_ptr<U,V>& ptr )   { return naked_cast<T>(ptr.get()); }
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const shared_ptr<U>& ptr )     { return naked_cast<T>(ptr.get()); }
 template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const padded_ptr<U,V>& ptr )   { return naked_cast<T>(ptr.get()); }
@@ -168,8 +168,8 @@ template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( con
 template<typename T>            struct make_unmanaged;
 template<typename T>            struct make_unmanaged< T*                      > { typedef T* type; };
 template<typename T>            struct make_unmanaged< const T*                > { typedef const T* type; };
-template<typename T>            struct make_unmanaged< naked_ptr<T>            > { typedef naked_ptr<T> type; };
-template<typename T>            struct make_unmanaged< const naked_ptr<T>      > { typedef naked_ptr<T> type; };
+//template<typename T>            struct make_unmanaged< naked_ptr<T>            > { typedef naked_ptr<T> type; };
+//template<typename T>            struct make_unmanaged< const naked_ptr<T>      > { typedef naked_ptr<T> type; };
 template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U>         > { typedef typename unique_ptr<T,U>::pointer type; };
 template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U>   > { typedef typename unique_ptr<T,U>::pointer type; };
 template<typename T>            struct make_unmanaged< shared_ptr<T>           > { typedef typename std::add_pointer<T>::type type; };
@@ -196,7 +196,7 @@ template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> >
 ///
 template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged<T*>::type unmanaged_cast( T* ptr ) { return ptr; }
 
-template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged< naked_ptr<T> >::type unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
+//template<typename T> __HOST__ __DEVICE__ inline typename make_unmanaged< naked_ptr<T> >::type unmanaged_cast( const naked_ptr<T>& ptr ) { return naked_ptr<T>(ptr); }
 
 template<typename T,typename U>
 __HOST__ __DEVICE__ inline
@@ -247,8 +247,8 @@ unmanaged_cast( const striding_ptr<T,U>& ptr )
 template<typename T>            struct make_const;
 template<typename T>            struct make_const< T*                      > { typedef const T* type; };
 template<typename T>            struct make_const< const T*                > { typedef const T* type; };
-template<typename T>            struct make_const< naked_ptr<T>            > { typedef naked_ptr<const T> type; };
-template<typename T>            struct make_const< naked_ptr<const T>      > { typedef naked_ptr<const T> type; };
+//template<typename T>            struct make_const< naked_ptr<T>            > { typedef naked_ptr<const T> type; };
+//template<typename T>            struct make_const< naked_ptr<const T>      > { typedef naked_ptr<const T> type; };
 template<typename T,typename U> struct make_const< unique_ptr<T,U>         > { typedef unique_ptr<const T,typename make_const<U>::type> type; };
 template<typename T,typename U> struct make_const< unique_ptr<const T,U>   > { typedef unique_ptr<const T,typename make_const<U>::type> type; };
 template<typename T>            struct make_const< shared_ptr<T>           > { typedef shared_ptr<const T> type; };

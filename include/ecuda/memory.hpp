@@ -34,8 +34,8 @@ struct allocator_traits {
 /// \section ecuda_pointers Pointer specializations
 ///
 /// All but the most low-level memory access calls inside the ecuda API
-/// are done using five pointer specialization classes: naked_ptr,
-/// shared_ptr, padded_ptr, striding_ptr, and unique_ptr.
+/// are done using four pointer specialization classes: shared_ptr,
+/// padded_ptr, striding_ptr, and unique_ptr.
 ///
 /// shared_ptr and unique_ptr are functionally identical to their C++11
 /// STL counterparts (i.e. std::shared_ptr), but are written to utilize
@@ -47,7 +47,7 @@ struct allocator_traits {
 /// \endcond
 ///
 
-#include "ptr/naked_ptr.hpp"
+// #include "ptr/naked_ptr.hpp" // deprecated
 #include "ptr/padded_ptr.hpp"
 #include "ptr/shared_ptr.hpp"
 #include "ptr/striding_ptr.hpp"
