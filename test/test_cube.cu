@@ -61,11 +61,36 @@ std::ostream& operator<<( std::ostream& out, const coord_t<T>& src )
 	return out;
 }
 
+template<class Slice>
+void print_slice( const std::string& label, Slice slice )
+{
+	std::cout << label << ":" << std::endl;
+	std::cout << "dimensions: " << slice.number_rows() << " x " << slice.number_columns() << std::endl;
+	for( std::size_t i = 0; i < slice.number_rows(); ++i ) {
+		typename Slice::row_type row = slice[i];
+		for( std::size_t j = 0; j < slice.number_columns(); ++j ) {
+			if( j ) std::cout << " ";
+			std::cout << row[j];
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	for( std::size_t i = 0; i < slice.number_columns(); ++i ) {
+		typename Slice::column_type column = slice.get_column(i);
+		for( std::size_t j = 0; j < slice.number_rows(); ++j ) {
+			if( j ) std::cout << " ";
+			std::cout << column[j];
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
 int main( int argc, char* argv[] ) {
 
-	const std::size_t nr = 2;
-	const std::size_t nc = 3;
-	const std::size_t nd = 4;
+	const std::size_t nr = 3;
+	const std::size_t nc = 4;
+	const std::size_t nd = 5;
 	std::vector< coord_t<int> > hostVector( nr*nc*nd );
 	{
 		unsigned index = 0;
@@ -75,7 +100,7 @@ int main( int argc, char* argv[] ) {
 					hostVector[index++] = coord_t<int>(i,j,k);
 	}
 
-	ecuda::cube< coord_t<int> > deviceCube( 2, 3, 4 );
+	ecuda::cube< coord_t<int> > deviceCube( nr, nc, nd );
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceCube.begin() );
 
 	std::cout << "deviceCube.number_rows()=" << deviceCube.number_rows() << std::endl;
@@ -89,46 +114,17 @@ int main( int argc, char* argv[] ) {
 
 	for( std::size_t i = 0; i < hostVector.size(); ++i ) std::cout << "[" << i << "]=" << hostVector[i] << std::endl;
 
-	print_matrix( std::cout, &hostVector.front(), 2*3, 4 );
+	print_matrix( std::cout, &hostVector.front(), nr*nc, nd );
 
-	typename ecuda::cube< coord_t<int> >::slice_xy_type sliceXY = deviceCube.get_xy( 0 );
-	std::cout << "SLICEXY:" << std::endl;
-	std::cout << "sliceXY.number_rows()=" << sliceXY.number_rows() << std::endl;
-	std::cout << "sliceXY.number_columns()=" << sliceXY.number_columns() << std::endl;
-	for( std::size_t i = 0; i < sliceXY.number_rows(); ++i ) {
-		typename ecuda::cube< coord_t<int> >::slice_xy_type::row_type row = sliceXY[i];
-		for( std::size_t j = 0; j < sliceXY.number_columns(); ++j ) {
-			if( j ) std::cout << " ";
-			std::cout << row[j];
-		}
-		std::cout << std::endl;
-	}
+	print_slice( "SLICEXY", deviceCube.get_xy(0) );
+	print_slice( "SLICEXZ", deviceCube.get_xz(0) );
+	print_slice( "SLICEYZ", deviceCube.get_yz(0) );
 
-	typename ecuda::cube< coord_t<int> >::slice_xz_type sliceXZ = deviceCube.get_xz( 0 );
-	std::cout << "SLICEXZ:" << std::endl;
-	std::cout << "sliceXZ.number_rows()=" << sliceXZ.number_rows() << std::endl;
-	std::cout << "sliceXZ.number_columns()=" << sliceXZ.number_columns() << std::endl;
-	for( std::size_t i = 0; i < sliceXZ.number_rows(); ++i ) {
-		typename ecuda::cube< coord_t<int> >::slice_xz_type::row_type row = sliceXZ[i];
-		for( std::size_t j = 0; j < sliceXZ.number_columns(); ++j ) {
-			if( j ) std::cout << " ";
-			std::cout << row[j];
-		}
-		std::cout << std::endl;
-	}
-
-	typename ecuda::cube< coord_t<int> >::slice_yz_type sliceYZ = deviceCube.get_yz( 0 );
-	std::cout << "SLICEYZ:" << std::endl;
-	std::cout << "sliceYZ.number_rows()=" << sliceYZ.number_rows() << std::endl;
-	std::cout << "sliceYZ.number_columns()=" << sliceYZ.number_columns() << std::endl;
-	for( std::size_t i = 0; i < sliceYZ.number_rows(); ++i ) {
-		typename ecuda::cube< coord_t<int> >::slice_yz_type::row_type row = sliceYZ[i];
-		for( std::size_t j = 0; j < sliceYZ.number_columns(); ++j ) {
-			if( j ) std::cout << " ";
-			std::cout << row[j];
-			//std::cout << sliceYZ[i][j];
-		}
-		std::cout << std::endl;
+	{
+		const ecuda::cube< coord_t<int> > deviceCube2( deviceCube );
+		print_slice( "CONSTSLICEXY", deviceCube2.get_xy(0) );
+		print_slice( "CONSTSLICEXZ", deviceCube2.get_xz(0) );
+		print_slice( "CONSTSLICEYZ", deviceCube2.get_yz(0) );
 	}
 
 	typename ecuda::cube< coord_t<int> >::row_type cubeRow = deviceCube.get_row( 0, 0 );
