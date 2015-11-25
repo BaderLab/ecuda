@@ -33,6 +33,7 @@ either expressed or implied, of the FreeBSD Project.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
+
 #pragma once
 #ifndef ECUDA_CUBE_HPP
 #define ECUDA_CUBE_HPP
@@ -174,11 +175,11 @@ private:
 	__HOST__ void init()
 	{
 		if( number_rows() and number_columns() and number_depths() ) {
-			typename Alloc::pointer p = get_allocator().allocate( number_depths(), base_type::size() /* aka nr*nc */ );
+			typename Alloc::pointer p = get_allocator().allocate( number_depths(), number_rows()*number_columns() );
 			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
-			base_type base( pp, base_type::size(), number_depths() );
+			base_type base( pp, number_rows()*number_columns(), number_depths() );
 			base_type::swap( base );
 		}
 	}
@@ -200,7 +201,7 @@ public:
 	) :	base_type( pointer(), numberRows*numberColumns, numberDepths ), numberRows(numberRows), allocator(allocator)
 	{
 		init();
-		ecuda::fill( begin(), end(), value );
+		if( size() ) ecuda::fill( begin(), end(), value );
 	}
 
 	///
@@ -216,7 +217,7 @@ public:
 		allocator( std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()) )
 	{
 		init();
-		ecuda::copy( src.begin(), src.end(), begin() );
+		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	///
@@ -233,7 +234,7 @@ public:
 		allocator(alloc)
 	{
 		init();
-		ecuda::copy( src.begin(), src.end(), begin() );
+		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	__HOST__ cube& operator=( const cube& src )
@@ -241,7 +242,7 @@ public:
 		if( number_rows() != src.number_rows() or number_columns() != src.number_columns() or number_depths() != src.number_depths() ) {
 			resize( src.number_rows(), src.number_columns(), src.number_depths() );
 		}
-		ecuda::copy( src.begin(), src.end(), begin() );
+		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 		return *this;
 	}
 
@@ -740,6 +741,8 @@ public:
 	///
 	__HOST__ __DEVICE__ void fill( const value_type& value )
 	{
+		if( size() ) ecuda::fill( begin(), end(), value );
+		/*
 		#ifdef __CUDA_ARCH__
 		ecuda::fill( begin(), end(), value );
 		#else
@@ -748,6 +751,7 @@ public:
 			ecuda::fill( row.begin(), row.end(), value );
 		}
 		#endif
+		*/
 	}
 
 };

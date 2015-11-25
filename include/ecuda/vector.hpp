@@ -29,6 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // vector.hpp
+//
 // An STL-like structure that resides in video memory.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)

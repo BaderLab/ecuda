@@ -360,11 +360,42 @@ public:
 	__HOST__ __DEVICE__ inline size_type number_rows() const    __NOEXCEPT__ { return rows; }
 	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/rows; }
 
-	__HOST__ __DEVICE__ inline row_type       get_row( const size_type row )       { return row_type( unmanaged_cast(base_type::get_pointer())+(row*number_columns()), number_columns() ); }
-	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const { return const_row_type( unmanaged_cast(base_type::get_pointer())+(row*number_columns()), number_columns() ); }
+	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
+	{
+		return row_type(
+					unmanaged_cast(base_type::get_pointer())+(row*number_columns()),
+					number_columns()
+				);
+	}
 
-	__HOST__ __DEVICE__ inline column_type       get_column( const size_type column )       { return column_type( striding_ptr<value_type,typename make_unmanaged<pointer>::type>( unmanaged_cast(base_type::get_pointer())+column, number_columns() ), number_rows() ); }
-	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type column ) const { return const_column_type( striding_ptr<const value_type,typename make_unmanaged_const<pointer>::type>( unmanaged_cast(base_type::get_pointer())+column, number_columns() ), number_rows() ); }
+	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const
+	{
+		return const_row_type(
+					unmanaged_cast(base_type::get_pointer())+(row*number_columns()),
+					number_columns()
+				);
+	}
+
+	__HOST__ __DEVICE__ inline column_type get_column( const size_type column )
+	{
+		return column_type(
+					striding_ptr<value_type,typename make_unmanaged<pointer>::type>(
+						unmanaged_cast(base_type::get_pointer())+column, // move to top of column
+						number_columns() // stride by number of columns
+					),
+					number_rows()
+				);
+	}
+
+	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type column ) const {
+		return const_column_type(
+					striding_ptr<const value_type,typename make_unmanaged_const<pointer>::type>(
+						unmanaged_cast(base_type::get_pointer())+column, // move to top of column
+						number_columns() // stride by number of columns
+					),
+					number_rows()
+				);
+	}
 
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
@@ -411,9 +442,13 @@ public:
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows,columns) {}
+
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix& src ) : base_type(src) {}
+
 	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
-	__HOST__ device_contiguous_row_matrix& operator=( const device_contiguous_row_matrix& src ) {
+
+	__HOST__ device_contiguous_row_matrix& operator=( const device_contiguous_row_matrix& src )
+	{
 		base_type::operator=(src);
 		return *this;
 	}
@@ -448,16 +483,17 @@ public:
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
 	{
 		typedef typename make_unmanaged<pointer>::type unmanaged_pointer;
-		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() );
-		mp += row*base_type::number_columns();
-		return row_type( naked_cast<typename std::add_pointer<value_type>::type>( mp ), base_type::number_columns() );
+		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		mp += row*base_type::number_columns(); // advance to row start
+		return row_type( naked_cast<typename std::add_pointer<value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
 	}
+
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const
 	{
 		typedef typename make_unmanaged<typename make_const<pointer>::type>::type unmanaged_pointer;
-		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() );
-		mp += row*base_type::number_columns();
-		return const_row_type( naked_cast<typename std::add_pointer<const value_type>::type>( mp ), base_type::number_columns() );
+		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		mp += row*base_type::number_columns(); // advance to row start
+		return const_row_type( naked_cast<typename std::add_pointer<const value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
 	}
 
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }

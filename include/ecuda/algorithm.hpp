@@ -29,10 +29,12 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // algorithm.hpp
+//
 // CUDA implementations from STL header <numeric>.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
+
 #ifndef ECUDA_ALGORITHM_HPP
 #define ECUDA_ALGORITHM_HPP
 

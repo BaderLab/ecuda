@@ -194,7 +194,7 @@ public:
 		allocator(allocator)
 	{
 		init();
-		ecuda::fill( begin(), end(), value );
+		if( size() ) ecuda::fill( begin(), end(), value );
 	}
 
 	///
@@ -209,7 +209,7 @@ public:
 		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 	{
 		init();
-		ecuda::copy( src.begin(), src.end(), begin() );
+		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	///
@@ -225,7 +225,7 @@ public:
 		allocator(alloc)
 	{
 		init();
-		ecuda::copy( src.begin(), src.end(), begin() );
+		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
 	__HOST__ matrix& operator=( const matrix& other )
@@ -233,7 +233,7 @@ public:
 		allocator = other.allocator;
 		if( number_rows() != other.number_rows() or number_columns() != other.number_columns() )
 			resize( other.number_rows(), other.number_columns() );
-		ecuda::copy( other.begin(), other.end(), begin() );
+		if( size() ) ecuda::copy( other.begin(), other.end(), begin() );
 		return *this;
 	}
 
@@ -614,7 +614,7 @@ public:
 	///
 	__HOST__ __DEVICE__ void fill( const value_type& value )
 	{
-		ecuda::fill( begin(), end(), value );
+		if( size() ) ecuda::fill( begin(), end(), value );
 	}
 
 	///
