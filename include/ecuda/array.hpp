@@ -54,12 +54,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,std::size_t N> class array_kernel_argument; // forward declaration
 
 } // namespace impl
-
+/// \endcond
 
 ///
 /// \brief A fixed-size array stored in device memory.
@@ -458,6 +459,7 @@ public:
 
 };
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,std::size_t N>
@@ -503,6 +505,7 @@ public:
 };
 
 } // namespace impl
+/// \endcond
 
 } // namespace ecuda
 

@@ -50,6 +50,7 @@ namespace ecuda {
 // forward declaration
 template<class ForwardIterator> __HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class ForwardIterator>
@@ -88,6 +89,7 @@ __HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, F
 }
 
 } // namespace impl
+/// \endcond
 
 template<class ForwardIterator>
 __HOST__ __DEVICE__ inline ForwardIterator max_element( ForwardIterator first, ForwardIterator last ) {

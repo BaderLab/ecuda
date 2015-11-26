@@ -53,6 +53,7 @@ namespace ecuda {
 // forward declaration
 template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator1,class InputIterator2>
@@ -138,6 +139,7 @@ bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 ) {

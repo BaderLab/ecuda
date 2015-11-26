@@ -54,11 +54,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,class Alloc> class matrix_kernel_argument; // forward declaration
 
 } // namespace impl
+/// \endcond
 
 ///
 /// \brief A resizable matrix stored in device memory.
@@ -844,6 +846,7 @@ public:
 
 };
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
@@ -860,7 +863,7 @@ public:
 };
 
 } // namespace impl
-
+/// \endcond
 
 ///
 /// \brief Copies some or all of a source matrix to a destination matrix.

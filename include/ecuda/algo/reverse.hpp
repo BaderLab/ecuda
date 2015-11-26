@@ -52,6 +52,7 @@ namespace ecuda {
 // forward declaration
 template<class BidirectionalIterator> __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class ForwardIterator>
@@ -96,6 +97,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 }
 
 } // namespace impl
+/// \endcond
 
 template<class BidirectionalIterator>
 __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last ) {
