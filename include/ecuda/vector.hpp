@@ -111,7 +111,7 @@ private:
 	allocator_type allocator;
 
 protected:
-	__HOST__ __DEVICE__ vector( const vector& src, std::true_type ) : base_type(src), n(src.n), allocator(src.allocator) {}
+	__HOST__ __DEVICE__ vector( const vector& src, ecuda::true_type ) : base_type(src), n(src.n), allocator(src.allocator) {}
 
 	__HOST__ __DEVICE__ vector& shallow_assign( const vector& other )
 	{
@@ -125,7 +125,7 @@ protected:
 private:
 	__HOST__ void growMemory( size_type minimum );
 
-	__HOST__ void init( size_type len, const value_type& value, std::true_type )
+	__HOST__ void init( size_type len, const value_type& value, ecuda::true_type )
 	{
 		growMemory( len );
 		n = len;
@@ -133,7 +133,7 @@ private:
 	}
 
 	template<class Iterator>
-	__HOST__ inline void init( Iterator first, Iterator last, std::false_type )
+	__HOST__ inline void init( Iterator first, Iterator last, ecuda::false_type )
 	{
 		const size_type len = ::ecuda::distance(first,last);
 		growMemory( len );
@@ -156,7 +156,7 @@ public:
 	///
 	__HOST__ explicit vector( size_type n, const value_type& value, const allocator_type& allocator = allocator_type() ) : base_type( shared_ptr<T>( allocator.allocate(n) ), n ), n(n), allocator(allocator)
 	{
-		init( n, value, std::true_type() );
+		init( n, value, ecuda::true_type() );
 	}
 
 	///
@@ -165,7 +165,7 @@ public:
 	///
 	__HOST__ explicit vector( size_type n ) : base_type( shared_ptr<T>( Alloc().allocate(n) ) ), n(n)
 	{
-		init( n, value_type(), std::true_type() );
+		init( n, value_type(), ecuda::true_type() );
 	}
 
 	///
@@ -176,7 +176,7 @@ public:
 	template<class Iterator>
 	__HOST__ vector( Iterator first, Iterator last, const allocator_type& allocator = allocator_type() ) : base_type(), n(0), allocator(allocator)
 	{
-		typedef typename std::is_integral<Iterator>::type _Integral;
+		typedef typename ecuda::is_integral<Iterator>::type _Integral;
 		init( first, last, _Integral() );
 	}
 
@@ -233,7 +233,7 @@ public:
 
 	__HOST__ vector& operator=( vector&& src )
 	{
-		base_type::operator=(src);
+		base_type::operator=(std::move(src));
 		n = std::move(src.n);
 		return *this;
 	}
@@ -879,7 +879,7 @@ template<typename T,class Alloc>
 class vector_kernel_argument : public vector<T,Alloc> {
 
 public:
-	vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, std::true_type() ) {}
+	vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, ecuda::true_type() ) {}
 	vector_kernel_argument& operator=( const vector<T,Alloc>& src ) {
 		vector<T,Alloc>::shallow_assign( src );
 		return *this;

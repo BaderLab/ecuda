@@ -74,8 +74,8 @@ class device_sequence
 public:
 	typedef T                                           value_type;
 	typedef P                                           pointer;
-	typedef typename std::add_lvalue_reference<T>::type reference;
-	typedef typename std::add_const<reference>::type    const_reference;
+	typedef typename ecuda::add_lvalue_reference<T>::type reference;
+	typedef typename ecuda::add_const<reference>::type    const_reference;
 	typedef std::size_t                                 size_type;
 	typedef std::ptrdiff_t                              difference_type;
 
@@ -144,15 +144,17 @@ public:
 
 	__HOST__ __DEVICE__ void swap( device_sequence& other )
 	{
-		#ifdef __CUDA_ARCH__
-		ECUDA_STATIC_ASSERT(false,IMPLEMENTATION_NEEDS_TO_BE_DONE_HERE_TO_SWAP_TWO_SEQUENCES_ON_DEVICE);
+		::ecuda::swap( ptr, other.ptr );
+		::ecuda::swap( length, other.length );
+//		#ifdef __CUDA_ARCH__
+//		ECUDA_STATIC_ASSERT(false,IMPLEMENTATION_NEEDS_TO_BE_DONE_HERE_TO_SWAP_TWO_SEQUENCES_ON_DEVICE);
 		//iterator iter1 = begin();
 		//iterator iter2 = other.begin();
 		//for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
-		#else
-		::ecuda::swap( ptr, other.ptr );
-		::ecuda::swap( length, other.length );
-		#endif
+//		#else
+//		::ecuda::swap( ptr, other.ptr );
+//		::ecuda::swap( length, other.length );
+//		#endif
 	}
 
 };
@@ -169,12 +171,12 @@ class device_fixed_sequence
 {
 
 public:
-	typedef T                                           value_type;
-	typedef P                                           pointer;
-	typedef typename std::add_lvalue_reference<T>::type reference;
-	typedef typename std::add_const<reference>::type    const_reference;
-	typedef std::size_t                                 size_type;
-	typedef std::ptrdiff_t                              difference_type;
+	typedef T                                             value_type;
+	typedef P                                             pointer;
+	typedef typename ecuda::add_lvalue_reference<T>::type reference;
+	typedef typename ecuda::add_const<reference>::type    const_reference;
+	typedef std::size_t                                   size_type;
+	typedef std::ptrdiff_t                                difference_type;
 
 	typedef device_contiguous_iterator<value_type      > iterator;
 	typedef device_contiguous_iterator<const value_type> const_iterator;
@@ -249,7 +251,7 @@ public:
 /// properly, otherwise any operations will be undefined. The caller is
 /// responsible for ensuring this.
 ///
-template<typename T,class P=typename std::add_pointer<T>::type>
+template<typename T,class P=typename ecuda::add_pointer<T>::type>
 class device_contiguous_sequence : public device_sequence<T,P>
 {
 private:
@@ -485,7 +487,7 @@ public:
 		typedef typename make_unmanaged<pointer>::type unmanaged_pointer;
 		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
 		mp += row*base_type::number_columns(); // advance to row start
-		return row_type( naked_cast<typename std::add_pointer<value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
+		return row_type( naked_cast<typename ecuda::add_pointer<value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
 	}
 
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const
@@ -493,7 +495,7 @@ public:
 		typedef typename make_unmanaged<typename make_const<pointer>::type>::type unmanaged_pointer;
 		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
 		mp += row*base_type::number_columns(); // advance to row start
-		return const_row_type( naked_cast<typename std::add_pointer<const value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
+		return const_row_type( naked_cast<typename ecuda::add_pointer<const value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
 	}
 
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
@@ -502,13 +504,13 @@ public:
 	__HOST__ __DEVICE__ inline reference at( const size_type row, const size_type column )
 	{
 		typename make_unmanaged<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
-		return *naked_cast<typename std::add_pointer<value_type>::type>(mp);
+		return *naked_cast<typename ecuda::add_pointer<value_type>::type>(mp);
 	}
 
 	__HOST__ __DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
 	{
 		typename make_unmanaged_const<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
-		return *naked_cast<typename std::add_pointer<const value_type>::type>(mp);
+		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(mp);
 	}
 
 };

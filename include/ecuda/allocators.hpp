@@ -84,13 +84,13 @@ class host_allocator
 {
 
 public:
-	typedef T                                           value_type;      //!< element type
-	typedef typename std::add_pointer<T>::type          pointer;         //!< pointer to element
-	typedef typename std::add_lvalue_reference<T>::type reference;       //!< reference to element
-	typedef typename make_const<pointer>::type          const_pointer;   //!< pointer to constant element
-	typedef typename std::add_const<reference>::type    const_reference; //!< reference to constant element
-	typedef std::size_t                                 size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                              difference_type; //!< difference between two pointers
+	typedef T                                             value_type;      //!< element type
+	typedef typename ecuda::add_pointer<T>::type          pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type reference;       //!< reference to element
+	typedef typename make_const<pointer>::type            const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
+	typedef std::size_t                                   size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -187,7 +187,7 @@ public:
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		return std::allocator<value_type>().deallocate( ptr, n );
 		#else
-		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_host_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		#endif
 	}
@@ -237,13 +237,13 @@ class device_allocator
 {
 
 public:
-	typedef T                                           value_type;      //!< element type
-	typedef typename std::add_pointer<T>::type          pointer;         //!< pointer to element
-	typedef typename std::add_lvalue_reference<T>::type reference;       //!< reference to element
-	typedef typename make_const<pointer>::type          const_pointer;   //!< pointer to constant element
-	typedef typename std::add_const<reference>::type    const_reference; //!< reference to constant element
-	typedef std::size_t                                 size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                              difference_type; //!< difference between two pointers
+	typedef T                                             value_type;      //!< element type
+	typedef typename ecuda::add_pointer<T>::type          pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type reference;       //!< reference to element
+	typedef typename make_const<pointer>::type            const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
+	typedef std::size_t                                   size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -340,7 +340,7 @@ public:
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
-		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		#endif
 	}
@@ -404,13 +404,13 @@ class device_pitch_allocator
 {
 
 public:
-	typedef T                                                value_type;      //!< element type
-	typedef padded_ptr<T,typename std::add_pointer<T>::type> pointer;         //!< pointer to element
-	typedef typename std::add_lvalue_reference<T>::type      reference;       //!< reference to element
-	typedef typename make_const<pointer>::type               const_pointer;   //!< pointer to constant element
-	typedef typename std::add_const<reference>::type         const_reference; //!< reference to constant element
-	typedef std::size_t                                      size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                                   difference_type; //!< difference between two pointers
+	typedef T                                                  value_type;      //!< element type
+	typedef padded_ptr<T,typename ecuda::add_pointer<T>::type> pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type      reference;       //!< reference to element
+	typedef typename make_const<pointer>::type                 const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_const<reference>::type         const_reference; //!< reference to constant element
+	typedef std::size_t                                        size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                     difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -495,7 +495,7 @@ public:
 		}
 		return pointer( p2, pitch, w, p2 );
 		#else
-		typename std::add_pointer<value_type>::type ptr = NULL;
+		typename ecuda::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
@@ -519,7 +519,7 @@ public:
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
-		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 		#endif
 	}
@@ -546,7 +546,7 @@ public:
 		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		std::allocator<value_type>().construct( ptr, val );
 		#else
-		typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		CUDA_CALL(
 			cudaMemcpy(
 				detail::void_cast<raw_pointer_type>()( naked_cast<raw_pointer_type>(ptr) ),

@@ -362,7 +362,6 @@ public:
 	///
 	__HOST__ __DEVICE__ inline void reset() __NOEXCEPT__ { shared_ptr().swap( *this ); }
 
-
 	///
 	/// \brief Replaces the managed object with another.
 	///
@@ -414,7 +413,7 @@ public:
 	///
 	/// \return reference to the managed object
 	///
-	__DEVICE__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
+	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
 
 	///
 	/// \brief Dereferences pointer to the managed object.

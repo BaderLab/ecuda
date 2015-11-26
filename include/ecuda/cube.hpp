@@ -147,12 +147,12 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> > > slice_xy_type; //!< xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< value_type,       typename std::add_pointer<value_type>::type        > slice_xz_type; //!< xz section of a cube at a fixed column
-	typedef impl::device_contiguous_row_matrix< value_type,       typename std::add_pointer<value_type>::type        > slice_yz_type; //!< yz section of a cube at a fixed row
-	typedef impl::device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< const value_type, typename std::add_pointer<const value_type>::type              > const_slice_xz_type; //!< const xz section of a cube at a fixed row
-	typedef impl::device_contiguous_row_matrix< const value_type, typename std::add_pointer<const value_type>::type              > const_slice_yz_type; //!< const yz section of a cube at a fixed row
+	typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> >   > slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type        > slice_xz_type; //!< xz section of a cube at a fixed column
+	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type        > slice_yz_type; //!< yz section of a cube at a fixed row
+	typedef impl::device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> >   > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
+	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type              > const_slice_xz_type; //!< const xz section of a cube at a fixed row
+	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type              > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
 	typedef impl::cube_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
 
@@ -161,7 +161,7 @@ private:
 	allocator_type allocator;
 
 protected:
-	__HOST__ __DEVICE__ cube( const cube& src, std::true_type ) : base_type(src), numberRows(src.numberRows), allocator(src.allocator) {}
+	__HOST__ __DEVICE__ cube( const cube& src, ecuda::true_type ) : base_type(src), numberRows(src.numberRows), allocator(src.allocator) {}
 
 	__HOST__ __DEVICE__ cube& shallow_assign( const cube& other )
 	{
@@ -176,7 +176,7 @@ private:
 	{
 		if( number_rows() and number_columns() and number_depths() ) {
 			typename Alloc::pointer p = get_allocator().allocate( number_depths(), number_rows()*number_columns() );
-			typedef typename std::add_pointer<value_type>::type raw_pointer_type;
+			typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, number_rows()*number_columns(), number_depths() );
@@ -445,7 +445,7 @@ public:
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
-		return depth_type( naked_cast<typename std::add_pointer<value_type>::type>(ptr), number_depths() );
+		return depth_type( naked_cast<typename ecuda::add_pointer<value_type>::type>(ptr), number_depths() );
 	}
 
 	///
@@ -492,7 +492,7 @@ public:
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_rows(); // move pointer to depth start
-		return const_depth_type( naked_cast<typename std::add_pointer<const value_type>::type>(ptr), number_depths() );
+		return const_depth_type( naked_cast<typename ecuda::add_pointer<const value_type>::type>(ptr), number_depths() );
 	}
 
 	///
@@ -762,8 +762,8 @@ template< typename T, class Alloc=device_pitch_allocator<T> >
 class cube_kernel_argument : public cube<T,Alloc> {
 
 public:
-	cube_kernel_argument( const cube<T,Alloc>& src ) : cube<T,Alloc>( src, std::true_type() ) {}
-	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	cube_kernel_argument( const cube<T,Alloc>& src ) : cube<T,Alloc>( src, ecuda::true_type() ) {}
+	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
 	cube_kernel_argument& operator=( const cube<T,Alloc>& src ) {
 		cube<T,Alloc>::shallow_assign( src );
 		return *this;

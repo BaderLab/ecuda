@@ -67,7 +67,7 @@ __HOST__ __DEVICE__ inline void fill(
 	#else
 	typedef typename ecuda::iterator_traits<ForwardIterator>::is_contiguous iterator_contiguity;
 	{
-		const bool isContiguous = std::is_same<iterator_contiguity,std::true_type>::value;
+		const bool isContiguous = ecuda::is_same<iterator_contiguity,ecuda::true_type>::value;
 		ECUDA_STATIC_ASSERT(isContiguous,CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR);
 	}
 	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
@@ -102,7 +102,7 @@ template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill(
 	ForwardIterator first, ForwardIterator last,
 	const T& val,
-	std::true_type // device memory
+	ecuda::true_type // device memory
 )
 {
 	#ifdef __CUDA_ARCH__
@@ -112,11 +112,11 @@ __HOST__ __DEVICE__ inline void fill(
 	typedef typename ecuda::iterator_traits<ForwardIterator>::iterator_category iterator_category;
 	{
 		const bool isSomeKindOfContiguous =
-			std::is_same<iterator_contiguity,std::true_type>::value ||
-			std::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
+			ecuda::is_same<iterator_contiguity,ecuda::true_type>::value ||
+			ecuda::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
 		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR);
 	}
-	if( std::is_same<typename ecuda::iterator_traits<ForwardIterator>::value_type,T>::value ) {
+	if( ecuda::is_same<typename ecuda::iterator_traits<ForwardIterator>::value_type,T>::value ) {
 		fill_device::fill( first, last, val );
 	} else {
 		typedef typename ecuda::iterator_traits<ForwardIterator>::value_type value_type;
@@ -130,7 +130,7 @@ template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill(
 	ForwardIterator first, ForwardIterator last,
 	const T& val,
-	std::false_type // host memory
+	ecuda::false_type // host memory
 )
 {
 	#ifdef __CUDA_ARCH__

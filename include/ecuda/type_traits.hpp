@@ -45,13 +45,55 @@ either expressed or implied, of the FreeBSD Project.
 
 #ifdef __CPP11_SUPPORTED__
 #include <type_traits>
+
+namespace ecuda {
+
+template<typename T> struct add_const : std::add_const<T> { typedef std::add_const<T>::type type; };
+template<typename T> struct add_const<T&> : std::add_const<T&> { typedef std::add_const<T&>::type type; };
+
+template<typename T> struct remove_const : std::remove_const<T> { typedef std::remove_const<T>::type type; };
+template<typename T> struct remove_const<const T> : std::remove_const<const T> { typedef std::remove_const<const T>::type type; };
+
+template<typename T,typename U> struct is_same      { enum { value = 0 }; };
+template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
+
+
+typedef std::true_type  true_type;
+typedef std::false_type false_type;
+
+
+template<typename T> struct is_integral           { typedef false_type type; };
+template<> struct is_integral<bool>               { typedef true_type type; };
+template<> struct is_integral<char>               { typedef true_type type; };
+template<> struct is_integral<signed char>        { typedef true_type type; };
+template<> struct is_integral<unsigned char>      { typedef true_type type; };
+#ifdef _GLIBCXX_USE_WCHAR_T
+template<> struct is_integral<wchar_t>            { typedef true_type type; };
+#endif
+template<> struct is_integral<char16_t>           { typedef true_type type; };
+template<> struct is_integral<char32_t>           { typedef true_type type; };
+template<> struct is_integral<short>              { typedef true_type type; };
+template<> struct is_integral<unsigned short>     { typedef true_type type; };
+template<> struct is_integral<int>                { typedef true_type type; };
+template<> struct is_integral<unsigned int>       { typedef true_type type; };
+template<> struct is_integral<long>               { typedef true_type type; };
+template<> struct is_integral<unsigned long>      { typedef true_type type; };
+template<> struct is_integral<long long>          { typedef true_type type; };
+template<> struct is_integral<unsigned long long> { typedef true_type type; };
+
+
+template<typename T> struct add_pointer : std::add_pointer<T> { typedef std::add_pointer<T>::type; };
+template<typename T> struct add_pointer<const T> : std::add_pointer<const T> { typedef std::add_pointer<const T>::type; };
+
+} // namespace ecuda
+
 #else
 ///
 /// Reimplementations of various C++11 tools contained in the
 /// <type_traits> header so that we can use them even if the
 /// compiler is pre-C++11.
 ///
-namespace std {
+namespace ecuda {
 
 template<typename T> struct add_const     { typedef const T type; };
 template<typename T> struct add_const<T&> { typedef const T& type; };
@@ -88,26 +130,26 @@ struct integral_constant {
 typedef integral_constant<bool,true>  true_type;
 typedef integral_constant<bool,false> false_type;
 
-template<typename T> struct is_integral           { typedef std::false_type type; };
-template<> struct is_integral<bool>               { typedef std::true_type type; };
-template<> struct is_integral<char>               { typedef std::true_type type; };
-template<> struct is_integral<signed char>        { typedef std::true_type type; };
-template<> struct is_integral<unsigned char>      { typedef std::true_type type; };
+template<typename T> struct is_integral           { typedef false_type type; };
+template<> struct is_integral<bool>               { typedef true_type type; };
+template<> struct is_integral<char>               { typedef true_type type; };
+template<> struct is_integral<signed char>        { typedef true_type type; };
+template<> struct is_integral<unsigned char>      { typedef true_type type; };
 #ifdef _GLIBCXX_USE_WCHAR_T
-template<> struct is_integral<wchar_t>            { typedef std::true_type type; };
+template<> struct is_integral<wchar_t>            { typedef true_type type; };
 #endif
 #ifdef __CPP11_SUPPORTED__
-template<> struct is_integral<char16_t>           { typedef std::true_type type; };
-template<> struct is_integral<char32_t>           { typedef std::true_type type; };
+template<> struct is_integral<char16_t>           { typedef true_type type; };
+template<> struct is_integral<char32_t>           { typedef true_type type; };
 #endif
-template<> struct is_integral<short>              { typedef std::true_type type; };
-template<> struct is_integral<unsigned short>     { typedef std::true_type type; };
-template<> struct is_integral<int>                { typedef std::true_type type; };
-template<> struct is_integral<unsigned int>       { typedef std::true_type type; };
-template<> struct is_integral<long>               { typedef std::true_type type; };
-template<> struct is_integral<unsigned long>      { typedef std::true_type type; };
-template<> struct is_integral<long long>          { typedef std::true_type type; };
-template<> struct is_integral<unsigned long long> { typedef std::true_type type; };
+template<> struct is_integral<short>              { typedef true_type type; };
+template<> struct is_integral<unsigned short>     { typedef true_type type; };
+template<> struct is_integral<int>                { typedef true_type type; };
+template<> struct is_integral<unsigned int>       { typedef true_type type; };
+template<> struct is_integral<long>               { typedef true_type type; };
+template<> struct is_integral<unsigned long>      { typedef true_type type; };
+template<> struct is_integral<long long>          { typedef true_type type; };
+template<> struct is_integral<unsigned long long> { typedef true_type type; };
 
 template<typename T> struct add_pointer          { typedef T* type; };
 template<typename T> struct add_pointer<const T> { typedef const T* type; }; // confirm this is needed

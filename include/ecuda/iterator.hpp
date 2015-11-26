@@ -77,11 +77,11 @@ private:
 	typedef std::iterator<Category,T,std::ptrdiff_t,PointerType> base_type;
 
 public:
-	typedef Category                                    iterator_category;
-	typedef T                                           value_type;
-	typedef std::ptrdiff_t                              difference_type;
-	typedef PointerType                                 pointer;
-	typedef typename std::add_lvalue_reference<T>::type reference;
+	typedef Category                                      iterator_category;
+	typedef T                                             value_type;
+	typedef std::ptrdiff_t                                difference_type;
+	typedef PointerType                                   pointer;
+	typedef typename ecuda::add_lvalue_reference<T>::type reference;
 
 	template<typename T2,typename PointerType2,typename Category2> friend class device_iterator;
 	template<typename T2> friend class device_contiguous_iterator;
@@ -206,8 +206,8 @@ public:
 	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
 
 	//@EXPERIMENTAL START
-	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_begin() const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename std::add_pointer<T>::type>( base_type::ptr.get() ) ); }
-	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename std::add_pointer<T>::type>( base_type::ptr.get() ) + base_type::ptr.get_remaining_width() ); }
+	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_begin() const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) ); }
+	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) + base_type::ptr.get_remaining_width() ); }
 	//@EXPERIMENTAL END
 
 };
@@ -310,7 +310,7 @@ public:
 	typedef typename base_type::pointer            pointer;
 	typedef typename base_type::reference          reference;
 	typedef typename base_type::value_type         value_type;
-	typedef          std::false_type               is_device_iterator;
+	typedef          ecuda::false_type             is_device_iterator;
 	//                                             is_contiguous (deliberately not present for host memory iterators)
 };
 
@@ -324,8 +324,8 @@ public:
 	typedef typename base_type::pointer            pointer;
 	typedef typename base_type::reference          reference;
 	typedef typename base_type::value_type         value_type;
-	typedef          std::true_type                is_device_iterator;
-	typedef          std::false_type               is_contiguous;
+	typedef          ecuda::true_type              is_device_iterator;
+	typedef          ecuda::false_type             is_contiguous;
 };
 
 template<typename T>
@@ -338,8 +338,8 @@ public:
 	typedef typename base_type::pointer            pointer;
 	typedef typename base_type::reference          reference;
 	typedef typename base_type::value_type         value_type;
-	typedef          std::true_type                is_device_iterator;
-	typedef          std::true_type                is_contiguous;
+	typedef          ecuda::true_type              is_device_iterator;
+	typedef          ecuda::true_type              is_contiguous;
 };
 
 template<typename T,typename P>
@@ -353,7 +353,7 @@ public:
 	typedef typename base_type::reference          reference;
 	typedef typename base_type::value_type         value_type;
 	typedef typename base_type::is_device_iterator is_device_iterator;
-	typedef          std::true_type                is_contiguous;
+	typedef          ecuda::true_type              is_contiguous;
 };
 
 template<typename Iterator>
@@ -366,8 +366,8 @@ public:
 	typedef typename base_type::pointer            pointer;
 	typedef typename base_type::reference          reference;
 	typedef typename base_type::value_type         value_type;
-	typedef          std::true_type                is_device_iterator;
-	typedef          std::false_type               is_contiguous;
+	typedef          ecuda::true_type              is_device_iterator;
+	typedef          ecuda::false_type             is_contiguous;
 };
 
 namespace impl {
@@ -377,14 +377,14 @@ __HOST__ __DEVICE__ inline
 void advance(
 	InputIterator& iterator,
 	Distance n,
-	std::true_type // device memory
+	ecuda::true_type // device memory
 )
 {
 	typedef typename ecuda::iterator_traits<InputIterator>::iterator_category iterator_category;
 	typedef typename ecuda::iterator_traits<InputIterator>::is_contiguous     iterator_contiguity;
 	const bool isIteratorSomeKindOfContiguous =
-		std::is_same<iterator_contiguity,std::true_type>::value ||
-		std::is_same< iterator_category, device_contiguous_block_iterator_tag >::value;
+		ecuda::is_same<iterator_contiguity,ecuda::true_type>::value ||
+		ecuda::is_same< iterator_category, device_contiguous_block_iterator_tag >::value;
 	if( isIteratorSomeKindOfContiguous ) {
 		iterator += n;
 	} else {
@@ -397,7 +397,7 @@ __HOST__ __DEVICE__ inline
 void advance(
 	InputIterator& iterator,
 	Distance n,
-	std::false_type // host memory
+	ecuda::false_type // host memory
 )
 {
 	#ifdef __CUDA_ARCH__
@@ -421,14 +421,14 @@ template<class Iterator>
 __HOST__ __DEVICE__ inline // yes, it's inline since the actual run-time portion always resolves to a few statements
 typename std::iterator_traits<Iterator>::difference_type distance(
 	Iterator first, Iterator last,
-	std::true_type // device memory
+	ecuda::true_type // device memory
 )
 {
 	typedef typename ecuda::iterator_traits<Iterator>::iterator_category iterator_category;
 	typedef typename ecuda::iterator_traits<Iterator>::is_contiguous     iterator_contiguity;
 	const bool isIteratorSomeKindOfContiguous =
-		std::is_same<iterator_contiguity,std::true_type>::value ||
-		std::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
+		ecuda::is_same<iterator_contiguity,ecuda::true_type>::value ||
+		ecuda::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
 	#ifdef __CUDA_ARCH__
 	if( isIteratorSomeKindOfContiguous ) {
 		return ( last - first );
@@ -448,7 +448,7 @@ template<class Iterator>
 __HOST__ __DEVICE__ inline
 typename std::iterator_traits<Iterator>::difference_type distance(
 	Iterator first, Iterator last,
-	std::false_type // host memory
+	ecuda::false_type // host memory
 )
 {
 	#ifdef __CUDA_ARCH__

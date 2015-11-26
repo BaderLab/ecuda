@@ -155,7 +155,7 @@ private:
 	template<typename U,class Alloc2> class device_matrix;
 
 protected:
-	__HOST__ __DEVICE__ matrix( const matrix& src, std::true_type ) : base_type(src), allocator(src.allocator) {}
+	__HOST__ __DEVICE__ matrix( const matrix& src, ecuda::true_type ) : base_type(src), allocator(src.allocator) {}
 
 	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other )
 	{
@@ -173,7 +173,7 @@ private:
 			//       as the original - the device_contiguous_row_matrix second template parameter which
 			//       enforces a padded_ptr of some type is the reason
 			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
-			shared_ptr<value_type> sp( naked_cast<typename std::add_pointer<value_type>::type>(p) );
+			shared_ptr<value_type> sp( naked_cast<typename ecuda::add_pointer<value_type>::type>(p) );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, number_rows(), number_columns() );
 			base_type::swap( base );
@@ -850,8 +850,8 @@ template< typename T, class Alloc=device_pitch_allocator<T> >
 class matrix_kernel_argument : public matrix<T,Alloc> {
 
 public:
-	matrix_kernel_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
-	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, std::true_type() ) {}
+	matrix_kernel_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
+	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
 	matrix_kernel_argument& operator=( const matrix<T,Alloc>& src ) {
 		matrix<T,Alloc>::shallow_assign( src );
 		return *this;

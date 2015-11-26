@@ -95,7 +95,7 @@ public:
 	typedef impl::array_kernel_argument<T,N> kernel_argument; //!< kernel argument type
 
 protected:
-	__HOST__ __DEVICE__ array( const array& src, std::true_type ) : base_type(src) {}
+	__HOST__ __DEVICE__ array( const array& src, ecuda::true_type ) : base_type(src) {}
 
 	__HOST__ __DEVICE__ array& shallow_assign( const array& other )
 	{
@@ -468,7 +468,7 @@ private:
 	typedef array<T,N> base_type;
 
 public:
-	array_kernel_argument( const array<T,N>& src ) : base_type( src, std::true_type() )
+	array_kernel_argument( const array<T,N>& src ) : base_type( src, ecuda::true_type() )
 	{
 		//#if (__CUDACC_VER_MAJOR__ >= 6)
 		//#warning consider replacing array::kernel_argument with array&

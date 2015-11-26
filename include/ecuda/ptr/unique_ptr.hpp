@@ -98,7 +98,7 @@ class unique_ptr
 
 public:
 	typedef T element_type;
-	typedef typename std::add_pointer<T>::type pointer;
+	typedef typename ecuda::add_pointer<T>::type pointer;
 	typedef Deleter deleter_type;
 
 private:
@@ -166,11 +166,11 @@ public:
 	__HOST__ __DEVICE__ operator bool() const { return get() != NULL; }
 	#endif
 
-	__DEVICE__ inline typename std::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
+	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
 
 	__HOST__ __DEVICE__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
 
-	__DEVICE__ inline typename std::add_lvalue_reference<T>::type operator[]( std::size_t i ) const {
+	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator[]( std::size_t i ) const {
 		//return *pointer_traits<pointer>().increment( current_ptr, i );
 		return *(current_ptr+i);
 	}

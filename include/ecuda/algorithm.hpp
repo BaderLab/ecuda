@@ -49,8 +49,8 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace detail {
 
-typedef std::false_type host_type;
-typedef std::true_type  device_type;
+typedef ecuda::false_type host_type;
+typedef ecuda::true_type  device_type;
 
 //typedef std::false_type non_contiguous_type;
 //typedef std::true_type  contiguous_type;
@@ -84,7 +84,7 @@ namespace impl {
 
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ InputIterator
-find( InputIterator first, InputIterator last, const T& value, std::true_type ) // device memory
+find( InputIterator first, InputIterator last, const T& value, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) {
@@ -93,7 +93,7 @@ find( InputIterator first, InputIterator last, const T& value, std::true_type ) 
 	}
 	return first;
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	const typename ecuda::iterator_traits<InputIterator>::difference_type index = std::distance( v.begin(), std::find( v.begin(), v.end(), value ) );
@@ -104,7 +104,7 @@ find( InputIterator first, InputIterator last, const T& value, std::true_type ) 
 
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator
-find( InputIterator first, InputIterator last, const T& value, std::false_type ) // host memory
+find( InputIterator first, InputIterator last, const T& value, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -127,7 +127,7 @@ namespace impl {
 
 template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ InputIterator
-find_if( InputIterator first, InputIterator last, UnaryPredicate p, std::true_type ) // device memory
+find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) {
@@ -136,7 +136,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, std::true_ty
 	}
 	return first;
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	const typename ecuda::iterator_traits<InputIterator>::difference_type index = std::distance( v.begin(), std::find_if( v.begin(), v.end(), p ) );
@@ -147,7 +147,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, std::true_ty
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
-find_if( InputIterator first, InputIterator last, UnaryPredicate p, std::false_type ) // host memory
+find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -172,7 +172,7 @@ namespace impl {
 
 template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ InputIterator
-find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, std::true_type ) // device memory
+find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) {
@@ -181,7 +181,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, std::tru
 	}
 	return first;
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	const typename ecuda::iterator_traits<InputIterator>::difference_type index = std::distance( v.begin(), std::find_if_not( v.begin(), v.end(), p ) );
@@ -192,7 +192,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, std::tru
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
-find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, std::false_type ) // host memory
+find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_NOT_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -241,7 +241,7 @@ namespace impl {
 
 template<class InputIterator,class UnaryFunction>
 inline __HOST__ __DEVICE__ UnaryFunction
-for_each( InputIterator first, InputIterator last, UnaryFunction f, std::false_type ) // host memory
+for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FOR_EACH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -254,13 +254,13 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f, std::false_t
 
 template<class InputIterator,class UnaryFunction>
 __HOST__ __DEVICE__ UnaryFunction
-for_each( InputIterator first, InputIterator last, UnaryFunction f, std::true_type ) // device memory
+for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { f(*first); ++first; }
 	return f; // never called from device code
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	std::for_each( v.begin(), v.end(), f );
@@ -282,7 +282,7 @@ namespace impl {
 
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
-count( InputIterator first, InputIterator last, const T& value, std::false_type ) // host memory
+count( InputIterator first, InputIterator last, const T& value, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COUNT_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -295,7 +295,7 @@ count( InputIterator first, InputIterator last, const T& value, std::false_type 
 
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
-count( InputIterator first, InputIterator last, const T& value, std::true_type ) // device memory
+count( InputIterator first, InputIterator last, const T& value, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = 0;
@@ -325,7 +325,7 @@ namespace impl {
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
-count_if( InputIterator first, InputIterator last, UnaryPredicate p, std::false_type ) // host memory
+count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COUNT_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -338,7 +338,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p, std::false_
 
 template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
-count_if( InputIterator first, InputIterator last, UnaryPredicate p, std::true_type ) // device memory
+count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_type ) // device memory
 {
 	#ifdef __CUDA_ARCH__
 	typename ecuda::iterator_traits<InputIterator>::difference_type n = 0;
@@ -348,7 +348,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p, std::true_t
 	}
 	return n;
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	return std::count_if( v.begin(), v.end(), p );
@@ -368,7 +368,7 @@ namespace impl {
 
 template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::false_type,std::false_type> ) // host/host memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::false_type> ) // host/host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -381,13 +381,13 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::false_type,std::true_type> ) // host/device memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::true_type> ) // host/device memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
 	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
 	vector_type2 v2( ecuda::distance(first1,last1) );
 	ecuda::copy( first2, first2+v2.size(), v2.size() );
@@ -399,7 +399,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::true_type,std::false_type> ) // device/host memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::true_type,ecuda::false_type> ) // device/host memory
 {
 	#ifdef __CUDA_ARCH__
 	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
@@ -414,16 +414,16 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
-mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<std::true_type,std::true_type> ) // device/device memory
+mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::true_type,ecuda::true_type> ) // device/device memory
 {
 	#ifdef __CUDA_ARCH__
 	while( (first1 != last1) && (*first1 == *first2) ) { ++first1; ++first2; }
 	return ecuda::pair<InputIterator1,InputIterator2>(first1,first2);
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator1>::value_type>::type value_type1;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator1>::value_type>::type value_type1;
 	typedef std::vector< value_type1, host_allocator<value_type1> > vector_type1;
 	vector_type1 v1( ecuda::distance(first1,last1) );
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
 	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
 	vector_type2 v2( v1.size() );
 	ecuda::copy( first1, last1, v1.begin() );
