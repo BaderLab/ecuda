@@ -202,8 +202,11 @@ public:
 		const Alloc& allocator = Alloc()
 	) :	base_type( pointer(), numberRows*numberColumns, numberDepths ), numberRows(numberRows), allocator(allocator)
 	{
+std::cerr << "init1" << std::endl;
 		init();
+std::cerr << "init2" << std::endl;
 		if( size() ) ecuda::fill( begin(), end(), value );
+std::cerr << "init3" << std::endl;
 	}
 
 	///
