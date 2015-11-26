@@ -140,6 +140,7 @@ public:
 	#endif
 
 	//TODO: think about this - worth considering for user access
+	//__HOST__ __DEVICE__ inline typename ecuda::add_pointer<value_type>::type data() const { return naked_cast<typename ecuda::add_pointer<value_type>::type>( ptr ); }
 	//__HOST__ __DEVICE__ inline pointer data() const { return ptr; }
 
 	__HOST__ __DEVICE__ void swap( device_sequence& other )
