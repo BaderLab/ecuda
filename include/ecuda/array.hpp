@@ -470,13 +470,16 @@ private:
 	typedef array<T,N> base_type;
 
 public:
-	array_kernel_argument( const array<T,N>& src ) : base_type( src, ecuda::true_type() )
+	__HOST__ array_kernel_argument( const array<T,N>& src ) : base_type( src, ecuda::true_type() )
 	{
 		//#if (__CUDACC_VER_MAJOR__ >= 6)
 		//#warning consider replacing array::kernel_argument with array&
 		//#endif
 	}
-	array_kernel_argument& operator=( const array<T,N>& src )
+
+	__HOST__ __DEVICE__ array_kernel_argument( const array_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
+
+	__HOST__ array_kernel_argument& operator=( const array<T,N>& src )
 	{
 		//#if (__CUDACC_VER_MAJOR__ >= 6)
 		//#warning consider replacing array::kernel_argument with array&

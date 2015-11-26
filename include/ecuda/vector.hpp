@@ -882,8 +882,9 @@ template<typename T,class Alloc>
 class vector_kernel_argument : public vector<T,Alloc> {
 
 public:
-	vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, ecuda::true_type() ) {}
-	vector_kernel_argument& operator=( const vector<T,Alloc>& src ) {
+	__HOST__ vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, ecuda::true_type() ) {}
+	__HOST__ __DEVICE__ vector_kernel_argument( const vector_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
+	__HOST__ vector_kernel_argument& operator=( const vector<T,Alloc>& src ) {
 		vector<T,Alloc>::shallow_assign( src );
 		return *this;
 	}
