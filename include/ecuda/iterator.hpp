@@ -370,6 +370,7 @@ public:
 	typedef          ecuda::false_type             is_contiguous;
 };
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator, typename Distance>
@@ -408,6 +409,7 @@ void advance(
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n )
@@ -415,6 +417,7 @@ __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n )
 	impl::advance( iterator, n, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class Iterator>
@@ -460,6 +463,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 }
 
 } // namespace impl
+/// \endcond
 
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last )

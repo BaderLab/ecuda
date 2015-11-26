@@ -29,6 +29,7 @@ either expressed or implied, of the FreeBSD Project.
 
 //----------------------------------------------------------------------------
 // numeric.hpp
+//
 // CUDA implementations from STL header <numeric>.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
@@ -46,6 +47,7 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,typename T,class BinaryOperation>
@@ -106,8 +108,8 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 	#endif
 }
 
-
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init )

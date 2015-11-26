@@ -149,6 +149,7 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<bool condition> struct static_assertion {};
@@ -184,6 +185,8 @@ template<> struct static_assertion<true>
 };
 
 } // namespace impl
+/// \endcond
+
 } // namespace ecuda
 
 #define ECUDA_STATIC_ASSERT(x,msg) if(ecuda::impl::static_assertion<static_cast<bool>(x)>::msg) {}

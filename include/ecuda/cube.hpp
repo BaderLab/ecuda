@@ -52,11 +52,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,class Alloc> class cube_kernel_argument; // forward declaration
 
 } // namespace impl
+/// \endcond
 
 ///
 /// \brief A resizable cube stored in device memory.
@@ -756,6 +758,7 @@ public:
 
 };
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
@@ -772,6 +775,7 @@ public:
 };
 
 } // namespace impl
+/// \endcond
 
 } // namespace ecuda
 

@@ -80,6 +80,7 @@ template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( cons
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,typename T>
@@ -158,6 +159,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
@@ -167,7 +169,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p )
 }
 
 #ifdef __CPP11_SUPPORTED__
-
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,class UnaryPredicate>
@@ -203,6 +205,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::f
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
@@ -237,6 +240,7 @@ none_of( InputIterator first, InputIterator last, UnaryPredicate p )
 
 template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,class UnaryFunction>
@@ -270,6 +274,7 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::true_
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,class UnaryFunction>
 inline __HOST__ __DEVICE__ UnaryFunction
@@ -278,6 +283,7 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f )
 	return impl::for_each( first, last, f, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,typename T>
@@ -313,6 +319,7 @@ count( InputIterator first, InputIterator last, const T& value, ecuda::true_type
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type
@@ -321,6 +328,7 @@ count( InputIterator first, InputIterator last, const T& value )
 	return impl::count( first, last, value, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator,class UnaryPredicate>
@@ -356,6 +364,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
@@ -364,6 +373,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p )
 	return impl::count_if( first, last, p, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator1,class InputIterator2>
@@ -438,6 +448,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 }
 
 } // namespace impl
+/// \endcond
 
 template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>

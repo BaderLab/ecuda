@@ -51,6 +51,7 @@ namespace ecuda {
 // forward declaration
 template<class InputIterator1,class InputIterator2> __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 );
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<class InputIterator1,class InputIterator2>
@@ -118,7 +119,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 }
 
 } // namespace impl
-
+/// \endcond
 
 ///
 /// \brief Replacement for std::equal.

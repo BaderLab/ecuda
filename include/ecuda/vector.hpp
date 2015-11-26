@@ -59,11 +59,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,class Alloc> class vector_kernel_argument; // forward declaration
 
 } // namespace impl
+/// \endcond
 
 ///
 /// \brief A resizable vector stored in device memory.
@@ -873,6 +875,7 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
 	base_type::swap( newSequence );
 }
 
+/// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
 template<typename T,class Alloc>
@@ -888,6 +891,7 @@ public:
 };
 
 } // namespace impl
+/// \endcond
 
 } // namespace ecuda
 
