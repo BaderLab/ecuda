@@ -89,8 +89,8 @@ void print_slice( const std::string& label, Slice slice )
 int main( int argc, char* argv[] ) {
 
 	const std::size_t nr = 3;
-	const std::size_t nc = 4;
-	const std::size_t nd = 5;
+	const std::size_t nc = 5;
+	const std::size_t nd = 6;
 	std::vector< coord_t<int> > hostVector( nr*nc*nd );
 	{
 		unsigned index = 0;

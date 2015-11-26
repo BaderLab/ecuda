@@ -166,7 +166,7 @@ public:
 /// properly, otherwise any operations will be undefined. The caller is
 /// responsible for ensuring this.
 ///
-template<typename T,std::size_t N,class P=typename std::add_pointer<T>::type>
+template<typename T,std::size_t N,class P=typename ecuda::add_pointer<T>::type>
 class device_fixed_sequence
 {
 

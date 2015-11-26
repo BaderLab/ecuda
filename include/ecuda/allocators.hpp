@@ -487,8 +487,11 @@ public:
 		size_type pitch = w*sizeof(value_type);
 		pitch += (pitch % 16);
 		char* p = std::allocator<char>().allocate( pitch*h, hint );
-		typename std::add_pointer<value_type>::type p2 = reinterpret_cast<typename std::add_pointer<value_type>::type>( p );
+		typename ecuda::add_pointer<value_type>::type p2 = reinterpret_cast<typename ecuda::add_pointer<value_type>::type>( p );
 		if( (w*sizeof(value_type)) == pitch ) {
+			//std::cerr << "w=" << w << std::endl;
+			//std::cerr << "sizeof(value_type)=" << sizeof(value_type) << std::endl;
+			//std::cerr << "pitch=" << pitch << std::endl;
 			std::cerr << "ecuda::device_pitch_allocator::allocate is emulating device memory on host but the resulting" << std::endl;
 			std::cerr << "                                        pitch is the same as a contiguous block so internal API" << std::endl;
 			std::cerr << "                                        logic that considers memory pitch may not be properly tested" << std::endl;

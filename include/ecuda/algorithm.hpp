@@ -311,7 +311,7 @@ count( InputIterator first, InputIterator last, const T& value, ecuda::true_type
 	}
 	return n;
 	#else
-	typedef typename std::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
+	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
 	ecuda::copy( first, last, v.begin() );
 	return std::count( v.begin(), v.end(), value );

@@ -214,8 +214,8 @@ template<typename T>            struct make_unmanaged< const T*                >
 //template<typename T>            struct make_unmanaged< const naked_ptr<T>      > { typedef naked_ptr<T> type; };
 template<typename T,typename U> struct make_unmanaged< unique_ptr<T,U>         > { typedef typename unique_ptr<T,U>::pointer type; };
 template<typename T,typename U> struct make_unmanaged< const unique_ptr<T,U>   > { typedef typename unique_ptr<T,U>::pointer type; };
-template<typename T>            struct make_unmanaged< shared_ptr<T>           > { typedef typename std::add_pointer<T>::type type; };
-template<typename T>            struct make_unmanaged< const shared_ptr<T>     > { typedef typename std::add_pointer<T>::type type; };
+template<typename T>            struct make_unmanaged< shared_ptr<T>           > { typedef typename ecuda::add_pointer<T>::type type; };
+template<typename T>            struct make_unmanaged< const shared_ptr<T>     > { typedef typename ecuda::add_pointer<T>::type type; };
 template<typename T,typename U> struct make_unmanaged< padded_ptr<T,U>         > { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
 template<typename T,typename U> struct make_unmanaged< const padded_ptr<T,U>   > { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
 template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U>       > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };

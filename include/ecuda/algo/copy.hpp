@@ -237,9 +237,9 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 
 	{
 		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
-		typedef typename std::add_pointer<value_type>::type pointer;
+		typedef typename ecuda::add_pointer<value_type>::type pointer;
 		pointer dest = naked_cast<pointer>( result.operator->() );
-		typedef typename std::add_pointer<const value_type>::type const_pointer;
+		typedef typename ecuda::add_pointer<const value_type>::type const_pointer;
 		const_pointer src = naked_cast<const_pointer>( first.operator->() );
 
 		const size_t pitch = result.operator->().get_pitch();
