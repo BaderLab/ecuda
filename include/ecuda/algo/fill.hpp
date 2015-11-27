@@ -134,7 +134,7 @@ __HOST__ __DEVICE__ inline void fill(
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(false,CANNOT_CALL_FILL_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT( false, CANNOT_CALL_FILL_ON_HOST_MEMORY_INSIDE_DEVICE_CODE );
 	#else
 	std::fill( first, last, val );
 	#endif
@@ -143,6 +143,7 @@ __HOST__ __DEVICE__ inline void fill(
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val )
 {

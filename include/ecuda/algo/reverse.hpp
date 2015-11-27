@@ -62,7 +62,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_REVERSE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(false,CANNOT_CALL_REVERSE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	#else
 	std::reverse( first, last );
 	#endif
@@ -99,6 +99,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class BidirectionalIterator>
 __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last ) {
 	impl::reverse(

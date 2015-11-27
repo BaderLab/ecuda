@@ -141,8 +141,13 @@ either expressed or implied, of the FreeBSD Project.
 #define __HOST__
 #define __DEVICE__
 #else
+#ifdef __CUDACC__
 #define __HOST__ __host__
 #define __DEVICE__ __device__
+#else
+#define __HOST__
+#define __DEVICE__
+#endif
 #endif
 
 //

@@ -411,6 +411,7 @@ void advance(
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n )
 {
@@ -455,7 +456,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
+	//ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
 	return 0;
 	#else
 	return std::distance( first, last );
@@ -465,6 +466,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last )
 {

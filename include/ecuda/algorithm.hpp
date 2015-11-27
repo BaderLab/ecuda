@@ -103,12 +103,13 @@ find( InputIterator first, InputIterator last, const T& value, ecuda::true_type 
 	#endif
 }
 
+#pragma hd_warning_disable
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator
 find( InputIterator first, InputIterator last, const T& value, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return last;
 	#else
 	return std::find( first, last, value );
@@ -117,6 +118,7 @@ find( InputIterator first, InputIterator last, const T& value, ecuda::false_type
 
 } // namespace impl
 
+#pragma hd_warning_disable
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator
 find( InputIterator first, InputIterator last, const T& value )
@@ -146,12 +148,13 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_
 	#endif
 }
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return last;
 	#else
 	return std::find_if( first, last, p );
@@ -161,6 +164,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -172,6 +176,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p )
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_type ) // device memory
@@ -192,12 +197,13 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::t
 	#endif
 }
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_NOT_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_NOT_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return last;
 	#else
 	return std::find_if_not( first, last, p );
@@ -207,6 +213,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::f
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -214,6 +221,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p )
 	return impl::find_if_not( first, last, p, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ bool
 all_of( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -223,6 +231,7 @@ all_of( InputIterator first, InputIterator last, UnaryPredicate p )
 
 #endif // __CPP11_SUPPORTED__
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ bool
 any_of( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -230,6 +239,7 @@ any_of( InputIterator first, InputIterator last, UnaryPredicate p )
 	return ecuda::find_if( first, last, p ) != last;
 }
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ bool
 none_of( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -262,7 +272,7 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::true_
 {
 	#ifdef __CUDA_ARCH__
 	while( first != last ) { f(*first); ++first; }
-	return f; // never called from device code
+	//return f; // never called from device code
 	#else
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ecuda::distance(first,last) );
@@ -276,6 +286,7 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::true_
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryFunction>
 inline __HOST__ __DEVICE__ UnaryFunction
 for_each( InputIterator first, InputIterator last, UnaryFunction f )
@@ -321,6 +332,7 @@ count( InputIterator first, InputIterator last, const T& value, ecuda::true_type
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type
 count( InputIterator first, InputIterator last, const T& value )
@@ -366,6 +378,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
 count_if( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -381,26 +394,28 @@ inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::false_type> ) // host/host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
 	#else
 	// just defer to STL
-	return std::mismatch( first1, last1, first2 );
+	std::pair<InputIterator1,InputIterator2> p = std::mismatch( first1, last1, first2 );
+	return ecuda::pair<InputIterator1,InputIterator2>(p.first,p.second);
 	#endif
 }
 
+#pragma hd_warning_disable
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::true_type> ) // host/device memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
 	#else
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
 	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
 	vector_type2 v2( ecuda::distance(first1,last1) );
-	ecuda::copy( first2, first2+v2.size(), v2.size() );
+	ecuda::copy( first2, first2+v2.size(), v2.begin() );
 	std::pair<InputIterator1,typename vector_type2::iterator> p = std::mismatch( first1, last1, v2.begin() );
 	ecuda::advance( first2, ecuda::distance(v2.begin(),p.second) );
 	return ecuda::pair<InputIterator1,InputIterator2>( p.first, first2 );
@@ -412,12 +427,12 @@ __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::true_type,ecuda::false_type> ) // device/host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
 	#else
 	InputIterator2 last2 = first2;
 	ecuda::advance( last2, ecuda::distance(first1,last1) );
-	ecuda::pair<InputIterator2,InputIterator1> p = mismatch( first2, last2, first1 );
+	ecuda::pair<InputIterator2,InputIterator1> p = mismatch( first2, last2, first1, ecuda::pair<ecuda::false_type,ecuda::true_type>() );
 	return ecuda::pair<InputIterator1,InputIterator2>( p.second, p.first );
 	#endif
 }
@@ -450,6 +465,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 } // namespace impl
 /// \endcond
 
+#pragma hd_warning_disable
 template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 )
@@ -457,7 +473,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 )
 	return impl::mismatch(
 					first1, last1,
 					first2,
-					ecuda::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator(),typename ecuda::iterator_traits<InputIterator2>::is_device_iterator()>()
+					ecuda::pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>()
 				);
 }
 
