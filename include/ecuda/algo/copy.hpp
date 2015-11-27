@@ -121,7 +121,7 @@ __DEVICE__ inline OutputIterator copy(
 //              a compile-time error if called on host memory
 //
 template<class InputIterator,class OutputIterator,class Type1,class Type2>
-__DEVICE__ inline OutputIterator copy(
+__HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first, InputIterator last,
 	OutputIterator result,
 	ecuda::pair<Type1,Type2> memory_types // one or both types is host
