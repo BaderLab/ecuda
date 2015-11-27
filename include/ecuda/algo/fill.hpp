@@ -35,6 +35,7 @@ either expressed or implied, of the FreeBSD Project.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
+
 #pragma once
 #ifndef ECUDA_ALGO_FILL_HPP
 #define ECUDA_ALGO_FILL_HPP
