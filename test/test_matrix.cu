@@ -27,7 +27,10 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 }
 
 template<typename T,class Alloc>
-__global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest ) {
+__global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest )
+{
+	ecuda::copy( src.begin(), src.end(), dest.begin() );
+	ecuda::equal( src.begin(), src.end(), dest.begin() );
 							   //ecuda::impl::matrix_device_argument<T,Alloc> dest ) {
 //		const typename ecuda::matrix<T,Alloc>::argument src, typename ecuda::matrix<T,Alloc>::argument dest ) {
 	//typedef ecuda::matrix<T,Alloc1> src_matrix_type;
@@ -135,7 +138,7 @@ int main( int argc, char* argv[] ) {
 		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
 		for( std::size_t i = 0; i < R; ++i ) {
 			typename ecuda::matrix< coord_t<int> >::row_type row = deviceMatrix[i];
-			std::cerr << "row[" << i << "]=" << std::boolalpha << std::equal( row.begin(), row.end(), hostVector.begin()+(i*C) ) << std::endl;
+			std::cerr << "row[" << i << "]=" << std::boolalpha << ecuda::equal( row.begin(), row.end(), hostVector.begin()+(i*C) ) << std::endl;
 		}
 	}
 	{
@@ -150,10 +153,12 @@ int main( int argc, char* argv[] ) {
 				hostVector.push_back( coord_t<int>(i,j) );
 		ecuda::matrix< coord_t<int> > deviceMatrix( R, C );
 		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
+		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 		for( std::size_t i = 0; i < C; ++i ) {
 			typename ecuda::matrix< coord_t<int> >::column_type col = deviceMatrix.get_column(i);
 			std::cerr << "column[" << i << "]"; for( std::size_t j = 0; j < col.size(); ++j ) std::cerr << " " << col[j]; std::cerr << std::endl;
 		}
+		#endif
 	}
 	{
 		std::cerr << "TESTING TRANSFORMS" << std::endl;
