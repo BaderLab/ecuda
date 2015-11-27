@@ -51,7 +51,7 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-#ifdef __CUDA_ARCH__
+#if (__CUDA_ARCH__ > 0)
 
 ///
 /// \brief Replacement for std::copy.

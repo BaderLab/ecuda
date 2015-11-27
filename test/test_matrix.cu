@@ -9,6 +9,8 @@
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/vector.hpp"
 
+#include <estd/matrix.hpp>
+
 #ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
@@ -61,6 +63,13 @@ std::ostream& operator<<( std::ostream& out, const coord_t<T>& src )
 }
 
 int main( int argc, char* argv[] ) {
+
+	{
+		estd::matrix<int> hostMat( 5, 5 );
+		ecuda::matrix<int> deviceMat( 5, 5 );
+		ecuda::copy( hostMat.begin(), hostMat.end(), deviceMat.begin() );
+		ecuda::copy( deviceMat.begin(), deviceMat.end(), hostMat.begin() );
+	}
 
 	{
 		std::cerr << "TESTING CONSTRUCTORS" << std::endl;
