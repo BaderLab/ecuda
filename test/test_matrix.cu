@@ -65,6 +65,9 @@ int main( int argc, char* argv[] ) {
 		estd::matrix<int> hostMatrix(5,5);
 		ecuda::matrix<int> deviceMatrix(5,5);
 		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
+		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
 	}
 	{
 		std::cerr << "TESTING CONSTRUCTORS" << std::endl;

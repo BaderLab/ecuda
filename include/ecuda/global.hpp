@@ -56,8 +56,8 @@ either expressed or implied, of the FreeBSD Project.
 // idea taken from the VTK-m project (https://gitlab.kitware.com/vtk/vtk-m)
 // to suppress annoying warnings from the compiler about calling __host__
 // code from a __host__ __device__ function
-#define ECUDA_SUPRESS_EXEC_WARNINGS \
-	#pragma hd_warning_disable
+//#define ECUDA_SUPRESS_EXEC_WARNINGS \
+//	#pragma hd_warning_disable \  <-- just use this at the beginning of any function (e.g. ecuda::copy that might cause this issue)
 //	#pragma nv_exec_check_disable
 #endif
 
