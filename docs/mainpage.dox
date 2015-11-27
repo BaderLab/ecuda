@@ -8,7 +8,7 @@
 
 The \em ecuda library provides a clean, light-weight interface to CUDA that extends the C++ standard template library (STL) and borrows its semantics. The API is header only, so it's portable and simple to install.
 
-The original motivation for creating the API was to avoid a lot of the headaches and repetition that comes with using naked pointers to device memory to represent common containers. The API features several such container types: array, vector, matrix, and cube. Moreover, the API allows a developer's interaction with the C-based CUDA API to have a more modern C++ sensibility (e.g. the use of smart pointers, the RAII paradigm, etc.).
+The original motivation for creating the API was to avoid a lot of the headaches and repetition that comes with using naked pointers to device memory to represent common containers. The API features several such container types: array, vector, matrix, and cube. Moreover, the API allows a developer's interaction with the C-based CUDA API to have a more modern C++ sensibility (e.g. the use of smart pointers, the RAII/SBRM paradigm, etc.).
 
 For example, here's some typical code one might use to create a matrix in device memory, and then calculate the column sums using the GPU:
 
@@ -239,7 +239,7 @@ __global__ void sumColumns( const char* matrix, const size_t pitch, const size_t
 }
 \endcode
 
-There are so many places to innocently go wrong.  Did you remember to specify <tt>width*sizeof(double)</tt> instead of just <tt>width</tt>?  Did you remember to free the allocated memory?  Did you remember to account for the padding in the matrix memory that properly aligns the memory?  Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing?  Are you an adherent to the RAII programming idiom and using CUDA makes you generally uncomfortable?
+There are so many places to innocently go wrong.  Did you remember to specify <tt>width*sizeof(double)</tt> instead of just <tt>width</tt>?  Did you remember to free the allocated memory?  Did you remember to account for the padding in the matrix memory that properly aligns the memory?  Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing?  Are you an adherent to the RAII/SBRM programming idiom and using CUDA makes you generally uncomfortable?
 
 Here's the equivalent code using \em ecuda:
 
