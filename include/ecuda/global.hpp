@@ -52,6 +52,15 @@ either expressed or implied, of the FreeBSD Project.
 
 //#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 
+#ifdef __CUDACC__
+// idea taken from the VTK-m project (https://gitlab.kitware.com/vtk/vtk-m)
+// to suppress annoying warnings from the compiler about calling __host__
+// code from a __host__ __device__ function
+#define ECUDA_SUPRESS_EXEC_WARNINGS \
+	#pragma hd_warning_disable \
+	#pragma nv_exec_check_disable
+#endif
+
 #include "cuda_error.hpp"
 
 #include "impl/host_emulation.hpp"

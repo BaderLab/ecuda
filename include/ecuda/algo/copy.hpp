@@ -811,6 +811,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // Entry point of the ecuda::copy function.
 //
 
+ECUDA_SUPRESS_EXEC_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result )
 {
