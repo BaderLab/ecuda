@@ -680,7 +680,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 //              a device_contiguous or device_block_contiguous copy as
 //              appropriate
 //
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
@@ -743,7 +743,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // On Device  : compile-time assertion
 // On Host    : just delegate to std::copy
 //
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
@@ -767,7 +767,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 // Entry point of the ecuda::copy function.
 //
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result )
 {

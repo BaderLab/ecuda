@@ -99,7 +99,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class BidirectionalIterator>
 __HOST__ __DEVICE__ inline void reverse( BidirectionalIterator first, BidirectionalIterator last ) {
 	impl::reverse(

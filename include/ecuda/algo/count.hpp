@@ -86,7 +86,7 @@ count( InputIterator first, InputIterator last, const T& value, ecuda::true_type
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ inline typename ecuda::iterator_traits<InputIterator>::difference_type
 count( InputIterator first, InputIterator last, const T& value )

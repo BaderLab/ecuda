@@ -50,20 +50,25 @@ either expressed or implied, of the FreeBSD Project.
 /// \endcond
 ///
 
-//#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifndef __CUDACC__
+#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#endif
 
-#ifdef __CUDACC__
+#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
 // idea taken from the VTK-m project (https://gitlab.kitware.com/vtk/vtk-m)
 // to suppress annoying warnings from the compiler about calling __host__
 // code from a __host__ __device__ function
-//#define ECUDA_SUPRESS_EXEC_WARNINGS \
-//	#pragma hd_warning_disable \  <-- just use this at the beginning of any function (e.g. ecuda::copy that might cause this issue)
-//	#pragma nv_exec_check_disable
+#define ECUDA_SUPPRESS_HD_WARNINGS
+#else
+#define ECUDA_SUPPRESS_HD_WARNINGS \
+	#pragma hd_warning_disable
 #endif
 
-#include "cuda_error.hpp"
+// #pragma hd_warning_disable
 
 #include "impl/host_emulation.hpp"
+
+#include "cuda_error.hpp"
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
@@ -141,13 +146,13 @@ either expressed or implied, of the FreeBSD Project.
 #define __HOST__
 #define __DEVICE__
 #else
-#ifdef __CUDACC__
+//#ifdef __CUDACC__
 #define __HOST__ __host__
 #define __DEVICE__ __device__
-#else
-#define __HOST__
-#define __DEVICE__
-#endif
+//#else
+//#define __HOST__
+//#define __DEVICE__
+//#endif
 #endif
 
 //

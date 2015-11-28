@@ -411,7 +411,7 @@ void advance(
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n )
 {
@@ -466,7 +466,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class Iterator>
 __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_type distance( Iterator first, Iterator last )
 {

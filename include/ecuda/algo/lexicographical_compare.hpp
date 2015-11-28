@@ -140,7 +140,7 @@ bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2 ) {
 	return impl::lexicographical_compare( first1, last1, first2, last2, pair<typename ecuda::iterator_traits<InputIterator1>::is_device_iterator,typename ecuda::iterator_traits<InputIterator2>::is_device_iterator>() );

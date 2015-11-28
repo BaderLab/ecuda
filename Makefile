@@ -77,7 +77,10 @@ test/% :: test/%.cu
 
 test/cpu/% :: test/%.cu
 	@mkdir -p bin/test/cpu
-	$(CXX) $(CXXFLAGS) -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -x c++ $< -o bin/$@
+	cp $< $<.cpp
+	$(CXX) $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+	rm $<.cpp
+#	$(CXX) $(CXXFLAGS) -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -x c++ $< -o bin/$@
 
 T_FILES = $(basename $(shell find t -name '*.cu'))
 

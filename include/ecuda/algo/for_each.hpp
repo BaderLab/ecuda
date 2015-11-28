@@ -84,7 +84,7 @@ for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::true_
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryFunction>
 inline __HOST__ __DEVICE__ UnaryFunction
 for_each( InputIterator first, InputIterator last, UnaryFunction f )

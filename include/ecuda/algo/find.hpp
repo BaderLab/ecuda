@@ -72,7 +72,7 @@ find( InputIterator first, InputIterator last, const T& value, ecuda::true_type 
 	#endif
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator
 find( InputIterator first, InputIterator last, const T& value, ecuda::false_type ) // host memory
@@ -87,7 +87,7 @@ find( InputIterator first, InputIterator last, const T& value, ecuda::false_type
 
 } // namespace impl
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>
 inline __HOST__ __DEVICE__ InputIterator
 find( InputIterator first, InputIterator last, const T& value )
