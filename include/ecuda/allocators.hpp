@@ -161,7 +161,7 @@ public:
 	///
 	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		return std::allocator<value_type>().allocate( n, hint );
 		#else
 		pointer ptr = NULL;
@@ -184,7 +184,7 @@ public:
 	///
 	inline void deallocate( pointer ptr, size_type n )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		return std::allocator<value_type>().deallocate( ptr, n );
 		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
@@ -314,7 +314,7 @@ public:
 	///
 	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		return std::allocator<value_type>().allocate( n, hint );
 		#else
 		pointer ptr = NULL;
@@ -337,7 +337,7 @@ public:
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
@@ -364,7 +364,7 @@ public:
 	///
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		std::allocator<value_type>().construct( ptr, val );
 		#else
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
@@ -482,7 +482,7 @@ public:
 	///
 	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		// emulate a 128-bit memory alignment (16 bytes)
 		size_type pitch = w*sizeof(value_type);
 		pitch += (pitch % 16);
@@ -519,7 +519,7 @@ public:
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		std::allocator<value_type>().deallocate( ptr, n );
 		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
@@ -546,7 +546,7 @@ public:
 	///
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		std::allocator<value_type>().construct( ptr, val );
 		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;

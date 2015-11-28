@@ -50,18 +50,18 @@ either expressed or implied, of the FreeBSD Project.
 /// \endcond
 ///
 
-#ifndef __CUDACC__
-#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-#endif
+//#ifndef __CUDACC__
+//#define ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+//#endif
 
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
+#define ECUDA_SUPPRESS_HD_WARNINGS \
+	#pragma hd_warning_disable
+#else
 // idea taken from the VTK-m project (https://gitlab.kitware.com/vtk/vtk-m)
 // to suppress annoying warnings from the compiler about calling __host__
 // code from a __host__ __device__ function
 #define ECUDA_SUPPRESS_HD_WARNINGS
-#else
-#define ECUDA_SUPPRESS_HD_WARNINGS \
-	#pragma hd_warning_disable
 #endif
 
 // #pragma hd_warning_disable
@@ -79,13 +79,13 @@ either expressed or implied, of the FreeBSD Project.
 /// Macro function that captures a CUDA error code and then does something
 /// with it.  All calls to functions in the CUDA API that return an error code
 /// should use this.
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-// cannot do CUDA calls when emulating with host only
-#define CUDA_CALL(x) x
-#else
+#ifdef __CUDACC__
 /// Macro function currently throws an ecuda::cuda_error exception containing a
 /// description of the problem error code.
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
+#else
+// cannot do CUDA calls when emulating with host only
+#define CUDA_CALL(x) x
 #endif
 
 #define S(x) #x
@@ -102,28 +102,28 @@ either expressed or implied, of the FreeBSD Project.
 /// (e.g. after calling kernel functions). Calling this when a CUDA API call
 /// has not been made is safe.
 ///
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
+#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+#else
 // cannot check CUDA errors when emulating with host only
 #define CUDA_CHECK_ERRORS() do {} while(0);
-#else
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
 #endif
 
 ///
 /// Macro that calls a CUDA kernel function, waits for completion, and throws
 /// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
 ///
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-// cannot do CUDA calls when emulating with host only
-#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
-		__VA_ARGS__;\
-	} while(0);
-#else
+#ifdef __CUDACC__
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 		cudaDeviceSynchronize();\
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
+	} while(0);
+#else
+// cannot do CUDA calls when emulating with host only
+#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
+		__VA_ARGS__;\
 	} while(0);
 #endif
 
@@ -141,18 +141,13 @@ either expressed or implied, of the FreeBSD Project.
 #define __CONSTEXPR__
 #endif
 
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
 // strip all __host__ and __device__ declarations when using host only
-#define __HOST__
-#define __DEVICE__
-#else
-//#ifdef __CUDACC__
 #define __HOST__ __host__
 #define __DEVICE__ __device__
-//#else
-//#define __HOST__
-//#define __DEVICE__
-//#endif
+#else
+#define __HOST__
+#define __DEVICE__
 #endif
 
 //

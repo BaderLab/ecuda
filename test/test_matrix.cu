@@ -11,7 +11,7 @@
 
 #include <estd/matrix.hpp>
 
-#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
 	typename ecuda::matrix<T>::iterator result = dest.begin();
@@ -102,18 +102,7 @@ int main( int argc, char* argv[] ) {
 			const std::size_t R = 5;
 			const std::size_t C = 21;
 			ecuda::matrix<double> deviceMatrix( R, C );
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
-			//for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.size(); ++i ) deviceMatrix[i] = static_cast<double>(i);
-			for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.number_rows(); ++i )
-				for( typename ecuda::matrix<double>::size_type j = 0; j < deviceMatrix.number_columns(); ++j )
-					deviceMatrix[i][j] = static_cast<double>(i*deviceMatrix.number_columns()+j);
-			//std::cerr << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
-			std::cerr << "ecuda::matrix::front()    : " << std::boolalpha << ( deviceMatrix.front() == static_cast<double>(0) ) << std::endl;
-			std::cerr << "ecuda::matrix::back()     : " << std::boolalpha << ( deviceMatrix.back() == static_cast<double>(R*C-1) ) << std::endl;
-			//std::vector<double> hostVector( N );
-			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
-			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
-			#else
+			#ifdef __CUDACC__
 			ecuda::matrix<double> deviceMatrix2( R, C );
 			{
 				ecuda::matrix<double> arg1( deviceMatrix );
@@ -124,6 +113,17 @@ int main( int argc, char* argv[] ) {
 				CUDA_CALL_KERNEL_AND_WAIT( testAccessors< double, ecuda::device_pitch_allocator<double> ><<<1,1>>>( arg1, arg2 ) );
 			}
 			//ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			#else
+			//for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.size(); ++i ) deviceMatrix[i] = static_cast<double>(i);
+			for( typename ecuda::matrix<double>::size_type i = 0; i < deviceMatrix.number_rows(); ++i )
+				for( typename ecuda::matrix<double>::size_type j = 0; j < deviceMatrix.number_columns(); ++j )
+					deviceMatrix[i][j] = static_cast<double>(i*deviceMatrix.number_columns()+j);
+			//std::cerr << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
+			std::cerr << "ecuda::matrix::front()    : " << std::boolalpha << ( deviceMatrix.front() == static_cast<double>(0) ) << std::endl;
+			std::cerr << "ecuda::matrix::back()     : " << std::boolalpha << ( deviceMatrix.back() == static_cast<double>(R*C-1) ) << std::endl;
+			//std::vector<double> hostVector( N );
+			//ecuda::copy( deviceArray.rbegin(), deviceArray.rend(), hostVector.begin() );
+			//std::cerr << "ecuda::array::rbegin(),rend() : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(N-1) ) << "," << std::boolalpha << ( deviceArray.back() == static_cast<double>(0) ) << std::endl;
 			#endif
 			std::cerr << "ecuda::matrix::empty()    : " << std::boolalpha << ( !deviceMatrix.empty() ) << std::endl;
 			std::cerr << "ecuda::matrix::size()     : " << std::boolalpha << ( deviceMatrix.size() == (R*C) ) << std::endl;
