@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "../include/ecuda/event.hpp"
-#include "../include/ecuda/models.hpp"
+#include "../include/ecuda/impl/models.hpp"
 
 #define THREADS 480
 #define N 10000000
@@ -10,14 +10,16 @@
 
 template<typename T,typename P>
 __global__
-void fill_with_consecutive_values( ecuda::impl::device_sequence<T,P> sequence ) {
+void fill_with_consecutive_values( ecuda::impl::device_sequence<T,P> sequence )
+{
 	const std::size_t index = blockIdx.y*blockDim.x+threadIdx.x;
 	if( index < sequence.size() ) sequence[index] = index;
 }
 
 template<typename T>
 __global__
-void fill_with_consecutive_values( T* ptr, const std::size_t n ) {
+void fill_with_consecutive_values( T* ptr, const std::size_t n )
+{
 	const std::size_t index = blockIdx.y*blockDim.x+threadIdx.x;
 	if( index < n ) *(ptr+index) = index;
 }
@@ -25,7 +27,8 @@ void fill_with_consecutive_values( T* ptr, const std::size_t n ) {
 void perform_tasks_with_ecuda();
 void perform_tasks_old_school();
 
-int main( int argc, char* argv[] ) {
+int main( int argc, char* argv[] )
+{
 
 	{
 		ecuda::event start, stop;
@@ -60,7 +63,8 @@ int main( int argc, char* argv[] ) {
 ///
 /// std::cout << "EXECUTION TIME: " << ( stop - start ) << "ms" << std::endl;
 
-void perform_tasks_with_ecuda() {
+void perform_tasks_with_ecuda()
+{
 
 	ecuda::device_allocator<double> deviceAllocator;
 	typedef typename ecuda::device_allocator<double>::pointer video_memory_pointer;
@@ -87,7 +91,8 @@ void perform_tasks_with_ecuda() {
 
 }
 
-void perform_tasks_old_school() {
+void perform_tasks_old_school()
+{
 
 	double* ptr;
 	cudaMalloc( reinterpret_cast<void**>(&ptr), N*sizeof(double) );

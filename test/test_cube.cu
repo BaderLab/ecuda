@@ -7,7 +7,7 @@
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/cube.hpp"
 
-#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
 template<typename T>
 __global__ void testIterators( const ecuda::cube<T> src, ecuda::cube<T> dest ) {
 	typename ecuda::cube<T>::iterator result = dest.begin();
@@ -128,11 +128,17 @@ int main( int argc, char* argv[] ) {
 	}
 
 	typename ecuda::cube< coord_t<int> >::row_type cubeRow = deviceCube.get_row( 0, 0 );
+	#ifndef __CUDACC__
 	std::cout << "ROW ="; for( std::size_t i = 0; i < cubeRow.size(); ++i ) std::cout << " " << cubeRow[i]; std::cout << std::endl;
+	#endif
 	typename ecuda::cube< coord_t<int> >::column_type cubeColumn = deviceCube.get_column( 0, 0 );
+	#ifndef __CUDACC__
 	std::cout << "COLUMN ="; for( std::size_t i = 0; i < cubeColumn.size(); ++i ) std::cout << " " << cubeColumn[i]; std::cout << std::endl;
+	#endif
 	typename ecuda::cube< coord_t<int> >::depth_type cubeDepth = deviceCube.get_depth( 0, 0 );
+	#ifndef __CUDACC__
 	std::cout << "DEPTH ="; for( std::size_t i = 0; i < cubeDepth.size(); ++i ) std::cout << " " << cubeDepth[i]; std::cout << std::endl;
+	#endif
 
 //	{
 //		ecuda::cube<int> deviceCube2( 10, 10, 10 );

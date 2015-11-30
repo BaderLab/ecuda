@@ -48,14 +48,17 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-template<typename T> struct add_const : std::add_const<T> { typedef std::add_const<T>::type type; };
-template<typename T> struct add_const<T&> : std::add_const<T&> { typedef std::add_const<T&>::type type; };
+template<typename T> using add_const = std::add_const<T>;
+template<typename T> using remove_const = std::remove_const<T>;
+template<typename T,typename U> using is_same = std::is_same<T,U>;
+template<typename T> using add_lvalue_reference = std::add_lvalue_reference<T>;
 
-template<typename T> struct remove_const : std::remove_const<T> { typedef std::remove_const<T>::type type; };
-template<typename T> struct remove_const<const T> : std::remove_const<const T> { typedef std::remove_const<const T>::type type; };
-
-template<typename T,typename U> struct is_same      { enum { value = 0 }; };
-template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
+//template<typename T> struct add_const : std::add_const<T> { typedef std::add_const<T>::type type; };
+//template<typename T> struct add_const<T&> : std::add_const<T&> { typedef std::add_const<T&>::type type; };
+//template<typename T> struct remove_const : std::remove_const<T> { typedef std::remove_const<T>::type type; };
+//template<typename T> struct remove_const<const T> : std::remove_const<const T> { typedef std::remove_const<const T>::type type; };
+//template<typename T,typename U> struct is_same      { enum { value = 0 }; };
+//template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
 
 
 typedef std::true_type  true_type;
@@ -81,9 +84,10 @@ template<> struct is_integral<unsigned long>      { typedef true_type type; };
 template<> struct is_integral<long long>          { typedef true_type type; };
 template<> struct is_integral<unsigned long long> { typedef true_type type; };
 
+template<typename T> using add_pointer = std::add_pointer<T>;
 
-template<typename T> struct add_pointer : std::add_pointer<T> { typedef std::add_pointer<T>::type; };
-template<typename T> struct add_pointer<const T> : std::add_pointer<const T> { typedef std::add_pointer<const T>::type; };
+//template<typename T> struct add_pointer : std::add_pointer<T> { typedef std::add_pointer<T>::type; };
+//template<typename T> struct add_pointer<const T> : std::add_pointer<const T> { typedef std::add_pointer<const T>::type; };
 
 } // namespace ecuda
 

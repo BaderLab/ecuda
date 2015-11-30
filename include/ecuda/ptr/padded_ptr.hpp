@@ -123,13 +123,13 @@ public:
 	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : edge_ptr(ecuda::move(src.edge_ptr)), pitch(ecuda::move(src.pitch)), width(ecuda::move(src.width)), ptr(ecuda::move(src.ptr)) {}
+	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : edge_ptr(std::move(src.edge_ptr)), pitch(std::move(src.pitch)), width(std::move(src.width)), ptr(std::move(src.ptr)) {}
 	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
 	{
-		edge_ptr = ecuda::move(src.edge_ptr);
-		pitch = ecuda::move(src.pitch);
-		width = ecuda::move(src.width);
-		ptr = ecuda::move(src.ptr);
+		edge_ptr = std::move(src.edge_ptr);
+		pitch = std::move(src.pitch);
+		width = std::move(src.width);
+		ptr = std::move(src.ptr);
 		return *this;
 	}
 	#endif

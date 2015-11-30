@@ -6,7 +6,7 @@
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/array.hpp"
 
-#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
 template<typename T,std::size_t N>
 __global__ void kernel_test_iterators( const typename ecuda::array<T,N>::kernel_argument src, typename ecuda::array<T,N>::kernel_argument dest )
 {
@@ -82,7 +82,9 @@ int main( int argc, char* argv[] ) {
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray;
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			#ifdef __CUDACC__
+			//ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
+			#else
 			for( typename ecuda::array<double,N>::size_type i = 0; i < deviceArray.size(); ++i ) deviceArray[i] = static_cast<double>(i);
 			try {
 				std::cout << "ecuda::array::at()       : " << std::boolalpha << ( deviceArray.at(10) == static_cast<double>(10) ) << std::endl;
@@ -94,8 +96,6 @@ int main( int argc, char* argv[] ) {
 			std::cout << "ecuda::array::operator[] : " << std::boolalpha << ( deviceArray[10] == static_cast<double>(10) ) << std::endl;
 			std::cout << "ecuda::array::front()    : " << std::boolalpha << ( deviceArray.front() == static_cast<double>(0) ) << std::endl;
 			std::cout << "ecuda::array::back()     : " << std::boolalpha << ( deviceArray.back() == static_cast<double>(N-1) ) << std::endl;
-			#else
-			//ECUDA_STATIC_ASSERT(false,MUST_IMPLEMENT_ACCESSOR_AS_KERNEL);
 			#endif
 			std::cout << "ecuda::array::data()     : " << std::boolalpha << static_cast<bool>(deviceArray.data()) << std::endl;
 			std::cout << "ecuda::array::empty()    : " << std::boolalpha << ( !deviceArray.empty() ) << std::endl;
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
 	ecuda::array<int,N> deviceArray;
 	ecuda::copy( hostVector.begin(), hostVector.end(), deviceArray.begin() );
 
-	#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	#ifdef __CUDACC__
 	{
 		std::cout << "TESTING KERNELS" << std::endl;
 		std::cout << "---------------" << std::endl;

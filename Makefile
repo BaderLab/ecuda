@@ -46,9 +46,6 @@ NVCCFLAGS += -Xptxas -v
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
 
-# // example command for host only emulation, should incorporate this into the Makefile at some point:
-# g++ -x c++ -std=c++11 -Wall -flto -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -pedantic -O3 -march=native t/4__ptr__padded_ptr.cu -o bin/t/4__ptr__padded_ptr
-
 -include local-config.cfg
 
 ifeq ($(std),c++11)
@@ -80,7 +77,10 @@ test/cpu/% :: test/%.cu
 	cp $< $<.cpp
 	$(CXX) $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
-#	$(CXX) $(CXXFLAGS) -D ECUDA_EMULATE_CUDA_WITH_HOST_ONLY -x c++ $< -o bin/$@
+
+test/ptx/% :: test/%.cu
+	@mkdir -p ptx/test
+	$(NVCC) -ptx $< -o ptx/$<.ptx
 
 T_FILES = $(basename $(shell find t -name '*.cu'))
 
@@ -100,6 +100,10 @@ benchmark/% :: benchmark/%.cu
 	@mkdir -p obj/benchmark
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
+
+benchmark/ptx/% :: benchmark/%.cu
+	@mkdir -p ptx/benchmark
+	$(NVCC) -ptx $< -o ptx/$<.ptx
 
 dist:
 	tar zcvf ecuda-dist.tar.gz LICENSE.txt include/ecuda/*.hpp test/*.cu benchmarks/*.cu

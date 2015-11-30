@@ -345,6 +345,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 //
 // Implementation only, function declaration and documentation above.
 //
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first,
