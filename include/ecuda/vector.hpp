@@ -863,13 +863,14 @@ public:
 };
 
 template<typename T,class Alloc>
-__HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
+__HOST__ void vector<T,Alloc>::growMemory( size_type minimum )
+{
 	if( base_type::size() >= minimum ) return; // no growth neccessary
 	size_type m2 = base_type::size();
 	if( !m2 ) m2 = 1; // in case no memory is currently allocated
 	while( m2 < minimum ) m2 <<= 1;
 	// allocate larger chunk
-	shared_ptr<value_type> newMemory = get_allocator().allocate( m2 );
+	shared_ptr<value_type> newMemory( get_allocator().allocate( m2 ) );
 	impl::device_contiguous_sequence< value_type, shared_ptr<value_type> > newSequence( newMemory, m2 );
 	ecuda::copy( begin(), end(), newSequence.begin() );
 	base_type::swap( newSequence );
@@ -879,7 +880,8 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum ) {
 namespace impl {
 
 template<typename T,class Alloc>
-class vector_kernel_argument : public vector<T,Alloc> {
+class vector_kernel_argument : public vector<T,Alloc>
+{
 
 private:
 	typedef vector<T,Alloc> base_type;
@@ -887,7 +889,8 @@ private:
 public:
 	__HOST__ vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, ecuda::true_type() ) {}
 	__HOST__ __DEVICE__ vector_kernel_argument( const vector_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
-	__HOST__ vector_kernel_argument& operator=( const vector<T,Alloc>& src ) {
+	__HOST__ vector_kernel_argument& operator=( const vector<T,Alloc>& src )
+	{
 		vector<T,Alloc>::shallow_assign( src );
 		return *this;
 	}
