@@ -11,7 +11,7 @@
 
 #include <estd/matrix.hpp>
 
-#ifndef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifdef __CUDACC__
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
 	typename ecuda::matrix<T>::iterator result = dest.begin();

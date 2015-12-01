@@ -123,13 +123,13 @@ public:
 	#ifdef __CPP11_SUPPORTED__
 	//TODO: review this block
 	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ {
-		current_ptr = ::ecuda::move(src.ptr);
-		deleter = ::ecuda::move(src.deleter);
+		current_ptr = std::move(src.ptr);
+		deleter = std::move(src.deleter);
 		return *this;
 	}
 	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ {
-		current_ptr = ::ecuda::move(src.ptr);
-		deleter = ::ecuda::move(src.deleter);
+		current_ptr = std::move(src.ptr);
+		deleter = std::move(src.deleter);
 		return *this;
 	}
 	#endif

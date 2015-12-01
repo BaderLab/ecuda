@@ -42,7 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 #include "global.hpp"
 #include "allocators.hpp"
 
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifndef __CUDACC__
 #include <algorithm>
 #endif
 
@@ -62,7 +62,7 @@ namespace ecuda {
 ///
 template<typename T>
 inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMemcpyKind kind ) {
-	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	#ifndef __CUDACC__
 	std::copy( src, src+count, dest );
 	return true;
 	#else
@@ -88,7 +88,7 @@ inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMe
 ///
 template<typename T>
 inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind ) {
-	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	#ifndef __CUDACC__
 	const char* csrc = reinterpret_cast<const char*>(src);
 	char* cdest = reinterpret_cast<char*>(dest);
 	for( size_t i = 0; i < height; ++i, csrc += spitch, cdest += dpitch ) {
@@ -117,7 +117,7 @@ inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, con
 ///
 template<typename T>
 inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
-	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	#ifndef __CUDACC__
 	std::fill( devPtr, devPtr+count, value );
 	return true;
 	#else
@@ -145,7 +145,7 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
 ///
 template<typename T>
 cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height ) {
-	#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+	#ifndef __CUDACC__
 	for( size_t i = 0; i < height; ++i ) {
 		std::fill( devPtr, devPtr+width, value );
 		devPtr = reinterpret_cast<T*>(const_cast<char*>(devPtr)+pitch);

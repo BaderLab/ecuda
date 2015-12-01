@@ -54,7 +54,7 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_type ) // device memory
@@ -75,7 +75,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::t
 	#endif
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
@@ -91,7 +91,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::f
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if_not( InputIterator first, InputIterator last, UnaryPredicate p )
@@ -99,7 +99,7 @@ find_if_not( InputIterator first, InputIterator last, UnaryPredicate p )
 	return impl::find_if_not( first, last, p, typename ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ bool
 all_of( InputIterator first, InputIterator last, UnaryPredicate p )

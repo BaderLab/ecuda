@@ -71,7 +71,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true_
 	#endif
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
@@ -87,7 +87,7 @@ find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ InputIterator
 find_if( InputIterator first, InputIterator last, UnaryPredicate p )

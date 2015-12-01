@@ -609,7 +609,7 @@ public:
 	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex )
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
 			// this strategy is taken from:
@@ -635,7 +635,7 @@ public:
 	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) const
 	{
 		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
 			// this strategy is taken from:

@@ -171,7 +171,7 @@ public:
 	__DEVICE__ inline reference at( size_type index )
 	{
 		if( !(index < size()) ) {
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:
@@ -195,7 +195,7 @@ public:
 	__DEVICE__ inline const_reference at( size_type index ) const
 	{
 		if( !(index < size()) ) {
-			#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:

@@ -98,12 +98,12 @@ public:
 	__HOST__ __DEVICE__ striding_ptr( const striding_ptr& src ) : ptr(src.ptr), stride(src.stride) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ striding_ptr( striding_ptr&& src ) : ptr(ecuda::move(src.ptr)), stride(ecuda::move(src.stride)) {}
+	__HOST__ __DEVICE__ striding_ptr( striding_ptr&& src ) : ptr(std::move(src.ptr)), stride(std::move(src.stride)) {}
 
 	__HOST__ __DEVICE__ striding_ptr& operator=( striding_ptr&& src )
 	{
-		ptr = ecuda::move(src.ptr);
-		stride = ecuda::move(src.stride);
+		ptr = std::move(src.ptr);
+		stride = std::move(src.stride);
 		return *this;
 	}
 	#endif

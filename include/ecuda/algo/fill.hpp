@@ -99,6 +99,7 @@ __HOST__ __DEVICE__ inline void fill(
 
 } // namespace fill_device
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill(
 	ForwardIterator first, ForwardIterator last,
@@ -144,7 +145,7 @@ __HOST__ __DEVICE__ inline void fill(
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class ForwardIterator,typename T>
 __HOST__ __DEVICE__ inline void fill( ForwardIterator first, ForwardIterator last, const T& val )
 {

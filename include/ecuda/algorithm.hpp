@@ -83,10 +83,10 @@ template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( cons
 
 namespace ecuda {
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate> inline __HOST__ __DEVICE__ bool any_of( InputIterator first, InputIterator last, UnaryPredicate p ) { return ecuda::find_if( first, last, p ) != last; }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate> inline __HOST__ __DEVICE__ bool none_of( InputIterator first, InputIterator last, UnaryPredicate p ) { return ecuda::find_if( first, last, p ) == last; }
 
 template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap

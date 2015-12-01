@@ -66,7 +66,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 	#endif
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::true_type> ) // host/device memory
@@ -128,7 +128,7 @@ mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ec
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 )

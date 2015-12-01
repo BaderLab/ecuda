@@ -60,7 +60,7 @@ struct pair {
 	typedef T2 second_type;
 	T1 first;
 	T2 second;
-	#pragma hd_warning_disable
+	ECUDA_SUPPRESS_HD_WARNINGS
 	__HOST__ __DEVICE__ pair() {}
 	template<typename U,typename V> __HOST__ __DEVICE__ pair( const pair<U,V>& pr ) : first(pr.first), second(pr.second) {}
 	__HOST__ __DEVICE__ pair( const first_type& a, const second_type& b ) : first(a), second(b) {}

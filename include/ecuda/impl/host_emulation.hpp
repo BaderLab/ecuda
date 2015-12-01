@@ -35,7 +35,7 @@ either expressed or implied, of the FreeBSD Project.
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
-#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+#ifndef __CUDACC__
 enum cudaMemcpyKind {
 	cudaMemcpyDeviceToDevice,
 	cudaMemcpyDeviceToHost,

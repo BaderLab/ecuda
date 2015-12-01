@@ -77,7 +77,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	#endif
 }
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::true_type> )
 {
@@ -142,7 +142,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 /// \returns true if the range [first1,last1) is equal to the range [first2,first2+(last1-first1)),
 /// and false otherwise.
 ///
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2 )
 {

@@ -86,7 +86,7 @@ count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::true
 } // namespace impl
 /// \endcond
 
-#pragma hd_warning_disable
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class UnaryPredicate>
 inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
 count_if( InputIterator first, InputIterator last, UnaryPredicate p )
