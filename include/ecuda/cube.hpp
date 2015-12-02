@@ -648,6 +648,30 @@ public:
 	}
 
 	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// This is identical to at() but no bounds checking is performed.
+	///
+	/// \param rowIndex row of the element to return
+	/// \param columnIndex column of the element to return
+	/// \param depthIndex depth of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at(rowIndex*number_columns()+columnIndex,depthIndex); }
+
+	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// This is identical to at() but no bounds checking is performed.
+	///
+	/// \param rowIndex row of the element to return
+	/// \param columnIndex column of the element to return
+	/// \param depthIndex depth of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at(rowIndex*number_columns()+columnIndex,depthIndex); }
+
+	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
 	/// \returns view object for the specified row

@@ -780,7 +780,6 @@ The support of the <a href="http://baderlab.org/">Bader Lab</a>, part of the <a 
 */
 
 
-Talk about passing arguments as container::kernel_argument
 
 ///
 /// Justification: a clean C++ interface to CUDA is needed
@@ -861,6 +860,9 @@ Talk about passing arguments as container::kernel_argument
 /// removal of << and >> container operators (use ecuda::copy)
 /// deprecated cube::get_pitch() (now use cube::data().get_pitch())
 /// deprecated cube::assign(Iterator,Iterator) since it doesn't really apply given that knowledge of row/col size is needed
+/// operator[] = proxy class
+/// at()       = bounds-checked
+/// operator() = direct, non-bounds-checked
 ///
-/// GO OVER PREPROCESSOR DEFINES LIKE ECUDA_EMULATE_CUDA_ON_CPU and the /cpu/ build targets in Makefile
-
+/// GO OVER PREPROCESSOR DEFINES LIKE ECUDA_EMULATE_CUDA_ON_CPU and the /cpu/ and /ptx/ build targets in Makefile
+///

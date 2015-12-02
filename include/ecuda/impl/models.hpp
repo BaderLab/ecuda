@@ -502,13 +502,13 @@ public:
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
 
-	__HOST__ __DEVICE__ inline reference at( const size_type row, const size_type column )
+	__DEVICE__ inline reference at( const size_type row, const size_type column )
 	{
 		typename make_unmanaged<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
 		return *naked_cast<typename ecuda::add_pointer<value_type>::type>(mp);
 	}
 
-	__HOST__ __DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
+	__DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
 	{
 		typename make_unmanaged_const<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
 		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(mp);

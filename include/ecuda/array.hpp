@@ -224,6 +224,26 @@ public:
 	__DEVICE__ inline const_reference operator[]( size_type index ) const { return base_type::operator[](index); }
 
 	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// This is identical to operator[] but is present for consistency with higher-dimensional containers.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline reference operator()( const size_type index ) { return base_type::operator[](index); }
+
+	///
+	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+	///
+	/// This is identical to operator[] but is present for consistency with higher-dimensional containers.
+	///
+	/// \param index position of the element to return
+	/// \returns Reference to the requested element.
+	///
+	__DEVICE__ inline const_reference operator()( const size_type index ) const { return base_type::operator[](index); }
+
+	///
 	/// \brief Returns a reference to the first element in the container.
 	///
 	/// Calling front on an empty container is undefined.
