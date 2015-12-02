@@ -86,12 +86,7 @@ public:
 	typedef const T&       const_reference;
 	typedef std::size_t    size_type;
 	typedef std::ptrdiff_t difference_type;
-
-private:
-	pointer edge_ptr; //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
-	size_type pitch;  //!< length of contiguous region in bytes
-	size_type width;  //!< number of elements contained in the contiguous region
-	pointer ptr;      //!< pointer to current element
+	typedef typename char_pointer< typename ecuda::add_pointer<element_type>::type >::type aligned_address_type;
 
 private:
 	template<typename U> struct char_pointer;
@@ -100,7 +95,20 @@ private:
 	template<typename U> __HOST__ __DEVICE__ typename char_pointer<U*>::type       char_cast( U* ptr ) const       { return reinterpret_cast<char*>(ptr); }
 	template<typename U> __HOST__ __DEVICE__ typename char_pointer<const U*>::type char_cast( const U* ptr ) const { return reinterpret_cast<const char*>(ptr); }
 
+private:
+	pointer edge_ptr; //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
+	size_type pitch;  //!< length of contiguous region in bytes
+	size_type width;  //!< number of elements contained in the contiguous region
+	pointer ptr;      //!< pointer to current element
+	//aligned_address_type edge_ptr; //!< pointer to start of current contiguous region
+
 public:
+//	__HOST__ __DEVICE__
+//	padded_ptr( pointer ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), aligned_address_type edge = aligned_address_type() ) :
+//		ptr(ptr), pitch(pitch), width(width),
+//	{
+//	}
+
 	__HOST__ __DEVICE__
 	padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) :
 		edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr)
