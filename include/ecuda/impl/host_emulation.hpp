@@ -41,4 +41,7 @@ enum cudaMemcpyKind {
 	cudaMemcpyDeviceToHost,
 	cudaMemcpyHostToDevice
 };
+
+void cudaSetDevice( int ) {}
+
 #endif
