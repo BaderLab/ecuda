@@ -623,7 +623,7 @@ public:
 			#endif
 		}
 		//return base_type::at( rowIndex, columnIndex*number_columns()+depthIndex );
-		return base_type::at( rowIndex*number_columns()*number_depths()+columnIndex*number_depths(), depthIndex );
+		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
 	}
 
 	///
@@ -650,7 +650,7 @@ public:
 			#endif
 		}
 		//return base_type::at( rowIndex, columnIndex*number_columns()+depthIndex );
-		return base_type::at( rowIndex*number_columns()*number_depths()+columnIndex*number_depths(), depthIndex );
+		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
 	}
 
 	///
@@ -663,7 +663,7 @@ public:
 	/// \param depthIndex depth of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at( rowIndex*number_columns()*number_depths()+columnIndex*number_depths(), depthIndex ); }
+	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -675,7 +675,7 @@ public:
 	/// \param depthIndex depth of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()*number_depths()+columnIndex*number_depths(), depthIndex ); }
+	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
 
 	///
