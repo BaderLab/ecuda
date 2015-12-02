@@ -872,13 +872,15 @@ public:
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix_kernel_argument : public matrix<T,Alloc> {
+class matrix_kernel_argument : public matrix<T,Alloc>
+{
 
 public:
 	__HOST__ matrix_kernel_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
 	__HOST__ __DEVICE__ matrix_kernel_argument( const matrix_kernel_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
 	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
-	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc>& src ) {
+	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc>& src )
+	{
 		matrix<T,Alloc>::shallow_assign( src );
 		return *this;
 	}

@@ -798,13 +798,15 @@ public:
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube_kernel_argument : public cube<T,Alloc> {
+class cube_kernel_argument : public cube<T,Alloc>
+{
 
 public:
 	__HOST__ cube_kernel_argument( const cube<T,Alloc>& src ) : cube<T,Alloc>( src, ecuda::true_type() ) {}
 	__HOST__ __DEVICE__ cube_kernel_argument( const cube_kernel_argument& src ) : cube<T,Alloc>( src, ecuda::true_type() ) {}
 	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
-	__HOST__ cube_kernel_argument& operator=( const cube<T,Alloc>& src ) {
+	__HOST__ cube_kernel_argument& operator=( const cube<T,Alloc>& src )
+	{
 		cube<T,Alloc>::shallow_assign( src );
 		return *this;
 	}
