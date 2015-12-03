@@ -155,8 +155,8 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
-		const std::size_t leading = first.operator->().get_remaining_width();
-		if( leading < first.operator->().get_width() ) { // leading with partial row
+		const std::size_t leading = first.get_remainder();
+		if( leading < first.get_width() ) { // leading with partial row
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + leading, result );
 			::ecuda::advance( first, leading );
@@ -171,7 +171,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		const_pointer src = naked_cast<const_pointer>( first.operator->() );
 
 		const size_t pitch = first.operator->().get_pitch();
-		const std::size_t width = first.operator->().get_width();
+		const std::size_t width = first.get_width();
 		const std::size_t rows = ::ecuda::distance( first, last ) / width;
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, width*sizeof(value_type), src, pitch, width, rows, cudaMemcpyDeviceToDevice ) );
 		::ecuda::advance( first, width*rows );
@@ -181,7 +181,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// if there is any trailing data where the memory ceases to be regularly aligned
 		// then copy the rest of it
-		const std::size_t trailing = ::ecuda::distance( first, last ) % first.operator->().get_width();
+		const std::size_t trailing = ::ecuda::distance( first, last ) % first.get_width();
 		if( trailing > 0 ) {
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + trailing, result );
@@ -276,14 +276,14 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 	typedef device_contiguous_block_iterator<U,Q> output_iterator_type;
 	typedef typename ecuda::iterator_traits<output_iterator_type>::value_type value_type;
 
-	if( ( first.operator->().get_width()           == result.operator->().get_width() ) &&
-		( first.operator->().get_remaining_width() == result.operator->().get_remaining_width() ) ) { // only when this is true can we do a cudaMemcpy2D call
+	if( ( first.get_width()     == result.get_width() ) &&
+		( first.get_remainder() == result.get_remainder() ) ) { // only when this is true can we do a cudaMemcpy2D call
 
 		{
 			// if there is any leading data before the memory becomes regularly aligned
 			// then copy it first
-			const std::size_t leading = result.operator->().get_remaining_width();
-			if( leading < result.operator->().get_width() ) { // leading with partial row
+			const std::size_t leading = result.get_remainder();
+			if( leading < result.get_width() ) { // leading with partial row
 				::ecuda::copy( first, first + leading, result.contiguous_begin() );
 				::ecuda::advance( first, leading );
 				::ecuda::advance( result, leading );
@@ -299,7 +299,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 
 			const size_t src_pitch = first.operator->().get_pitch();
 			const size_t dest_pitch = result.operator->().get_pitch();
-			const std::size_t width = result.operator->().get_width();
+			const std::size_t width = result.get_width();
 			const std::size_t rows = ::ecuda::distance( first, last ) / width;
 
 			CUDA_CALL( cudaMemcpy2D<value_type>( dest, dest_pitch, src, src_pitch, width, rows, cudaMemcpyDeviceToDevice ) );
@@ -310,7 +310,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 		{
 			// if there is any trailing data where the memory ceases to be regularly aligned
 			// then copy the rest of it
-			const std::size_t trailing = ::ecuda::distance( first, last ) % result.operator->().get_width();
+			const std::size_t trailing = ::ecuda::distance( first, last ) % result.get_width();
 			if( trailing > 0 ) {
 				::ecuda::copy( first, first + trailing, result.contiguous_begin() );
 				::ecuda::advance( result, trailing );
@@ -327,7 +327,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<U,Q> copy(
 
 	typename input_iterator_type::difference_type n = ecuda::distance( first, last );
 	while( n > 0 ) {
-		const std::size_t width = ecuda::min( first.operator->().get_remaining_width(), result.operator->().get_remaining_width() );
+		const std::size_t width = ecuda::min( first.get_remainder(), result.get_remainder() );
 		const std::size_t copy_width = width > n ? n : width;
 		typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 		typename output_iterator_type::contiguous_iterator result2 = result.contiguous_begin();
@@ -481,8 +481,8 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 	{
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
-		const std::size_t leading = result.operator->().get_remaining_width();
-		if( leading < result.operator->().get_width() ) {
+		const std::size_t leading = result.get_remainder();
+		if( leading < result.get_width() ) {
 			::ecuda::copy( first, first + leading, result.contiguous_begin() );
 			::ecuda::advance( first, leading );
 			::ecuda::advance( result, leading );
@@ -497,7 +497,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		const_pointer src = naked_cast<const_pointer>( first.operator->() );
 
 		const size_t pitch = result.operator->().get_pitch();
-		const std::size_t width = result.operator->().get_width();
+		const std::size_t width = result.get_width();
 		const std::size_t rows = ::ecuda::distance( first, last ) / width;
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, pitch, src, width*sizeof(value_type), width, rows, cudaMemcpyHostToDevice ) );
 		::ecuda::advance( first, width*rows );
@@ -507,7 +507,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 	{
 		// if there is any trailing data where the memory ceases to be regularly aligned
 		// then copy the rest of it
-		const std::size_t trailing = ::ecuda::distance( first, last ) % result.operator->().get_width();
+		const std::size_t trailing = ::ecuda::distance( first, last ) % result.get_width();
 		if( trailing > 0 ) {
 			::ecuda::copy( first, first + trailing, result.contiguous_begin() );
 			::ecuda::advance( result, trailing );
@@ -629,8 +629,8 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// if there is any leading data before the memory becomes regularly aligned
 		// then copy it first
-		const std::size_t leading = first.operator->().get_remaining_width();
-		if( leading < first.operator->().get_width() ) { // leading with partial row
+		const std::size_t leading = first.get_remainder();
+		if( leading < first.get_width() ) { // leading with partial row
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + leading, result );
 			::ecuda::advance( first, leading );
@@ -645,7 +645,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		const_pointer src = naked_cast<const_pointer>( first.operator->() );
 
 		const size_t pitch = first.operator->().get_pitch();
-		const std::size_t width = first.operator->().get_width();
+		const std::size_t width = first.get_width();
 		const std::size_t rows = ::ecuda::distance( first, last ) / width;
 
 		CUDA_CALL( cudaMemcpy2D<value_type>( dest, width*sizeof(value_type), src, pitch, width, rows, cudaMemcpyDeviceToHost ) );
@@ -656,7 +656,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// if there is any trailing data where the memory ceases to be regularly aligned
 		// then copy the rest of it
-		const std::size_t trailing = ::ecuda::distance( first, last ) % first.operator->().get_width();
+		const std::size_t trailing = ::ecuda::distance( first, last ) % first.get_width();
 		if( trailing > 0 ) {
 			typename input_iterator_type::contiguous_iterator first2 = first.contiguous_begin();
 			result = ::ecuda::copy( first2, first2 + trailing, result );
@@ -707,10 +707,13 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// run time check that host iterator traverses contiguous memory
 		// if not, create a temporary container that is and re-call copy
-		typename ecuda::iterator_traits<InputIterator>::pointer pStart = first.operator->();
-		typename ecuda::iterator_traits<InputIterator>::pointer pEnd   = last.operator->();
+		typedef const char* raw_pointer_type;
+		raw_pointer_type pStart = naked_cast<raw_pointer_type>( first.operator->() );
+		raw_pointer_type pEnd   = naked_cast<raw_pointer_type>( last.operator->() );
+		//typename ecuda::iterator_traits<InputIterator>::pointer pStart = first.operator->();
+		//typename ecuda::iterator_traits<InputIterator>::pointer pEnd   = last.operator->();
 		typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-		if( ( pEnd-pStart ) != n ) {
+		if( ( pEnd-pStart ) != ( n*sizeof(typename ecuda::iterator_traits<InputIterator>::value_type) ) ) {
 			typedef typename ecuda::remove_const<T>::type T2; // need to strip source const otherwise this can't act as staging
 			std::vector< T2, host_allocator<T2> > v( ecuda::distance( first, last ) );
 			::ecuda::copy( first, last, v.begin() );

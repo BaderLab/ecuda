@@ -264,9 +264,9 @@ __HOST__ __DEVICE__ inline
 padded_ptr<T,typename make_unmanaged<U>::type>
 unmanaged_cast( const padded_ptr<T,U>& ptr )
 {
-	typename make_unmanaged<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
-	typename make_unmanaged<U>::type mp2 = unmanaged_cast( ptr.get() );
-	return padded_ptr<T,typename make_unmanaged<U>::type>( mp1, ptr.get_pitch(), ptr.get_width(), mp2 );
+	//typename make_unmanaged<U>::type mp1 = unmanaged_cast( ptr.get_edge() );
+	typename make_unmanaged<U>::type mp = unmanaged_cast( ptr.get() );
+	return padded_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_pitch() ); //, ptr.get_width(), mp2 );
 }
 
 template<typename T,typename U>

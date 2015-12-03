@@ -89,7 +89,7 @@ __HOST__ __DEVICE__ inline void fill(
 	typedef device_contiguous_block_iterator<T,P> input_iterator_type;
 	typename ecuda::iterator_traits<input_iterator_type>::difference_type n = std::distance( first, last );
 	while( n > 0 ) {
-		const std::size_t width = first.operator->().get_remaining_width();
+		const std::size_t width = first.get_remainder();
 		::ecuda::fill( first.contiguous_begin(), first.contiguous_end(), val );
 		::ecuda::advance( first, width );
 		n -= width;

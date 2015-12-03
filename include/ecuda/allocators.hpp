@@ -502,7 +502,8 @@ public:
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
-		return pointer( ptr, pitch, w, ptr );
+		//return pointer( ptr, pitch, w, ptr );
+		return pointer( ptr, pitch-w*sizeof(value_type) );
 		#endif
 	}
 
@@ -585,6 +586,12 @@ public:
 		return reinterpret_cast<const_pointer>( naked_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 	}
 
+private:
+	template<typename U> struct char_cast;
+	template<typename U> struct char_cast<U*>       { char* type;       };
+	template<typename U> struct char_cast<const U*> { const char* type; };
+
+public:
 	///
 	/// \brief Returns the address of a given coordinate.
 	///
@@ -598,8 +605,18 @@ public:
 	///
 	__HOST__ __DEVICE__ inline pointer address( pointer ptr, size_type x, size_type y )
 	{
-		ptr.operator+=(x*ptr.get_width()+y);
-		return ptr;
+		// TODO: this is not general if this is padded_ptr<T,[some other specialized class]>
+		typedef typename ecuda::add_pointer<value_type>::type raw_pointer;
+		raw_pointer p = naked_cast<raw_pointer>(ptr);
+		typedef typename char_cast<raw_pointer>::type char_pointer;
+		char_pointer p2 = reinterpret_cast<char_pointer>(p);
+		p2 += ptr.get_pitch() * x;
+		p = p2;
+		p += y;
+		return pointer( p, ptr.get_pitch() );
+		//typename ecuda::add_pointer<value_type>::type p = naked_cast<
+		//ptr.operator+=(x*ptr.get_width()+y);
+		//return ptr;
 	}
 
 };

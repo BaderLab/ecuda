@@ -125,7 +125,8 @@ template<typename T,class Alloc> class matrix_kernel_argument; // forward declar
 /// next row, and so on...).
 ///
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > {
+class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ >
+{
 
 private:
 	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > base_type;
@@ -176,7 +177,7 @@ private:
 			//       enforces a padded_ptr of some type is the reason
 			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
 			shared_ptr<value_type> sp( naked_cast<typename ecuda::add_pointer<value_type>::type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch() ); //, p.get_width(), sp );
 			base_type base( pp, number_rows(), number_columns() );
 			base_type::swap( base );
 		}
@@ -886,6 +887,17 @@ public:
 	}
 
 };
+
+//template<typename T>
+//class matrix_kernel_argument : private impl::device_contiguous_row_matrix<T,typename ecuda::add_pointer<T>::type>
+//{
+
+//private:
+//	typedef impl::device_contiguous_row_matrix<T,typename ecuda::add_pointer<T>::type> base_type;
+
+
+//};
+
 
 } // namespace impl
 /// \endcond

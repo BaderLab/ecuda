@@ -86,7 +86,7 @@ public:
 	typedef const T&       const_reference;
 	typedef std::size_t    size_type;
 	typedef std::ptrdiff_t difference_type;
-	typedef typename char_pointer< typename ecuda::add_pointer<element_type>::type >::type aligned_address_type;
+//	typedef typename char_pointer< typename ecuda::add_pointer<element_type>::type >::type aligned_address_type;
 
 private:
 	template<typename U> struct char_pointer;
@@ -96,58 +96,86 @@ private:
 	template<typename U> __HOST__ __DEVICE__ typename char_pointer<const U*>::type char_cast( const U* ptr ) const { return reinterpret_cast<const char*>(ptr); }
 
 private:
-	pointer edge_ptr; //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
-	size_type pitch;  //!< length of contiguous region in bytes
-	size_type width;  //!< number of elements contained in the contiguous region
-	pointer ptr;      //!< pointer to current element
+	pointer ptr;       //!< pointer to current element
+	size_type pitch; //!< bytes of padding at the end of the contiguous region
+	//const char* edge;  //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
+	//pointer edge_ptr; //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
+	//size_type pitch;  //!< length of contiguous region in bytes
+	//size_type width;  //!< number of elements contained in the contiguous region
+	//pointer ptr;      //!< pointer to current element
 	//aligned_address_type edge_ptr; //!< pointer to start of current contiguous region
 
 public:
-//	__HOST__ __DEVICE__
-//	padded_ptr( pointer ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), aligned_address_type edge = aligned_address_type() ) :
-//		ptr(ptr), pitch(pitch), width(width),
-//	{
-//	}
+	//	__HOST__ __DEVICE__
+	//	padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) :
+	//		edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr)
+	//	{
+	//		if( !ptr ) this->ptr = edge_ptr;
+	//	}
 
 	__HOST__ __DEVICE__
-	padded_ptr( pointer edge_ptr = pointer(), size_type pitch = size_type(), size_type width = size_type(), pointer ptr = pointer() ) :
-		edge_ptr(edge_ptr), pitch(pitch), width(width), ptr(ptr)
+	padded_ptr( pointer ptr = pointer(), size_type pitch = size_type() ) : ptr(ptr), pitch(pitch)
 	{
-		if( !ptr ) this->ptr = edge_ptr;
+		//edge = reinterpret_cast<const char*>( naked_cast<typename ecuda::add_pointer<element_type>::type>(ptr) );
 	}
 
-	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : edge_ptr(src.edge_ptr), pitch(src.pitch), width(src.width), ptr(src.ptr) {}
+//	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : edge_ptr(src.edge_ptr), pitch(src.pitch), width(src.width), ptr(src.ptr) {}
+
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr& src ) : ptr(src.ptr), pitch(src.pitch) {} //, edge(src.edge) {}
+
+//	__HOST__ __DEVICE__ padded_ptr& operator=( const padded_ptr& src )
+//	{
+//		edge_ptr = src.edge_ptr;
+//		pitch = src.pitch;
+//		width = src.width;
+//		ptr = src.ptr;
+//		return *this;
+//	}
 
 	__HOST__ __DEVICE__ padded_ptr& operator=( const padded_ptr& src )
 	{
-		edge_ptr = src.edge_ptr;
-		pitch = src.pitch;
-		width = src.width;
 		ptr = src.ptr;
+		pitch = src.pitch;
+		//edge = src.edge;
 		return *this;
 	}
 
+//	template<typename T2,class P2>
+//	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+
 	template<typename T2,class P2>
-	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : edge_ptr(src.get_edge()), pitch(src.get_pitch()), width(src.get_width()), ptr(src.get()) {}
+	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : ptr(src.get()), pitch(src.get_pitch()) {} //, edge(src.edge) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : edge_ptr(std::move(src.edge_ptr)), pitch(std::move(src.pitch)), width(std::move(src.width)), ptr(std::move(src.ptr)) {}
+//	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : edge_ptr(std::move(src.edge_ptr)), pitch(std::move(src.pitch)), width(std::move(src.width)), ptr(std::move(src.ptr)) {}
+	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : ptr(std::move(src.ptr)), padding(std::move(src.padding)), edge(std::move(src.edge)) {}
+//	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
+//	{
+//		edge_ptr = std::move(src.edge_ptr);
+//		pitch = std::move(src.pitch);
+//		width = std::move(src.width);
+//		ptr = std::move(src.ptr);
+//		return *this;
+//	}
 	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
 	{
-		edge_ptr = std::move(src.edge_ptr);
-		pitch = std::move(src.pitch);
-		width = std::move(src.width);
 		ptr = std::move(src.ptr);
+		padding = std::move(src.padding);
+		edge = std::move(src.edge);
 		return *this;
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline pointer   get_edge() const  { return edge_ptr; }
-	__HOST__ __DEVICE__ inline size_type get_pitch() const { return pitch; }
-	__HOST__ __DEVICE__ inline size_type get_width() const { return width; }
-	__HOST__ __DEVICE__ inline pointer   get() const       { return ptr; }
+//	__HOST__ __DEVICE__ inline pointer   get_edge() const  { return edge_ptr; }
+//	__HOST__ __DEVICE__ inline size_type get_pitch() const { return pitch; }
+//	__HOST__ __DEVICE__ inline size_type get_width() const { return width; }
+//	__HOST__ __DEVICE__ inline pointer   get() const       { return ptr; }
 
-	__HOST__ __DEVICE__ inline size_type get_remaining_width() const { return width-(ptr-edge_ptr); }
+//	__HOST__ __DEVICE__ inline const char* get_edge() const    { return edge; }
+	__HOST__ __DEVICE__ inline size_type   get_pitch() const { return pitch; }
+	__HOST__ __DEVICE__ inline pointer     get() const         { return ptr; }
+
+//	__HOST__ __DEVICE__ inline size_type get_remaining_width() const { return width-(ptr-edge_ptr); }
 
 	__DEVICE__ inline reference       operator*()                       { return *ptr; }
 	__DEVICE__ inline const_reference operator*() const                 { return *ptr; }
@@ -176,88 +204,101 @@ public:
 	/// 1) the width of this and other must be the same
 	/// 2) the difference between the edge_ptr of this and other must be zero or strict multiple (positive or negative) of pitch/sizeof(T)
 	///
-	__HOST__ __DEVICE__ difference_type operator-( const padded_ptr& other ) const
-	{
-		//TODO: look for optimizations here
-		const difference_type leading  = static_cast<difference_type>( other.get_remaining_width() );
-		const difference_type trailing = static_cast<difference_type>( get_width() - get_remaining_width() );
-		const difference_type middle   = ( ( naked_cast<const char*>(edge_ptr) - naked_cast<const char*>(other.edge_ptr) ) / get_pitch() - 1 ) * get_width();
-		return ( leading + middle + trailing );
-	}
+//	__HOST__ __DEVICE__ difference_type operator-( const padded_ptr& other ) const
+//	{
+//		//TODO: look for optimizations here
+//		const difference_type leading  = static_cast<difference_type>( other.get_remaining_width() );
+//		const difference_type trailing = static_cast<difference_type>( get_width() - get_remaining_width() );
+//		const difference_type middle   = ( ( naked_cast<const char*>(edge_ptr) - naked_cast<const char*>(other.edge_ptr) ) / get_pitch() - 1 ) * get_width();
+//		return ( leading + middle + trailing );
+//	}
 
-	__HOST__ __DEVICE__ inline padded_ptr& operator++()
-	{
-		++ptr;
-		if( (ptr-edge_ptr) == width ) {
-			// skip padding
-			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
-			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
-			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
-			charPtr += pitch; // advance to start of next contiguous region
-			ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
-			edge_ptr = ptr;
-			//ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
-			//edge_ptr = ptr;
-		}
-		return *this;
-	}
+//	__HOST__ __DEVICE__ difference_type operator-( const padded_ptr& other ) const
+//	{
+//
+//	}
 
-	__HOST__ __DEVICE__ inline padded_ptr& operator--()
-	{
-		--ptr;
-		if( ptr < edge_ptr ) {
-			// skip padding
-			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
-			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
-			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
-			charPtr -= pitch; // retreat to start to previous contiguous region
-			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
-			ptr = edge_ptr + ( width - 1 );
-			//edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-pitch ) );
-			//ptr = edge_ptr + width - 1;
-		}
-		return *this;
-	}
+//	__HOST__ __DEVICE__ inline padded_ptr& operator++()
+//	{
+//		++ptr;
+//		if( (ptr-edge_ptr) == width ) {
+//			// skip padding
+//			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
+//			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+//			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+//			charPtr += pitch; // advance to start of next contiguous region
+//			ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+//			edge_ptr = ptr;
+//			//ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)+pitch ) );
+//			//edge_ptr = ptr;
+//		}
+//		return *this;
+//	}
+
+	__HOST__ __DEVICE__ inline padded_ptr& operator++() { ++ptr; return *this; }
+
+//	__HOST__ __DEVICE__ inline padded_ptr& operator--()
+//	{
+//		--ptr;
+//		if( ptr < edge_ptr ) {
+//			// skip padding
+//			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
+//			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+//			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+//			charPtr -= pitch; // retreat to start to previous contiguous region
+//			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+//			ptr = edge_ptr + ( width - 1 );
+//			//edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-pitch ) );
+//			//ptr = edge_ptr + width - 1;
+//		}
+//		return *this;
+//	}
+
+	__HOST__ __DEVICE__ inline padded_ptr& operator--() { --ptr; return *this; }
 
 	__HOST__ __DEVICE__ inline padded_ptr operator++( int ) { padded_ptr tmp(*this); ++(*this); return tmp; }
 	__HOST__ __DEVICE__ inline padded_ptr operator--( int ) { padded_ptr tmp(*this); --(*this); return tmp; }
 
-	__HOST__ __DEVICE__ inline padded_ptr& operator+=( int x )
-	{
-		ptr += x;
-		if( (ptr-edge_ptr) >= width ) {
-			// skip padding(s)
-			//if( width == 0 ) throw std::runtime_error("width is zero");
-			const size_type nskips = (ptr-edge_ptr) / width;
-			const size_type offset = (ptr-edge_ptr) % width;
-			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
-			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
-			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
-			charPtr += nskips * pitch;
-			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
-			ptr = edge_ptr + offset;
-		}
-		return *this;
-	}
+//	__HOST__ __DEVICE__ inline padded_ptr& operator+=( int x )
+//	{
+//		ptr += x;
+//		if( (ptr-edge_ptr) >= width ) {
+//			// skip padding(s)
+//			//if( width == 0 ) throw std::runtime_error("width is zero");
+//			const size_type nskips = (ptr-edge_ptr) / width;
+//			const size_type offset = (ptr-edge_ptr) % width;
+//			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
+//			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+//			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+//			charPtr += nskips * pitch;
+//			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+//			ptr = edge_ptr + offset;
+//		}
+//		return *this;
+//	}
 
-	__HOST__ __DEVICE__ inline padded_ptr& operator-=( int x )
-	{
-		ptr -= x;
-		if( ptr < edge_ptr ) {
-			// skip padding(s)
-			const size_type nskips = (edge_ptr-ptr) / width;
-			const size_type offset = (edge_ptr-ptr) % width;
-			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
-			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
-			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
-			charPtr -= nskips * pitch;
-			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
-			ptr = edge_ptr + (width-offset);
-			//edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-nskips*pitch ) );
-			//ptr = edge_ptr + (width-offset);
-		}
-		return *this;
-	}
+	__HOST__ __DEVICE__ inline padded_ptr& operator+=( int x ) { ptr += x; return *this; }
+
+//	__HOST__ __DEVICE__ inline padded_ptr& operator-=( int x )
+//	{
+//		ptr -= x;
+//		if( ptr < edge_ptr ) {
+//			// skip padding(s)
+//			const size_type nskips = (edge_ptr-ptr) / width;
+//			const size_type offset = (edge_ptr-ptr) % width;
+//			typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
+//			raw_pointer_type rawPtr = naked_cast<raw_pointer_type>(edge_ptr);
+//			typename char_pointer<raw_pointer_type>::type charPtr = char_cast( rawPtr );
+//			charPtr -= nskips * pitch;
+//			edge_ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+//			ptr = edge_ptr + (width-offset);
+//			//edge_ptr = pointer( naked_cast<typename std::add_pointer<element_type>::type>( naked_cast<typename change_type_keep_constness<pointer,char*>::type>(edge_ptr)-nskips*pitch ) );
+//			//ptr = edge_ptr + (width-offset);
+//		}
+//		return *this;
+//	}
+
+	__HOST__ __DEVICE__ inline padded_ptr& operator-=( int x ) { ptr -= x; return *this; }
 
 	__HOST__ __DEVICE__ inline padded_ptr operator+( int x ) const
 	{
@@ -283,10 +324,20 @@ public:
 	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator<=( const padded_ptr<T2,P2>& other ) const { return ptr <= other.ptr; }
 	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator>=( const padded_ptr<T2,P2>& other ) const { return ptr >= other.ptr; }
 
+	__HOST__ __DEVICE__ void skip_bytes( difference_type x )
+	{
+		typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
+		typedef typename char_pointer<raw_pointer_type>::type char_pointer_type;
+		char_pointer_type charPtr = char_cast( naked_cast<raw_pointer_type>(ptr) );
+		charPtr += x;
+		ptr = pointer( naked_cast<raw_pointer_type>(charPtr) );
+	}
+
 	template<typename U,typename V>
 	friend std::basic_ostream<U,V>& operator<<( std::basic_ostream<U,V>& out, const padded_ptr& ptr )
 	{
-		out << "padded_ptr(edge_ptr=" << ptr.edge_ptr << ";pitch=" << ptr.pitch << ";width=" << ptr.width << ";ptr=" << ptr.ptr << ")";
+		//out << "padded_ptr(edge_ptr=" << ptr.edge_ptr << ";pitch=" << ptr.pitch << ";width=" << ptr.width << ";ptr=" << ptr.ptr << ")";
+		out << "padded_ptr(ptr=" << ptr.ptr << ";pitch=" << ptr.pitch << ")";
 		return out;
 	}
 

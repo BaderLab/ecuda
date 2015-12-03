@@ -465,10 +465,10 @@ public:
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline iterator       begin()        __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer()) ); }
-	__HOST__ __DEVICE__ inline iterator       end()          __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
-	__HOST__ __DEVICE__ inline const_iterator begin() const  __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
-	__HOST__ __DEVICE__ inline const_iterator end() const    __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
+	__HOST__ __DEVICE__ inline iterator       begin()        __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer()), base_type::number_columns() ); }
+	__HOST__ __DEVICE__ inline iterator       end()          __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() ); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const  __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()), base_type::number_columns() ); }
+	__HOST__ __DEVICE__ inline const_iterator end() const    __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() ); }
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline const_iterator cend() const   __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
