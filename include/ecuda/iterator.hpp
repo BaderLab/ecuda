@@ -185,23 +185,23 @@ public:
 	typedef device_contiguous_iterator<T>       contiguous_iterator;
 
 private:
-	std::size_t width;     //!< number of elements in a contiguous block
-	std::size_t remainder; //!< how many values left in contiguous block
+	difference_type width;  //!< number of elements in a contiguous block
+	difference_type offset; //!< offset in the current contiguous block
 	template<typename U,typename Q> friend class device_contiguous_block_iterator;
 
 public:
-	__HOST__ __DEVICE__ device_contiguous_block_iterator( const pointer& ptr, const std::size_t width, const std::size_t remainder = std::size_t() ) : base_type(ptr), width(width), remainder(remainder) {}
-	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator& src ) : base_type(src), width(src.width), remainder(src.remainder) {}
+	__HOST__ __DEVICE__ device_contiguous_block_iterator( const pointer& ptr, const difference_type width, const difference_type offset = difference_type() ) : base_type(ptr), width(width), offset(offset) {}
+	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator& src ) : base_type(src), width(src.width), offset(src.offset) {}
 	template<typename U,typename Q>
-	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator<U,Q>& src ) : base_type(src), width(src.width), remainder(src.remainder) {}
+	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator<U,Q>& src ) : base_type(src), width(src.width), offset(src.offset) {}
 
 	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator++()
 	{
 		++base_type::ptr;
-		--remainder;
-		if( !remainder ) {
+		++offset;
+		if( offset == width ) {
 			base_type::ptr.skip_bytes( base_type::ptr.get_pitch() - width*sizeof(value_type) ); // move past padding
-			remainder = width;
+			offset = 0;
 		}
 		return *this;
 	}
@@ -215,10 +215,10 @@ public:
 	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator--()
 	{
 		--base_type::ptr;
-		++remainder;
-		if( remainder > width ) {
+		--offset;
+		if( offset < 0 ) {
 			base_type::ptr.skip_bytes( width*sizeof(value_type) - base_type::ptr.get_pitch() ); // move past padding
-			remainder = width;
+			offset = width-1;
 		}
 		return *this;
 	}
@@ -231,6 +231,15 @@ public:
 
 	__HOST__ __DEVICE__ device_contiguous_block_iterator operator+( int x ) const
 	{
+#warning implement device_contiguous_block_iterator::operator+()
+		device_contiguous_block_iterator tmp( *this );
+		const int remainder = width - offset;
+		const int rows = ( ( x - remainder ) / width ) + ( x >= remainder ? 1 : 0 );
+		tmp.ptr.skip_bytes( rows * tmp.ptr.get_pitch() );
+		const difference_type offset2 = ( x - remainder ) % width;
+		tmp.ptr += offset2 - tmp.offset;
+		tmp.offset = offset2;
+		return tmp;
 //		if( x < 0 ) return operator-(-x);
 //		if( x > remainder ) {
 //			const int rows = (x-remainder)/width+1;
@@ -238,25 +247,49 @@ public:
 //			ptr += x;
 //			remainder = (x-remainder-1) % width;
 //		}
-#warning implement device_contiguous_block_iterator::operator+()
-		return device_contiguous_block_iterator( base_type::ptr + x, width, remainder ); // NOTE: this is so wrong, remainder!!!
+		//return device_contiguous_block_iterator( base_type::ptr + x, width, remainder ); // NOTE: this is so wrong, remainder!!!
 	}
 	__HOST__ __DEVICE__ device_contiguous_block_iterator operator-( int x ) const
 	{
 #warning implement device_contiguous_block_iterator::operator+()
-		return device_contiguous_block_iterator( base_type::ptr - x, width, remainder ); // NOTE: this is so wrong, remainder!!!
+		return operator+(-x);
+//		return device_contiguous_block_iterator( base_type::ptr - x, width, remainder ); // NOTE: this is so wrong, remainder!!!
 	}
 
-	__HOST__ __DEVICE__ inline device_contiguous_block_iterator& operator+=( int x ) { base_type::ptr += x; return *this; }
-	__HOST__ __DEVICE__ inline device_contiguous_block_iterator& operator-=( int x ) { base_type::ptr -= x; return *this; }
+	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator+=( int x )
+	{
+		const int remainder = width - offset;
+		const int rows = ( ( x - remainder ) / width ) + ( x >= remainder ? 1 : 0 );
+//std::cerr << "device_contiguous_block_iterator::operator+=(" << x << ") width=" << width << std::endl;
+//std::cerr << "device_contiguous_block_iterator::operator+=(" << x << ") offset=" << offset << std::endl;
+//std::cerr << "device_contiguous_block_iterator::operator+=(" << x << ") rows=" << rows << std::endl;
+		base_type::ptr.skip_bytes( rows* base_type::ptr.get_pitch() );
+		const difference_type offset2 = ( x - remainder ) % width;
+//std::cerr << "device_contiguous_block_iterator::operator+=(" << x << ") offset2=" << offset2 << std::endl;
+		base_type::ptr += offset2 - offset;
+		offset = offset2;
+//std::cerr << "device_contiguous_block_iterator::operator+=(" << x << ") offset=" << offset << std::endl;
+//std::cerr << std::endl;
+		return *this;
+	}
+	__HOST__ __DEVICE__ inline device_contiguous_block_iterator& operator-=( int x ) { operator+=(-x); return *this; }
 
-	__DEVICE__ inline reference operator[]( int x ) const { return *(base_type::ptr+x); }
+	__DEVICE__ inline reference operator[]( int x ) const { return *operator+(x); }
 
 	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other )
 	{
 #warning implement device_contiguous_block_iterator::operator-()
-//		return base_type::ptr - other.ptr;
-		return 0;
+		typedef const char* char_pointer_type;
+		char_pointer_type p = naked_cast<char_pointer_type>(base_type::ptr);
+		char_pointer_type q = naked_cast<char_pointer_type>(other.ptr);
+		difference_type span = ( p - q ); // bytes difference
+		difference_type diff = span/base_type::ptr.get_pitch()*width;
+		span = span % base_type::ptr.get_pitch();
+		if( span > (width*sizeof(value_type) ) )
+			diff += width;
+		else
+			diff += span / sizeof(value_type);
+		return diff;
 	}
 
 	__HOST__ __DEVICE__ inline bool operator< ( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
@@ -266,9 +299,9 @@ public:
 
 	//@EXPERIMENTAL START
 	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_begin() const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) ); }
-	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) + remainder ); }
+	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) + (width-offset) ); }
 	__HOST__ __DEVICE__ inline std::size_t get_width() const __NOEXCEPT__ { return width; }
-	__HOST__ __DEVICE__ inline std::size_t get_remainder() const __NOEXCEPT__ { return remainder; }
+	__HOST__ __DEVICE__ inline std::size_t get_offset() const __NOEXCEPT__ { return offset; }
 	//@EXPERIMENTAL END
 
 };
@@ -538,7 +571,7 @@ template<typename T,typename P>
 __HOST__ __DEVICE__ inline typename std::iterator_traits< device_contiguous_block_iterator<T,P> >::difference_type distance( device_contiguous_block_iterator<T,P>& first, device_contiguous_block_iterator<T,P>& last )
 {
 #warning implement ecuda::distance()
-	return 0;
+	return last - first;
 }
 
 } // namespace ecuda

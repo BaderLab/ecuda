@@ -96,7 +96,7 @@ private:
 	template<typename U> __HOST__ __DEVICE__ typename char_pointer<const U*>::type char_cast( const U* ptr ) const { return reinterpret_cast<const char*>(ptr); }
 
 private:
-	pointer ptr;       //!< pointer to current element
+	pointer ptr;     //!< pointer to current element
 	size_type pitch; //!< bytes of padding at the end of the contiguous region
 	//const char* edge;  //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)
 	//pointer edge_ptr; //!< pointer to start of current contiguous region (edge_ptr <= ptr < edge_ptr+width)

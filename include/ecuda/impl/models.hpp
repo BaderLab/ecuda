@@ -439,9 +439,11 @@ public:
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 	typedef device_contiguous_sequence<value_type      > row_type;
-	typedef typename base_type::column_type              column_type;
 	typedef device_contiguous_sequence<const value_type> const_row_type;
-	typedef typename base_type::const_column_type        const_column_type;
+	//typedef typename base_type::column_type              column_type;
+	//typedef typename base_type::const_column_type        const_column_type;
+	typedef device_sequence< value_type,       striding_ptr< value_type,       padded_ptr< value_type,       typename make_unmanaged<P>::type       > > > column_type;
+	typedef device_sequence< const value_type, striding_ptr< const value_type, padded_ptr< const value_type, typename make_unmanaged_const<P>::type > > > const_column_type;
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows,columns) {}
@@ -466,9 +468,23 @@ public:
 	#endif
 
 	__HOST__ __DEVICE__ inline iterator       begin()        __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer()), base_type::number_columns() ); }
-	__HOST__ __DEVICE__ inline iterator       end()          __NOEXCEPT__ { return iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() ); }
+	__HOST__ __DEVICE__ /*inline*/ iterator       end()          __NOEXCEPT__
+	{
+		typedef typename ecuda::make_unmanaged<pointer>::type unmanaged_pointer_type;
+		unmanaged_pointer_type p = unmanaged_cast(base_type::get_pointer());
+		p.skip_bytes( p.get_pitch()*base_type::number_rows() );
+		return iterator( p, base_type::number_columns() );
+		//return iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() );
+	}
 	__HOST__ __DEVICE__ inline const_iterator begin() const  __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()), base_type::number_columns() ); }
-	__HOST__ __DEVICE__ inline const_iterator end() const    __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() ); }
+	__HOST__ __DEVICE__ /*inline*/ const_iterator end() const    __NOEXCEPT__
+	{
+		typedef typename ecuda::make_unmanaged_const<pointer>::type unmanaged_pointer_type;
+		unmanaged_pointer_type p = unmanaged_cast(base_type::get_pointer());
+		p.skip_bytes( p.get_pitch()*base_type::number_rows() );
+		return const_iterator( p, base_type::number_columns() );
+		//return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size(), base_type::number_columns() );
+	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
 	__HOST__ __DEVICE__ inline const_iterator cend() const   __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
@@ -486,17 +502,33 @@ public:
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
 	{
 		typedef typename make_unmanaged<pointer>::type unmanaged_pointer;
-		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
-		mp += row*base_type::number_columns(); // advance to row start
-		return row_type( naked_cast<typename ecuda::add_pointer<value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
+		unmanaged_pointer up = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		up.skip_bytes( row*up.get_pitch() ); // advance to row start
+		return row_type( naked_cast<typename ecuda::add_pointer<value_type>::type>( up ), base_type::number_columns() ); // provide naked pointer since row is contiguous
 	}
 
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type row ) const
 	{
-		typedef typename make_unmanaged<typename make_const<pointer>::type>::type unmanaged_pointer;
-		unmanaged_pointer mp = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
-		mp += row*base_type::number_columns(); // advance to row start
-		return const_row_type( naked_cast<typename ecuda::add_pointer<const value_type>::type>( mp ), base_type::number_columns() ); // provide naked pointer since row is contiguous
+		typedef typename make_unmanaged_const<pointer>::type unmanaged_pointer;
+		unmanaged_pointer up = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		up.skip_bytes( row*up.get_pitch() );
+		return const_row_type( naked_cast<typename ecuda::add_pointer<const value_type>::type>( up ), base_type::number_columns() ); // provide naked pointer since row is contiguous
+	}
+
+	__HOST__ __DEVICE__ inline column_type get_column( const size_type column )
+	{
+#warning have to implement stride by bytes (models.hpp:520)
+		typedef typename make_unmanaged<pointer>::type unmanaged_pointer;
+		unmanaged_pointer up = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		up += column; // move to correct column
+		return column_type( striding_ptr<value_type,unmanaged_pointer>( up, base_type::number_columns() ), base_type::number_rows() );
+	}
+
+	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type column ) const {
+		typedef typename make_unmanaged_const<pointer>::type unmanaged_pointer;
+		unmanaged_pointer up = unmanaged_cast( base_type::get_pointer() ); // strip any mgmt by smart pointer
+		up += column; // move to correct column
+		return const_column_type( striding_ptr<const value_type,unmanaged_pointer>( up, base_type::number_columns() ), base_type::number_rows() );
 	}
 
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
@@ -504,14 +536,18 @@ public:
 
 	__DEVICE__ inline reference at( const size_type row, const size_type column )
 	{
-		typename make_unmanaged<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
-		return *naked_cast<typename ecuda::add_pointer<value_type>::type>(mp);
+		typename make_unmanaged<pointer>::type up = unmanaged_cast(base_type::get_pointer());
+		up.skip_bytes( up.get_pitch()*row );
+		up.operator+=( column );
+		return *naked_cast<typename ecuda::add_pointer<value_type>::type>(up);
 	}
 
 	__DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
 	{
-		typename make_unmanaged_const<pointer>::type mp = unmanaged_cast(base_type::get_pointer())+(row*base_type::number_columns()+column);
-		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(mp);
+		typename make_unmanaged_const<pointer>::type up = unmanaged_cast(base_type::get_pointer());
+		up.skip_bytes( up.get_pitch()*row );
+		up.operator+=( column );
+		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(up);
 	}
 
 };

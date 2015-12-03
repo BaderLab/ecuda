@@ -496,14 +496,15 @@ public:
 			std::cerr << "                                        pitch is the same as a contiguous block so internal API" << std::endl;
 			std::cerr << "                                        logic that considers memory pitch may not be properly tested" << std::endl;
 		}
-		return pointer( p2, pitch, w, p2 );
+		//return pointer( p2, pitch, w, p2 );
+		return pointer( p2, pitch );
 		#else
 		typename ecuda::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		//return pointer( ptr, pitch, w, ptr );
-		return pointer( ptr, pitch-w*sizeof(value_type) );
+		return pointer( ptr, pitch );
 		#endif
 	}
 

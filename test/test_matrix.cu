@@ -59,15 +59,28 @@ std::ostream& operator<<( std::ostream& out, const coord_t<T>& src )
 	return out;
 }
 
+template<typename T,class Alloc>
+void print_matrix( const ecuda::matrix<T,Alloc>& mat )
+{
+	for( std::size_t i = 0; i < mat.number_rows(); ++i ) {
+		std::cout << "ROW[" << i << "]";
+		for( std::size_t j = 0; j < mat.number_columns(); ++j ) {
+			std::cout << " " << mat[i][j];
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
 int main( int argc, char* argv[] ) {
 
 	{
-		estd::matrix<int> hostMatrix(5,5);
-		ecuda::matrix<int> deviceMatrix(5,5);
-		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
-		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
-		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
-		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
+//		estd::matrix<int> hostMatrix(5,5);
+//		ecuda::matrix<int> deviceMatrix(5,5);
+//		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+//		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
+//		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
+//		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
 	}
 	{
 		std::cerr << "TESTING CONSTRUCTORS" << std::endl;
@@ -84,7 +97,9 @@ int main( int argc, char* argv[] ) {
 			const std::size_t C = 21;
 			ecuda::matrix<double> deviceMatrix1( R, C );
 			ecuda::fill( deviceMatrix1.begin(), deviceMatrix1.end(), 99.0 );
+//print_matrix( deviceMatrix1 );
 			ecuda::matrix<double> deviceMatrix2( deviceMatrix1 );
+//print_matrix( deviceMatrix2 );
 			std::vector<double> hostVector( R*C, 99.0 );
 			std::cerr << "ecuda::matrix( const ecuda::matrix& ) : " << std::boolalpha << ecuda::equal( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector.begin() ) << std::endl;
 		}
@@ -143,7 +158,7 @@ int main( int argc, char* argv[] ) {
 				hostVector.push_back( coord_t<int>(i,j) );
 		ecuda::matrix< coord_t<int> > deviceMatrix( R, C );
 		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		for( std::size_t i = 0; i < R; ++i ) {
 			typename ecuda::matrix< coord_t<int> >::row_type row = deviceMatrix[i];
 			std::cerr << "row[" << i << "]=" << std::boolalpha << std::equal( row.begin(), row.end(), hostVector.begin()+(i*C) ) << std::endl;
@@ -162,7 +177,7 @@ int main( int argc, char* argv[] ) {
 				hostVector.push_back( coord_t<int>(i,j) );
 		ecuda::matrix< coord_t<int> > deviceMatrix( R, C );
 		ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix.begin() );
-		#ifdef ECUDA_EMULATE_CUDA_WITH_HOST_ONLY
+		#ifndef __CUDACC__
 		for( std::size_t i = 0; i < C; ++i ) {
 			typename ecuda::matrix< coord_t<int> >::column_type col = deviceMatrix.get_column(i);
 			std::cerr << "column[" << i << "]"; for( std::size_t j = 0; j < col.size(); ++j ) std::cerr << " " << col[j]; std::cerr << std::endl;
