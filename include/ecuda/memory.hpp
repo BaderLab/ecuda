@@ -91,6 +91,7 @@ struct allocator_traits {
 #include "ptr/shared_ptr.hpp"
 #include "ptr/striding_ptr.hpp"
 #include "ptr/unique_ptr.hpp"
+#include "ptr/striding_padded_ptr.hpp"
 
 namespace ecuda {
 

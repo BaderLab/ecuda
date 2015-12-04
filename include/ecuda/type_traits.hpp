@@ -177,6 +177,7 @@ template<typename T,typename P> class padded_ptr;   // forward declaration
 template<typename T>            class shared_ptr;   // forward declaration
 template<typename T,typename P> class striding_ptr; // forward declaration
 template<typename T,typename P> class unique_ptr;   // forward declaration
+template<typename T,typename P> class striding_padded_ptr; // forward declaration
 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a naked pointer.
@@ -224,6 +225,9 @@ template<typename T,typename U> struct make_unmanaged< padded_ptr<T,U>         >
 template<typename T,typename U> struct make_unmanaged< const padded_ptr<T,U>   > { typedef padded_ptr<T,typename make_unmanaged<U>::type> type; };
 template<typename T,typename U> struct make_unmanaged< striding_ptr<T,U>       > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
 template<typename T,typename U> struct make_unmanaged< const striding_ptr<T,U> > { typedef striding_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< striding_padded_ptr<T,U> > { typedef striding_padded_ptr<T,typename make_unmanaged<U>::type> type; };
+template<typename T,typename U> struct make_unmanaged< const striding_padded_ptr<T,U> > { typedef striding_padded_ptr<T,typename make_unmanaged<U>::type> type; };
+
 
 ///
 /// Casts any raw or managed pointer, specialized pointer, or combination thereof to a type that is free of any
@@ -278,6 +282,15 @@ unmanaged_cast( const striding_ptr<T,U>& ptr )
 	return striding_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_stride() );
 }
 
+template<typename T,typename U>
+__HOST__ __DEVICE__ inline
+striding_padded_ptr<T,typename make_unmanaged<U>::type>
+unmanaged_cast( const striding_padded_ptr<T,U>& ptr )
+{
+	typename make_unmanaged<U>::type mp = unmanaged_cast( ptr.get() );
+	return striding_padded_ptr<T,typename make_unmanaged<U>::type>( mp, ptr.get_stride() );
+}
+
 ///
 /// Gets the const-equivalent type of any raw or managed pointer, pointer specialization, or combination thereof.
 ///
@@ -303,6 +316,9 @@ template<typename T,typename U> struct make_const< padded_ptr<T,U>         > { t
 template<typename T,typename U> struct make_const< padded_ptr<const T,U>   > { typedef padded_ptr<const T,typename make_const<U>::type> type; };
 template<typename T,typename U> struct make_const< striding_ptr<T,U>       > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
 template<typename T,typename U> struct make_const< striding_ptr<const T,U> > { typedef striding_ptr<const T,typename make_const<U>::type> type; };
+
+template<typename T,typename U> struct make_const< striding_padded_ptr<T,U>       > { typedef striding_padded_ptr<const T,typename make_const<U>::type> type; };
+template<typename T,typename U> struct make_const< striding_padded_ptr<const T,U> > { typedef striding_padded_ptr<const T,typename make_const<U>::type> type; };
 
 ///
 /// Gets the unmanaged const-equivalent type of any raw of managed pointer, pointer specialization, or combination thereof.

@@ -72,6 +72,20 @@ void print_matrix( const ecuda::matrix<T,Alloc>& mat )
 	std::cout << std::endl;
 }
 
+template<typename T,class Alloc>
+void dummyFunction( typename ecuda::matrix<T,Alloc>::kernel_argument arg )
+{
+	std::cout << "matrix::kernel_argument=[" << arg.number_rows() << "x" << arg.number_columns() << "]" << std::endl;
+	std::cout << "KERNEL:" << std::endl;
+	for( std::size_t i = 0; i < arg.number_rows(); ++i ) {
+		std::cout << "ROW[" << i << "]";
+		for( std::size_t j = 0; j < arg.number_columns(); ++j ) std::cout << " " << arg[i][j];
+		std::cout << std::endl;
+	}
+	arg[arg.number_rows()-1][arg.number_columns()-1] = 33.0;
+	arg(0,0) = 66.0;
+}
+
 int main( int argc, char* argv[] ) {
 
 	{
@@ -81,6 +95,18 @@ int main( int argc, char* argv[] ) {
 //		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
 //		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
 //		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
+	}
+	{
+		const std::size_t R = 5;
+		const std::size_t C = 21;
+		ecuda::matrix<double> deviceMatrix( R, C, 99.0 );
+		dummyFunction<double,typename ecuda::matrix<double>::allocator_type>( deviceMatrix );
+		std::cout << "HOST:" << std::endl;
+		for( std::size_t i = 0; i < deviceMatrix.number_rows(); ++i ) {
+			std::cout << "ROW[" << i << "]";
+			for( std::size_t j = 0; j < deviceMatrix.number_columns(); ++j ) std::cout << " " << deviceMatrix[i][j];
+			std::cout << std::endl;
+		}
 	}
 	{
 		std::cerr << "TESTING CONSTRUCTORS" << std::endl;

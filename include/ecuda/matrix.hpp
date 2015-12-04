@@ -124,12 +124,12 @@ template<typename T,class Alloc> class matrix_kernel_argument; // forward declar
 /// linearly in row-major fashion (i.e. each column of the first row is traversed, then each column of the
 /// next row, and so on...).
 ///
-template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ >
+template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
+class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ >
 {
 
 private:
-	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/shared_ptr<T>/* >*/ > base_type;
+	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -155,9 +155,12 @@ public:
 
 private:
 	allocator_type allocator;
-	template<typename U,class Alloc2> class device_matrix;
+	//template<typename U,class Alloc2> class device_matrix;
+	template<typename U,class Alloc2,class Q> friend class matrix;
 
 protected:
+	template<typename U>
+	__HOST__ __DEVICE__ matrix( const matrix<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows(), src.number_columns() ), allocator(src.allocator) {}
 	__HOST__ __DEVICE__ matrix( const matrix& src, ecuda::true_type ) : base_type(src), allocator(src.allocator) {}
 
 	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other )
@@ -873,13 +876,17 @@ public:
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class matrix_kernel_argument : public matrix<T,Alloc>
+class matrix_kernel_argument : public matrix<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
+private:
+	typedef matrix<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
 
 public:
-	__HOST__ matrix_kernel_argument( const matrix<T,Alloc>& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
-	__HOST__ __DEVICE__ matrix_kernel_argument( const matrix_kernel_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
-	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
+	template<class P>
+	__HOST__ matrix_kernel_argument( const matrix<T,Alloc,P>& src ) : base_type( src, ecuda::true_type() ) {}
+
+	__HOST__ __DEVICE__ matrix_kernel_argument( const matrix_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
+
 	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc>& src )
 	{
 		matrix<T,Alloc>::shallow_assign( src );
