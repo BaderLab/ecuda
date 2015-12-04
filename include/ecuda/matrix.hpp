@@ -891,18 +891,17 @@ public:
 		return *this;
 	}
 
+	#ifdef __CPP11_SUPPORTED__
+	matrix_kernel_argument( matrix_kernel_argument&& src ) : base_type(std::move(src)) {}
+
+	matrix_kernel_argument& operator=( matrix_kernel_argument&& src )
+	{
+		base_type::operator=(std::move(src));
+		return *this;
+	}
+	#endif
+
 };
-
-//template<typename T>
-//class matrix_kernel_argument : private impl::device_contiguous_row_matrix<T,typename ecuda::add_pointer<T>::type>
-//{
-
-//private:
-//	typedef impl::device_contiguous_row_matrix<T,typename ecuda::add_pointer<T>::type> base_type;
-
-
-//};
-
 
 } // namespace impl
 /// \endcond

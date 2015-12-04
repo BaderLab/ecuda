@@ -73,11 +73,11 @@ template<typename T,std::size_t N> class array_kernel_argument; // forward decla
 /// to access the values of specific elements are device only, and copy operations on ranges of data and
 /// accessors of general information can be performed on both the host and device.
 ///
-template<typename T,std::size_t N>
-class array : private impl::device_fixed_sequence< T, N, shared_ptr<T> > {
+template< typename T, std::size_t N, class P=shared_ptr<T> >
+class array : private impl::device_fixed_sequence< T, N, P > {
 
 private:
-	typedef impl::device_fixed_sequence< T, N, shared_ptr<T> > base_type;
+	typedef impl::device_fixed_sequence< T, N, P > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -95,12 +95,16 @@ public:
 
 	typedef impl::array_kernel_argument<T,N> kernel_argument; //!< kernel argument type
 
-protected:
-	__HOST__ __DEVICE__ array( const array& src, ecuda::true_type ) : base_type(src) {}
+	template<typename U,std::size_t M,class Q> friend class array;
 
-	__HOST__ __DEVICE__ array& shallow_assign( const array& other )
+protected:
+	template<class Q>
+	__HOST__ __DEVICE__ array( const array<T,N,Q>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()) ) {}
+
+	template<class Q>
+	__HOST__ __DEVICE__ array& shallow_assign( const array<T,N,Q>& other )
 	{
-		base_type::get_pointer() = other.get_pointer();
+		base_type::get_pointer() = unmanaged_cast(other.get_pointer());
 		return *this;
 	}
 
@@ -483,43 +487,30 @@ public:
 namespace impl {
 
 template<typename T,std::size_t N>
-class array_kernel_argument : public array<T,N>
+class array_kernel_argument : public array<T,N,typename ecuda::add_pointer<T>::type>
 {
 
 private:
-	typedef array<T,N> base_type;
+	typedef array<T,N,typename ecuda::add_pointer<T>::type> base_type;
 
 public:
-	__HOST__ array_kernel_argument( const array<T,N>& src ) : base_type( src, ecuda::true_type() )
-	{
-		//#if (__CUDACC_VER_MAJOR__ >= 6)
-		//#warning consider replacing array::kernel_argument with array&
-		//#endif
-	}
+	template<class P>
+	__HOST__ array_kernel_argument( const array<T,N,P>& src ) : base_type( src, ecuda::true_type() ) {}
 
 	__HOST__ __DEVICE__ array_kernel_argument( const array_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
 
-	__HOST__ array_kernel_argument& operator=( const array<T,N>& src )
+	template<class P>
+	__HOST__ array_kernel_argument& operator=( const array<T,N,P>& src )
 	{
-		//#if (__CUDACC_VER_MAJOR__ >= 6)
-		//#warning consider replacing array::kernel_argument with array&
-		//#endif
 		base_type::shallow_assign(src);
 		return *this;
 	}
 
 	#ifdef __CPP11_SUPPORTED__
-	array_kernel_argument( array_kernel_argument&& src ) : base_type(std::move(src))
-	{
-		//#if (__CUDACC_VER_MAJOR__ >= 6)
-		//#warning consider replacing array::kernel_argument with array&
-		//#endif
-	}
+	array_kernel_argument( array_kernel_argument&& src ) : base_type(std::move(src)) {}
+
 	array_kernel_argument& operator=( array_kernel_argument&& src )
 	{
-		//#if (__CUDACC_VER_MAJOR__ >= 6)
-		//#warning consider replacing array::kernel_argument with array&
-		//#endif
 		base_type::operator=(std::move(src));
 		return *this;
 	}

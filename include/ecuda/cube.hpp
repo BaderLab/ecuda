@@ -816,6 +816,16 @@ public:
 		return *this;
 	}
 
+	#ifdef __CPP11_SUPPORTED__
+	cube_kernel_argument( cube_kernel_argument&& src ) : base_type(std::move(src)) {}
+
+	cube_kernel_argument& operator=( cube_kernel_argument&& src )
+	{
+		base_type::operator=(std::move(src));
+		return *this;
+	}
+	#endif
+
 };
 
 } // namespace impl

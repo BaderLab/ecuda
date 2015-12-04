@@ -78,11 +78,11 @@ template<typename T,class Alloc> class vector_kernel_argument; // forward declar
 /// Any growth of the vector follows a doubling pattern.  The existing memory allocation size
 /// is doubled until the requested amount of memory is met or exceeded.
 ///
-template< typename T, class Alloc=device_allocator<T> >
-class vector : private impl::device_contiguous_sequence< T, shared_ptr<T> > {
+template< typename T, class Alloc=device_allocator<T>, class P=shared_ptr<T> >
+class vector : private impl::device_contiguous_sequence< T, P > {
 
 private:
-	typedef impl::device_contiguous_sequence< T, shared_ptr<T> > base_type;
+	typedef impl::device_contiguous_sequence< T, P > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -112,12 +112,16 @@ private:
 	size_type n; //!< number of elements currently stored
 	allocator_type allocator;
 
-protected:
-	__HOST__ __DEVICE__ vector( const vector& src, ecuda::true_type ) : base_type(src), n(src.n), allocator(src.allocator) {}
+	template<typename U,class Alloc2,class Q> friend class vector;
 
-	__HOST__ __DEVICE__ vector& shallow_assign( const vector& other )
+protected:
+	template<class Q>
+	__HOST__ __DEVICE__ vector( const vector<T,Alloc,Q>& src, ecuda::true_type ) : base_type(unmanaged_cast(src.get_pointer())), n(src.n), allocator(src.allocator) {}
+
+	template<class Q>
+	__HOST__ __DEVICE__ vector& shallow_assign( const vector<T,Alloc,Q>& other )
 	{
-		base_type::get_pointer() = other.get_pointer();
+		base_type::get_pointer() = unmanaged_cast(other.get_pointer());
 		n = other.n;
 		allocator = other.allocator;
 		return *this;
@@ -882,8 +886,8 @@ public:
 
 };
 
-template<typename T,class Alloc>
-__HOST__ void vector<T,Alloc>::growMemory( size_type minimum )
+template<typename T,class Alloc,class P>
+__HOST__ void vector<T,Alloc,P>::growMemory( size_type minimum )
 {
 	if( base_type::size() >= minimum ) return; // no growth neccessary
 	size_type m2 = base_type::size();
@@ -900,20 +904,32 @@ __HOST__ void vector<T,Alloc>::growMemory( size_type minimum )
 namespace impl {
 
 template<typename T,class Alloc>
-class vector_kernel_argument : public vector<T,Alloc>
+class vector_kernel_argument : public vector<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
 
 private:
-	typedef vector<T,Alloc> base_type;
+	typedef vector<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
 
 public:
-	__HOST__ vector_kernel_argument( const vector<T,Alloc>& src ) : vector<T,Alloc>( src, ecuda::true_type() ) {}
+	template<class P>
+	__HOST__ vector_kernel_argument( const vector<T,Alloc,P>& src ) : base_type( src, ecuda::true_type() ) {}
 	__HOST__ __DEVICE__ vector_kernel_argument( const vector_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
-	__HOST__ vector_kernel_argument& operator=( const vector<T,Alloc>& src )
+	template<class P>
+	__HOST__ vector_kernel_argument& operator=( const vector<T,Alloc,P>& src )
 	{
 		vector<T,Alloc>::shallow_assign( src );
 		return *this;
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	vector_kernel_argument( vector_kernel_argument&& src ) : base_type(std::move(src)) {}
+
+	vector_kernel_argument& operator=( vector_kernel_argument&& src )
+	{
+		base_type::operator=(std::move(src));
+		return *this;
+	}
+	#endif
 
 };
 
