@@ -121,11 +121,11 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 /// blocks of depth blocks, and the row dimension is contiguous blocks of column blocks; thus, an implementation
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
-template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ shared_ptr<T> /*>*/ > {
+template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
+class cube : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > {
 
 private:
-	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ shared_ptr<T> /*>*/ > base_type;
+	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -160,10 +160,13 @@ public:
 
 private:
 	size_type numberRows; //!< number of rows
-	//size_type numberDepths; //!< number of depths
 	allocator_type allocator;
 
+	template<typename U,class Alloc2,class Q> friend class cube;
+
 protected:
+	template<typename U>
+	__HOST__ __DEVICE__ cube( const cube<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows()*src.number_columns(), src.number_depths() ), numberRows(src.numberRows), allocator(src.allocator) {}
 	__HOST__ __DEVICE__ cube( const cube& src, ecuda::true_type ) : base_type(src), numberRows(src.numberRows), allocator(src.allocator) {}
 
 	__HOST__ __DEVICE__ cube& shallow_assign( const cube& other )
@@ -171,7 +174,6 @@ protected:
 		base_type::get_pointer() = other.get_pointer();
 		allocator = other.allocator;
 		numberRows = other.numberRows;
-		//numberDepths = other.numberDepths;
 		return *this;
 	}
 
@@ -413,7 +415,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-	__HOST__ __DEVICE__ inline row_type get_row( const size_type columnIndex, const size_type depthIndex )
+	__HOST__ __DEVICE__ row_type get_row( const size_type columnIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
@@ -421,10 +423,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return row_type( ptr2, number_rows() );
-//		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
-//		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
-//		typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
-//		return row_type( ptr2, number_rows() );
 	}
 
 	///
@@ -434,7 +432,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-	__HOST__ __DEVICE__ inline column_type get_column( const size_type rowIndex, const size_type depthIndex )
+	__HOST__ __DEVICE__ column_type get_column( const size_type rowIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
@@ -442,11 +440,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return column_type( ptr2, number_columns() );
-//		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-//		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-//		typename column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
-//		return column_type( ptr2, number_columns() );
 	}
 
 	///
@@ -456,7 +449,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-	__HOST__ __DEVICE__ inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex )
+	__HOST__ __DEVICE__ depth_type get_depth( const size_type rowIndex, const size_type columnIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
@@ -471,7 +464,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const
+	__HOST__ __DEVICE__ const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
@@ -479,12 +472,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename const_row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return const_row_type( ptr2, number_rows() );
-//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-//		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
-//		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
-//		typename const_row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
-//		return const_row_type( ptr2, number_rows() );
 	}
 
 	///
@@ -494,7 +481,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const
+	__HOST__ __DEVICE__ const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
@@ -502,11 +489,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename const_column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return const_column_type( ptr2, number_columns() );
-//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-//		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-//		typename const_column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
-//		return const_column_type( ptr2, number_columns() );
 	}
 
 	///
@@ -516,7 +498,7 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-	__HOST__ __DEVICE__ inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const
+	__HOST__ __DEVICE__ const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
@@ -530,7 +512,7 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-	__HOST__ __DEVICE__ inline slice_yz_type get_yz( const size_type rowIndex )
+	__HOST__ __DEVICE__ slice_yz_type get_yz( const size_type rowIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
@@ -544,13 +526,12 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-	__HOST__ __DEVICE__ inline slice_xy_type get_xy( const size_type depthIndex )
+	__HOST__ __DEVICE__ slice_xy_type get_xy( const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
 		ptr += depthIndex; // move to correct depth
 		typename slice_xy_type::pointer ptr2( ptr.get(), ptr.get_pitch() ); // make pointer stride over depths
-		//typename slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
 		return slice_xy_type( ptr2, number_rows(), number_columns() );
 	}
 
@@ -560,20 +541,13 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-	__HOST__ __DEVICE__ inline slice_xz_type get_xz( const size_type columnIndex )
+	__HOST__ __DEVICE__ slice_xz_type get_xz( const size_type columnIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
 		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns() ); // extend pitch
 		ptr2 += columnIndex*number_depths(); // move to correct column
 		return slice_xz_type( ptr2, number_rows(), number_depths() );
-
-//		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-//		ptr += columnIndex*number_depths(); // move to correct column
-//		//typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch(), number_depths() ); // padding is the same, but width shrinks to a single column
-//		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
-//		return slice_xz_type( ptr2, number_rows(), number_depths() );
 	}
 
 	///
@@ -582,7 +556,7 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-	__HOST__ __DEVICE__ inline const_slice_yz_type get_yz( const size_type rowIndex ) const
+	__HOST__ __DEVICE__ const_slice_yz_type get_yz( const size_type rowIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
@@ -596,7 +570,7 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-	__HOST__ __DEVICE__ inline const_slice_xy_type get_xy( const size_type depthIndex ) const
+	__HOST__ __DEVICE__ const_slice_xy_type get_xy( const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
@@ -611,19 +585,13 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-	__HOST__ __DEVICE__ inline const_slice_xz_type get_xz( const size_type columnIndex ) const
+	__HOST__ __DEVICE__ const_slice_xz_type get_xz( const size_type columnIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
 		typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns() ); // extend pitch
 		ptr2 += columnIndex*number_depths(); // move to correct column
 		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
-
-//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-//		ptr += columnIndex*number_depths(); // move to correct column
-//		typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
-//		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
 	}
 
 	///
@@ -830,16 +798,21 @@ public:
 namespace impl {
 
 template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube_kernel_argument : public cube<T,Alloc>
+class cube_kernel_argument : public cube<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
+private:
+	typedef cube<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
 
 public:
-	__HOST__ cube_kernel_argument( const cube<T,Alloc>& src ) : cube<T,Alloc>( src, ecuda::true_type() ) {}
-	__HOST__ __DEVICE__ cube_kernel_argument( const cube_kernel_argument& src ) : cube<T,Alloc>( src, ecuda::true_type() ) {}
-	//matrix_device_argument( const matrix_device_argument& src ) : matrix<T,Alloc>( src, ecuda::true_type() ) {}
-	__HOST__ cube_kernel_argument& operator=( const cube<T,Alloc>& src )
+	template<class P>
+	__HOST__ cube_kernel_argument( const cube<T,Alloc,P>& src ) : base_type( src, ecuda::true_type() ) {}
+
+	__HOST__ __DEVICE__ cube_kernel_argument( const cube_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
+
+	template<class P>
+	__HOST__ cube_kernel_argument& operator=( const cube<T,Alloc,P>& src )
 	{
-		cube<T,Alloc>::shallow_assign( src );
+		base_type::shallow_assign( src );
 		return *this;
 	}
 

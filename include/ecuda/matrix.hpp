@@ -38,12 +38,8 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_MATRIX_HPP
 #define ECUDA_MATRIX_HPP
 
-//#ifdef __CPP11_SUPPORTED__
-//#include <type_traits>
-//#endif
 #include <vector>
 
-//#include "config.hpp"
 #include "global.hpp"
 #include "algorithm.hpp"
 #include "allocators.hpp"
@@ -163,9 +159,10 @@ protected:
 	__HOST__ __DEVICE__ matrix( const matrix<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows(), src.number_columns() ), allocator(src.allocator) {}
 	__HOST__ __DEVICE__ matrix( const matrix& src, ecuda::true_type ) : base_type(src), allocator(src.allocator) {}
 
-	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix& other )
+	template<typename U>
+	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix<T,Alloc,U>& other )
 	{
-		base_type::get_pointer() = other.get_pointer();
+		base_type::get_pointer() = unmanaged_cast(other.get_pointer());
 		allocator = other.allocator;
 		return *this;
 	}
@@ -887,9 +884,10 @@ public:
 
 	__HOST__ __DEVICE__ matrix_kernel_argument( const matrix_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
 
-	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc>& src )
+	template<class P>
+	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc,P>& src )
 	{
-		matrix<T,Alloc>::shallow_assign( src );
+		base_type::shallow_assign( src );
 		return *this;
 	}
 
