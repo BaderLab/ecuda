@@ -89,12 +89,12 @@ void dummyFunction( typename ecuda::matrix<T,Alloc>::kernel_argument arg )
 int main( int argc, char* argv[] ) {
 
 	{
-//		estd::matrix<int> hostMatrix(5,5);
-//		ecuda::matrix<int> deviceMatrix(5,5);
-//		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
-//		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
-//		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
-//		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
+		estd::matrix<int> hostMatrix(5,5);
+		ecuda::matrix<int> deviceMatrix(5,5);
+		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
+		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
 	}
 	{
 		const std::size_t R = 5;

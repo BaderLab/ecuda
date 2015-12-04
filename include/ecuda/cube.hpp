@@ -137,26 +137,24 @@ public:
 	typedef typename base_type::pointer         pointer;         //!< cell pointer type
 	typedef typename make_const<pointer>::type  const_pointer;   //!< cell const pointer type
 
-	typedef impl::device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > row_type;    //!< cube row container type
-	typedef impl::device_sequence<           value_type, striding_ptr< value_type, padded_ptr<value_type> > > column_type; //!< cube column container type
-	typedef impl::device_contiguous_sequence<value_type                                                     > depth_type;  //!< cube depth container type
-	typedef impl::device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_row_type;    //!< cube const row container type
-	typedef impl::device_sequence<           const value_type, striding_ptr< const value_type, padded_ptr<const value_type> > > const_column_type; //!< cube const column container type
-	typedef impl::device_contiguous_sequence<const value_type                                                                 > const_depth_type;  //!< cube const depth container type
+	typedef impl::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > row_type;    //!< cube row container type
+	typedef impl::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > column_type; //!< cube column container type
+	typedef impl::device_contiguous_sequence<value_type                                                                                > depth_type;  //!< cube depth container type
+	typedef impl::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_row_type;    //!< cube const row container type
+	typedef impl::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_column_type; //!< cube const column container type
+	typedef impl::device_contiguous_sequence<const value_type                                                                                            > const_depth_type;  //!< cube const depth container type
 
 	typedef typename base_type::iterator               iterator;               //!< iterator type
 	typedef typename base_type::const_iterator         const_iterator;         //!< const iterator type
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> >   > slice_xy_type; //!< xy section of a cube at a fixed depth
-	//typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> >   > slice_xz_type; //!< xz section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type        > slice_xz_type; //!< xz section of a cube at a fixed column
-	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type        > slice_yz_type; //!< yz section of a cube at a fixed row
-	typedef impl::device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> >   > const_slice_xy_type; //!< const xy section of a cube at a fixed depth
-	//typedef impl::device_matrix<                const value_type, striding_ptr< const value_type, padded_ptr<const value_type> >   > const_slice_xz_type; //!< const xz section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type              > const_slice_xz_type; //!< const xz section of a cube at a fixed row
-	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type              > const_slice_yz_type; //!< const yz section of a cube at a fixed row
+	typedef impl::device_matrix<                value_type,       striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_xz_type; //!< xz section of a cube at a fixed column
+	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_yz_type; //!< yz section of a cube at a fixed row
+	typedef impl::device_matrix<                const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_xz_type; //!< const xz section of a cube at a fixed row
+	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
 	typedef impl::cube_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
 
@@ -184,7 +182,8 @@ private:
 			typename Alloc::pointer p = get_allocator().allocate( number_depths(), number_rows()*number_columns() );
 			typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
+			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch() );
+			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, number_rows()*number_columns(), number_depths() );
 			base_type::swap( base );
 		}
@@ -417,11 +416,15 @@ public:
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type columnIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
-		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
-		typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		ptr.skip_bytes( columnIndex*ptr.get_pitch() ); // move pointer to correct column
+		ptr += depthIndex; // move pointer to correct depth
+		typename row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return row_type( ptr2, number_rows() );
+//		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
+//		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
+//		typename row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
+//		return row_type( ptr2, number_rows() );
 	}
 
 	///
@@ -434,10 +437,16 @@ public:
 	__HOST__ __DEVICE__ inline column_type get_column( const size_type rowIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		typename column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		ptr.skip_bytes( rowIndex*number_columns()*ptr.get_pitch() ); // move pointer to correct column
+		ptr += depthIndex; // move pointer to correct depth
+		typename column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return column_type( ptr2, number_columns() );
+//		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
+//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+//		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
+//		typename column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+//		return column_type( ptr2, number_columns() );
 	}
 
 	///
@@ -465,11 +474,17 @@ public:
 	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
-		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
-		typename const_row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		ptr.skip_bytes( columnIndex*ptr.get_pitch() ); // move pointer to correct column
+		ptr += depthIndex; // move pointer to correct depth
+		typename const_row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return const_row_type( ptr2, number_rows() );
+//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
+//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+//		ptr += columnIndex*number_depths()+depthIndex; // move pointer to row start
+//		//ptr += columnIndex*base_type::number_rows()+depthIndex; // move pointer to row start
+//		typename const_row_type::pointer ptr2( ptr, number_columns()*number_depths() ); // give pointer correct stride
+//		return const_row_type( ptr2, number_rows() );
 	}
 
 	///
@@ -482,10 +497,16 @@ public:
 	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
-		typename const_column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		ptr.skip_bytes( rowIndex*number_columns()*ptr.get_pitch() ); // move pointer to correct column
+		ptr += depthIndex; // move pointer to correct depth
+		typename const_column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return const_column_type( ptr2, number_columns() );
+//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
+//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+//		ptr += rowIndex*number_columns()*number_depths()+depthIndex; // move pointer to column start
+//		typename const_column_type::pointer ptr2( ptr, number_depths() ); // give pointer correct stride
+//		return const_column_type( ptr2, number_columns() );
 	}
 
 	///
@@ -526,9 +547,10 @@ public:
 	__HOST__ __DEVICE__ inline slice_xy_type get_xy( const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
 		ptr += depthIndex; // move to correct depth
-		typename slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
+		typename slice_xy_type::pointer ptr2( ptr.get(), ptr.get_pitch() ); // make pointer stride over depths
+		//typename slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
 		return slice_xy_type( ptr2, number_rows(), number_columns() );
 	}
 
@@ -541,15 +563,17 @@ public:
 	__HOST__ __DEVICE__ inline slice_xz_type get_xz( const size_type columnIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += columnIndex*number_depths(); // move to correct column
-		//typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch(), number_depths() ); // padding is the same, but width shrinks to a single column
-		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns() ); // extend pitch
+		ptr2 += columnIndex*number_depths(); // move to correct column
 		return slice_xz_type( ptr2, number_rows(), number_depths() );
 
+//		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
+//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+//		ptr += columnIndex*number_depths(); // move to correct column
+//		//typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch(), number_depths() ); // padding is the same, but width shrinks to a single column
+//		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
 //		return slice_xz_type( ptr2, number_rows(), number_depths() );
-//typedef impl::device_matrix<                value_type,       striding_ptr< value_type, padded_ptr<value_type> >   > slice_xz_type; //!< xz section of a cube at a fixed depth
-////typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type        > slice_xz_type; //!< xz section of a cube at a fixed column
 	}
 
 	///
@@ -575,9 +599,9 @@ public:
 	__HOST__ __DEVICE__ inline const_slice_xy_type get_xy( const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
 		ptr += depthIndex; // move to correct depth
-		typename const_slice_xy_type::pointer ptr2( ptr, number_depths() ); // make pointer stride over depths
+		typename const_slice_xy_type::pointer ptr2( ptr.get(), ptr.get_pitch() ); // make pointer stride over depths
 		return const_slice_xy_type( ptr2, number_rows(), number_columns() );
 	}
 
@@ -590,13 +614,16 @@ public:
 	__HOST__ __DEVICE__ inline const_slice_xz_type get_xz( const size_type columnIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
-		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
-		ptr += columnIndex*number_depths(); // move to correct column
-		//typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch(), number_depths() ); // padding is the same, but width shrinks to a single column
-		typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
+		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() ); // padded_ptr
+		typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns() ); // extend pitch
+		ptr2 += columnIndex*number_depths(); // move to correct column
 		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
-		//typename const_slice_xz_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch(), number_depths() ); // expand padding to include columns
-		//return const_slice_xz_type( ptr2, number_rows(), number_depths() );
+
+//		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
+//		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
+//		ptr += columnIndex*number_depths(); // move to correct column
+//		typename const_slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns(), number_depths() ); // padding is the same, but width shrinks to a single column
+//		return const_slice_xz_type( ptr2, number_rows(), number_depths() );
 	}
 
 	///
