@@ -72,12 +72,12 @@ class device_sequence
 {
 
 public:
-	typedef T                                           value_type;
-	typedef P                                           pointer;
+	typedef T                                             value_type;
+	typedef P                                             pointer;
 	typedef typename ecuda::add_lvalue_reference<T>::type reference;
 	typedef typename ecuda::add_const<reference>::type    const_reference;
-	typedef std::size_t                                 size_type;
-	typedef std::ptrdiff_t                              difference_type;
+	typedef std::size_t                                   size_type;
+	typedef std::ptrdiff_t                                difference_type;
 
 	typedef device_iterator<      value_type,typename make_unmanaged<pointer>::type      > iterator;
 	typedef device_iterator<const value_type,typename make_unmanaged_const<pointer>::type> const_iterator;
@@ -89,7 +89,7 @@ private:
 	pointer ptr;
 	size_type length;
 
-	template<typename U,class PointerType2> friend class device_sequence;
+	template<typename U,class Q> friend class device_sequence;
 
 protected:
 	__HOST__ __DEVICE__ inline pointer&       get_pointer()       __NOEXCEPT__ { return ptr; }
@@ -97,8 +97,11 @@ protected:
 
 public:
 	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
+
 	__HOST__ __DEVICE__ device_sequence( const device_sequence& src ) : ptr(src.ptr), length(src.length) {}
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_sequence( const device_sequence<U,PointerType2>& src ) : ptr(src.ptr), length(src.length) {}
+
+	template<typename U,class Q> __HOST__ __DEVICE__ device_sequence( const device_sequence<U,Q>& src ) : ptr(src.ptr), length(src.length) {}
+
 	__HOST__ device_sequence& operator=( const device_sequence& src )
 	{
 		ptr = src.ptr;
@@ -147,15 +150,6 @@ public:
 	{
 		::ecuda::swap( ptr, other.ptr );
 		::ecuda::swap( length, other.length );
-//		#ifdef __CUDA_ARCH__
-//		ECUDA_STATIC_ASSERT(false,IMPLEMENTATION_NEEDS_TO_BE_DONE_HERE_TO_SWAP_TWO_SEQUENCES_ON_DEVICE);
-		//iterator iter1 = begin();
-		//iterator iter2 = other.begin();
-		//for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
-//		#else
-//		::ecuda::swap( ptr, other.ptr );
-//		::ecuda::swap( length, other.length );
-//		#endif
 	}
 
 };
@@ -232,16 +226,7 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   { return const_reverse_iterator(begin()); }
 	#endif
 
-	__HOST__ __DEVICE__ void swap( device_fixed_sequence& other )
-	{
-		#ifdef __CUDA_ARCH__
-		iterator iter1 = begin();
-		iterator iter2 = other.begin();
-		for( ; iter1 != end(); ++iter1, ++iter2 ) ecuda::swap( *iter1, *iter2 );
-		#else
-		std::swap( ptr, other.ptr );
-		#endif
-	}
+	__HOST__ __DEVICE__ inline void swap( device_fixed_sequence& other ) { ecuda::swap( ptr, other.ptr ); }
 
 };
 

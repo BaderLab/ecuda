@@ -114,7 +114,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type valtype2;
 	InputIterator2 last2 = first2;
 	ecuda::advance( last2, ecuda::distance(first1,last1) );
-	// allocate temporary memory using host_allocator (i.e. cudaMallocHost) for potential performance improvement
+	// allocate temporary memory using host_allocator (i.e. cudaHostAlloc) for potential performance improvement
 	std::vector< valtype1, host_allocator<valtype1> > v1( ecuda::distance( first1, last1 ) );
 	std::vector< valtype2, host_allocator<valtype2> > v2( ecuda::distance( first2, last2 ) );
 	ecuda::copy( first1, last1, v1.begin() );

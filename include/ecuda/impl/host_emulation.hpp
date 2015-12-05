@@ -35,13 +35,77 @@ either expressed or implied, of the FreeBSD Project.
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
+#pragma once
+#ifndef ECUDA_IMPL_HOST_IMPLEMENTATION_HPP
+#define ECUDA_IMPL_HOST_IMPLEMENTATION_HPP
+
 #ifndef __CUDACC__
+
+#include <algorithm>
+#include <memory>
+
+enum cudaError_t
+{
+	cudaSuccess
+};
+
+//typedef bool cudaError_t;
+
 enum cudaMemcpyKind {
 	cudaMemcpyDeviceToDevice,
 	cudaMemcpyDeviceToHost,
 	cudaMemcpyHostToDevice
 };
 
+cudaError_t cudaFree( void* devPtr )
+{
+	delete [] reinterpret_cast<char*>(devPtr); // TODO: does this work as expected?
+	return cudaSuccess;
+}
+
+inline cudaError_t cudaFreeHost( void* devPtr ) { return cudaFree( devPtr ); }
+
 void cudaSetDevice( int ) {}
 
-#endif
+cudaError_t cudaMalloc( void** devPtr, size_t size )
+{
+	*devPtr = std::allocator<char>().allocate( size );
+	return cudaSuccess;
+}
+
+//inline cudaError_t cudaMallocHost( void** ptr, size_t size, unsigned flags = 0 ) { return cudaMalloc( ptr, size ); }
+
+#define cudaHostAllocDefault       0x00
+#define cudaHostAllocPortable      0x01
+#define cudaHostAllocMapped        0x02
+#define cudaHostAllocWriteCombined 0x04
+
+inline cudaError_t cudaHostAlloc( void** ptr, size_t size, unsigned flags = 0 ) { return cudaMalloc( ptr, size ); }
+
+cudaError_t cudaMallocPitch( void** devPtr, size_t* pitch, size_t width, size_t height )
+{
+	*pitch = width;
+	*pitch += (*pitch % 16); // add padding to get 128-bit memory alignment (16 bytes)
+	*devPtr = std::allocator<char>().allocate( (*pitch)*height );
+	if( ( width % *pitch ) == 0 )
+		std::cerr << "WARNING: Host emulation of cudaMallocPitch allocated the equivalent to a contiguous block and so is a poor test of API logic for pitched memory." << std::endl;
+	return cudaSuccess;
+}
+
+cudaError_t cudaMemcpy( void* dst, const void* src, size_t count, cudaMemcpyKind )
+{
+	std::copy( reinterpret_cast<const char*>(src), reinterpret_cast<const char*>(src)+count, reinterpret_cast<char*>(dst) );
+	return cudaSuccess;
+}
+
+cudaError_t cudaMemcpy2D( void* dst, size_t dpitch, const void* src, size_t spitch, size_t width, size_t height, cudaMemcpyKind )
+{
+	char* pDst = reinterpret_cast<char*>(dst);
+	const char* pSrc = reinterpret_cast<const char*>(src);
+	for( size_t i = 0; i < height; ++i, pDst += dpitch, pSrc += spitch ) std::copy( pSrc, pSrc+width, pDst );
+	return cudaSuccess;
+}
+
+#endif // __CUDACC__
+
+#endif // ECUDA_IMPL_HOST_IMPLEMENTATION_HPP

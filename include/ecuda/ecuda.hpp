@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2015, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,39 +28,31 @@ either expressed or implied, of the FreeBSD Project.
 */
 
 //----------------------------------------------------------------------------
-// cuda_error.hpp
+// ecuda.hpp
 //
-// Custom exception to throw CUDA API error codes.
+// Convenience header that includes the entire API.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
 #pragma once
-#ifndef ECUDA_CUDA_ERROR_HPP
-#define ECUDA_CUDA_ERROR_HPP
+#ifndef ECUDA_ECUDA_HPP
+#define ECUDA_ECUDA_HPP
 
-#include <stdexcept>
-#include <string>
-
-#include "impl/host_emulation.hpp"
-
-namespace ecuda {
-
-///
-/// \brief Exception for CUDA API cudaError_t errors.
-///
-class cuda_error : public std::runtime_error
-{
-private:
-	cudaError_t errorType;
-
-public:
-	explicit cuda_error( cudaError_t errorType, const std::string& what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
-	explicit cuda_error( cudaError_t errorType, const char* what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
-	inline cudaError_t get_cuda_error_type() const { return errorType; }
-
-};
-
-} // namespace ecuda
+#include "algorithm.hpp"
+#include "allocators.hpp"
+#include "apiwrappers.hpp"
+#include "array.hpp"
+#include "cube.hpp"
+#include "cuda_error.hpp"
+#include "device.hpp"
+#include "event.hpp"
+#include "iterator.hpp"
+#include "matrix.hpp"
+#include "memory.hpp"
+#include "numeric.hpp"
+#include "type_traits.hpp"
+#include "utility.hpp"
+#include "vector.hpp"
 
 #endif

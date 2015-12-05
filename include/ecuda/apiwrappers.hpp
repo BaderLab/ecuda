@@ -61,13 +61,9 @@ namespace ecuda {
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMemcpyKind kind ) {
-	#ifndef __CUDACC__
-	std::copy( src, src+count, dest );
-	return true;
-	#else
+inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMemcpyKind kind )
+{
 	return cudaMemcpy( reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
-	#endif
 }
 
 ///
@@ -87,17 +83,9 @@ inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMe
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidPitchValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind ) {
-	#ifndef __CUDACC__
-	const char* csrc = reinterpret_cast<const char*>(src);
-	char* cdest = reinterpret_cast<char*>(dest);
-	for( size_t i = 0; i < height; ++i, csrc += spitch, cdest += dpitch ) {
-		std::copy( csrc, csrc+(width*sizeof(T)), cdest );
-	}
-	return true;
-	#else
+inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind )
+{
 	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
-	#endif
 }
 
 
@@ -116,15 +104,11 @@ inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, con
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
-	#ifndef __CUDACC__
-	std::fill( devPtr, devPtr+count, value );
-	return true;
-	#else
+inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count )
+{
 	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
 	std::vector< T, host_allocator<T> > v( count, value );
 	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
-	#endif
 }
 
 ///
@@ -144,14 +128,8 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count ) {
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height ) {
-	#ifndef __CUDACC__
-	for( size_t i = 0; i < height; ++i ) {
-		std::fill( devPtr, devPtr+width, value );
-		devPtr = reinterpret_cast<T*>(const_cast<char*>(devPtr)+pitch);
-	}
-	return true;
-	#else
+cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height )
+{
 	std::vector< T, host_allocator<T> > v( width, value );
 	char* charPtr = reinterpret_cast<char*>(devPtr);
 	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {
@@ -159,7 +137,6 @@ cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const s
 		if( rc != cudaSuccess ) return rc;
 	}
 	return cudaSuccess;
-	#endif
 }
 
 } // namespace ecuda

@@ -46,23 +46,13 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-/// \cond DEVELOPER_DOCUMENTATION
-namespace detail {
-
-typedef ecuda::false_type host_type;
-typedef ecuda::true_type  device_type;
-
-//typedef std::false_type non_contiguous_type;
-//typedef std::true_type  contiguous_type;
-
-} // namespace detail
-/// \endcond
-
-template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b ) { return b < a ? b : a; }
+template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b )              { return b < a ? b : a; }
 template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b, Compare cmp ) { return cmp(b,a) ? b : a; }
 
-template<typename T>               __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b ) { return b > a ? b : a; }
+template<typename T>               __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b )              { return b > a ? b : a; }
 template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b, Compare cmp ) { return cmp(a,b) ? b : a; }
+
+template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
 } // namespace ecuda
 
@@ -78,22 +68,27 @@ template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( cons
 #include "algo/count.hpp"                   // equivalent to std::count
 #include "algo/count_if.hpp"                // equivalent to std::count_if
 #include "algo/mismatch.hpp"                // equivalent to std::mismatch
-// NOTE: there are additional includes at the end of the file;
-//       some algos require functions declared in this file
+#include "algo/reverse.hpp"                 // equivalent to std::reverse
 
 namespace ecuda {
 
 ECUDA_SUPPRESS_HD_WARNINGS
-template<class InputIterator,class UnaryPredicate> inline __HOST__ __DEVICE__ bool any_of( InputIterator first, InputIterator last, UnaryPredicate p ) { return ecuda::find_if( first, last, p ) != last; }
+template<class InputIterator,class UnaryPredicate>
+inline __HOST__ __DEVICE__
+bool any_of( InputIterator first, InputIterator last, UnaryPredicate p )
+{
+	return ecuda::find_if( first, last, p ) != last;
+}
 
 ECUDA_SUPPRESS_HD_WARNINGS
-template<class InputIterator,class UnaryPredicate> inline __HOST__ __DEVICE__ bool none_of( InputIterator first, InputIterator last, UnaryPredicate p ) { return ecuda::find_if( first, last, p ) == last; }
-
-template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
+template<class InputIterator,class UnaryPredicate>
+inline __HOST__ __DEVICE__
+bool none_of( InputIterator first, InputIterator last, UnaryPredicate p )
+{
+	return ecuda::find_if( first, last, p ) == last;
+}
 
 } // namespace ecuda
-
-#include "algo/reverse.hpp" // equivalent to std::reverse (requires ecuda::swap)
 
 #endif
 

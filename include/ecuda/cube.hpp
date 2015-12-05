@@ -289,7 +289,7 @@ public:
 	///
 	/// \returns The number of columns in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; }
+	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; } //TODO: this costs a register in kernel code
 
 	///
 	/// \brief Returns the number of depths in the container.

@@ -53,6 +53,15 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
+/// \cond DEVELOPER_DOCUMENTATION
+namespace detail {
+
+typedef ecuda::false_type host_type;   // alias for ecuda::iterator_traits<>::is_device_iterator
+typedef ecuda::true_type  device_type; // alias for ecuda::iterator_traits<>::is_device_iterator
+
+} // namespace detail
+/// \endcond
+
 ///
 /// \brief Replacement for std::copy.
 ///

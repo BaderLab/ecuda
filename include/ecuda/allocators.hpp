@@ -46,7 +46,6 @@ either expressed or implied, of the FreeBSD Project.
 #include "type_traits.hpp"
 #include "ptr/common.hpp"
 #include "ptr/padded_ptr.hpp"
-//#include "memory.hpp"
 
 namespace ecuda {
 
@@ -54,7 +53,7 @@ namespace ecuda {
 /// \brief Allocator for page-locked host memory.
 ///
 /// Implementation follows the specification of an STL allocator. The main
-/// difference is that the CUDA API functions cudaMallocHost and cudaFreeHost
+/// difference is that the CUDA API functions cudaHostAlloc and cudaFreeHost
 /// are used internally to allocate/deallocate memory.
 ///
 /// Page-locked or "pinned" memory makes copying memory from the GPU (device)
@@ -66,7 +65,7 @@ namespace ecuda {
 ///
 /// For example:
 /// \code{.cpp}
-/// std::vector< int, host_allocator<int> > v;
+/// std::vector< int, ecuda::host_allocator<int> > v;
 /// \endcode
 /// This would instantiate a vector whose underlying contents would be stored in
 /// page-locked host memory.  Then a call to, for example:
@@ -79,7 +78,7 @@ namespace ecuda {
 /// This would potentially be a faster transfer than one would get using a
 /// <tt>std::vector</tt> with the default STL allocator.
 ///
-template<typename T>
+template<typename T,unsigned Flags=cudaHostAllocDefault>
 class host_allocator
 {
 
@@ -147,7 +146,7 @@ public:
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
+	/// The block of storage is allocated using cudaHostAlloc and throws std::bad_alloc if it cannot
 	/// allocate the total amount of storage requested.
 	///
 	/// \param n Number of elements (each of size sizeof(value_type)) to be allocated.
@@ -161,14 +160,10 @@ public:
 	///
 	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifndef __CUDACC__
-		return std::allocator<value_type>().allocate( n, hint );
-		#else
 		pointer ptr = NULL;
-		const cudaError_t result = cudaMallocHost( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
+		const cudaError_t result = cudaHostAlloc( reinterpret_cast<void**>(&ptr), n*sizeof(T), Flags );
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		return ptr;
-		#endif
 	}
 
 	///
@@ -182,14 +177,10 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
-	inline void deallocate( pointer ptr, size_type n )
+	inline void deallocate( pointer ptr, size_type )
 	{
-		#ifndef __CUDACC__
-		return std::allocator<value_type>().deallocate( ptr, n );
-		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_host_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
-		#endif
 	}
 
 	///
@@ -314,14 +305,10 @@ public:
 	///
 	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifndef __CUDACC__
-		return std::allocator<value_type>().allocate( n, hint );
-		#else
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		return ptr;
-		#endif
 	}
 
 	///
@@ -337,12 +324,8 @@ public:
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
-		#ifndef __CUDACC__
-		std::allocator<value_type>().deallocate( ptr, n );
-		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
-		#endif
 	}
 
 	///
@@ -364,11 +347,7 @@ public:
 	///
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
-		#ifndef __CUDACC__
-		std::allocator<value_type>().construct( ptr, val );
-		#else
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
-		#endif
 	}
 
 	///
@@ -414,6 +393,11 @@ public:
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
+
+private:
+	template<typename U> struct char_cast;
+	template<typename U> struct char_cast<U*>       { char* type;       };
+	template<typename U> struct char_cast<const U*> { const char* type; };
 
 public:
 	///
@@ -482,30 +466,11 @@ public:
 	///
 	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 )
 	{
-		#ifndef __CUDACC__
-		// emulate a 128-bit memory alignment (16 bytes)
-		size_type pitch = w*sizeof(value_type);
-		pitch += (pitch % 16);
-		char* p = std::allocator<char>().allocate( pitch*h, hint );
-		typename ecuda::add_pointer<value_type>::type p2 = reinterpret_cast<typename ecuda::add_pointer<value_type>::type>( p );
-		if( (w*sizeof(value_type)) == pitch ) {
-			//std::cerr << "w=" << w << std::endl;
-			//std::cerr << "sizeof(value_type)=" << sizeof(value_type) << std::endl;
-			//std::cerr << "pitch=" << pitch << std::endl;
-			std::cerr << "ecuda::device_pitch_allocator::allocate is emulating device memory on host but the resulting" << std::endl;
-			std::cerr << "                                        pitch is the same as a contiguous block so internal API" << std::endl;
-			std::cerr << "                                        logic that considers memory pitch may not be properly tested" << std::endl;
-		}
-		//return pointer( p2, pitch, w, p2 );
-		return pointer( p2, pitch );
-		#else
 		typename ecuda::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
-		//return pointer( ptr, pitch, w, ptr );
 		return pointer( ptr, pitch );
-		#endif
 	}
 
 	///
@@ -521,12 +486,8 @@ public:
 	///
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
-		#ifndef __CUDACC__
-		std::allocator<value_type>().deallocate( ptr, n );
-		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
-		#endif
 	}
 
 	///
@@ -548,9 +509,6 @@ public:
 	///
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
-		#ifndef __CUDACC__
-		std::allocator<value_type>().construct( ptr, val );
-		#else
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		CUDA_CALL(
 			cudaMemcpy(
@@ -560,7 +518,6 @@ public:
 				cudaMemcpyHostToDevice
 			)
 		);
-		#endif
 	}
 
 	///
@@ -587,12 +544,6 @@ public:
 		return reinterpret_cast<const_pointer>( naked_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
 	}
 
-private:
-	template<typename U> struct char_cast;
-	template<typename U> struct char_cast<U*>       { char* type;       };
-	template<typename U> struct char_cast<const U*> { const char* type; };
-
-public:
 	///
 	/// \brief Returns the address of a given coordinate.
 	///
@@ -615,9 +566,6 @@ public:
 		p = p2;
 		p += y;
 		return pointer( p, ptr.get_pitch() );
-		//typename ecuda::add_pointer<value_type>::type p = naked_cast<
-		//ptr.operator+=(x*ptr.get_width()+y);
-		//return ptr;
 	}
 
 };
