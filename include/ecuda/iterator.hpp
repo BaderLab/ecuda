@@ -521,7 +521,7 @@ void advance(
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
+	// never called from device code
 	#else
 	std::advance( iterator, n );
 	#endif
@@ -575,8 +575,7 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT( false, CANNOT_ACCESS_HOST_MEMORY_FROM_DEVICE_CODE );
-	return 0;
+	return 0; // never called from device code
 	#else
 	return std::distance( first, last );
 	#endif

@@ -62,7 +62,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(false,CANNOT_CALL_REVERSE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
+	// never called from device code
 	#else
 	std::reverse( first, last );
 	#endif
@@ -86,7 +86,7 @@ reverse( ForwardIterator first, ForwardIterator last,
 		const bool isSomeKindOfContiguous =
 			ecuda::is_same<iterator_contiguity,ecuda::true_type>::value ||
 			ecuda::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
-		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_CALL_REVERSE_ON_NONCONTIGUOUS_DEVICE_MEMORY);
+		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_REVERSE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
 	}
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<ForwardIterator>::value_type>::type value_type;
 	std::vector< value_type, host_allocator<value_type> > v( ::ecuda::distance( first, last ) );

@@ -590,57 +590,11 @@ public:
 	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return base_type::get_pointer(); }
 
 	///
-	/// \brief Replaces the contents of the container.
-	/// \param newNumberRows new number of rows
-	/// \param newNumberColumns new number of columns
-	/// \param value the value to initialize elements of the container with
-	///
-	__HOST__ inline void assign( size_type newNumberRows, size_type newNumberColumns, const value_type& value = value_type() ) { resize( newNumberRows, newNumberColumns, value ); }
-
-	///
-	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
-//	/// \throws std::length_error if the number of elements in the range [begin,end) does not match the number of elements in this container
-	/// \param first,last the range to copy the elements from
-	///
-	template<class Iterator>
-	__HOST__ __DEVICE__ void assign( Iterator first, Iterator last )
-	{
-		#ifdef __CUDA_ARCH__
-		ecuda::copy( first, last, begin() );
-		#else
-		last = first;
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			ecuda::advance( last, number_columns() );
-			row_type row = get_row(i);
-			ecuda::copy( first, last, row.begin() );
-			ecuda::advance( first, number_columns() );
-		}
-		#endif
-	}
-
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Replaces the contents of the container with copies of those in the initializer list.
-	/// \throws std::length_error if the number of elements in the initializer list does not match the number of elements in this container
-	/// \param il initializer list to initialize the elements of the container with
-	///
-	__HOST__ inline void assign( std::initializer_list<T> il )
-	{
-		//host_array_proxy<const T> proxy( il.begin(), il.size() );
-		//assign( proxy.begin(), proxy.end() );
-		assign( il.begin(), il.end() );
-	}
-	#endif
-
-	///
 	/// \brief Assigns a given value to all elements in the container.
 	///
 	/// \param value the value to assign to the elements
 	///
-	__HOST__ __DEVICE__ void fill( const value_type& value )
-	{
-		if( size() ) ecuda::fill( begin(), end(), value );
-	}
+	__HOST__ __DEVICE__ inline void fill( const value_type& value ) { if( !empty() ) ecuda::fill( begin(), end(), value ); }
 
 	///
 	/// \brief Exchanges the contents of the container with those of the other.
@@ -671,23 +625,9 @@ public:
 	/// \returns true if the contents are equal, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator==( const matrix<value_type,Alloc2>& other ) const
+	__HOST__ __DEVICE__ inline bool operator==( const matrix<value_type,Alloc2>& other ) const
 	{
 		return ecuda::equal( begin(), end(), other.begin() );
-		/*
-		#ifdef __CUDA_ARCH__
-		return ecuda::equal( begin(), end(), other.begin() );
-		#else
-		if( number_rows() != other.number_rows() ) return false;
-		if( number_columns() != other.number_columns() ) return false;
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			const_row_type row1 = get_row(i);
-			typename matrix<value_type,Alloc2>::const_row_type row2 = other.get_row(i);
-			if( !ecuda::equal( row1.begin(), row1.end(), row2.begin() ) ) return false;
-		}
-		return true;
-		#endif
-		*/
 	}
 
 	///
@@ -713,25 +653,9 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically less than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator<( const matrix<value_type,Alloc2>& other ) const
+	__HOST__ __DEVICE__ inline bool operator<( const matrix<value_type,Alloc2>& other ) const
 	{
 		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		/*
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			const_row_type row1 = get_row(i);
-			typename matrix<value_type,Alloc2>::const_row_type row2 = other.get_row(i);
-			ecuda::copy( row1.begin(), row1.end(), v1.begin() );
-			ecuda::copy( row2.begin(), row2.end(), v2.begin() );
-			if( v1 < v2 ) return true;
-		}
-		return false;
-		#endif
-		*/
 	}
 
 	///
@@ -744,25 +668,9 @@ public:
 	/// \returns true if the contents of this matrix are lexicographically greater than the other matrix, false otherwise
 	///
 	template<class Alloc2>
-	__HOST__ __DEVICE__ bool operator>( const matrix<value_type,Alloc2>& other ) const
+	__HOST__ __DEVICE__ inline bool operator>( const matrix<value_type,Alloc2>& other ) const
 	{
 		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		/*
-		#ifdef __CUDA_ARCH__
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-		#else
-		std::vector< value_type, host_allocator<value_type> > v1( number_columns() );
-		std::vector< value_type, host_allocator<value_type> > v2( number_columns() );
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			const_row_type row1 = get_row(i);
-			typename matrix<value_type,Alloc2>::const_row_type row2 = other.get_row(i);
-			ecuda::copy( row1.begin(), row1.end(), v1.begin() );
-			ecuda::copy( row2.begin(), row2.end(), v2.begin() );
-			if( v1 > v2 ) return true;
-		}
-		return false;
-		#endif
-		*/
 	}
 
 	///
@@ -788,84 +696,6 @@ public:
 	///
 	template<class Alloc2>
 	__HOST__ __DEVICE__ inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return !operator<(other); }
-
-	/*
-	///
-	/// \brief Returns a reference to the element at the specified matrix location.
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::matrix<double> deviceMatrix( 100, 100 );
-	/// // within kernel
-	/// double& value = deviceMatrix.at( 10, 10 ); // slightly faster
-	/// double& value = deviceMatrix[10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a row view, and then performing an
-	/// additional access to a column within it.  Modern compilers can be pretty crafty
-	/// at seeing through these these types of situations, and it may resolve to an
-	/// identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \returns reference to the specified element
-	///
-	__DEVICE__ inline T& at( const size_type rowIndex, const size_type columnIndex ) { return base_type::at( rowIndex, columnIndex ); }
-
-	///
-	/// \brief Returns a reference to the element at the specified matrix location.
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::matrix<double> deviceMatrix( 100, 100 );
-	/// // within kernel
-	/// double& value = deviceMatrix.at( 10, 10 ); // slightly faster
-	/// double& value = deviceMatrix[10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a row view, and then performing an
-	/// additional access to a column within it.  Modern compilers can be pretty crafty
-	/// at seeing through these these types of situations, and it may resolve to an
-	/// identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \returns reference to the specified element
-	///
-	__DEVICE__ inline const T& at( const size_type rowIndex, const size_type columnIndex ) const { return base_type::at( rowIndex, columnIndex ); }
-	*/
-
-	/*
-	 * Deprecating this function since the STL standard seems to specify that the at() accessor
-	 * must implement range checking that throws an exception on failure.  Since exceptions are
-	 * not supported within a CUDA kernel, this cannot be satisfied.
-	 *
-	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex ) {
-		//if( rowIndex >= row_size() ) throw std::out_of_range( "ecuda::matrix::at() rowIndex parameter is out of range" );	
-		//if( columnIndex >= column_size() ) throw std::out_of_range( "ecuda::matrix::at() columnIndex parameter is out of range" );	
-		return *allocator.address( data(), rowIndex, columnIndex, pitch );
-	}
-	__DEVICE__ inline reference at( size_type index ) { return at( index / numberColumns, index % numberColumns ); }
-
-	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const {
-		//if( rowIndex >= row_size() ) throw std::out_of_range( "ecuda::matrix::at() rowIndex parameter is out of range" );	
-		//if( columnIndex >= column_size() ) throw std::out_of_range( "ecuda::matrix::at() columnIndex parameter is out of range" );	
-		return *allocator.address( data(), rowIndex, columnIndex, pitch );
-	}
-	__DEVICE__ inline const_reference at( size_type index ) const { return at( index / numberColumns, index % numberColumns ); }
-	*/
 
 };
 

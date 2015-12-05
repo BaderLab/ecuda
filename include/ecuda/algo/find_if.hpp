@@ -77,8 +77,7 @@ inline __HOST__ __DEVICE__ InputIterator
 find_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FIND_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return last;
+	return last; // never called on device code
 	#else
 	return std::find_if( first, last, p );
 	#endif

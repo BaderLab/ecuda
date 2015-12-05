@@ -451,7 +451,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets compiled, just here to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -482,7 +481,6 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // never actually gets compiled, just here to satisfy nvcc
 	#else
 	typedef device_contiguous_block_iterator<T,P> output_iterator_type;
@@ -541,7 +539,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	// is the device iterator contiguous?
@@ -599,7 +596,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -630,7 +626,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
@@ -700,7 +695,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	{
@@ -766,7 +760,6 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 )
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(false,CANNOT_CALL_COPY_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return result; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	return std::copy( first, last, result );

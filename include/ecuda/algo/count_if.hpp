@@ -56,7 +56,6 @@ inline __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::diffe
 count_if( InputIterator first, InputIterator last, UnaryPredicate p, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_COUNT_IF_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return 0; // never called from device code
 	#else
 	// just defer to STL

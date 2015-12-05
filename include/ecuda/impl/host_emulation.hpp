@@ -39,6 +39,12 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_IMPL_HOST_IMPLEMENTATION_HPP
 #define ECUDA_IMPL_HOST_IMPLEMENTATION_HPP
 
+/// \cond DEVELOPER_DOCUMENTATION
+///
+/// These are CUDA API calls that have been reimplemented to use host memory
+/// only. If code isn't compiled by nvcc then these functions are called
+/// instead.
+///
 #ifndef __CUDACC__
 
 #include <algorithm>
@@ -73,8 +79,6 @@ cudaError_t cudaMalloc( void** devPtr, size_t size )
 	return cudaSuccess;
 }
 
-//inline cudaError_t cudaMallocHost( void** ptr, size_t size, unsigned flags = 0 ) { return cudaMalloc( ptr, size ); }
-
 #define cudaHostAllocDefault       0x00
 #define cudaHostAllocPortable      0x01
 #define cudaHostAllocMapped        0x02
@@ -107,5 +111,6 @@ cudaError_t cudaMemcpy2D( void* dst, size_t dpitch, const void* src, size_t spit
 }
 
 #endif // __CUDACC__
+/// \endcond
 
 #endif // ECUDA_IMPL_HOST_IMPLEMENTATION_HPP

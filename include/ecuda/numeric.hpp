@@ -59,7 +59,7 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 	return init;
 	#else
 	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
-	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_ACCUMULATE);
+	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
 	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
 	ecuda::copy( first, last, hostVector.begin() );
@@ -76,7 +76,7 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 	return init;
 	#else
 	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
-	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_WITH_ACCUMULATE);
+	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
 	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
 	ecuda::copy( first, last, hostVector.begin() );
@@ -89,7 +89,6 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 {
 	// not an iterator to device memory, delegate to STL
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_ACCUMULATE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return last; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	return std::accumulate( first, last, init, op );
@@ -101,7 +100,6 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 {
 	// not an iterator to device memory, delegate to STL
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_ACCUMULATE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return last; // can never be called from device code, dummy return to satisfy nvcc
 	#else
 	return std::accumulate( first, last, init );

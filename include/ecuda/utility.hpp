@@ -44,11 +44,6 @@ either expressed or implied, of the FreeBSD Project.
 
 namespace ecuda {
 
-//#ifdef __CPP11_SUPPORTED__
-//template<typename T>
-//__HOST__ __DEVICE__ __CONSTEXPR__ typename std::remove_reference<T>::type&& move( T&& t ) __NOEXCEPT__ { return static_cast<typename std::remove_reference<T>::type&&>(t); }
-//#endif
-
 ///
 /// \brief Couples together a pair of values.
 ///
@@ -62,7 +57,9 @@ struct pair {
 	T2 second;
 	ECUDA_SUPPRESS_HD_WARNINGS
 	__HOST__ __DEVICE__ pair() {}
+	ECUDA_SUPPRESS_HD_WARNINGS
 	template<typename U,typename V> __HOST__ __DEVICE__ pair( const pair<U,V>& pr ) : first(pr.first), second(pr.second) {}
+	ECUDA_SUPPRESS_HD_WARNINGS
 	__HOST__ __DEVICE__ pair( const first_type& a, const second_type& b ) : first(a), second(b) {}
 };
 

@@ -56,7 +56,6 @@ inline __HOST__ __DEVICE__ UnaryFunction
 for_each( InputIterator first, InputIterator last, UnaryFunction f, ecuda::false_type ) // host memory
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_FOR_EACH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return f; // never called from device code
 	#else
 	// just defer to STL

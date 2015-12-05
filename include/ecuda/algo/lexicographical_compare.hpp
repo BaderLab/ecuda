@@ -64,7 +64,6 @@ lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return false; // never actually gets called, just here to trick nvcc
 	#else
 	return std::lexicographical_compare( first1, last1, first2, last2 );
@@ -79,7 +78,6 @@ lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return false; // never actually gets called, just here to trick nvcc
 	#else
 	return ::ecuda::lexicographical_compare( first2, last2, first1, last1 ); // switch positions to resolve to function below
@@ -94,7 +92,6 @@ lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 )
 {
 	#ifdef __CUDA_ARCH__
-	ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
 	return false; // never actually gets called, just here to trick nvcc
 	#else
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type;
@@ -104,7 +101,7 @@ lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 		const bool isSomeKindOfContiguous =
 			ecuda::is_same<iterator_contiguity,ecuda::true_type>::value ||
 			ecuda::is_same<iterator_category,device_contiguous_block_iterator_tag>::value;
-		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_CALL_LEXICOGRAPHICAL_COMPARE_NONCONTIGUOUS_DEVICE_MEMORY);
+		ECUDA_STATIC_ASSERT(isSomeKindOfContiguous,CANNOT_LEXICOGRAPHICALLY_COMPARE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
 	}
 	std::vector< value_type, host_allocator<value_type> > v( ::ecuda::distance(first2,last2) );
 	::ecuda::copy( first2, last2, v.begin() );

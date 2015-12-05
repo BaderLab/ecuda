@@ -57,8 +57,7 @@ inline __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::false_type> ) // host/host memory
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
+	return ecuda::pair<InputIterator1,InputIterator2>(first1,first2); // never called from device code
 	#else
 	// just defer to STL
 	std::pair<InputIterator1,InputIterator2> p = std::mismatch( first1, last1, first2 );
@@ -72,8 +71,7 @@ __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::false_type,ecuda::true_type> ) // host/device memory
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
+	return ecuda::pair<InputIterator1,InputIterator2>(first1,first2); // never called from device code
 	#else
 	typedef typename ecuda::remove_const<typename ecuda::iterator_traits<InputIterator2>::value_type>::type value_type2;
 	typedef std::vector< value_type2, host_allocator<value_type2> > vector_type2;
@@ -90,8 +88,7 @@ __HOST__ __DEVICE__ ecuda::pair<InputIterator1,InputIterator2>
 mismatch( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::true_type,ecuda::false_type> ) // device/host memory
 {
 	#ifdef __CUDA_ARCH__
-	//ECUDA_STATIC_ASSERT(__CUDA_ARCH__,CANNOT_CALL_MISMATCH_ON_HOST_MEMORY_INSIDE_DEVICE_CODE);
-	return ecuda::pair<InputIterator1,InputIterator2>(); // never called from device code
+	return ecuda::pair<InputIterator1,InputIterator2>(first1,first2); // never called from device code
 	#else
 	InputIterator2 last2 = first2;
 	ecuda::advance( last2, ecuda::distance(first1,last1) );

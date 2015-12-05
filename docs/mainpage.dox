@@ -942,6 +942,7 @@ The support of the <a href="http://baderlab.org/">Bader Lab</a>, part of the <a 
 /// removal of << and >> container operators (use ecuda::copy)
 /// deprecated cube::get_pitch() (now use cube::data().get_pitch())
 /// deprecated cube::assign(Iterator,Iterator) since it doesn't really apply given that knowledge of row/col size is needed
+/// deprecated matrix::assign(Iterator,Iterator) since it doesn't really apply given that knowledge of row/col size is needed
 /// operator[] = proxy class
 /// at()       = bounds-checked
 /// operator() = direct, non-bounds-checked

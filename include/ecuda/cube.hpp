@@ -185,7 +185,6 @@ private:
 			typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
 			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch() );
-			//padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch(), p.get_width(), sp );
 			base_type base( pp, number_rows()*number_columns(), number_depths() );
 			base_type::swap( base );
 		}
@@ -617,7 +616,6 @@ public:
 			asm("trap;");
 			#endif
 		}
-		//return base_type::at( rowIndex, columnIndex*number_columns()+depthIndex );
 		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
 	}
 
@@ -644,7 +642,6 @@ public:
 			asm("trap;");
 			#endif
 		}
-		//return base_type::at( rowIndex, columnIndex*number_columns()+depthIndex );
 		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
 	}
 
@@ -672,7 +669,6 @@ public:
 	///
 	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
 
-
 	///
 	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
 	/// \param rowIndex index of the YZ-slice to isolate
@@ -686,66 +682,6 @@ public:
 	/// \returns view object for the specified row
 	///
 	__HOST__ __DEVICE__ inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
-
-	/*
-	///
-	/// \brief Returns a reference to the element at the specified cube location.
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
-	/// // within kernel
-	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
-	/// double& value = deviceCube[10][10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a YZ-slice view, then the second
-	/// operator[] creating a view of a single row within the slice, and then finally
-	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \param depthIndex index of the depth to get an element reference from
-	/// \returns reference to the specified element
-	///
-	__DEVICE__ inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
-
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
-	/// // within kernel
-	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
-	/// double& value = deviceCube[10][10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a YZ-slice view, then the second
-	/// operator[] creating a view of a single row within the slice, and then finally
-	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \param depthIndex index of the depth to get an element reference from
-	/// \returns reference to the specified element
-	///
-	__DEVICE__ inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex ); }
-	*/
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
@@ -777,20 +713,7 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-	__HOST__ __DEVICE__ void fill( const value_type& value )
-	{
-		if( size() ) ecuda::fill( begin(), end(), value );
-		/*
-		#ifdef __CUDA_ARCH__
-		ecuda::fill( begin(), end(), value );
-		#else
-		for( typename base_type::size_type i = 0; i < base_type::number_rows(); ++i ) {
-			typename base_type::row_type row = base_type::get_row(i);
-			ecuda::fill( row.begin(), row.end(), value );
-		}
-		#endif
-		*/
-	}
+	__HOST__ __DEVICE__ inline void fill( const value_type& value ) { if( !empty() ) ecuda::fill( begin(), end(), value ); }
 
 };
 
