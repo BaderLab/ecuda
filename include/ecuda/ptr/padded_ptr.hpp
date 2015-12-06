@@ -51,11 +51,11 @@ namespace ecuda {
 ///
 /// \brief A specialized pointer to padded memory.
 ///
-/// A specialized pointer to device memory where traversal of the data takes into account an ignorable region
-/// of padding after every fixed number of sequential elements.
+/// A specialized pointer to device memory which is aligned to a certain width. Although this class stores this
+/// width it is the responsibility of the user of the class to account for this padding when traversing the
+/// data.
 ///
-/// The specialization is used to both represent 2D memory allocations using cudaMallocPitch() and to
-/// create certain views of a cube (e.g. single row or column).
+/// The specialization is used to both represent 2D memory allocations using cudaMallocPitch().
 ///
 /// Memory use can be conceptualized as:
 /// \code
@@ -71,10 +71,9 @@ namespace ecuda {
 ///   +----------+----+
 /// \endcode
 ///
-/// The template parameter P is the base pointer type. It will be T* by default, but can refer to other pointer
-/// specializations (i.e. shared_ptr). However, if any increment/decrement operation is intended on the padded_ptr
-/// then the type P must have a constructor that can take a raw pointer of type T* (otherwise P can't be realigned
-/// to the start of the next contiguous block of memory once it hits the padded region).
+/// This class stores the pitch, but not the width nor the position within the range that the current pointed to
+/// element resides. The caller should store the relative position within the padded region and utilize the get_pitch()
+/// and skip_bytes() methods to skip over the padded region when needed.
 ///
 template<typename T,class P=typename ecuda::add_pointer<T>::type>
 class padded_ptr
@@ -182,6 +181,14 @@ public:
 	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator<=( const padded_ptr<T2,P2>& other ) const { return ptr <= other.ptr; }
 	template<typename T2,typename P2> __HOST__ __DEVICE__ bool operator>=( const padded_ptr<T2,P2>& other ) const { return ptr >= other.ptr; }
 
+	///
+	/// \brief Move the pointer some number of bytes.
+	///
+	/// Remember the movement is always in bytes and doesn't consider
+	/// sizeof(element_type).
+	///
+	/// \param x Number of bytes to move the pointer.
+	///
 	__HOST__ __DEVICE__ void skip_bytes( difference_type x )
 	{
 		typedef typename ecuda::add_pointer<element_type>::type raw_pointer_type;
