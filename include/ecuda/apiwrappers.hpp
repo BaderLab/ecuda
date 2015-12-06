@@ -88,6 +88,23 @@ inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, con
 	return cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
 }
 
+namespace impl {
+
+template<typename T>
+bool is_fast_fillable( const T& value )
+{
+	const char* p = reinterpret_cast<const char*>(&value);
+	const char* q = p; ++q;
+	for( int i = 1; i < sizeof(T); ++i, ++q ) if( *p != *q ) return false;
+	return true;
+}
+
+} // namespace impl
+
+inline cudaError_t cudaMemset( char* devPtr, const char& value, const size_t count )
+{
+	return ::cudaMemset( static_cast<void*>(devPtr), static_cast<int>(value), count );
+}
 
 ///
 /// \brief Re-implementation of CUDA API function cudaMemset that allows for any data type.
@@ -107,9 +124,18 @@ template<typename T>
 inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count )
 {
 	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
+	if( impl::is_fast_fillable(value) ) {
+		return cudaMemset( reinterpret_cast<char*>(devPtr), *reinterpret_cast<const char*>(&value), count*sizeof(T) );
+	}
 	std::vector< T, host_allocator<T> > v( count, value );
 	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
 }
+
+inline cudaError_t cudaMemset2D( char* devPtr, const size_t pitch, const char& value, const size_t width, const size_t height )
+{
+	return ::cudaMemset2D( static_cast<void*>(devPtr), pitch, static_cast<int>(value), width, height );
+}
+
 
 ///
 /// \brief Re-implementation of CUDA API function cudaMemset2D that allows for any data type.
@@ -130,6 +156,9 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count )
 template<typename T>
 cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height )
 {
+	if( impl::is_fast_fillable(value) ) {
+		return cudaMemset2D( reinterpret_cast<char*>(devPtr), pitch, *reinterpret_cast<const char*>(&value), width, height );
+	}
 	std::vector< T, host_allocator<T> > v( width, value );
 	char* charPtr = reinterpret_cast<char*>(devPtr);
 	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {

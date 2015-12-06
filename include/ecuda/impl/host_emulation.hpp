@@ -110,6 +110,22 @@ cudaError_t cudaMemcpy2D( void* dst, size_t dpitch, const void* src, size_t spit
 	return cudaSuccess;
 }
 
+cudaError_t cudaMemset( void* devPtr, int value, size_t count )
+{
+	char* p = static_cast<char*>(devPtr);
+	for( size_t i = 0; i < count; ++i, ++p ) *p = static_cast<char>(value);
+	return cudaSuccess;
+}
+
+cudaError_t cudaMemset2D( void* devPtr, size_t pitch, int value, size_t width, size_t height )
+{
+	char* p = static_cast<char*>(devPtr);
+	for( std::size_t i = 0; i < height; ++i ) {
+		for( std::size_t j = 0; j < pitch; ++j, ++p ) if( j < width ) *p = static_cast<char>(value);
+	}
+	return cudaSuccess;
+}
+
 #endif // __CUDACC__
 /// \endcond
 

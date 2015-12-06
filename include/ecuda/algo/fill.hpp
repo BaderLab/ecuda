@@ -88,12 +88,26 @@ __HOST__ __DEVICE__ inline void fill(
 	#else
 	typedef device_contiguous_block_iterator<T,P> input_iterator_type;
 	typename ecuda::iterator_traits<input_iterator_type>::difference_type n = std::distance( first, last );
+	if( first.get_offset() ) {
+		const int leading = first.get_width() - first.get_offset();
+		::ecuda::fill( first.contiguous_begin(), first.contiguous_begin()+leading, val );
+		first += leading;
+		n -= leading;
+	}
+	const int rows = n / first.get_width();
+	typedef typename ecuda::iterator_traits< device_contiguous_block_iterator<T,P> >::value_type value_type;
+	typedef typename ecuda::add_pointer<value_type>::type pointer_type;
+	CUDA_CALL( cudaMemset2D<value_type>( naked_cast<pointer_type>(first.operator->()), first.operator->().get_pitch(), val, first.get_width(), rows ) );
+	n -= rows * first.get_width();
+	if( n ) ::ecuda::fill( first.contiguous_begin(), first.contiguous_begin()+n, val );
+	/*
 	while( n > 0 ) {
 		const std::size_t width = first.get_width() - first.get_offset();
 		::ecuda::fill( first.contiguous_begin(), first.contiguous_end(), val );
 		::ecuda::advance( first, width );
 		n -= width;
 	}
+	*/
 	#endif
 }
 
