@@ -42,8 +42,8 @@ either expressed or implied, of the FreeBSD Project.
 #include <numeric>
 
 #include "global.hpp"
-#include "iterator.hpp"
-#include "type_traits.hpp"
+#include "iterator.hpp"    // for ecuda::iterator_traits
+#include "type_traits.hpp" // for ecuda::is_same
 
 namespace ecuda {
 
@@ -109,12 +109,36 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 } // namespace impl
 /// \endcond
 
+///
+/// \brief Computes the sum of a sequence of elements.
+///
+/// Computes the sum of the given value init and the elements in the range [first,last).
+///
+/// \param first,last the range of elements to sum
+/// \param init initial value of the sum
+/// \returns the sum of the given value and elements in the given range
+///
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init )
 {
 	return impl::accumulate( first, last, init, ecuda::iterator_traits<InputIterator>::is_device_iterator() );
 }
 
+///
+/// \brief Computes the sum of a sequence of elements.
+///
+/// Computes the sum of the given value init and the elements in the range [first,last).
+/// The sum is calculated using the binary operation function op that should have a signature
+/// equivalent to:
+/// \code{.cpp}
+/// Ret fun( const Type1& a, const Type2& b );
+/// \endcode
+///
+/// \param first,last the range of elements to sum
+/// \param init initial value of the sum
+/// \param op binary operation function object that will be applied
+/// \returns the sum of the given value and elements in the given range
+///
 template<class InputIterator,typename T,class BinaryOperation>
 __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, BinaryOperation op )
 {

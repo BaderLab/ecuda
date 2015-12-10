@@ -92,12 +92,13 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 /// For example, a good kernel to perform an operation on the elements of a cube might be:
 ///
 /// \code{.cpp}
-/// template<typename T> __global__ void doCubeOperation( ecuda::cube<T> cube ) {
+/// template<typename T> __global__ void doCubeOperation( typename ecuda::cube<T>::kernel_argument cube )
+/// {
 ///    const int dep = blockDim.x*gridDim.x; // each thread gets a different depth value
 ///    const int row = blockIdx.y;
 ///    const int col = blockIdx.z;
-///    if( row < cube.number_rows() and col < cube.number_columns() and dep < cube.number_depths() ) {
-///       T& value = cube[row][col][dep];
+///    if( row < cube.number_rows() && col < cube.number_columns() && dep < cube.number_depths() ) {
+///       T& value = cube(row,col,dep);
 ///       // ... do work on value
 ///    }
 /// }
@@ -160,15 +161,20 @@ public:
 
 private:
 	size_type numberRows; //!< number of rows
-	allocator_type allocator;
+	allocator_type allocator; //!< device memory allocator
 
 	template<typename U,class Alloc2,class Q> friend class cube;
 
 protected:
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<typename U>
 	__HOST__ __DEVICE__ cube( const cube<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows()*src.number_columns(), src.number_depths() ), numberRows(src.numberRows), allocator(src.allocator) {}
-	__HOST__ __DEVICE__ cube( const cube& src, ecuda::true_type ) : base_type(src), numberRows(src.numberRows), allocator(src.allocator) {}
 
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	__HOST__ __DEVICE__ cube& shallow_assign( const cube& other )
 	{
 		base_type::get_pointer() = other.get_pointer();
@@ -720,9 +726,19 @@ public:
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+///
+/// A cube subclass that should be used as the representation of a cube within kernel code.
+///
+/// This achieves two objectives: 1) create a new cube object that is instantiated by creating
+/// a shallow copy of the contents (so that older versions of the CUDA API that don't support
+/// kernel pass-by-reference can specify containers in the function arguments), and 2) strip any
+/// unnecessary data that will be useless to the kernel thus reducing register usage (in this
+/// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
+///
 template< typename T, class Alloc=device_pitch_allocator<T> >
 class cube_kernel_argument : public cube<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
+
 private:
 	typedef cube<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
 

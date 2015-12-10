@@ -56,14 +56,16 @@ private:
 	int driverVersion, runtimeVersion;
 
 public:
-	static int getDeviceCount() {
+	static int getDeviceCount()
+	{
 		int deviceCount = 0;
 		CUDA_CALL( cudaGetDeviceCount(&deviceCount) );
 		return deviceCount;
 	}
 
 public:
-	device( const int deviceNumber ) : deviceNumber(deviceNumber) {
+	device( const int deviceNumber ) : deviceNumber(deviceNumber)
+	{
 		CUDA_CALL( cudaGetDeviceProperties(&deviceProperties,deviceNumber) );
 		CUDA_CALL( cudaDriverGetVersion(&driverVersion) );
 		CUDA_CALL( cudaRuntimeGetVersion(&runtimeVersion) );
@@ -75,7 +77,8 @@ public:
 	inline int get_runtime_version() const { return runtimeVersion; }
 	inline const cudaDeviceProp& get_properties() const { return deviceProperties; }
 
-	std::string get_driver_version_string() const {
+	std::string get_driver_version_string() const
+	{
 		std::ostringstream oss;
 		oss << (driverVersion/1000);
 		oss << ".";
@@ -83,7 +86,8 @@ public:
 		return oss.str();
 	}
 
-	std::string get_runtime_version_string() const {
+	std::string get_runtime_version_string() const
+	{
 		std::ostringstream oss;
 		oss << (runtimeVersion/1000);
 		oss << ".";
@@ -91,7 +95,16 @@ public:
 		return oss.str();
 	}
 
-	void print_summary( std::ostream& output = std::cout ) {
+	void print_summary( std::ostream& output = std::cout )
+	{
+		/*
+		output << "Device " << get_device_number() << ": \"" << deviceProperties.name << "\"" << std::endl;
+		output << "  CUDA Driver Version / Runtime Version          " << get_driver_version_string() << std::endl;
+		output << "  CUDA Capability Major/Minor version number:    " << deviceProperties.major << "."<< deviceProperties.minor << std::endl;
+		output << "  Total amount of global memory:                 " << (deviceProperties.totalGlobalMem/1048576.0f) << " (" << deviceProperties.totalGlobalMem << " bytes)" << std::endl;
+		output << "  (" << std::setw(2) << deviceProperties.multiProcessorCount << ") Multiprocessors, (" << std::setw(3) <<
+		*/
+
 		output << "name=" << deviceProperties.name << std::endl;
 		output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
 		output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;

@@ -49,13 +49,12 @@ either expressed or implied, of the FreeBSD Project.
 
 #include <algorithm>
 #include <memory>
+#include <ctime>
 
 enum cudaError_t
 {
 	cudaSuccess
 };
-
-//typedef bool cudaError_t;
 
 enum cudaMemcpyKind {
 	cudaMemcpyDeviceToDevice,
@@ -110,6 +109,15 @@ cudaError_t cudaMemcpy2D( void* dst, size_t dpitch, const void* src, size_t spit
 	return cudaSuccess;
 }
 
+cudaError_t cudaMemcpyToSymbol( const char* dest, const void* src, size_t count, size_t offset = 0, cudaMemcpyKind = cudaMemcpyHostToDevice )
+{
+	char* pDst = const_cast<char*>(dest);
+	pDst += offset;
+	const char* pSrc = reinterpret_cast<const char*>(src);
+	std::copy( pSrc, pSrc+count, pDst );
+	return cudaSuccess;
+}
+
 cudaError_t cudaMemset( void* devPtr, int value, size_t count )
 {
 	char* p = static_cast<char*>(devPtr);
@@ -123,6 +131,49 @@ cudaError_t cudaMemset2D( void* devPtr, size_t pitch, int value, size_t width, s
 	for( std::size_t i = 0; i < height; ++i ) {
 		for( std::size_t j = 0; j < pitch; ++j, ++p ) if( j < width ) *p = static_cast<char>(value);
 	}
+	return cudaSuccess;
+}
+
+namespace impl {
+
+struct cudaEvent
+{
+	std::clock_t time;
+};
+
+} // namespace impl
+
+typedef impl::cudaEvent* cudaEvent_t;
+
+typedef int cudaStream_t;
+
+cudaError_t cudaEventCreate( cudaEvent_t* event )
+{
+	*event = new impl::cudaEvent;
+	return cudaSuccess;
+}
+
+cudaError_t cudaEventCreateWithFlags( cudaEvent_t* event, unsigned ) { return cudaEventCreate(event); }
+
+cudaError_t cudaEventRecord( cudaEvent_t event, cudaStream_t = 0 )
+{
+	event->time = std::clock();
+	return cudaSuccess;
+}
+
+cudaError_t cudaEventQuery( cudaEvent_t ) { return cudaSuccess; }
+
+cudaError_t cudaEventDestroy( cudaEvent_t event )
+{
+	if( event ) delete event;
+	return cudaSuccess;
+}
+
+cudaError_t cudaEventSynchronize( cudaEvent_t event ) { return cudaSuccess; }
+
+cudaError_t cudaEventElapsedTime( float* ms, cudaEvent_t start, cudaEvent_t end )
+{
+	*ms = static_cast<double>( end->time - start->time ) / static_cast<double>(CLOCKS_PER_SEC) * static_cast<double>(1000);
 	return cudaSuccess;
 }
 

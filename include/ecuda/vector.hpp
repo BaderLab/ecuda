@@ -76,7 +76,20 @@ template<typename T,class Alloc> class vector_kernel_argument; // forward declar
 /// accessors of general information can be performed on both the host and device.
 ///
 /// Any growth of the vector follows a doubling pattern.  The existing memory allocation size
-/// is doubled until the requested amount of memory is met or exceeded.
+/// is doubled until the requested amount of memory is met or exceeded.  In practice, vector growth,
+/// element insertions and so on, will be far faster with host memory and so it is preferred to do
+/// these kinds of operations in host code and then copy the final result into device memory.
+///
+/// \code{.cpp}
+/// // slow
+/// ecuda::vector<double> deviceVector;
+/// for( size_t i = 0; i < 100; ++i ) deviceVector.push_back( static_cast<double>(i) );
+///
+/// // fast
+/// std::vector<double> hostVector;
+/// for( size_t i = 0; i < 100; ++i ) hostVector.push_back( static_cast<double>(i) );
+/// ecuda::vector<double> deviceVector( hostVector.begin(), hostVector.end() );
+/// \endcode
 ///
 template< typename T, class Alloc=device_allocator<T>, class P=shared_ptr<T> >
 class vector : private impl::device_contiguous_sequence< T, P > {
@@ -115,9 +128,15 @@ private:
 	template<typename U,class Alloc2,class Q> friend class vector;
 
 protected:
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<class Q>
 	__HOST__ __DEVICE__ vector( const vector<T,Alloc,Q>& src, ecuda::true_type ) : base_type(unmanaged_cast(src.get_pointer())), n(src.n), allocator(src.allocator) {}
 
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<class Q>
 	__HOST__ __DEVICE__ vector& shallow_assign( const vector<T,Alloc,Q>& other )
 	{
@@ -641,27 +660,6 @@ public:
 		return newPosition;
 	}
 
-	/*
-	 * Not implementing this function since a move operation isn't possible because the item
-	 * must be copied from host to device memory.
-	 *
-	#ifdef __CPP11_SUPPORTED__
-	///
-	/// \brief Inserts count copies of the value before position.
-	///
-	/// Causes reallocation if the new size() is greater than the old capacity(). If the new
-	/// size() is greater than capacity(), all iterators and references are invalidated.
-	/// Otherwise, only the iterators and references before the insertion point remain valid.
-	/// The past-the-end iterator is also invalidated.
-	///
-	/// \param position iterator before which the content will be inserted. position may be the end() iterator
-	/// \param value element value to insert
-	/// \return iterator pointing to the inserted value
-	///
-	__HOST__ iterator insert( const_iterator position, value_type&& value );
-	#endif
-	*/
-
 	///
 	/// \brief Inserts elements from range [first,last) before position.
 	///
@@ -903,6 +901,15 @@ __HOST__ void vector<T,Alloc,P>::growMemory( size_type minimum )
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+///
+/// A vector subclass that should be used as the representation of a vector within kernel code.
+///
+/// This achieves two objectives: 1) create a new cube object that is instantiated by creating
+/// a shallow copy of the contents (so that older versions of the CUDA API that don't support
+/// kernel pass-by-reference can specify containers in the function arguments), and 2) strip any
+/// unnecessary data that will be useless to the kernel thus reducing register usage (in this
+/// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
+///
 template<typename T,class Alloc>
 class vector_kernel_argument : public vector<T,Alloc,typename ecuda::add_pointer<T>::type>
 {

@@ -5,6 +5,7 @@
 #include "../include/ecuda/algorithm.hpp"
 #include "../include/ecuda/allocators.hpp"
 #include "../include/ecuda/array.hpp"
+#include "../include/ecuda/event.hpp"
 
 #ifdef __CUDACC__
 template<typename T,std::size_t N>
@@ -17,6 +18,14 @@ __global__ void kernel_test_iterators( const typename ecuda::array<T,N>::kernel_
 #endif
 
 int main( int argc, char* argv[] ) {
+
+	{
+		ecuda::event start, stop;
+		start.record();
+		stop.record();
+		stop.synchronize();
+		std::cout << "EVENT TEST = " << ( stop - start ) << " ms" << std::endl;
+	}
 
 	{
 		std::cout << "TESTING CONSTRUCTORS" << std::endl;

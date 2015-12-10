@@ -39,6 +39,8 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_EVENT_HPP
 #define ECUDA_EVENT_HPP
 
+#include "impl/host_emulation.hpp" // gets data structure definitions when compiling host-only without nvcc
+
 namespace ecuda {
 
 ///

@@ -98,9 +98,14 @@ public:
 	template<typename U,std::size_t M,class Q> friend class array;
 
 protected:
-	template<class Q>
-	__HOST__ __DEVICE__ array( const array<T,N,Q>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()) ) {}
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
+	template<class Q> __HOST__ __DEVICE__ array( const array<T,N,Q>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()) ) {}
 
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<class Q>
 	__HOST__ __DEVICE__ array& shallow_assign( const array<T,N,Q>& other )
 	{
@@ -124,26 +129,31 @@ public:
 	///
 	/// Constructs an array with a copy of the contents of src.
 	///
-	/// \param src Another array object of the same type and size, whose contents are copied.
+	/// \param src another array object of the same type and size, whose contents are copied.
 	///
 	__HOST__ array( const array& src ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(src.size()) ) )
 	{
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
+	///
+	/// \brief Assignment operator.
+	///
+	/// Assigns new contents to the array, replacing its current contents.
+	///
+	/// \param other another array object of the same type and size, whose contents are assigned.
+	///
 	__HOST__ array& operator=( const array& other )
 	{
 		ecuda::copy( other.begin(), other.end(), begin() );
 		return *this;
 	}
 
-	//__HOST__ array( const array& );
-	//__HOST__ array& operator=( const array& );
-
 	#ifdef __CPP11_SUPPORTED__
 	///
-	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+	/// \brief Move constructor.
 	///
+	/// Constructs the container with the contents of the other using move semantics.
 	/// This constructor is only available if the compiler is configured to allow C++11.
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
@@ -321,15 +331,16 @@ public:
 	__HOST__ __DEVICE__ inline iterator end() __NOEXCEPT__ { return base_type::end(); }
 
 	///
-	/// \brief Returns an iterator to the first element of the container.
+	/// \brief Returns a const_iterator to the first element of the container.
 	///
 	/// If the container is empty, the returned iterator will be equal to end().
 	///
 	/// \returns Iterator to the first element.
+	///
 	__HOST__ __DEVICE__ inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
 
 	///
-	/// \brief Returns an iterator to the element following the last element of the container.
+	/// \brief Returns a const_iterator to the element following the last element of the container.
 	///
 	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
 	///
@@ -357,7 +368,7 @@ public:
 	__HOST__ __DEVICE__ inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); }
 
 	///
-	/// \brief Returns a reverse iterator to the first element of the reversed container.
+	/// \brief Returns a const_reverse_iterator to the first element of the reversed container.
 	///
 	/// It corresponds to the last element of the non-reversed container.
 	///
@@ -366,7 +377,7 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); }
 
 	///
-	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
+	/// \brief Returns a const_reverse_iterator to the element following the last element of the reversed container.
 	///
 	/// It corresponds to the element preceding the first element of the non-reversed container. This element
 	/// acts as a placeholder, attempting to access it results in undefined behaviour.
@@ -376,10 +387,44 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
 	#ifdef __CPP11_SUPPORTED__
+
+	///
+	/// \brief Returns a const_iterator to the first element of the container.
+	///
+	/// If the container is empty, the returned iterator will be equal to end().
+	///
+	/// \returns Iterator to the first element.
+	///
 	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const __NOEXCEPT__ { return base_type::cbegin();  }
+
+	///
+	/// \brief Returns a const_iterator to the element following the last element of the container.
+	///
+	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
+	///
+	/// \returns Iterator to the element following the last element.
+	///
 	__HOST__ __DEVICE__ inline const_iterator         cend()    const __NOEXCEPT__ { return base_type::cend();    }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       __NOEXCEPT__ { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend()         __NOEXCEPT__ { return base_type::crend();   }
+
+	///
+	/// \brief Returns a const_reverse_iterator to the first element of the reversed container.
+	///
+	/// It corresponds to the last element of the non-reversed container.
+	///
+	/// \returns Reverse iterator to the first element.
+	///
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const __NOEXCEPT__ { return base_type::crbegin(); }
+
+	///
+	/// \brief Returns a const_reverse_iterator to the element following the last element of the reversed container.
+	///
+	/// It corresponds to the element preceding the first element of the non-reversed container. This element
+	/// acts as a placeholder, attempting to access it results in undefined behaviour.
+	///
+	/// \returns Reverse iterator to the element following the last element.
+	///
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return base_type::crend();   }
+
 	#endif
 
 	///
@@ -397,8 +442,9 @@ public:
 	__HOST__ __DEVICE__ __CONSTEXPR__ inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
 
 	///
-	/// \brief Returns the maximum number of elements the container is able to hold due to system
-	/// or library implementation limitations.
+	/// \brief Returns the maximum number of elements the container is able to hold.
+	///
+	/// The value can be defined according to system or library implementation limitations.
 	///
 	/// \returns Maximum number of elements.
 	///
@@ -486,6 +532,15 @@ public:
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+///
+/// An array subclass that should be used as the representation of an array within kernel code.
+///
+/// This achieves two objectives: 1) create a new array object that is instantiated by creating
+/// a shallow copy of the contents (so that older versions of the CUDA API that don't support
+/// kernel pass-by-reference can specify containers in the function arguments), and 2) strip any
+/// unnecessary data that will be useless to the kernel thus reducing register usage (in this
+/// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
+///
 template<typename T,std::size_t N>
 class array_kernel_argument : public array<T,N,typename ecuda::add_pointer<T>::type>
 {

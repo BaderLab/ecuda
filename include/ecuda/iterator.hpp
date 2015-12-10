@@ -42,7 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 #include <iterator>
 
 #include "global.hpp"
-//#include "memory.hpp"
 #include "type_traits.hpp"
 
 namespace ecuda {
@@ -414,11 +413,6 @@ public:
 
 };
 
-//template<class IteratorCategory> struct __is_contiguous { typedef std::false_type type; };
-//template<> struct __is_contiguous<std::random_access_iterator_tag> { typedef std::true_type type; };
-//template<typename T> struct __is_contiguous<T*> { typedef std::true_type type; };
-//template<typename T> struct __is_contiguous<const T*> { typedef std::true_type type; };
-
 template<class Iterator>
 class iterator_traits : private std::iterator_traits<Iterator> {
 private:
@@ -530,6 +524,17 @@ void advance(
 } // namespace impl
 /// \endcond
 
+///
+/// \brief Increments given iterator by n elements.
+///
+/// If n is negative, the iterator is decremented. This function will work
+/// on both iterators of host and device memory. However, if the iterator
+/// refers to non-contiguous device memory and this function is called from
+/// host code an assertion will fail at compile-time.
+///
+/// \param iterator iterator to be advanced
+/// \param n number of elements iterator should be advanced
+///
 ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename Distance>
 __HOST__ __DEVICE__ inline void advance( InputIterator& iterator, Distance n )

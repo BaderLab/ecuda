@@ -88,11 +88,12 @@ template<typename T,class Alloc> class matrix_kernel_argument; // forward declar
 /// For example, a good kernel to perform an operation on the elements of a matrix might be:
 ///
 /// \code{.cpp}
-/// template<typename T> __global__ void doMatrixOperation( ecuda::matrix<T> matrix ) {
+/// template<typename T> __global__ void doMatrixOperation( typename ecuda::matrix<T>::kernel_argument matrix )
+/// {
 ///    const int row = blockIdx.x;
 ///    const int col = blockDim.y*gridDim.y; // each thread gets a different column value
-///    if( row < matrix.number_rows() and col < matrix.number_columns() ) {
-///       T& value = matrix[row][col];
+///    if( row < matrix.number_rows() && col < matrix.number_columns() ) {
+///       T& value = matrix(row,col);
 ///       // ... do work on value
 ///    }
 /// }
@@ -155,10 +156,16 @@ private:
 	template<typename U,class Alloc2,class Q> friend class matrix;
 
 protected:
+
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<typename U>
 	__HOST__ __DEVICE__ matrix( const matrix<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows(), src.number_columns() ), allocator(src.allocator) {}
-	__HOST__ __DEVICE__ matrix( const matrix& src, ecuda::true_type ) : base_type(src), allocator(src.allocator) {}
 
+	///
+	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+	///
 	template<typename U>
 	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix<T,Alloc,U>& other )
 	{
@@ -702,9 +709,19 @@ public:
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+///
+/// A matrix subclass that should be used as the representation of a matrix within kernel code.
+///
+/// This achieves two objectives: 1) create a new cube object that is instantiated by creating
+/// a shallow copy of the contents (so that older versions of the CUDA API that don't support
+/// kernel pass-by-reference can specify containers in the function arguments), and 2) strip any
+/// unnecessary data that will be useless to the kernel thus reducing register usage (in this
+/// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
+///
 template< typename T, class Alloc=device_pitch_allocator<T> >
 class matrix_kernel_argument : public matrix<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
+
 private:
 	typedef matrix<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
 
