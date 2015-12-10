@@ -64,7 +64,8 @@ template<typename T> using add_lvalue_reference = std::add_lvalue_reference<T>;
 typedef std::true_type  true_type;
 typedef std::false_type false_type;
 
-
+template<typename T> using is_integral = std::is_integral<T>;
+/*
 template<typename T> struct is_integral           { typedef false_type type; };
 template<> struct is_integral<bool>               { typedef true_type type; };
 template<> struct is_integral<char>               { typedef true_type type; };
@@ -83,6 +84,7 @@ template<> struct is_integral<long>               { typedef true_type type; };
 template<> struct is_integral<unsigned long>      { typedef true_type type; };
 template<> struct is_integral<long long>          { typedef true_type type; };
 template<> struct is_integral<unsigned long long> { typedef true_type type; };
+*/
 
 template<typename T> using add_pointer = std::add_pointer<T>;
 
@@ -155,8 +157,8 @@ template<> struct is_integral<unsigned long>      { typedef true_type type; };
 template<> struct is_integral<long long>          { typedef true_type type; };
 template<> struct is_integral<unsigned long long> { typedef true_type type; };
 
-template<typename T> struct add_pointer          { typedef T* type; };
-template<typename T> struct add_pointer<const T> { typedef const T* type; }; // confirm this is needed
+template<typename T> struct add_pointer          { typedef typename remove_reference<T>::type* type; };
+//template<typename T> struct add_pointer<const T> { typedef const T* type; }; // confirm this is needed
 
 template<typename T> struct remove_pointer                    { typedef T type; };
 template<typename T> struct remove_pointer<T*>                { typedef T type; };
