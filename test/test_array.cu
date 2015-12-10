@@ -10,8 +10,9 @@
 template<typename T,std::size_t N>
 __global__ void kernel_test_iterators( const typename ecuda::array<T,N>::kernel_argument src, typename ecuda::array<T,N>::kernel_argument dest )
 {
-	typename ecuda::array<T,N>::iterator result = dest.begin();
-	for( typename ecuda::array<T,N>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
+	ecuda::copy( src.begin(), src.end(), dest.begin() );
+	//typename ecuda::array<T,N>::iterator result = dest.begin();
+	//for( typename ecuda::array<T,N>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
 }
 #endif
 

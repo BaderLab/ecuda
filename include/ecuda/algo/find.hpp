@@ -85,6 +85,7 @@ find( InputIterator first, InputIterator last, const T& value, ecuda::false_type
 }
 
 } // namespace impl
+/// \endcond
 
 ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>

@@ -478,22 +478,22 @@ std::vector<double> hostVector( 100 ); // create 100 element vector in host memo
 for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i; // set the values to range from 0-99
 
 for( unsigned i = 0; i < 100; ++i )
-   deviceMatrix[i].assign( hostVector.begin(), hostVector.end() ); // set each row of matrix to hold this sequence of values
+    ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix[i].begin() ); // set each row of matrix to hold this sequence of values
 \endcode
 
-The containers can then be passed to kernel functions and manipulated as needed.
+The containers can then be passed to kernel functions and manipulated as needed. Note that the <container>::kernel_argument type is used to declare the container arguments.
 
 \code{.cpp}
 __global__
-void addColumns( const ecuda::matrix<double> srcMatrix, ecuda::array<double,100> columnSums ) {
+void addColumns( const typename ecuda::matrix<double>::kernel_argument srcMatrix, typename ecuda::array<double,100>::kernel_argument columnSums ) {
 
-   const int threadNum = threadIdx.x;
-   typedef ecuda::matrix<double>::const_column_type ColumnType;
+   const int t = threadIdx.x;
+   typedef ecuda::matrix<double>::const_column_type column_type;
 
    if( threadNum < 100 ) {
-	  ColumnType column = srcMatrix.get_column(threadNum);
-	  for( ColumnType::iterator iter = column.begin(); iter != column.end(); ++iter )
-		 columnSums[threadNum] += *iter;
+	column_type column = srcMatrix.get_column(t);
+	for( typename column_type::iterator iter = column.begin(); iter != column.end(); ++iter )
+	    columnSums[t] += *iter;
    }
 
 }

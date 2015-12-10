@@ -71,8 +71,8 @@ either expressed or implied, of the FreeBSD Project.
 /// with it.  All calls to functions in the CUDA API that return an error code
 /// should use this.
 #ifdef __CUDACC__
-/// Macro function currently throws an ecuda::cuda_error exception containing a
-/// description of the problem error code.
+// Macro function currently throws an ecuda::cuda_error exception containing a
+// description of the problem error code.
 #define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 #else
 // cannot do CUDA calls when emulating with host only
