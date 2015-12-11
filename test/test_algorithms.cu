@@ -140,14 +140,18 @@ std::ostream& operator<<( std::ostream& out, const estd::cube<T>& cbe )
 int main( int, char** )
 {
 
-	const std::size_t N = 1000;
+	//const std::size_t N = 1000;
 	const std::size_t R = 5;
 	const std::size_t C = 5;
 	const std::size_t D = 5;
 
+	data_type hostArray[R];
+	std::vector<data_type> hostVector( R );
 	estd::matrix<matrix_index> hostMatrix( R, C );
 	estd::cube<cube_index> hostCube( R, C, D );
 	for( std::size_t i = 0; i < R; ++i ) {
+		hostArray[i] = data_type(i);
+		hostVector[i] = data_type(i);
 		for( std::size_t j = 0; j < C; ++j ) {
 			hostMatrix(i,j) = matrix_index(i,j);
 			for( std::size_t k = 0; k < D; ++k ) {
@@ -156,14 +160,38 @@ int main( int, char** )
 		}
 	}
 
-	ecuda::array<int,N> deviceArray;
-	ecuda::vector<int> deviceVector( N );
+	ecuda::array<data_type,R> deviceArray;
+	ecuda::vector<data_type> deviceVector( R );
 	ecuda::matrix<matrix_index> deviceMatrix( R, C );
 	ecuda::cube<cube_index> deviceCube( R, C, D );
 
 	// copy, equal, and fill
 	{
 		std::cout << "ecuda::copy, ecuda::equal and ecuda::fill:" << std::endl;
+
+		ecuda::copy( hostArray, hostArray+R, deviceArray.begin() );
+		std::cout << "  array  =>";
+		std::cout << " " << std::boolalpha << ecuda::equal( hostArray, hostArray+R, deviceArray.begin() );
+		ecuda::fill( hostArray, hostArray+R, data_type() );
+		std::cout << " " << std::boolalpha << !ecuda::equal( hostArray, hostArray+R, deviceArray.begin() );
+		ecuda::copy( deviceArray.begin(), deviceArray.end(), hostArray );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostArray, hostArray+R, deviceArray.begin() );
+		ecuda::fill( hostArray, hostArray+R, data_type() );
+		ecuda::fill( deviceArray.begin(), deviceArray.end(), data_type() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostArray, hostArray+R, deviceArray.begin() );
+		std::cout << std::endl;
+
+		ecuda::copy( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+		std::cout << "  vector =>";
+		std::cout << " " << std::boolalpha << ecuda::equal( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+		ecuda::fill( hostVector.begin(), hostVector.end(), data_type() );
+		std::cout << " " << std::boolalpha << !ecuda::equal( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+		ecuda::copy( deviceVector.begin(), deviceVector.end(), hostVector.begin() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+		ecuda::fill( hostVector.begin(), hostVector.end(), data_type() );
+		ecuda::fill( deviceVector.begin(), deviceVector.end(), data_type() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+		std::cout << std::endl;
 
 		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
 		std::cout << "  matrix =>";
