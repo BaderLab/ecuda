@@ -3,24 +3,22 @@
 #include <list>
 #include <vector>
 
-#include "../include/ecuda/algorithm.hpp"
-#include "../include/ecuda/allocators.hpp"
-#include "../include/ecuda/array.hpp"
-#include "../include/ecuda/matrix.hpp"
-#include "../include/ecuda/vector.hpp"
-
+#include "../include/ecuda/ecuda.hpp"
 #include <estd/matrix.hpp>
+#include <estd/cube.hpp>
 
 #ifdef __CUDACC__
 template<typename T>
-__global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
+__global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest )
+{
 	typename ecuda::matrix<T>::iterator result = dest.begin();
 	//typename ecuda::matrix<T>::const_iterator result2 = result;
 	for( typename ecuda::matrix<T>::const_iterator iter = src.begin(); iter != src.end(); ++iter, ++result ) *result = *iter;
 }
 
 template<typename T>
-__global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> dest ) {
+__global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> dest )
+{
 	for( typename ecuda::matrix<T>::size_type i = 0; i < src.number_columns(); ++i ) {
 		typename ecuda::matrix<T>::const_column_type srcColumn = src.get_column(i);
 		typename ecuda::matrix<T>::column_type destColumn = dest.get_column(i);
@@ -29,7 +27,8 @@ __global__ void testIterators2( const ecuda::matrix<T> src, ecuda::matrix<T> des
 }
 
 template<typename T,class Alloc>
-__global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest ) {
+__global__ void testAccessors( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest )
+{
 							   //ecuda::impl::matrix_device_argument<T,Alloc> dest ) {
 //		const typename ecuda::matrix<T,Alloc>::argument src, typename ecuda::matrix<T,Alloc>::argument dest ) {
 	//typedef ecuda::matrix<T,Alloc1> src_matrix_type;
@@ -49,12 +48,149 @@ struct UnaryPredicate
 	__DEVICE__ __HOST__ bool operator()( const T& val ) const { return true; }
 };
 
-int main( int argc, char* argv[] ) {
+template<typename T>
+struct matrix_index_t
+{
+	T x, y;
+	matrix_index_t( const T x = T(), const T y = T() ) : x(x), y(y) {}
+	bool operator==( const matrix_index_t& other ) const { return x == other.x and y == other.y; }
+	bool operator<( const matrix_index_t& other ) const { return x == other.x ? y < other.y : x < other.x; }
+	template<typename U>
+	friend std::ostream& operator<<( std::ostream& out, const matrix_index_t<U>& mat ) {
+		out << "(" << mat.x << "," << mat.y << ")";
+		return out;
+	}
+};
+template<typename T>
+struct cube_index_t : matrix_index_t<T>
+{
+	T z;
+	cube_index_t( const T x = T(), const T y = T(), const T z = T() ) : matrix_index_t<T>(x,y), z(z) {}
+	bool operator==( const cube_index_t& other ) const { return matrix_index_t<T>::operator==(other) and z == other.z; }
+	bool operator<( const cube_index_t& other ) const { return matrix_index_t<T>::operator==(other) ? z < other.z : matrix_index_t<T>::operator<(other); }
+	template<typename U>
+	friend std::ostream& operator<<( std::ostream& out, const cube_index_t<U>& cbe ) {
+		out << "(" << cbe.x << "," << cbe.y << "," << cbe.z << ")";
+		return out;
+	}
+};
 
+typedef double data_type;
+typedef matrix_index_t<data_type> matrix_index;
+typedef cube_index_t<data_type> cube_index;
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const ecuda::matrix<T>& mat )
+{
+	for( std::size_t i = 0; i < mat.number_rows(); ++i ) {
+		for( std::size_t j = 0; j < mat.number_columns(); ++j ) {
+			if( j ) out << " ";
+			out << mat(i,j);
+		}
+		out << std::endl;
+	}
+	return out;
+}
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const estd::matrix<T>& mat )
+{
+	for( std::size_t i = 0; i < mat.number_rows(); ++i ) {
+		for( std::size_t j = 0; j < mat.number_columns(); ++j ) {
+			if( j ) out << " ";
+			out << mat(i,j);
+		}
+		out << std::endl;
+	}
+	return out;
+}
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const ecuda::cube<T>& cbe )
+{
+	for( std::size_t i = 0; i < cbe.number_rows(); ++i ) {
+		out << "ROW[" << i << "]:" << std::endl;
+		for( std::size_t j = 0; j < cbe.number_columns(); ++j ) {
+			for( std::size_t k = 0; k < cbe.number_depths(); ++k ) {
+				if( k ) out << " ";
+				out << cbe(i,j,k);
+			}
+			out << std::endl;
+		}
+	}
+	return out;
+}
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const estd::cube<T>& cbe )
+{
+	for( std::size_t i = 0; i < cbe.number_rows(); ++i ) {
+		out << "ROW[" << i << "]:" << std::endl;
+		for( std::size_t j = 0; j < cbe.number_columns(); ++j ) {
+			for( std::size_t k = 0; k < cbe.number_depths(); ++k ) {
+				if( k ) out << " ";
+				out << cbe(i,j,k);
+			}
+			out << std::endl;
+		}
+	}
+	return out;
+}
+
+int main( int, char** )
+{
+
+	const std::size_t N = 1000;
 	const std::size_t R = 5;
 	const std::size_t C = 5;
-	estd::matrix<int> hostMatrix( R, C );
-	ecuda::matrix<int> deviceMatrix( R, C );
+	const std::size_t D = 5;
+
+	estd::matrix<matrix_index> hostMatrix( R, C );
+	estd::cube<cube_index> hostCube( R, C, D );
+	for( std::size_t i = 0; i < R; ++i ) {
+		for( std::size_t j = 0; j < C; ++j ) {
+			hostMatrix(i,j) = matrix_index(i,j);
+			for( std::size_t k = 0; k < D; ++k ) {
+				hostCube(i,j,k) = cube_index(i,j,k);
+			}
+		}
+	}
+
+	ecuda::array<int,N> deviceArray;
+	ecuda::vector<int> deviceVector( N );
+	ecuda::matrix<matrix_index> deviceMatrix( R, C );
+	ecuda::cube<cube_index> deviceCube( R, C, D );
+
+	// copy, equal, and fill
+	{
+		std::cout << "ecuda::copy, ecuda::equal and ecuda::fill:" << std::endl;
+
+		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		std::cout << "  matrix =>";
+		std::cout << " " << std::boolalpha << ecuda::equal( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		ecuda::fill( hostMatrix.begin(), hostMatrix.end(), matrix_index() );
+		std::cout << " " << std::boolalpha << !ecuda::equal( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		ecuda::fill( hostMatrix.begin(), hostMatrix.end(), matrix_index() );
+		ecuda::fill( deviceMatrix.begin(), deviceMatrix.end(), matrix_index() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+		std::cout << std::endl;
+
+		ecuda::copy( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+		std::cout << "  cube   =>";
+		std::cout << " " << std::boolalpha << ecuda::equal( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+		ecuda::fill( hostCube.begin(), hostCube.end(), cube_index() );
+		std::cout << " " << std::boolalpha << !ecuda::equal( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+		ecuda::copy( deviceCube.begin(), deviceCube.end(), hostCube.begin() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+		ecuda::fill( hostCube.begin(), hostCube.end(), cube_index() );
+		ecuda::fill( deviceCube.begin(), deviceCube.end(), cube_index() );
+		std::cout << " " << std::boolalpha << ecuda::equal( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+		std::cout << std::endl;
+
+		std::cout << std::endl;
+	}
 
 	// copy
 	{
@@ -64,18 +200,18 @@ int main( int argc, char* argv[] ) {
 		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
 	}
 
-	// fill
-	{
-		ecuda::fill( hostMatrix.begin(), hostMatrix.end(), 0 );
-		ecuda::fill( deviceMatrix.begin(), deviceMatrix.end(), 0 );
-	}
-
 	// equal
 	{
 		ecuda::equal( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
 		ecuda::equal( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
 		ecuda::equal( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
 		ecuda::equal( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
+	}
+
+	// fill
+	{
+		ecuda::fill( hostMatrix.begin(), hostMatrix.end(), matrix_index() );
+		ecuda::fill( deviceMatrix.begin(), deviceMatrix.end(), matrix_index() );
 	}
 
 	// lexicographical_compare
@@ -100,28 +236,28 @@ int main( int argc, char* argv[] ) {
 
 	// find_if
 	{
-		ecuda::find_if( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<int>() );
-		ecuda::find_if( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<int>() );
+		ecuda::find_if( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<matrix_index>() );
+		ecuda::find_if( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<matrix_index>() );
 	}
 
 	// @TODO - some C++11 only algos go here
 
 	// any_of
 	{
-		ecuda::any_of( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<int>() );
-		ecuda::any_of( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<int>() );
+		ecuda::any_of( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<matrix_index>() );
+		ecuda::any_of( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<matrix_index>() );
 	}
 
 	// none_of
 	{
-		ecuda::none_of( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<int>() );
-		ecuda::none_of( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<int>() );
+		ecuda::none_of( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<matrix_index>() );
+		ecuda::none_of( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<matrix_index>() );
 	}
 
 	// for_each
 	{
-		ecuda::for_each( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<int>() );
-		ecuda::for_each( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<int>() );
+		ecuda::for_each( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<matrix_index>() );
+		ecuda::for_each( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<matrix_index>() );
 	}
 
 	// count
@@ -132,8 +268,8 @@ int main( int argc, char* argv[] ) {
 
 	// count_if
 	{
-		ecuda::count_if( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<int>() );
-		ecuda::count_if( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<int>() );
+		ecuda::count_if( hostMatrix.begin(), hostMatrix.end(), UnaryPredicate<matrix_index>() );
+		ecuda::count_if( deviceMatrix.begin(), deviceMatrix.end(), UnaryPredicate<matrix_index>() );
 	}
 
 	// mismatch

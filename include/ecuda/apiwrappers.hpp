@@ -195,7 +195,7 @@ template<typename T>
 cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height )
 {
 	if( impl::is_equal_bytes(value) ) {
-		return cudaMemset2D( reinterpret_cast<char*>(devPtr), pitch, *reinterpret_cast<const char*>(&value), width, height );
+		return cudaMemset2D( reinterpret_cast<char*>(devPtr), pitch, *reinterpret_cast<const char*>(&value), width*sizeof(T), height );
 	}
 	std::vector< T, host_allocator<T> > v( width, value );
 	char* charPtr = reinterpret_cast<char*>(devPtr);

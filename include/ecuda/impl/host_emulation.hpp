@@ -89,9 +89,11 @@ cudaError_t cudaMallocPitch( void** devPtr, size_t* pitch, size_t width, size_t 
 {
 	*pitch = width;
 	*pitch += (*pitch % 16); // add padding to get 128-bit memory alignment (16 bytes)
+	if( ( width % *pitch ) == 0 ) {
+		++(*pitch); // just add a byte to get some padding
+		//std::cerr << "WARNING: Host emulation of cudaMallocPitch allocated the equivalent to a contiguous block and so is a poor test of API logic for pitched memory." << std::endl;
+	}
 	*devPtr = std::allocator<char>().allocate( (*pitch)*height );
-	if( ( width % *pitch ) == 0 )
-		std::cerr << "WARNING: Host emulation of cudaMallocPitch allocated the equivalent to a contiguous block and so is a poor test of API logic for pitched memory." << std::endl;
 	return cudaSuccess;
 }
 
@@ -176,6 +178,16 @@ cudaError_t cudaEventElapsedTime( float* ms, cudaEvent_t start, cudaEvent_t end 
 	*ms = static_cast<double>( end->time - start->time ) / static_cast<double>(CLOCKS_PER_SEC) * static_cast<double>(1000);
 	return cudaSuccess;
 }
+
+struct cudaDeviceProp {};
+
+cudaError_t cudaGetDeviceProperties( cudaDeviceProp*, int ) { return cudaSuccess; }
+
+cudaError_t cudaDriverGetVersion( int* driverVersion ) { *driverVersion = 0; return cudaSuccess; }
+
+cudaError_t cudaRuntimeGetVersion( int* runtimeVersion ) { *runtimeVersion = 0; return cudaSuccess; }
+
+cudaError_t cudaGetDeviceCount( int* count ) { *count = 0; return cudaSuccess; }
 
 #endif // __CUDACC__
 /// \endcond

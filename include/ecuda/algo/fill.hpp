@@ -100,14 +100,6 @@ __HOST__ __DEVICE__ inline void fill(
 	CUDA_CALL( cudaMemset2D<value_type>( naked_cast<pointer_type>(first.operator->()), first.operator->().get_pitch(), val, first.get_width(), rows ) );
 	n -= rows * first.get_width();
 	if( n ) ::ecuda::fill( first.contiguous_begin(), first.contiguous_begin()+n, val );
-	/*
-	while( n > 0 ) {
-		const std::size_t width = first.get_width() - first.get_offset();
-		::ecuda::fill( first.contiguous_begin(), first.contiguous_end(), val );
-		::ecuda::advance( first, width );
-		n -= width;
-	}
-	*/
 	#endif
 }
 

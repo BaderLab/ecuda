@@ -104,7 +104,7 @@ public:
 		output << "  Total amount of global memory:                 " << (deviceProperties.totalGlobalMem/1048576.0f) << " (" << deviceProperties.totalGlobalMem << " bytes)" << std::endl;
 		output << "  (" << std::setw(2) << deviceProperties.multiProcessorCount << ") Multiprocessors, (" << std::setw(3) <<
 		*/
-
+		#ifdef __CUDACC__
 		output << "name=" << deviceProperties.name << std::endl;
 		output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
 		output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;
@@ -156,6 +156,10 @@ public:
 		output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
 		output << "l2CacheSize=" << deviceProperties.l2CacheSize << std::endl;
 		output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
+		#else
+		output << "Not using device, in ecuda host emulation mode." << std::endl;
+		#endif
+
 	}
 
 };

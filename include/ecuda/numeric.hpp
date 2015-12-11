@@ -60,7 +60,7 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 	#else
 	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
 	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
-	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
+	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
 	ecuda::copy( first, last, hostVector.begin() );
 	return std::accumulate( hostVector.begin(), hostVector.end(), init, op );
@@ -77,10 +77,10 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 	#else
 	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
 	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
-	typename ecuda::iterator_traits<ForwardIterator>::difference_type n = ecuda::distance( first, last );
+	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
 	ecuda::copy( first, last, hostVector.begin() );
-	return std::accumulate( hostVector.begin(), hostVector.end(), init, op );
+	return std::accumulate( hostVector.begin(), hostVector.end(), init );
 	#endif
 }
 
