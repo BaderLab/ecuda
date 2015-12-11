@@ -79,6 +79,28 @@ typedef double data_type;
 typedef matrix_index_t<data_type> matrix_index;
 typedef cube_index_t<data_type> cube_index;
 
+template<typename T,std::size_t N>
+std::ostream& operator<<( std::ostream& out, const ecuda::array<T,N>& arr )
+{
+	for( std::size_t i = 0; i < N; ++i ) {
+		if( i ) out << " ";
+		out << arr(i);
+	}
+	out << std::endl;
+	return out;
+}
+
+template<typename T>
+std::ostream& operator<<( std::ostream& out, const ecuda::vector<T>& vec )
+{
+	for( std::size_t i = 0; i < vec.size(); ++i ) {
+		if( i ) out << " ";
+		out << vec(i);
+	}
+	out << std::endl;
+	return out;
+}
+
 template<typename T>
 std::ostream& operator<<( std::ostream& out, const ecuda::matrix<T>& mat )
 {
@@ -137,13 +159,92 @@ std::ostream& operator<<( std::ostream& out, const estd::cube<T>& cbe )
 	return out;
 }
 
+//const std::size_t N = 1000;
+const std::size_t R = 5;
+const std::size_t C = 5;
+const std::size_t D = 5;
+
+
+void test_reverse()
+{
+	data_type hostArray[R];
+	std::vector<data_type> hostVector( R );
+	estd::matrix<matrix_index> hostMatrix( R, C );
+	estd::cube<cube_index> hostCube( R, C, D );
+	for( std::size_t i = 0; i < R; ++i ) {
+		hostArray[i] = data_type(i);
+		hostVector[i] = data_type(i);
+		for( std::size_t j = 0; j < C; ++j ) {
+			hostMatrix(i,j) = matrix_index(i,j);
+			for( std::size_t k = 0; k < D; ++k ) {
+				hostCube(i,j,k) = cube_index(i,j,k);
+			}
+		}
+	}
+
+	ecuda::array<data_type,R> deviceArray;
+	ecuda::vector<data_type> deviceVector( R );
+	ecuda::matrix<matrix_index> deviceMatrix( R, C );
+	ecuda::cube<cube_index> deviceCube( R, C, D );
+	ecuda::copy( hostArray, hostArray+R, deviceArray.begin() );
+	ecuda::copy( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+	ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+	ecuda::copy( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+
+	// reverse
+	{
+		ecuda::reverse( hostArray, hostArray+R );
+		ecuda::reverse( hostVector.begin(), hostVector.end() );
+		ecuda::reverse( hostMatrix.begin(), hostMatrix.end() );
+		ecuda::reverse( hostCube.begin(), hostCube.end() );
+		ecuda::reverse( deviceArray.begin(), deviceArray.end() );
+		ecuda::reverse( deviceVector.begin(), deviceVector.end() );
+		ecuda::reverse( deviceMatrix.begin(), deviceMatrix.end() );
+		ecuda::reverse( deviceCube.begin(), deviceCube.end() );
+		std::cout << deviceArray << std::endl;
+		std::cout << deviceVector << std::endl;
+		std::cout << deviceMatrix << std::endl;
+		std::cout << deviceCube << std::endl;
+	}
+}
+
+void test_find()
+{
+	data_type hostArray[R];
+	std::vector<data_type> hostVector( R );
+	estd::matrix<matrix_index> hostMatrix( R, C );
+	estd::cube<cube_index> hostCube( R, C, D );
+	for( std::size_t i = 0; i < R; ++i ) {
+		hostArray[i] = data_type(i);
+		hostVector[i] = data_type(i);
+		for( std::size_t j = 0; j < C; ++j ) {
+			hostMatrix(i,j) = matrix_index(i,j);
+			for( std::size_t k = 0; k < D; ++k ) {
+				hostCube(i,j,k) = cube_index(i,j,k);
+			}
+		}
+	}
+
+	ecuda::array<data_type,R> deviceArray;
+	ecuda::vector<data_type> deviceVector( R );
+	ecuda::matrix<matrix_index> deviceMatrix( R, C );
+	ecuda::cube<cube_index> deviceCube( R, C, D );
+	ecuda::copy( hostArray, hostArray+R, deviceArray.begin() );
+	ecuda::copy( hostVector.begin(), hostVector.end(), deviceVector.begin() );
+	ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
+	ecuda::copy( hostCube.begin(), hostCube.end(), deviceCube.begin() );
+
+	std::cout << "H(1)     = " << ( ecuda::find( hostArray, hostArray+R, 1 ) - hostArray ) << std::endl;
+	std::cout << "D(1)     = " << ( ecuda::find( deviceArray.begin(), deviceArray.end(), 1 ) - deviceArray.begin() ) << std::endl;
+	std::cout << "H(1,1)   = " << ( ecuda::find( hostMatrix.begin(), hostMatrix.end(), matrix_index(1,1) ) - hostMatrix.begin() ) << std::endl;
+	std::cout << "D(1,1)   = " << ( ecuda::find( deviceMatrix.begin(), deviceMatrix.end(), matrix_index(1,1) ) - deviceMatrix.begin() ) << std::endl;
+	std::cout << "H(1,1,1) = " << ( ecuda::find( hostCube.begin(), hostCube.end(), cube_index(1,1,1) ) - hostCube.begin() ) << std::endl;
+	std::cout << "D(1,1,1) = " << ( ecuda::find( deviceCube.begin(), deviceCube.end(), cube_index(1,1,1) ) - deviceCube.begin() ) << std::endl;
+}
+
+
 int main( int, char** )
 {
-
-	//const std::size_t N = 1000;
-	const std::size_t R = 5;
-	const std::size_t C = 5;
-	const std::size_t D = 5;
 
 	data_type hostArray[R];
 	std::vector<data_type> hostVector( R );
@@ -250,17 +351,8 @@ int main( int, char** )
 		ecuda::lexicographical_compare( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin(), deviceMatrix.end() );
 	}
 
-	// reverse
-	{
-		ecuda::reverse( hostMatrix.begin(), hostMatrix.end() );
-		ecuda::reverse( deviceMatrix.begin(), deviceMatrix.end() );
-	}
-
-	// find
-	{
-		ecuda::find( hostMatrix.begin(), hostMatrix.end(), 0 );
-		ecuda::find( deviceMatrix.begin(), deviceMatrix.end(), 0 );
-	}
+	test_reverse();
+	test_find();
 
 	// find_if
 	{

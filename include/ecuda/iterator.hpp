@@ -287,7 +287,7 @@ public:
 
 	__DEVICE__ inline reference operator[]( int x ) const { return *operator+(x); }
 
-	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other )
+	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other ) const
 	{
 		typedef const char* char_pointer_type;
 		char_pointer_type p = naked_cast<char_pointer_type>(base_type::ptr);
@@ -414,7 +414,8 @@ public:
 };
 
 template<class Iterator>
-class iterator_traits : private std::iterator_traits<Iterator> {
+class iterator_traits : private std::iterator_traits<Iterator>
+{
 private:
 	typedef std::iterator_traits<Iterator> base_type;
 public:
@@ -428,7 +429,8 @@ public:
 };
 
 template<typename T,typename PointerType,typename Category>
-class iterator_traits< device_iterator<T,PointerType,Category> > : private std::iterator_traits< device_iterator<T,PointerType,Category> > {
+class iterator_traits< device_iterator<T,PointerType,Category> > : private std::iterator_traits< device_iterator<T,PointerType,Category> >
+{
 private:
 	typedef std::iterator_traits< device_iterator<T,PointerType,Category> > base_type;
 public:
@@ -442,7 +444,8 @@ public:
 };
 
 template<typename T>
-class iterator_traits< device_contiguous_iterator<T> > : private std::iterator_traits< device_contiguous_iterator<T> > {
+class iterator_traits< device_contiguous_iterator<T> > : private std::iterator_traits< device_contiguous_iterator<T> >
+{
 private:
 	typedef std::iterator_traits< device_contiguous_iterator<T> > base_type;
 public:
@@ -456,7 +459,8 @@ public:
 };
 
 template<typename T,typename P>
-class iterator_traits< device_contiguous_block_iterator<T,P> > : private iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> > {
+class iterator_traits< device_contiguous_block_iterator<T,P> > : private iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> >
+{
 private:
 	typedef iterator_traits< device_iterator<T,padded_ptr<T,P>,device_contiguous_block_iterator_tag> > base_type;
 public:
@@ -470,7 +474,8 @@ public:
 };
 
 template<typename Iterator>
-class iterator_traits< reverse_device_iterator<Iterator> > : private std::iterator_traits< reverse_device_iterator<Iterator> > {
+class iterator_traits< reverse_device_iterator<Iterator> > : private std::iterator_traits< reverse_device_iterator<Iterator> >
+{
 private:
 	typedef std::iterator_traits< reverse_device_iterator<Iterator> > base_type;
 public:
@@ -481,6 +486,21 @@ public:
 	typedef typename base_type::value_type         value_type;
 	typedef          ecuda::true_type              is_device_iterator;
 	typedef          ecuda::false_type             is_contiguous;
+};
+
+template<typename T>
+class iterator_traits<T*> : private std::iterator_traits<T*>
+{
+private:
+	typedef std::iterator_traits<T*> base_type;
+public:
+	typedef typename base_type::difference_type    difference_type;
+	typedef typename base_type::iterator_category  iterator_category;
+	typedef typename base_type::pointer            pointer;
+	typedef typename base_type::reference          reference;
+	typedef typename base_type::value_type         value_type;
+	typedef          ecuda::false_type             is_device_iterator;
+	//                                             is_contiguous (deliberately not present for host memory iterators)
 };
 
 /// \cond DEVELOPER_DOCUMENTATION
@@ -571,11 +591,10 @@ typename std::iterator_traits<Iterator>::difference_type distance(
 	#endif
 }
 
-
 template<class Iterator>
 __HOST__ __DEVICE__ inline
 typename std::iterator_traits<Iterator>::difference_type distance(
-	Iterator& first, Iterator& last,
+	const Iterator& first, const Iterator& last,
 	ecuda::false_type // host memory
 )
 {
@@ -597,7 +616,10 @@ __HOST__ __DEVICE__ inline typename std::iterator_traits<Iterator>::difference_t
 }
 
 template<typename T,typename P>
-__HOST__ __DEVICE__ inline typename std::iterator_traits< device_contiguous_block_iterator<T,P> >::difference_type distance( device_contiguous_block_iterator<T,P>& first, device_contiguous_block_iterator<T,P>& last )
+__HOST__ __DEVICE__
+inline
+typename std::iterator_traits< device_contiguous_block_iterator<T,P> >::difference_type
+distance( const device_contiguous_block_iterator<T,P>& first, const device_contiguous_block_iterator<T,P>& last )
 {
 	return last - first;
 }

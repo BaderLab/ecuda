@@ -42,6 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "global.hpp"
+#include "iterator.hpp"
 #include "type_traits.hpp"
 
 namespace ecuda {

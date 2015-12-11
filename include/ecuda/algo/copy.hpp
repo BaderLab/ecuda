@@ -91,6 +91,28 @@ template<class InputIterator,class OutputIterator> __HOST__ __DEVICE__ inline Ou
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+template<class Iterator>
+inline
+typename ecuda::iterator_traits<Iterator>::pointer
+get_iterator_pointer( Iterator& iter )
+{
+	return iter.operator->();
+}
+
+template<typename T>
+inline
+typename ecuda::add_pointer<T>::type
+get_iterator_pointer( T* ptr )
+{
+	return ptr;
+}
+
+} // namespace impl
+/// \endcond
+
+/// \cond DEVELOPER_DOCUMENTATION
+namespace impl {
+
 //
 // Start of DEVICE to DEVICE implementations
 //
@@ -456,9 +478,9 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last ); // get length of host sequence
 	typedef typename ecuda::add_pointer<value_type>::type pointer;
-	pointer dest = naked_cast<pointer>( result.operator->() );
+	pointer dest = naked_cast<pointer>( impl::get_iterator_pointer(result) );
 	typedef typename ecuda::add_pointer<const value_type>::type const_pointer;
-	const_pointer src = naked_cast<const_pointer>( first.operator->() );
+	const_pointer src = naked_cast<const_pointer>( impl::get_iterator_pointer(first) );
 	CUDA_CALL( cudaMemcpy<value_type>( dest, src, static_cast<std::size_t>(n), cudaMemcpyHostToDevice ) );
 	ecuda::advance( result, static_cast<std::size_t>(n) );
 	return result;
@@ -555,8 +577,8 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// run-time check that the host iterator traverses contiguous memory
 		// if not, make it so and call copy again
-		const typename std::iterator_traits<InputIterator>::pointer pStart = first.operator->();
-		const typename std::iterator_traits<InputIterator>::pointer pEnd   = last.operator->();
+		const typename std::iterator_traits<InputIterator>::pointer pStart = impl::get_iterator_pointer(first);
+		const typename std::iterator_traits<InputIterator>::pointer pEnd   = impl::get_iterator_pointer(last);
 		if( (pEnd-pStart) != std::distance(first,last) ) {
 			std::vector< U, host_allocator<U> > v( first, last ); // get type conversion here for free
 			return host_to_device::copy( v.begin(), v.end(), result, typename ecuda::iterator_traits<OutputIterator>::iterator_category() );
@@ -601,8 +623,8 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	typedef typename ecuda::iterator_traits<OutputIterator>::value_type value_type;
 	typedef typename ecuda::add_pointer<const value_type>::type           src_pointer_type;
 	typedef typename ecuda::add_pointer<value_type>::type                 dest_pointer_type;
-	src_pointer_type src   = naked_cast<src_pointer_type>( first.operator->() );
-	dest_pointer_type dest = naked_cast<dest_pointer_type>( result.operator->() );
+	src_pointer_type src   = naked_cast<src_pointer_type>( impl::get_iterator_pointer(first) );
+	dest_pointer_type dest = naked_cast<dest_pointer_type>( impl::get_iterator_pointer(result) );
 	const typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 	CUDA_CALL( cudaMemcpy<value_type>( dest, src, static_cast<std::size_t>(n), cudaMemcpyDeviceToHost ) );
 	ecuda::advance( result, static_cast<std::size_t>(n) );
@@ -712,10 +734,10 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 		// if not, create a temporary container that is and re-call copy
 		typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
 		typedef const char* raw_pointer_type;
-		raw_pointer_type pStart = naked_cast<raw_pointer_type>( result.operator->() );
+		raw_pointer_type pStart = naked_cast<raw_pointer_type>( impl::get_iterator_pointer(result) );
 		OutputIterator result2 = result;
 		ecuda::advance( result2, n );
-		raw_pointer_type pEnd = naked_cast<raw_pointer_type>( result2.operator->() );
+		raw_pointer_type pEnd = naked_cast<raw_pointer_type>( impl::get_iterator_pointer(result2) );
 		if( (pEnd-pStart) != ( n*sizeof(typename ecuda::iterator_traits<OutputIterator>::value_type) ) ) {
 			typedef typename ecuda::remove_const<U>::type U2; // need to strip source const otherwise this can't act as staging
 			std::vector< U2, host_allocator<U2> > v( n );
