@@ -195,10 +195,10 @@ public:
 		return *this;
 	}
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ device_fixed_sequence( device_fixed_sequence&& src ) : ptr(std::move(src.ptr)) {}
+	__HOST__ device_fixed_sequence( device_fixed_sequence&& src ) { ecuda::swap( ptr, src.ptr ); }
 	__HOST__ device_fixed_sequence& operator=( device_fixed_sequence&& src )
 	{
-		ptr = std::move(src.ptr);
+		ecuda::swap( ptr, src.ptr );
 		return *this;
 	}
 	#endif

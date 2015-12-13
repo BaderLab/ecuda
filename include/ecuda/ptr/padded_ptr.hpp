@@ -113,12 +113,11 @@ public:
 	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : ptr(src.get()), pitch(src.get_pitch()) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : ptr(std::move(src.ptr)), padding(std::move(src.padding)), edge(std::move(src.edge)) {}
+	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : ptr(std::move(src.ptr)), pitch(std::move(src.pitch)) {}
 	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
 	{
 		ptr = std::move(src.ptr);
-		padding = std::move(src.padding);
-		edge = std::move(src.edge);
+		pitch = std::move(src.pitch);
 		return *this;
 	}
 	#endif

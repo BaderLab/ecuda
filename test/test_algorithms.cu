@@ -7,6 +7,9 @@
 #include <estd/matrix.hpp>
 #include <estd/cube.hpp>
 
+// https://github.com/philsquared/Catch
+#include <catch.hpp>
+
 #ifdef __CUDACC__
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest )

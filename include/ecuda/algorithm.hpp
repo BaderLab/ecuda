@@ -42,8 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 #include <vector>
 
 #include "global.hpp"
-#include "iterator.hpp"
-#include "type_traits.hpp"
 
 namespace ecuda {
 
@@ -56,6 +54,9 @@ template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( cons
 template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
 } // namespace ecuda
+
+#include "iterator.hpp"
+#include "type_traits.hpp"
 
 #include "algo/copy.hpp"                    // equivalent to std::copy
 #include "algo/equal.hpp"                   // equivalent to std::equal

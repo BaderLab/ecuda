@@ -42,6 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <iterator>
 
 #include "global.hpp"
+#include "algorithm.hpp" // for ecuda::swap
 #include "type_traits.hpp"
 
 namespace ecuda {
@@ -93,6 +94,12 @@ public:
 	__HOST__ __DEVICE__ device_iterator( const device_iterator& src ) : ptr(src.ptr) {}
 	template<typename U,typename Q> __HOST__ __DEVICE__ device_iterator( const device_iterator<U,Q,Category>& src ) : ptr(src.ptr) {}
 
+	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator& other )
+	{
+		ptr = other.ptr;
+		return *this;
+	}
+
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_iterator( device_iterator&& src ) : ptr(std::move(src.ptr)) {}
 	__HOST__ device_iterator& operator=( device_iterator&& src )
@@ -124,12 +131,6 @@ public:
 	__DEVICE__ inline reference operator*() { return *ptr; }
 	__HOST__ __DEVICE__ inline pointer operator->() const { return ptr; }
 
-	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator& other )
-	{
-		ptr = other.ptr;
-		return *this;
-	}
-
 	template<typename U,typename Q>
 	__HOST__ __DEVICE__ inline device_iterator& operator=( const device_iterator<U,Q,Category>& other )
 	{
@@ -157,6 +158,12 @@ public:
 	__HOST__ __DEVICE__ device_contiguous_iterator( const pointer& ptr = pointer() ) : base_type(ptr) {}
 	__HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator& src ) : base_type(src) {}
 	template<typename U> __HOST__ __DEVICE__ device_contiguous_iterator( const device_contiguous_iterator<U>& src ) : base_type(src) {}
+
+	__HOST__ __DEVICE__ device_contiguous_iterator& operator=( const device_contiguous_iterator& other )
+	{
+		base_type::operator=(other);
+		return *this;
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_contiguous_iterator( device_contiguous_iterator&& src ) : base_type(std::move(src)) {}
@@ -339,11 +346,10 @@ public:
 	__HOST__ __DEVICE__ reverse_device_iterator( const reverse_device_iterator<Iterator2>& src ) : parentIterator(src.base()) {}
 
 	#ifdef __CPP11_SUPPORTED__
-	__HOST__ reverse_device_iterator( reverse_device_iterator&& src ) : base_type(std::move(src)) {}
-
+	__HOST__ reverse_device_iterator( reverse_device_iterator&& src ) { ecuda::swap( parentIterator, src.parentIterator ); }
 	__HOST__ reverse_device_iterator& operator=( reverse_device_iterator&& src )
 	{
-		base_type::operator=(std::move(src));
+		ecuda::swap( parentIterator, src.parentIterator );
 		return *this;
 	}
 	#endif
