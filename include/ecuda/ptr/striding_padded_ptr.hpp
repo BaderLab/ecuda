@@ -95,12 +95,15 @@ private:
 	template<typename U> struct char_ptr<U*> { typedef char* type; };
 	template<typename U> struct char_ptr<const U*> { typedef const char* type; };
 
-	template<typename T2,typename PointerType2> friend class striding_padded_ptr;
+	template<typename T2,typename P2> friend class striding_padded_ptr;
 
 public:
 	__HOST__ __DEVICE__ striding_padded_ptr( pointer ptr = pointer(), size_type stride = 0 ) : ptr(ptr), stride(stride) {}
 
 	__HOST__ __DEVICE__ striding_padded_ptr( const striding_padded_ptr& src ) : ptr(src.ptr), stride(src.stride) {}
+
+	template<typename T2,typename P2>
+	__HOST__ __DEVICE__ striding_padded_ptr( const striding_padded_ptr<T2,P2>& src ) : ptr(src.ptr), stride(src.stride) {}
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ __DEVICE__ striding_padded_ptr( striding_padded_ptr&& src ) : ptr(std::move(src.ptr)), stride(std::move(src.stride)) {}

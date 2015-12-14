@@ -41,6 +41,77 @@ void check_matrix_accessors_on_device( const typename ecuda::matrix<T>::kernel_a
 		}
 	}
 }
+
+template<typename T>
+__global__
+void check_matrix_front_and_back_on_device( const typename ecuda::matrix<T>::kernel_argument matrix, typename ecuda::array<int,2>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		ecuda::fill( results.begin(), results.end(), 0 );
+		if( matrix.front() == T(0,0) ) results[0] = 1;
+		if( matrix.back() == T(R-1,C-1) ) results[1] = 1;
+	}
+}
+
+template<typename T>
+__global__
+void check_matrix_begin_and_end_on_device( const typename ecuda::matrix<T>::kernel_argument matrix, typename ecuda::array<int,1>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		ecuda::fill( results.begin(), results.end(), 1 );
+		unsigned counter = 0;
+		for( typename ecuda::matrix<T>::const_iterator iter = matrix.begin(); iter != matrix.end(); ++iter, ++counter ) {
+			if( *iter != T(counter/matrix.number_columns(),counter%matrix.number_columns()) ) results.front() = 0;
+		}
+	}
+}
+
+template<typename T>
+__global__
+void check_matrix_rbegin_and_rend_on_device( const typename ecuda::matrix<T>::kernel_argument matrix, typename ecuda::array<int,1>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		ecuda::fill( results.begin(), results.end(), 1 );
+		unsigned counter = matrix.size()-1;
+		for( typename ecuda::matrix<T>::const_reverse_iterator iter = matrix.rbegin(); iter != matrix.rend(); ++iter, --counter ) {
+			if( *iter != T(counter/matrix.number_columns(),counter%matrix.number_columns()) ) results.front() = 0;
+		}
+	}
+}
+
+template<typename T>
+__global__
+void check_matrix_lexicographical_comparison_on_device( const typename ecuda::matrix<T>::kernel_argument matrix1, const typename ecuda::matrix<T>::kernel_argument matrix2, typename ecuda::array<int,1>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		const bool b = ecuda::lexicographical_compare( matrix1.begin(), matrix1.end(), matrix2.begin(), matrix2.end() );
+		ecuda::fill( results.begin(), results.end(), b ? 1 : 0 );
+	}
+}
+
+template<typename T>
+__global__
+void check_matrix_column_default_values_on_device( typename ecuda::matrix<T>::const_column_type column, typename ecuda::array<int,2>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		ecuda::fill( results.begin(), results.end(), 1 );
+		for( std::size_t i = 0; i < column.size(); ++i ) if( column[i] != T() ) results[0] = 0;
+		for( typename ecuda::matrix<T>::const_column_type::const_iterator iter = column.begin(); iter != column.end(); ++iter ) if( *iter != T() ) results[1] = 0;
+	}
+}
+
+template<typename T>
+__global__
+void check_matrix_column_unique_values_on_device( typename ecuda::matrix<T>::const_column_type column, typename ecuda::array<int,2>::kernel_argument results )
+{
+	if( !threadIdx.x ) {
+		ecuda::fill( results.begin(), results.end(), 1 );
+		for( std::size_t i = 0; i < column.size(); ++i ) if( column[i] != T(i,8) ) results[0] = 0;
+		std::size_t counter = 0;
+		for( typename ecuda::matrix<T>::const_column_type::const_iterator iter = column.begin(); iter != column.end(); ++iter, ++counter ) if( *iter != T(counter,8) ) results[1] = 0;
+	}
+}
+
 #endif
 
 SCENARIO( "matrix functions correctly", "matrix" ) {
@@ -131,43 +202,87 @@ SCENARIO( "matrix functions correctly", "matrix" ) {
 		}
 		#endif // __CUDACC__
 		#ifdef __CUDACC__
+		AND_WHEN( "the front() and back() accessors are used in device code" ) {
+			THEN( "the values should be as expected" ) {
+				ecuda::array<int,2> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_front_and_back_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 2 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // front()
+				REQUIRE( hostResultCodes[1] ); // back()
+			}
+		}
 		#else
-		AND_WHEN( "the front() accessor is used" ) { THEN( "the value should be 0,0" )   { REQUIRE( deviceMatrixWithUniqueValues.front() == data_type(0,0) ); } }
-		AND_WHEN( "the back() accessor is used" )  { THEN( "the value should be R-1,C-1" ) { REQUIRE( deviceMatrixWithUniqueValues.back() == data_type(R-1,C-1) ); } }
+		AND_WHEN( "the front() and back() accessors are used in host code" ) {
+			THEN( "the values should be as expected" ) {
+				REQUIRE( deviceMatrixWithUniqueValues.front() == data_type(0,0) );
+				REQUIRE( deviceMatrixWithUniqueValues.back()  == data_type(R-1,C-1) );
+			}
+		}
 		#endif
-		AND_WHEN( "the begin() and end() iterators are used to traverse the matrix" ) {
+		#ifdef __CUDACC__
+		AND_WHEN( "the begin() and end() iterators are used to traverse the matrix in device code" ) {
 			THEN( "the values should increase from 0,0 to R-1,C-1" ) {
-				#ifdef __CUDACC__
-				#else
+				ecuda::array<int,1> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_begin_and_end_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 1 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // correct values
+			}
+		}
+		#else
+		AND_WHEN( "the begin() and end() iterators are used to traverse the matrix in host code" ) {
+			THEN( "the values should increase from 0,0 to R-1,C-1" ) {
 				std::size_t counter = 0;
 				bool correctValues = true;
 				for( typename ecuda::matrix<data_type>::const_iterator iter = deviceMatrixWithUniqueValues.begin(); iter != deviceMatrixWithUniqueValues.end(); ++iter, ++counter ) {
 					if( *iter != data_type( counter/C, counter % C ) ) correctValues = false;
 				}
 				REQUIRE(correctValues);
-				#endif
 			}
 		}
-		AND_WHEN( "the rbegin() and rend() iterators are used to traverse the matrix" ) {
+		#endif
+		#ifdef __CUDACC__
+		AND_WHEN( "the rbegin() and rend() iterators are used to traverse the matrix in device code" ) {
 			THEN( "the values should decrease from R-1,C-1 to 0,0" ) {
-				#ifdef __CUDACC__
-				#else
+				ecuda::array<int,1> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_rbegin_and_rend_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 1 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // correct values
+			}
+		}
+		#else
+		AND_WHEN( "the rbegin() and rend() iterators are used to traverse the matrix in host code" ) {
+			THEN( "the values should decrease from R-1,C-1 to 0,0" ) {
 				std::size_t counter = R*C-1;
 				bool correctValues = true;
 				for( typename ecuda::matrix<data_type>::const_reverse_iterator iter = deviceMatrixWithUniqueValues.rbegin(); iter != deviceMatrixWithUniqueValues.rend(); ++iter, --counter ) {
 					if( *iter != data_type( counter/C, counter % C) ) correctValues = false;
 				}
 				REQUIRE(correctValues);
-				#endif
 			}
 		}
-		AND_WHEN( "the matrices are lexicographically compared" ) {
+		#endif
+		#ifdef __CUDACC__
+		AND_WHEN( "the matrices are lexicographically compared in device code" ) {
+			THEN( "the former matrix should compare less than the latter matrix (since the default value is (66,99))" ) {
+				ecuda::array<int,1> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_lexicographical_comparison_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, deviceMatrixWithDefaultValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 1 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // correct values
+			}
+		}
+		#else
+		AND_WHEN( "the matrices are lexicographically compared in host code" ) {
 			THEN( "the former matrix should compare less than the latter matrix (since the default value is (66,99))" ) {
 				REQUIRE( deviceMatrixWithUniqueValues < deviceMatrixWithDefaultValues );
 				REQUIRE( !( deviceMatrixWithUniqueValues > deviceMatrixWithDefaultValues ) );
 				REQUIRE( !( deviceMatrixWithUniqueValues >= deviceMatrixWithDefaultValues ) );
 			}
 		}
+		#endif
 	}
 }
 
@@ -215,19 +330,29 @@ SCENARIO( "matrix columns function correctly", "matrix_columns" ) {
 		WHEN( "the size of the row is inspected" ) {
 			THEN( "it should be equal to the number of matrix rows" ) { REQUIRE( deviceColumnWithDefaultValues.size() == R ); }
 		}
-//		AND_WHEN( "the values of the former are inspected" ) {
-//			std::vector<data_type> v( C );
-//			THEN( "they should all be default initialized" ) {
-//				REQUIRE( ecuda::equal( deviceColumnWithDefaultValues.begin(), deviceColumnWithDefaultValues.end(), v.begin() ) );
-//				REQUIRE( ecuda::equal( v.begin(), v.end(), deviceColumnWithDefaultValues.begin() ) );
-//			}
-//		}
-//		AND_WHEN( "the values of the latter are inspected" ) {
-//			THEN( "they should all have expected values" ) {
-//				REQUIRE( ecuda::equal( deviceColumnWithUniqueValues.begin(), deviceColumnWithUniqueValues.end(), &hostMatrixWithUniqueValues[16][0] ) );
-//				REQUIRE( ecuda::equal( &hostMatrixWithUniqueValues[16][0], &hostMatrixWithUniqueValues[16][C], deviceColumnWithUniqueValues.begin() ) );
-//			}
-//		}
+		#ifdef __CUDACC__
+		AND_WHEN( "the values of the former are inspected in device code" ) {
+			std::vector<data_type> v( C );
+			THEN( "they should all be default initialized" ) {
+				ecuda::array<int,2> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_column_default_values_on_device<data_type><<<1,1>>>( deviceColumnWithDefaultValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 2 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // correct values
+				REQUIRE( hostResultCodes[1] ); // correct values
+			}
+		}
+		AND_WHEN( "the values of the latter are inspected in device code" ) {
+			THEN( "they should all have expected values" ) {
+				ecuda::array<int,2> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_column_unique_values_on_device<data_type><<<1,1>>>( deviceColumnWithUniqueValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 2 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // correct values
+				REQUIRE( hostResultCodes[1] ); // correct values
+			}
+		}
+		#endif
 	}
 }
 
