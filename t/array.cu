@@ -169,6 +169,15 @@ SCENARIO( "array functions correctly", "array" ) {
 					exceptionThrown = true;
 					std::cout << "exception=" << ex.get_error_code() << " : " << ex.what() << std::endl;
 				}
+				for(;;) {
+					try {
+						CUDA_CHECK_ERRORS();
+					} catch( ecuda::cuda_error& ex ) {
+						std::cout << "another exception=" << ex.get_error_code() << " : " << ex.what() << std::endl;
+						continue;
+					}
+					break;
+				}
 				REQUIRE(exceptionThrown);
 			}
 		}
