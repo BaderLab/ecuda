@@ -54,8 +54,8 @@ void check_array_front_and_back_on_device( const typename ecuda::array<T,N>::ker
 {
 	if( !threadIdx.x ) {
 		ecuda::fill( results.begin(), results.end(), 0 );
-		if( array.front() != T(0) ) results[0] = 0;
-		if( array.back() != T(N-1) ) results[1] = 0;
+		if( array.front() == T(0) ) results[0] = 1;
+		if( array.back() == T(N-1) ) results[1] = 1;
 	}
 }
 
