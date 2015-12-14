@@ -307,10 +307,7 @@ public:
 	{
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
-		if( result != cudaSuccess ){
-			std::cout << "ERROR CODE: " << result << std::endl;
-			throw std::bad_alloc();
-		}
+		if( result != cudaSuccess ) throw std::bad_alloc();
 		return ptr;
 	}
 

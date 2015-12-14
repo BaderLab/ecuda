@@ -103,11 +103,8 @@ void check_array_lexicographical_compare_on_device(
 
 SCENARIO( "array functions correctly", "array" ) {
 	GIVEN( "one default-intialized ecuda::array with a value of 66 and another ecuda::array with unique values from 0-99 inclusive" ) {
-std::cout << "INIT deviceArrayWithDefaultValues" << std::endl;
 		ecuda::array<data_type,N> deviceArrayWithDefaultValues;
-std::cout << "INIT deviceArrayWithUniqueValues" << std::endl;
 		ecuda::array<data_type,N> deviceArrayWithUniqueValues;
-std::cout << "INIT COMPLETE" << std::endl;
 		std::vector<data_type> hostArrayWithUniqueValues( N );
 		for( std::size_t i = 0; i < N; ++i ) hostArrayWithUniqueValues[i] = data_type(i);
 		ecuda::copy( hostArrayWithUniqueValues.begin(), hostArrayWithUniqueValues.end(), deviceArrayWithUniqueValues.begin() );
@@ -170,6 +167,7 @@ std::cout << "INIT COMPLETE" << std::endl;
 					CUDA_CALL_KERNEL_AND_WAIT( check_array_bad_accessor_on_device<data_type,N><<<1,1>>>( deviceArrayWithUniqueValues ) );
 				} catch( ecuda::cuda_error& ex ) {
 					exceptionThrown = true;
+					std::cout << "exception=" << ex.get_error_code() << " : " << ex.what() << std::endl;
 				}
 				REQUIRE(exceptionThrown);
 			}
