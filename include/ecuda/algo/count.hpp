@@ -63,6 +63,7 @@ count( InputIterator first, InputIterator last, const T& value, ecuda::false_typ
 	#endif
 }
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ typename ecuda::iterator_traits<InputIterator>::difference_type
 count( InputIterator first, InputIterator last, const T& value, ecuda::true_type ) // device memory

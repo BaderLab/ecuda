@@ -72,12 +72,12 @@ class device_sequence
 {
 
 public:
-	typedef T                                             value_type;
-	typedef P                                             pointer;
-	typedef typename ecuda::add_lvalue_reference<T>::type reference;
-	typedef typename ecuda::add_const<reference>::type    const_reference;
-	typedef std::size_t                                   size_type;
-	typedef std::ptrdiff_t                                difference_type;
+	typedef T                                                   value_type;
+	typedef P                                                   pointer;
+	typedef typename ecuda::add_lvalue_reference<T>::type       reference;
+	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference;
+	typedef std::size_t                                         size_type;
+	typedef std::ptrdiff_t                                      difference_type;
 
 	typedef device_iterator<      value_type,typename make_unmanaged<pointer>::type      > iterator;
 	typedef device_iterator<const value_type,typename make_unmanaged_const<pointer>::type> const_iterator;
@@ -526,7 +526,8 @@ public:
 		typename make_unmanaged_const<pointer>::type up = unmanaged_cast(base_type::get_pointer());
 		up.skip_bytes( up.get_pitch()*row );
 		up.operator+=( column );
-		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(up);
+		return *up;
+		//return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(up);
 	}
 
 };

@@ -24,7 +24,7 @@ typedef element_t<double> data_type;
 const std::size_t N = 100; // 100k bytes
 
 SCENARIO( "array functions correctly", "array" ) {
-	GIVEN( "two ecuda::array one default-intialized and the other with unique values" ) {
+	GIVEN( "one default-intialized ecuda::array with a value of 66 and another ecuda::array with unique values from 0-99 inclusive" ) {
 		ecuda::array<data_type,N> deviceArrayWithDefaultValues;
 		ecuda::array<data_type,N> deviceArrayWithUniqueValues;
 		std::vector<data_type> hostArrayWithUniqueValues( N );
@@ -73,7 +73,7 @@ SCENARIO( "array functions correctly", "array" ) {
 		}
 		#endif
 		AND_WHEN( "the at accessor method is used" ) {
-			THEN( "any valid index 0 <= index < N should be valid" ) {
+			THEN( "any index 0 <= index < N should be valid" ) {
 				bool exceptionThrown = false;
 				bool correctValues = true;
 				try {
@@ -97,7 +97,7 @@ SCENARIO( "array functions correctly", "array" ) {
 			}
 		}
 		AND_WHEN( "the operator[] accessor method is used" ) {
-			THEN( "any valid index 0 <= index < N should be valid" ) {
+			THEN( "any index 0 <= index < N should be valid" ) {
 				bool correctValues = true;
 				for( std::size_t i = 0; i < N; ++i ) {
 					if( deviceArrayWithUniqueValues[i] != data_type(i) ) correctValues = false;
@@ -106,7 +106,7 @@ SCENARIO( "array functions correctly", "array" ) {
 			}
 		}
 		AND_WHEN( "the operator() accessor method is used" ) {
-			THEN( "any valid index 0 <= index < N should be valid" ) {
+			THEN( "any index 0 <= index < N should be valid" ) {
 				bool correctValues = true;
 				for( std::size_t i = 0; i < N; ++i ) {
 					if( deviceArrayWithUniqueValues(i) != data_type(i) ) correctValues = false;
@@ -137,7 +137,7 @@ SCENARIO( "array functions correctly", "array" ) {
 			}
 		}
 		AND_WHEN( "the arrays are lexicographically compared" ) {
-			THEN( "the former array should compare less than the latter array" ) {
+			THEN( "the former array should compare less than the latter array (since the default value is 66)" ) {
 				REQUIRE( deviceArrayWithUniqueValues < deviceArrayWithDefaultValues );
 				REQUIRE( !( deviceArrayWithUniqueValues > deviceArrayWithDefaultValues ) );
 				REQUIRE( !( deviceArrayWithUniqueValues >= deviceArrayWithDefaultValues ) );

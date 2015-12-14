@@ -216,7 +216,9 @@ public:
 	///
 	__HOST__ matrix( const matrix& src ) :
 		base_type( pointer(), src.number_rows(), src.number_columns() ),
-		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+		allocator(src.get_allocator())
+// TODO: this is broken due to some complaints from stdlib about making an iterator to a void pointer
+//		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
 	{
 		init();
 		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
@@ -255,12 +257,11 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-	__HOST__ matrix( matrix&& src ) : base_type(std::move(src)), allocator(std::move(src.allocator)) {}
+	__HOST__ matrix( matrix&& src ) : base_type() { swap(src); }
 
 	__HOST__ matrix& operator=( matrix&& src )
 	{
-		base_type::operator=(std::move(src));
-		allocator = std::move(src.allocator);
+		swap(src);
 		return *this;
 	}
 	#endif

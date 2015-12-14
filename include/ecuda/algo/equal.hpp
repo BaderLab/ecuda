@@ -77,11 +77,11 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	#endif
 }
 
-template<class InputIterator1,typename T,typename P>
+template<class InputIterator,typename T,typename P>
 __HOST__ __DEVICE__ inline bool equal(
 	device_contiguous_block_iterator<T,P> first1,
 	device_contiguous_block_iterator<T,P> last1,
-	InputIterator1 first2,
+	InputIterator first2,
 	ecuda::pair<ecuda::true_type,ecuda::false_type>
 )
 {
@@ -89,8 +89,8 @@ __HOST__ __DEVICE__ inline bool equal(
 		typename device_contiguous_block_iterator<T,P>::contiguous_iterator blockBegin = first1.contiguous_begin();
 		typename device_contiguous_block_iterator<T,P>::contiguous_iterator blockEnd = first1.contiguous_end();
 		if( !::ecuda::equal( blockBegin, blockEnd, first2 ) ) return false;
-		advance( first1, distance( blockBegin, blockEnd ) );
-		advance( first2, distance( blockBegin, blockEnd ) );
+		ecuda::advance( first1, distance( blockBegin, blockEnd ) );
+		ecuda::advance( first2, distance( blockBegin, blockEnd ) );
 		//first1 += distance( blockBegin, blockEnd );
 	}
 	return true;
@@ -122,8 +122,13 @@ __HOST__ __DEVICE__ inline bool equal(
 	return true;
 }
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
-__HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, ecuda::pair<ecuda::true_type,ecuda::true_type> )
+__HOST__ __DEVICE__ inline bool equal(
+	InputIterator1 first1, InputIterator1 last1,
+	InputIterator2 first2,
+	ecuda::pair<ecuda::true_type,ecuda::true_type>
+)
 {
 	#ifdef __CUDA_ARCH__
 	for( ; first1 != last1; ++first1, ++first2 ) if( !(*first1 == *first2) ) return false;

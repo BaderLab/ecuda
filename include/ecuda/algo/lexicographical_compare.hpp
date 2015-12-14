@@ -109,6 +109,7 @@ lexicographical_compare( InputIterator1 first1, InputIterator1 last1,
 	#endif
 }
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator1,class InputIterator2>
 __HOST__ __DEVICE__ inline
 bool lexicographical_compare( InputIterator1 first1, InputIterator1 last1,

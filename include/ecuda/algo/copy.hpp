@@ -524,7 +524,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 		typedef typename ecuda::add_pointer<value_type>::type pointer;
 		pointer dest = naked_cast<pointer>( result.operator->() );
 		typedef typename ecuda::add_pointer<const value_type>::type const_pointer;
-		const_pointer src = naked_cast<const_pointer>( first.operator->() );
+		const_pointer src = naked_cast<const_pointer>( get_iterator_pointer(first) );
 
 		const size_t pitch = result.operator->().get_pitch();
 		const std::size_t width = result.get_width();
@@ -553,6 +553,7 @@ __HOST__ __DEVICE__ inline device_contiguous_block_iterator<T,P> copy(
 //
 // Implementation only, function declaration and documentation above.
 //
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,class OutputIterator>
 __HOST__ __DEVICE__ inline OutputIterator copy(
 	InputIterator first, InputIterator last,

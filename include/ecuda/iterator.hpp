@@ -214,10 +214,18 @@ private:
 	template<typename U,typename Q> friend class device_contiguous_block_iterator;
 
 public:
-	__HOST__ __DEVICE__ device_contiguous_block_iterator( const pointer& ptr, const difference_type width, const difference_type offset = difference_type() ) : base_type(ptr), width(width), offset(offset) {}
+	__HOST__ __DEVICE__ device_contiguous_block_iterator( const pointer& ptr = pointer(), const difference_type width = difference_type(), const difference_type offset = difference_type() ) : base_type(ptr), width(width), offset(offset) {}
 	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator& src ) : base_type(src), width(src.width), offset(src.offset) {}
 	template<typename U,typename Q>
 	__HOST__ __DEVICE__ device_contiguous_block_iterator( const device_contiguous_block_iterator<U,Q>& src ) : base_type(src), width(src.width), offset(src.offset) {}
+
+	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator=( const device_contiguous_block_iterator& src )
+	{
+		base_type::operator=(src);
+		width = src.width;
+		offset = src.offset;
+		return *this;
+	}
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ device_contiguous_block_iterator( device_contiguous_block_iterator&& src ) :
