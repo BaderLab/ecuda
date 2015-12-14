@@ -23,7 +23,7 @@ struct element_t
 
 typedef element_t<double> data_type;
 
-const std::size_t N = 100; // 100k bytes
+const std::size_t N = 100; // 100 elements
 
 #ifdef __CUDACC__
 
@@ -103,8 +103,11 @@ void check_array_lexicographical_compare_on_device(
 
 SCENARIO( "array functions correctly", "array" ) {
 	GIVEN( "one default-intialized ecuda::array with a value of 66 and another ecuda::array with unique values from 0-99 inclusive" ) {
+std::cout << "INIT deviceArrayWithDefaultValues" << std::endl;
 		ecuda::array<data_type,N> deviceArrayWithDefaultValues;
+std::cout << "INIT deviceArrayWithUniqueValues" << std::endl;
 		ecuda::array<data_type,N> deviceArrayWithUniqueValues;
+std::cout << "INIT COMPLETE" << std::endl;
 		std::vector<data_type> hostArrayWithUniqueValues( N );
 		for( std::size_t i = 0; i < N; ++i ) hostArrayWithUniqueValues[i] = data_type(i);
 		ecuda::copy( hostArrayWithUniqueValues.begin(), hostArrayWithUniqueValues.end(), deviceArrayWithUniqueValues.begin() );
