@@ -28,13 +28,15 @@ const std::size_t C = 33;
 #ifdef __CUDACC__
 template<typename T>
 __global__
-void check_matrix_accessors_on_device( const typename ecuda::matrix<T>::kernel_argument matrix, int& result )
+void check_matrix_accessors_on_device( const typename ecuda::matrix<T>::kernel_argument matrix, typename ecuda::array<int,3>::kernel_argument results )
 {
 	if( !threadIdx.x ) {
-		result = 1;
+		ecuda::fill( results.begin(), results.end(), 1 );
 		for( std::size_t i = 0; i < matrix.number_rows(); ++i ) {
 			for( std::size_t j = 0; j < matrix.number_columns(); ++j ) {
-				if( matrix.at(i,j) != T(i,j) ) result = 0;
+				if( matrix.at(i,j) != T(i,j) ) results[0] = 0;
+				if( matrix[i][j] != T(i,j) ) results[1] = 0;
+				if( matrix(i,j) != T(i,j) ) results[2] = 0;
 			}
 		}
 	}
@@ -92,30 +94,32 @@ SCENARIO( "matrix functions correctly", "matrix" ) {
 			}
 		}
 		#endif
-		AND_WHEN( "the at accessor method is used" ) {
-			THEN( "any index 0,0 <= index < R,C should be valid" ) {
-				#ifdef __CUDACC__
-				int result = 0;
-				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_accessors_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, result ) );
-				REQUIRE( result );
-				#else
-				bool exceptionThrown = false;
-				bool correctValues = true;
-				try {
-					for( std::size_t i = 0; i < R; ++i ) {
-						for( std::size_t j = 0; j < C; ++j )
-							if( deviceMatrixWithUniqueValues.at(i,j) != data_type(i,j) ) correctValues = false;
-					}
-				} catch( std::out_of_range& ex ) {
-					exceptionThrown = true;
-				}
-				REQUIRE(correctValues);
-				REQUIRE(!exceptionThrown);
-				#endif
+		#ifdef __CUDACC__
+		AND_WHEN( "the at, operator[], and operator() accessors are used in device code" ) {
+			THEN( "the values should be as expected" ) {
+				ecuda::array<int,3> deviceResultCodes;
+				CUDA_CALL_KERNEL_AND_WAIT( check_matrix_accessors_on_device<data_type><<<1,1>>>( deviceMatrixWithUniqueValues, deviceResultCodes ) );
+				std::vector<int> hostResultCodes( 3 );
+				ecuda::copy( deviceResultCodes.begin(), deviceResultCodes.end(), hostResultCodes.begin() );
+				REQUIRE( hostResultCodes[0] ); // at()
+				REQUIRE( hostResultCodes[1] ); // operator[]
+				REQUIRE( hostResultCodes[2] ); // operator()
 			}
-			AND_THEN( "an invalid index N should throw an exception" ) {
-				#ifdef __CUDACC__
-				#else
+		}
+		#else
+		AND_WHEN( "the at, operator[], and operator() accessors are used in host code" ) {
+			THEN( "the values should be as expected" ) {
+				std::vector<int> resultCodes( 3, 1 );
+				for( std::size_t i = 0; i < R; ++i ) {
+					for( std::size_t j = 0; j < C; ++j ) {
+						if( deviceMatrixWithUniqueValues.at(i,j) != data_type(i,j) ) resultCodes[0] = 0;
+						if( deviceMatrixWithUniqueValues[i][j]   != data_type(i,j) ) resultCodes[1] = 0;
+						if( deviceMatrixWithUniqueValues(i,j)    != data_type(i,j) ) resultCodes[2] = 0;
+					}
+				}
+				REQUIRE( resultCodes[0] );
+				REQUIRE( resultCodes[1] );
+				REQUIRE( resultCodes[2] );
 				bool exceptionThrown = false;
 				try {
 					deviceMatrixWithUniqueValues.at(R,C);
@@ -123,35 +127,9 @@ SCENARIO( "matrix functions correctly", "matrix" ) {
 					exceptionThrown = true;
 				}
 				REQUIRE(exceptionThrown);
-				#endif
 			}
 		}
-		AND_WHEN( "the operator[] accessor method is used" ) {
-			THEN( "any index 0,0 <= index < R,C should be valid" ) {
-				#ifdef __CUDACC__
-				#else
-				bool correctValues = true;
-				for( std::size_t i = 0; i < R; ++i ) {
-					for( std::size_t j = 0; j < C; ++j )
-						if( deviceMatrixWithUniqueValues[i][j] != data_type(i,j) ) correctValues = false;
-				}
-				REQUIRE(correctValues);
-				#endif
-			}
-		}
-		AND_WHEN( "the operator() accessor method is used" ) {
-			THEN( "any index 0,0 <= index < R,C should be valid" ) {
-				#ifdef __CUDACC__
-				#else
-				bool correctValues = true;
-				for( std::size_t i = 0; i < R; ++i ) {
-					for( std::size_t j = 0; j < C; ++j )
-						if( deviceMatrixWithUniqueValues(i,j) != data_type(i,j) ) correctValues = false;
-				}
-				REQUIRE(correctValues);
-				#endif
-			}
-		}
+		#endif // __CUDACC__
 		#ifdef __CUDACC__
 		#else
 		AND_WHEN( "the front() accessor is used" ) { THEN( "the value should be 0,0" )   { REQUIRE( deviceMatrixWithUniqueValues.front() == data_type(0,0) ); } }
