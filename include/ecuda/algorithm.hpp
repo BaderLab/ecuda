@@ -30,16 +30,21 @@ either expressed or implied, of the FreeBSD Project.
 //----------------------------------------------------------------------------
 // algorithm.hpp
 //
+<<<<<<< HEAD
 // Generic functions found in STL <algorithm> reimplemented so they can be
 // called from device code or handle iterators to device memory depending
 // on the purpose of the function.
 //
 // TODO: make ecuda::copy handle case where input range and output have
 //       different value types
+=======
+// CUDA implementations from STL header <algorithm>.
+>>>>>>> ecuda2/master
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
 
+<<<<<<< HEAD
 #pragma once
 #ifndef ECUDA_ALGORITHM_HPP
 #define ECUDA_ALGORITHM_HPP
@@ -186,8 +191,67 @@ HOST inline OutputIterator __copy( InputIterator first, InputIterator last, Outp
 template<class InputIterator,class OutputIterator>
 HOST inline OutputIterator copy( InputIterator first, InputIterator last, OutputIterator result ) {
 	return __copy( first, last, result, typename std::iterator_traits<InputIterator>::iterator_category(), typename std::iterator_traits<OutputIterator>::iterator_category() );
+=======
+#ifndef ECUDA_ALGORITHM_HPP
+#define ECUDA_ALGORITHM_HPP
+
+#include <iterator>
+#include <vector>
+
+#include "global.hpp"
+
+namespace ecuda {
+
+template<typename T>               __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b )              { return b < a ? b : a; }
+template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( const T& a, const T& b, Compare cmp ) { return cmp(b,a) ? b : a; }
+
+template<typename T>               __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b )              { return b > a ? b : a; }
+template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b, Compare cmp ) { return cmp(a,b) ? b : a; }
+
+template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
+
+} // namespace ecuda
+
+#include "iterator.hpp"
+#include "type_traits.hpp"
+
+#include "algo/copy.hpp"                    // equivalent to std::copy
+#include "algo/equal.hpp"                   // equivalent to std::equal
+#include "algo/fill.hpp"                    // equivalent to std::fill
+#include "algo/lexicographical_compare.hpp" // equivalent to std::lexicographical_compare
+#include "algo/max_element.hpp"             // equivalent to std::max_element
+#include "algo/find.hpp"                    // equivalent to std::find
+#include "algo/find_if.hpp"                 // equivalent to std::find_if
+#include "algo/find_if_not.hpp"             // equivalent to std::find_if_not (NOTE: C++11 only)
+#include "algo/for_each.hpp"                // equivalent to std::for_each
+#include "algo/count.hpp"                   // equivalent to std::count
+#include "algo/count_if.hpp"                // equivalent to std::count_if
+#include "algo/mismatch.hpp"                // equivalent to std::mismatch
+#include "algo/reverse.hpp"                 // equivalent to std::reverse
+
+namespace ecuda {
+
+ECUDA_SUPPRESS_HD_WARNINGS
+template<class InputIterator,class UnaryPredicate>
+inline __HOST__ __DEVICE__
+bool any_of( InputIterator first, InputIterator last, UnaryPredicate p )
+{
+	return ecuda::find_if( first, last, p ) != last;
+}
+
+ECUDA_SUPPRESS_HD_WARNINGS
+template<class InputIterator,class UnaryPredicate>
+inline __HOST__ __DEVICE__
+bool none_of( InputIterator first, InputIterator last, UnaryPredicate p )
+{
+	return ecuda::find_if( first, last, p ) == last;
+>>>>>>> ecuda2/master
 }
 
 } // namespace ecuda
 
 #endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> ecuda2/master
