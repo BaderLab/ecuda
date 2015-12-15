@@ -1,16 +1,11 @@
 /**
-<<<<<<< HEAD
-=======
 
->>>>>>> ecuda2/master
 \mainpage
 
 \tableofcontents
 
 \section intro Introduction
 
-<<<<<<< HEAD
-=======
 The \em ecuda library provides a clean, light-weight interface to CUDA that extends the C++ standard template library (STL) and borrows its semantics. The API is header only, so it's portable and simple to install.
 
 The original motivation for creating the API was to avoid a lot of the headaches and repetition that comes with using naked pointers to device memory to represent common containers. The API features several such container types: array, vector, matrix, and cube. Moreover, the API allows a developer's interaction with the C-based CUDA API to have a more modern C++ sensibility (e.g. the use of smart pointers, the RAII/SBRM paradigm, etc.).
@@ -245,7 +240,6 @@ for( std::size_t i = 0; i < v.size(); ++i ) hostVector[i] = static_cast<double>(
 ecuda::copy( hostVector.begin(), hostVector.end(), deviceVector.begin() );
 \endcode
 
->>>>>>> ecuda2/master
 The \em ecuda library is a set of templates fashioned after the C++ Standard Template Library (STL) that provide several useful containers for use with the CUDA API.  These containers remove most of the repetitive low-level tasks that are required when assigning, traversing, and manipulating data in device memory.  The containers can be instantiated in host code and passed to kernel functions, so familiar STL-style semantics can be used inside the device code itself.  The library is header only, so it's portable and simple to install.
 
 The original motivation for creating the library was to remove a lot of the headaches and inherent lack of safety when using naked pointers to device memory and to create containers that were more intuitive to work with.
@@ -299,16 +293,6 @@ __global__ void sumColumns( const char* matrix, const size_t pitch, const size_t
 
   const int threadNum = threadIdx.x;
   if( threadNum < width ) {
-<<<<<<< HEAD
-    double columnSum = 0;
-    const char* pRow = matrix;
-    for( size_t i = 0; i < height; ++i ) {
-      pRow += pitch; // move pointer to next row
-      const double* pElement = reinterpret_cast<const double*>(ptr); // cast to proper type!
-      columnSum += pElement[threadNum];
-    }
-    columnSums[threadNum] = columnSum;
-=======
 	double columnSum = 0;
 	const char* pRow = matrix;
 	for( size_t i = 0; i < height; ++i ) {
@@ -317,17 +301,12 @@ __global__ void sumColumns( const char* matrix, const size_t pitch, const size_t
 	  columnSum += pElement[threadNum];
 	}
 	columnSums[threadNum] = columnSum;
->>>>>>> ecuda2/master
   }
 
 }
 \endcode
 
-<<<<<<< HEAD
-There are so many places to innocently go wrong.  Did you remember to specify <tt>width*sizeof(double)</tt> instead of just <tt>width</tt>?  Did you remember to free the allocated memory?  Did you remember to account for the padding in the matrix memory that properly aligns the memory?  Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing?  Are you an adherent to the RAII programming idiom and using CUDA makes you generally uncomfortable?
-=======
 There are so many places to innocently go wrong.  Did you remember to specify <tt>width*sizeof(double)</tt> instead of just <tt>width</tt>?  Did you remember to free the allocated memory?  Did you remember to account for the padding in the matrix memory that properly aligns the memory?  Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing?  Are you an adherent to the RAII/SBRM programming idiom and using CUDA makes you generally uncomfortable?
->>>>>>> ecuda2/master
 
 Here's the equivalent code using \em ecuda:
 
@@ -349,11 +328,7 @@ std::vector<double> hostMatrix( width*height );
 deviceMatrix.assign( hostMatrix.begin(), hostMatrix.end() );
 
 // create vector on device to hold results
-<<<<<<< HEAD
-ecuda::vector<double> deviceColumnSums( width ); 
-=======
 ecuda::vector<double> deviceColumnSums( width );
->>>>>>> ecuda2/master
 
 // run kernel
 sumColumns<<<1,width>>>( deviceMatrix, deviceColumnSums );
@@ -372,19 +347,11 @@ __global__ void sumColumns( const ecuda::matrix<double> matrix, ecuda::vector<do
 
   const int threadNum = threadIdx.x;
   if( threadNum < matrix.number_columns() ) {
-<<<<<<< HEAD
-    double columnSum = 0;
-    ecuda::matrix<double>::const_column_type column = matrix.get_column( threadNum );
-    for( ecuda::matrix<double>::const_column_type::iterator iter = column.begin(); iter != column.end(); ++iter )
-      columnSum += *iter;
-    columnSums[threadNum] = columnSum;
-=======
 	double columnSum = 0;
 	ecuda::matrix<double>::const_column_type column = matrix.get_column( threadNum );
 	for( ecuda::matrix<double>::const_column_type::iterator iter = column.begin(); iter != column.end(); ++iter )
 	  columnSum += *iter;
 	columnSums[threadNum] = columnSum;
->>>>>>> ecuda2/master
   }
 
 }
@@ -428,11 +395,7 @@ __global__void runStatistics( const ecuda::matrix<double> data, ecuda::vector<do
   if( threadNum < data.number_columns() ) {
 	double fancyStat;
 	ecuda::matrix<double>::const_column_type measurements = data.get_column(threadNum);
-<<<<<<< HEAD
-    // ... calculate fancy stat
-=======
 	// ... calculate fancy stat
->>>>>>> ecuda2/master
 	result[threadNum] = fancyStat;
   }
 }
@@ -450,9 +413,6 @@ The library is header only, so the <tt>include</tt> subdirectory can be placed a
 sudo make install
 \endcode
 
-<<<<<<< HEAD
-The required containers can be declared in your CUDA code with, for example:
-=======
 The easiest way to include the API is to declare the convenience header:
 
 \code{.cpp}
@@ -460,7 +420,6 @@ The easiest way to include the API is to declare the convenience header:
 \endcode
 
 The required containers can be declared individually in your CUDA code with, for example:
->>>>>>> ecuda2/master
 
 \code{.cpp}
 #include <ecuda/array.hpp>
@@ -518,25 +477,6 @@ ecuda::matrix<double> deviceMatrix( 100, 100 ); // create 100x100 matrix
 std::vector<double> hostVector( 100 ); // create 100 element vector in host memory
 for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i; // set the values to range from 0-99
 
-<<<<<<< HEAD
-for( unsigned i = 0; i < 100; ++i ) 
-   deviceMatrix[i].assign( hostVector.begin(), hostVector.end() ); // set each row of matrix to hold this sequence of values
-\endcode
-
-The containers can then be passed to kernel functions and manipulated as needed.
-
-\code{.cpp}
-__global__ 
-void addColumns( const ecuda::matrix<double> srcMatrix, ecuda::array<double,100> columnSums ) {
-
-   const int threadNum = threadIdx.x;
-   typedef ecuda::matrix<double>::const_column_type ColumnType;
-
-   if( threadNum < 100 ) {
-      ColumnType column = srcMatrix.get_column(threadNum);
-      for( ColumnType::iterator iter = column.begin(); iter != column.end(); ++iter )
-         columnSums[threadNum] += *iter;
-=======
 for( unsigned i = 0; i < 100; ++i )
     ecuda::copy( hostVector.begin(), hostVector.end(), deviceMatrix[i].begin() ); // set each row of matrix to hold this sequence of values
 \endcode
@@ -554,7 +494,6 @@ void addColumns( const typename ecuda::matrix<double>::kernel_argument srcMatrix
 	column_type column = srcMatrix.get_column(t);
 	for( typename column_type::iterator iter = column.begin(); iter != column.end(); ++iter )
 	    columnSums[t] += *iter;
->>>>>>> ecuda2/master
    }
 
 }
@@ -586,11 +525,7 @@ deviceVector >> hostVector2; // slower
 
 \image html iterators.png ""
 
-<<<<<<< HEAD
-Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different "categories" depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, two additional categories are defined: a device_iterator and a contiguous_device_iterator.  A reverse iterator, which simply reverses the order of traversal is also available.  By design, regular STL iterators are compatible with \em ecuda containers and views, but not vice versa (since STL containers cannot access device memory).  
-=======
 Iterators are used extensively in the STL to traverse ranges of elements in a container.  They do this more optimally than, say, repeatedly calling the [] operator using an index value.  The STL classifies iterators into different "categories" depending on their functionality (from least to most capabilties: Input, Output < Forward < Bidirectional < Random Access).  In \em ecuda, two additional categories are defined: a device_iterator and a contiguous_device_iterator.  A reverse iterator, which simply reverses the order of traversal is also available.  By design, regular STL iterators are compatible with \em ecuda containers and views, but not vice versa (since STL containers cannot access device memory).
->>>>>>> ecuda2/master
 
 Under normal use, a developer doesn't have to worry about the iterator classes themselves.  They are typically obtained from containers using the \c begin(), \c end(), \c rbegin(), and \c rend() methods and their type defined as a container-specific <tt>typedef</tt>.  For example:
 
@@ -752,15 +687,9 @@ One of the central concerns when CUDA programming is that read/write operations 
 __global__ void rowSums( const ecuda::matrix<double> matrix, ecuda::vector<double> sums ) {
   const int threadNum = threadIdx.x;
   if( threadNum < matrix.number_rows() ) {
-<<<<<<< HEAD
-    double sum = 0.0;
-    for( double x : matrix.get_row(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
-    sums[threadNum] = sum;
-=======
 	double sum = 0.0;
 	for( double x : matrix.get_row(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
 	sums[threadNum] = sum;
->>>>>>> ecuda2/master
   }
 }
 
@@ -768,15 +697,9 @@ __global__ void rowSums( const ecuda::matrix<double> matrix, ecuda::vector<doubl
 __global__ void columnSums( const ecuda::matrix<double> matrix, ecuda::vector<double> sums ) {
   const int threadNum = threadIdx.x;
   if( threadNum < matrix.number_columns() ) {
-<<<<<<< HEAD
-    double sum = 0.0;
-    for( double x : matrix.get_column(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
-    sums[threadNum] = sum;
-=======
 	double sum = 0.0;
 	for( double x : matrix.get_column(threadNum) ) sum += x; // C++11 range-based loop (CUDA >=7.0)
 	sums[threadNum] = sum;
->>>>>>> ecuda2/master
   }
 }
 
@@ -882,8 +805,6 @@ There are a number of architectural changes that are possible to the API that ar
 
 Finally, apologies in advance for any cosmetic blemishes in variable names and documentation.  These will be cleaned up as they are found.
 
-<<<<<<< HEAD
-=======
 \section changes Changes from v.1.0
 
 The entire API was refined based on lessons learned. The changes were:
@@ -893,7 +814,6 @@ The entire API was refined based on lessons learned. The changes were:
 \li Copy constructors now work as expected (memory is allocated and the contents copied).
 \li Container at() method now performs bounds-checking (which is more consistent with the STL specification), and direct access to a particular container element is now done using operator().
 
->>>>>>> ecuda2/master
 \section license License
 
 The \em ecuda library is open source and released under the FreeBSD license.
@@ -940,8 +860,6 @@ The resources and expertise of the <a href="http://www.scinethpc.ca">SciNet</a> 
 The support of the <a href="http://baderlab.org/">Bader Lab</a>, part of the <a href="http://tdccbr.med.utoronto.ca">Donnelly Centre for Cellular and Biomolecular Research</a> at The University of Toronto, where I am currently a postdoctoral fellow.
 
 */
-<<<<<<< HEAD
-=======
 
 
 
@@ -1033,4 +951,3 @@ The support of the <a href="http://baderlab.org/">Bader Lab</a>, part of the <a 
 ///
 /// Seemless host-only prototyping. Guards in place emulate device memory in host memory, detected automatically.
 ///
->>>>>>> ecuda2/master

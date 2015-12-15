@@ -33,10 +33,7 @@ either expressed or implied, of the FreeBSD Project.
 //
 // Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)
 //----------------------------------------------------------------------------
-<<<<<<< HEAD
-=======
 
->>>>>>> ecuda2/master
 #pragma once
 #ifndef ECUDA_CUBE_HPP
 #define ECUDA_CUBE_HPP
@@ -45,19 +42,6 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <vector>
 
-<<<<<<< HEAD
-#include "config.hpp"
-#include "global.hpp"
-#include "allocators.hpp"
-#include "device_ptr.hpp"
-#include "padded_ptr.hpp"
-#include "striding_ptr.hpp"
-#include "matrix.hpp"
-#include "views.hpp"
-
-namespace ecuda {
-
-=======
 //#include "config.hpp"
 #include "global.hpp"
 #include "allocators.hpp"
@@ -76,7 +60,6 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 } // namespace impl
 /// \endcond
 
->>>>>>> ecuda2/master
 ///
 /// \brief A resizable cube stored in device memory.
 ///
@@ -109,14 +92,6 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 /// For example, a good kernel to perform an operation on the elements of a cube might be:
 ///
 /// \code{.cpp}
-<<<<<<< HEAD
-/// template<typename T> __global__ void doCubeOperation( ecuda::cube<T> cube ) {
-///    const int dep = blockDim.x*gridDim.x; // each thread gets a different depth value
-///    const int row = blockIdx.y;
-///    const int col = blockIdx.z;
-///    if( row < cube.number_rows() and col < cube.number_columns() and dep < cube.number_depths() ) {
-///       T& value = cube[row][col][dep];
-=======
 /// template<typename T> __global__ void doCubeOperation( typename ecuda::cube<T>::kernel_argument cube )
 /// {
 ///    const int dep = blockDim.x*gridDim.x; // each thread gets a different depth value
@@ -124,7 +99,6 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 ///    const int col = blockIdx.z;
 ///    if( row < cube.number_rows() && col < cube.number_columns() && dep < cube.number_depths() ) {
 ///       T& value = cube(row,col,dep);
->>>>>>> ecuda2/master
 ///       // ... do work on value
 ///    }
 /// }
@@ -148,57 +122,6 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 /// blocks of depth blocks, and the row dimension is contiguous blocks of column blocks; thus, an implementation
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
-<<<<<<< HEAD
-template< typename T, class Alloc=device_pitch_allocator<T> >
-class cube {
-
-public:
-	typedef T value_type; //!< cell data type
-	typedef Alloc allocator_type; //!< allocator type
-	typedef std::size_t size_type; //!< unsigned integral type
-	typedef std::ptrdiff_t difference_type; //!< signed integral type
-	#ifdef __CPP11_SUPPORTED__
-	typedef value_type& reference; //!< cell reference type
-	typedef const value_type& const_reference; //!< cell const reference type
-	typedef typename std::allocator_traits<Alloc>::pointer pointer; //!< cell pointer type
-	typedef typename std::allocator_traits<Alloc>::const_pointer const_pointer; //!< cell const pointer type
-	#else
-	typedef typename Alloc::reference reference; //!< cell reference type
-	typedef typename Alloc::const_reference const_reference; //!< cell const reference type
-	typedef typename Alloc::pointer pointer; //!< cell pointer type
-	typedef typename Alloc::const_pointer const_pointer; //!< cell const pointer type
-	#endif
-
-	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > row_type; //!< cube row type
-	typedef sequence_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > column_type; //!< cube column type
-	typedef contiguous_sequence_view<value_type> depth_type; //!< cube depth type
-	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_row_type; //!< const cube row type
-	typedef sequence_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_column_type; //!< const cube column type
-	typedef contiguous_sequence_view<const value_type> const_depth_type; //!< const cube depth type
-
-	typedef matrix_view< value_type, striding_ptr< value_type, padded_ptr<value_type,pointer,1> > > slice_xy_type; //!< cube xy-slice type
-	typedef contiguous_matrix_view<value_type> slice_xz_type; //!< cube xz-slice type
-	typedef contiguous_matrix_view<value_type> slice_yz_type; //!< cube yz-slice type
-	typedef matrix_view< const value_type, striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > > const_slice_xy_type; //!< const cube xy-slice type
-	typedef contiguous_matrix_view<const value_type> const_slice_xz_type; //!< const cube xz-slice type
-	typedef contiguous_matrix_view<const value_type> const_slice_yz_type; //!< const cube yz-slice type
-
-	typedef device_iterator< value_type, padded_ptr<value_type,pointer,1> > iterator; //!< iterator type
-	typedef device_iterator< const value_type, padded_ptr<const value_type,const_pointer,1> > const_iterator; //!< const iterator type
-	typedef reverse_device_iterator<iterator> reverse_iterator; //!< reverse iterator type
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator; //!< const reverse iterator type
-
-private:
-	// REMEMBER: numberRows, numberColumns, numberDepths and pitch altered on device memory won't be
-	//           reflected on the host object. Don't allow the device to perform any operations that
-	//           change their value.
-	size_type numberRows; //!< number of rows
-	size_type numberColumns; //!< number of columns
-	size_type numberDepths; //!< number of depths
-	size_type pitch; //!< pitch of device memory in bytes
-	device_ptr<T> deviceMemory;
-	allocator_type allocator;
-=======
 template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
 class cube : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > {
 
@@ -272,7 +195,6 @@ private:
 			base_type::swap( base );
 		}
 	}
->>>>>>> ecuda2/master
 
 public:
 	///
@@ -284,47 +206,6 @@ public:
 	/// \param allocator allocator to use for all memory allocations of this container
 	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
 	///
-<<<<<<< HEAD
-	HOST cube( const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0, const value_type& value = value_type(), const Alloc& allocator = Alloc() ) : numberRows(numberRows), numberColumns(numberColumns), numberDepths(numberDepths), allocator(allocator) {
-		if( numberRows and numberColumns and numberDepths ) {
-			deviceMemory = device_ptr<value_type>( get_allocator().allocate( numberDepths, numberRows*numberColumns, pitch ) );
-			CUDA_CALL( cudaMemset2D<value_type>( deviceMemory.get(), pitch, value, numberDepths, numberRows*numberColumns ) );
-		}
-	}
-
-	///
-	/// \brief Constructs a cube with a shallow copy of each of the elements in src.
-	///
-	/// Be careful to note that a shallow copy means that only the pointer to the device memory
-	/// that holds the elements is copied in the newly constructed container. This allows
-	/// containers to be passed-by-value to kernel functions with minimal overhead. If a deep copy
-	/// of the container is required in host code, use the << or >> operators, or use iterators.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// ecuda::cube<int> cube( 5, 10, 15 ); // create a cube of dimensions 5x10x15 filled with zeroes
-	/// ecuda::cube<int> newCube( cube ); // shallow copy (changes to newCube reflected in cube)
-	/// ecuda::cube<int> newCube( 5, 10, 15 );
-	/// newCube << cube; // deep copy
-	/// cube >> newCube; // deep copy
-	/// newCube.assign( cube.begin(), cube.end() ); // deep copy
-	/// \endcode
-	///
-	/// \param src Another cube object of the same type, whose contents are copied.
-	///
-	HOST DEVICE cube( const cube<T>& src ) :
-		numberRows(src.numberRows),
-		numberColumns(src.numberColumns),
-		numberDepths(src.numberDepths),
-		pitch(src.pitch),
-		deviceMemory(src.deviceMemory),
-		//#ifdef __CPP11_SUPPORTED__
-		//allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-		//#else
-		allocator(src.allocator)
-		//#endif
-	{
-=======
 	__HOST__ cube(
 		const size_type numberRows=0, const size_type numberColumns=0, const size_type numberDepths=0,
 		const value_type& value = value_type(),
@@ -375,7 +256,6 @@ public:
 		}
 		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
 		return *this;
->>>>>>> ecuda2/master
 	}
 
 	#ifdef __CPP11_SUPPORTED__
@@ -386,12 +266,6 @@ public:
 	///
 	/// \param src another container to be used as source to initialize the elements of the container with
 	///
-<<<<<<< HEAD
-	HOST cube( cube<T>&& src ) : numberRows(src.numberRows), numberColumns(src.numberColumns), numberDepths(src.numberDepths), pitch(src.pitch), deviceMemory(std::move(src.deviceMemory)), allocator(std::move(src.allocator)) {}
-	#endif
-
-	//HOST DEVICE virtual ~cube() {}
-=======
 	__HOST__ cube( cube&& src ) : base_type(std::move(src)), numberRows(std::move(src.numberRows)), allocator(std::move(src.allocator)) {}
 
 	__HOST__ cube& operator=( cube&& src ) {
@@ -401,113 +275,33 @@ public:
 		return *this;
 	}
 	#endif
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the allocator associated with the container.
 	/// \returns The associated allocator.
 	///
-<<<<<<< HEAD
-	HOST inline allocator_type get_allocator() const { return allocator; }
-
-private:
-	template<class Iterator>
-	DEVICE inline void assign( Iterator first, Iterator last, device_iterator_tag ) {
-		for( iterator iter = begin(); iter != end() and first != last; ++iter, ++first ) *iter = *first;
-	}
-
-	template<class Iterator>
-	DEVICE inline void assign( Iterator first, Iterator last, contiguous_device_iterator_tag ) { assign( first, last, device_iterator_tag() ); }
-
-	// dummy method to trick compiler, since device code will never use a non-device iterator
-	template<class Iterator,class SomeOtherCategory>
-	DEVICE inline void assign( Iterator first, Iterator last, SomeOtherCategory ) {}
-
-public:
-
-	///
-	/// \brief Replaces the contents of the container with copies of those in the range [begin,end).
-	///
-	/// The number of elements in [begin,end) must equal the size of this cube (i.e. rows*columns*depths).
-	/// In addition, the orientation of the elements is assumed to be ordered depth->column->row
-	/// (the same orientation as the elements stored in this container).
-	///
-	/// Note that a potentially more clear way of assigning values is to use the get_depth()
-	/// method, which returns a structure that also has an assign() method.  For example:
-	///
-	/// \code{.cpp}
-	/// estd::cube<int> cube( 3, 4, 5 ); // cube of dimension 3x4x5 and filled with zeroes
-	/// std::vector<int> vec( { 66, 18, 96, 49, 58 } ); // vector initialized with a C++11 initializer list
-	/// for( estd::cube<int>::size_type i = 0; i < cube.number_rows(); ++i )
-	///	   for( estd::cube<int>::size_type j = 0; j < cube.number_columns(); ++j )
-	///       cube[i][j].assign( vec.begin(), vec.end() );
-	/// \endcode
-	///
-	/// \param first,last the range to copy the elements from
-	/// \throws std::length_error if number of elements doesn't match the size of the cube
-	///
-	template<class Iterator>
-	HOST DEVICE void assign( Iterator first, Iterator last ) {
-		#ifdef __CUDA_ARCH__
-		assign( first, last, typename std::iterator_traits<Iterator>::iterator_category() );
-		#else
-		typename std::iterator_traits<Iterator>::difference_type len = ::ecuda::distance(first,last);
-		if( len < 0 or static_cast<size_type>(len) != size() )
-			throw std::length_error( EXCEPTION_MSG("ecuda::cube::assign(begin,end) iterator range [begin,end) does not match the size of this cube") );
-		Iterator endDepth = first;
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			for( size_type j = 0; j < number_columns(); ++j ) {
-				depth_type depth = get_depth(i,j);
-				::ecuda::advance( endDepth, number_depths() );
-				depth.assign( first, endDepth );
-				first = endDepth;
-			}
-		}
-		#endif
-	}
-=======
 	__HOST__ inline allocator_type get_allocator() const { return allocator; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the number of rows in the container.
 	///
 	/// \returns The number of rows in the container.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
-=======
 	__HOST__ __DEVICE__ inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the number of columns in the container.
 	///
 	/// \returns The number of columns in the container.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type number_columns() const __NOEXCEPT__ { return numberColumns; }
-=======
 	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; } //TODO: this costs a register in kernel code
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the number of depths in the container.
 	///
 	/// \returns The number of depths in the container.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type number_depths() const __NOEXCEPT__ { return numberDepths; }
-
-	///
-	/// \brief Returns the pitch of the underlying 2D device memory.
-	///
-	/// \returns The pitch (in bytes) of the underlying 2D device memory.
-	///
-	HOST DEVICE inline size_type get_pitch() const __NOEXCEPT__ { return pitch; }
-=======
 	__HOST__ __DEVICE__ inline size_type number_depths() const __NOEXCEPT__ { return base_type::number_columns(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the number of elements in the container.
@@ -516,43 +310,27 @@ public:
 	///
 	/// \returns The number of elements in the container.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type size() const __NOEXCEPT__ { return number_rows()*number_columns()*number_depths(); }
-=======
 	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
-<<<<<<< HEAD
-	HOST DEVICE inline bool empty() const __NOEXCEPT__ { return !size(); }
-=======
 	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !size(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline pointer data() __NOEXCEPT__ { return deviceMemory.get(); }
-=======
 	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return base_type::get_pointer(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_pointer data() const __NOEXCEPT__ { return deviceMemory.get(); }
-=======
 	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return base_type::get_pointer(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -561,11 +339,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline iterator begin() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( data(), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-=======
 	__HOST__ __DEVICE__ inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -574,11 +348,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline iterator end() __NOEXCEPT__ { return iterator( padded_ptr<value_type,pointer,1>( allocator.address( data(), number_rows()*number_columns(), 0, get_pitch() ), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-=======
 	__HOST__ __DEVICE__ inline iterator end() __NOEXCEPT__ { return base_type::end(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -587,11 +357,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_iterator begin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-=======
 	__HOST__ __DEVICE__ inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -600,11 +366,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_iterator end() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows()*number_columns(), 0, get_pitch() ), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-=======
 	__HOST__ __DEVICE__ inline const_iterator end() const __NOEXCEPT__ { return base_type::end(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -613,11 +375,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
-=======
 	__HOST__ __DEVICE__ inline reverse_iterator rbegin() __NOEXCEPT__ { return base_type::rbegin(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -627,11 +385,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
-=======
 	__HOST__ __DEVICE__ inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -640,11 +394,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
-=======
 	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -654,15 +404,6 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
-
-	#ifdef __CPP11_SUPPORTED__
-	HOST DEVICE inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( data(), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-	HOST DEVICE inline const_iterator cend() const __NOEXCEPT__ { return const_iterator( padded_ptr<const value_type,const_pointer,1>( allocator.address( data(), number_rows()*number_columns(), 0, get_pitch() ), number_depths(), get_pitch()-number_depths()*sizeof(value_type), 0 ) ); }
-	HOST DEVICE inline const_reverse_iterator crbegin() __NOEXCEPT__ { return const_reverse_iterator(cend()); }
-	HOST DEVICE inline const_reverse_iterator crend() __NOEXCEPT__ { return const_reverse_iterator(cbegin()); }
-=======
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
 	#ifdef __CPP11_SUPPORTED__
@@ -670,7 +411,6 @@ public:
 	__HOST__ __DEVICE__ inline const_iterator cend() const      __NOEXCEPT__ { return base_type::cend();    }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend()   __NOEXCEPT__ { return base_type::crend();   }
->>>>>>> ecuda2/master
 	#endif
 
 	///
@@ -680,13 +420,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline row_type get_row( const size_type columnIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_columns()*number_depths() );
-		return row_type( sp, number_rows() );
-=======
 	__HOST__ __DEVICE__ row_type get_row( const size_type columnIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -695,7 +428,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return row_type( ptr2, number_rows() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -705,13 +437,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline column_type get_column( const size_type rowIndex, const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_depths() );
-		return column_type( sp, number_columns() );
-=======
 	__HOST__ __DEVICE__ column_type get_column( const size_type rowIndex, const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -720,7 +445,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return column_type( ptr2, number_columns() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -730,18 +454,12 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
-		return depth_type( np, number_depths() );
-=======
 	__HOST__ __DEVICE__ depth_type get_depth( const size_type rowIndex, const size_type columnIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_depths(); // move pointer to depth start
 		return depth_type( naked_cast<typename ecuda::add_pointer<value_type>::type>(ptr), number_depths() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -751,13 +469,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified column and depth indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_columns()*number_depths() );
-		return const_row_type( sp, number_rows() );
-=======
 	__HOST__ __DEVICE__ const_row_type get_row( const size_type columnIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -766,7 +477,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename const_row_type::pointer ptr2( ptr.get(), number_columns()*ptr.get_pitch() );
 		return const_row_type( ptr2, number_rows() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -776,13 +486,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements with the specified row and depth indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), depthIndex );
-		striding_ptr< const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_depths() );
-		return const_column_type( sp, number_columns() );
-=======
 	__HOST__ __DEVICE__ const_column_type get_column( const size_type rowIndex, const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -791,7 +494,6 @@ public:
 		ptr += depthIndex; // move pointer to correct depth
 		typename const_column_type::pointer ptr2( ptr.get(), ptr.get_pitch() );
 		return const_column_type( ptr2, number_columns() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -801,18 +503,12 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements with the specified row and column indices.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, 0, pitch );
-		return const_depth_type( np, number_depths() );
-=======
 	__HOST__ __DEVICE__ const_depth_type get_depth( const size_type rowIndex, const size_type columnIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths()+columnIndex*number_depths(); // move pointer to depth start
 		return const_depth_type( naked_cast<typename ecuda::add_pointer<const value_type>::type>(ptr), number_depths() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -821,21 +517,12 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline slice_yz_type get_yz( const size_type rowIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		const size_type padding = pitch-number_depths()*sizeof(value_type);
-		return slice_yz_type( np, number_depths(), number_columns(), padding );
-		//return slice_yz_type( np, number_columns(), number_depths(), padding );
-=======
 	__HOST__ __DEVICE__ slice_yz_type get_yz( const size_type rowIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths();
 		return slice_yz_type( ptr, number_columns(), number_depths() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -844,13 +531,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline slice_xy_type get_xy( const size_type depthIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
-		padded_ptr<value_type,pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		striding_ptr<value_type, padded_ptr<value_type,pointer,1> > sp( pp, number_depths() );
-		return slice_xy_type( sp, number_columns(), number_rows() );
-=======
 	__HOST__ __DEVICE__ slice_xy_type get_xy( const size_type depthIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -858,7 +538,6 @@ public:
 		ptr += depthIndex; // move to correct depth
 		typename slice_xy_type::pointer ptr2( ptr.get(), ptr.get_pitch() ); // make pointer stride over depths
 		return slice_xy_type( ptr2, number_rows(), number_columns() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -867,13 +546,6 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline slice_xz_type get_xz( const size_type columnIndex ) {
-		pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
-		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		//padded_ptr<value_type,pointer,1> pp( np, number_depths(), padding, 0 );
-		return slice_xz_type( np, number_depths(), number_rows(), padding );
-=======
 	__HOST__ __DEVICE__ slice_xz_type get_xz( const size_type columnIndex )
 	{
 		typedef typename make_unmanaged<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -881,7 +553,6 @@ public:
 		typename slice_xz_type::pointer ptr2( ptr.get(), ptr.get_pitch()*number_columns() ); // extend pitch
 		ptr2 += columnIndex*number_depths(); // move to correct column
 		return slice_xz_type( ptr2, number_rows(), number_depths() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -890,21 +561,12 @@ public:
 	/// \param rowIndex the row to fix the view on
 	/// \returns A view of the elements at the specified row.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_slice_yz_type get_yz( const size_type rowIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), rowIndex*number_columns(), 0, pitch );
-		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		const size_type padding = pitch-number_depths()*sizeof(value_type);
-		return const_slice_yz_type( np, number_depths(), number_columns(), padding );
-		//return const_slice_yz_type( np, number_columns(), number_depths(), padding );
-=======
 	__HOST__ __DEVICE__ const_slice_yz_type get_yz( const size_type rowIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type ptr = unmanaged_cast( base_type::get_pointer() );
 		ptr += rowIndex*number_columns()*number_depths();
 		return const_slice_yz_type( ptr, number_columns(), number_depths() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -913,13 +575,6 @@ public:
 	/// \param depthIndex the depth to fix the view on
 	/// \returns A view of the elements at the specified depth.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_slice_xy_type get_xy( const size_type depthIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), 0, depthIndex, pitch );
-		padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), pitch-number_depths()*sizeof(value_type), 0 );
-		striding_ptr<const value_type, padded_ptr<const value_type,const_pointer,1> > sp( pp, number_depths() );
-		return const_slice_xy_type( sp, number_columns(), number_rows() );
-=======
 	__HOST__ __DEVICE__ const_slice_xy_type get_xy( const size_type depthIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -927,7 +582,6 @@ public:
 		ptr += depthIndex; // move to correct depth
 		typename const_slice_xy_type::pointer ptr2( ptr.get(), ptr.get_pitch() ); // make pointer stride over depths
 		return const_slice_xy_type( ptr2, number_rows(), number_columns() );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -936,86 +590,6 @@ public:
 	/// \param columnIndex the column to fix the view on
 	/// \returns A view of the elements at the specified column.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_slice_xz_type get_xz( const size_type columnIndex ) const {
-		const_pointer np = allocator.address( deviceMemory.get(), columnIndex, 0, pitch );
-		const size_type padding = (pitch-number_depths()*sizeof(value_type)) + (number_columns()-1)*pitch;
-		//padded_ptr<const value_type,const_pointer,1> pp( np, number_depths(), padding, 0 );
-		return const_slice_xz_type( np, number_depths(), number_rows(), padding );
-	}
-
-	///
-	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
-	/// \param rowIndex index of the YZ-slice to isolate
-	/// \returns view object for the specified row
-	///
-	HOST DEVICE inline slice_yz_type operator[]( const size_type rowIndex ) { return get_yz( rowIndex ); }
-
-	///
-	/// \brief operator[](rowIndex) alias for get_yz(rowIndex)
-	/// \param rowIndex index of the YZ-slice to isolate
-	/// \returns view object for the specified row
-	///
-	HOST DEVICE inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
-
-	///
-	/// \brief Returns a reference to the element at the specified cube location.
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
-	/// // within kernel
-	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
-	/// double& value = deviceCube[10][10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a YZ-slice view, then the second
-	/// operator[] creating a view of a single row within the slice, and then finally
-	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \param depthIndex index of the depth to get an element reference from
-	/// \returns reference to the specified element
-	///
-	DEVICE inline T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
-
-	///
-	/// This method in STL containers like vector is differentiated from operator[]
-	/// because it includes range checking.  In this case, no range checking is performed,
-	/// but if a thread only accesses a single element, this accessor may be slightly faster.
-	/// For example:
-	///
-	/// \code{.cpp}
-	/// // host code
-	/// ecuda::cube<double> deviceCube( 100, 100, 100 );
-	/// // within kernel
-	/// double& value = deviceCube.at( 10, 10, 10 ); // slightly faster
-	/// double& value = deviceCube[10][10][10]; // slightly slower
-	/// \endcode
-	///
-	/// This is due to the operator[] first creating a YZ-slice view, then the second
-	/// operator[] creating a view of a single row within the slice, and then finally
-	/// a third access to a single column within it.  Modern compilers can be pretty
-	/// crafty at seeing through these these types of situations, and it may resolve to
-	/// an identical set of instructions, but the direct accessor method is included here
-	/// for completeness.
-	///
-	/// \param rowIndex index of the row to get an element reference from
-	/// \param columnIndex index of the column to get an element reference from
-	/// \param depthIndex index of the depth to get an element reference from
-	/// \returns reference to the specified element
-	///
-	DEVICE inline const T& at( const size_type rowIndex, const size_type columnIndex, const size_type depthIndex ) const { return *allocator.address( deviceMemory.get(), rowIndex*number_columns()+columnIndex, depthIndex, pitch ); }
-=======
 	__HOST__ __DEVICE__ const_slice_xz_type get_xz( const size_type columnIndex ) const
 	{
 		typedef typename make_unmanaged_const<typename base_type::pointer>::type unmanaged_pointer_type;
@@ -1114,7 +688,6 @@ public:
 	/// \returns view object for the specified row
 	///
 	__HOST__ __DEVICE__ inline const_slice_yz_type operator[]( const size_type rowIndex ) const { return get_yz( rowIndex ); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns x newNumberDepths.
@@ -1126,29 +699,6 @@ public:
 	/// \param newNumberDepths new number of depths
 	/// \param value the value to initialize the new elements with (default constructed if not specified)
 	///
-<<<<<<< HEAD
-	HOST void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() ) {
-		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
-		cube<value_type,allocator_type> newCube( newNumberRows, newNumberColumns, newNumberDepths, value );
-		for( size_type i = 0; i < std::min(newNumberRows,number_rows()); ++i ) {
-			for( size_type j = 0; j < std::min(newNumberColumns,number_columns()); ++j ) {
-				CUDA_CALL(
-					cudaMemcpy<value_type>(
-						newCube.allocator.address( newCube.deviceMemory.get(), i*newCube.numberColumns+j, 0, newCube.pitch ),
-						allocator.address( deviceMemory.get(), i*numberColumns+j, 0, pitch ),
-						std::min(newNumberDepths,number_depths()),
-						cudaMemcpyDeviceToDevice
-					)
-				);
-			}
-		}
-		// take the information from the new structure
-		deviceMemory = newCube.deviceMemory;
-		pitch = newCube.pitch;
-		numberRows = newCube.numberRows;
-		numberColumns = newCube.numberColumns;
-		numberDepths = newCube.numberDepths;
-=======
 	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() )
 	{
 		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
@@ -1162,7 +712,6 @@ public:
 		}
 		base_type::swap( newCube );
 		numberRows = newNumberRows;
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -1170,108 +719,6 @@ public:
 	///
 	/// \param value the value to assign to the elements
 	///
-<<<<<<< HEAD
-	HOST DEVICE void fill( const value_type& value ) {
-		#ifdef __CUDA_ARCH__
-		for( iterator iter = begin(); iter != end(); ++iter ) *iter = value;
-		#else
-		std::vector< value_type, host_allocator<value_type> > v( number_depths(), value );
-		// seed the device memory
-		CUDA_CALL( cudaMemcpy<value_type>( deviceMemory.get(), &v.front(), number_depths(), cudaMemcpyHostToDevice ) );
-		// make additional copies within the device
-		for( size_type i = 1; i < number_rows()*number_columns(); ++i )
-			CUDA_CALL( cudaMemcpy<value_type>( allocator.address( data(), i, 0, pitch ), deviceMemory.get(), number_depths(), cudaMemcpyDeviceToDevice ) );
-		#endif
-	}
-
-	/*
-	///
-	/// \brief Assignment operator.
-	///
-	/// Copies the contents of other into this container.
-	///
-	/// Note that the behaviour differs depending on whether the assignment occurs on the
-	/// host or the device. If called from the host, a deep copy is performed: additional
-	/// memory is allocated in this container and the contents of other are copied there.
-	/// If called from the device, a shallow copy is performed: the pointer to the device
-	/// memory is copied only.  Therefore any changes made to this container are reflected
-	/// in other as well, and vice versa.
-	///
-	/// \param src Container whose contents are to be assigned to this container.
-	/// \return A reference to this container.
-	///
-	template<class Alloc2>
-	HOST DEVICE cube<value_type,allocator_type>& operator=( const cube<value_type,Alloc2>& src ) {
-		#ifdef __CUDA_ARCH__
-		// shallow copy if called from device
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		numberDepths = src.numberDepths;
-		pitch = src.pitch;
-		deviceMemory = src.deviceMemory;
-		#else
-		// deep copy if called from host
-		numberRows = src.numberRows;
-		numberColumns = src.numberColumns;
-		numberDepths = src.numberDepths;
-		deviceMemory = device_ptr<value_type>( allocator.allocate( numberDepths, numberRows*numberColumns, pitch ) );
-		CUDA_CALL( cudaMemcpy2D<value_type>( deviceMemory.get(), pitch, src.deviceMemory.get(), src.pitch, numberDepths, numberRows*numberColumns, cudaMemcpyDeviceToDevice ) );
-		#endif
-		return *this;
-	}
-	*/
-
-	///
-	/// \brief Copies the contents of this device cube to another container.
-	///
-	/// The cube is converted into a row,column-major linearized form (all
-	/// depths of the first column of the first row, then the second column
-	/// of the first row, ...).
-	///
-	template<class Container>
-	HOST Container& operator>>( Container& dest ) const {
-		typename Container::iterator destIter = dest.begin();
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			for( size_type j = 0; j < number_columns(); ++j ) {
-				const_depth_type depth = get_depth(i,j);
-				::ecuda::copy( depth.begin(), depth.end(), destIter );
-				::ecuda::advance( destIter, number_depths() );
-			}
-		}
-		return dest;
-	}
-
-	///
-	/// \brief Copies the contents of another container to this device matrix.
-	///
-	/// The size of the container must match the number of elements in this
-	/// cube (number_rows()*number_columns()*number_depths()). The source container
-	/// is assumed to be in row,column-major linear form (all depths of the first
-	/// column of the first row, then the second column of the first row, ...).
-	///
-	/// \param src container to copy data from
-	/// \throws std::length_error if number of elements in src does not match the size of this matrix
-	///
-	template<class Container>
-	HOST cube& operator<<( const Container& src ) {
-		typename Container::const_iterator srcIter = src.begin();
-		typename std::iterator_traits<typename Container::const_iterator>::difference_type len = ::ecuda::distance( src.begin(), src.end() );
-		if( len < 0 or static_cast<size_type>(len) != size() ) throw std::length_error( EXCEPTION_MSG("ecuda::cube::operator<<() provided with a container of non-matching size") );
-		for( size_type i = 0; i < number_rows(); ++i ) {
-			for( size_type j = 0; j < number_columns(); ++j ) {
-				depth_type depth = get_depth(i,j);
-				typename Container::const_iterator srcEnd = srcIter;
-				::ecuda::advance( srcEnd, number_depths() );
-				depth.assign( srcIter, srcEnd );
-				srcIter = srcEnd;
-			}
-		}
-		return *this;
-	}
-
-};
-
-=======
 	__HOST__ __DEVICE__ inline void fill( const value_type& value ) { if( !empty() ) ecuda::fill( begin(), end(), value ); }
 
 };
@@ -1323,7 +770,6 @@ public:
 } // namespace impl
 /// \endcond
 
->>>>>>> ecuda2/master
 } // namespace ecuda
 
 #endif

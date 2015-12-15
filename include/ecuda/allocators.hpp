@@ -43,28 +43,18 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 
 #include "global.hpp"
-<<<<<<< HEAD
-=======
 #include "type_traits.hpp"
 #include "ptr/common.hpp"
 #include "ptr/padded_ptr.hpp"
->>>>>>> ecuda2/master
 
 namespace ecuda {
 
 ///
-<<<<<<< HEAD
-/// \brief An STL allocator for page-locked host memory.
-///
-/// The implementation uses the CUDA API functions cudaMallocHost and
-/// cudaFreeHost.
-=======
 /// \brief Allocator for page-locked host memory.
 ///
 /// Implementation follows the specification of an STL allocator. The main
 /// difference is that the CUDA API functions cudaHostAlloc and cudaFreeHost
 /// are used internally to allocate/deallocate memory.
->>>>>>> ecuda2/master
 ///
 /// Page-locked or "pinned" memory makes copying memory from the GPU (device)
 /// to the CPU (host) faster.  Using STL containers with this allocator makes
@@ -75,11 +65,7 @@ namespace ecuda {
 ///
 /// For example:
 /// \code{.cpp}
-<<<<<<< HEAD
-/// std::vector< int, host_allocator<int> > v;
-=======
 /// std::vector< int, ecuda::host_allocator<int> > v;
->>>>>>> ecuda2/master
 /// \endcode
 /// This would instantiate a vector whose underlying contents would be stored in
 /// page-locked host memory.  Then a call to, for example:
@@ -87,28 +73,11 @@ namespace ecuda {
 /// ecuda::vector<int> deviceVector(1000);
 /// // do work on device vector using the GPU...
 /// std::vector< int, ecuda::host_allocator<int> > hostVector( 1000 );
-<<<<<<< HEAD
-/// deviceVector >> hostVector; // copy results from device to host
-=======
 /// ecuda::copy( deviceVector.begin(), deviceVector.end(), hostVector.begin() ); // copy results from device to host
->>>>>>> ecuda2/master
 /// \endcode
 /// This would potentially be a faster transfer than one would get using a
 /// <tt>std::vector</tt> with the default STL allocator.
 ///
-<<<<<<< HEAD
-template<typename T>
-class host_allocator {
-
-public:
-	typedef T value_type; //!< element type
-	typedef T* pointer; //!< pointer to element
-	typedef T& reference; //!< reference to element
-	typedef const T* const_pointer; //!< pointer to constant element
-	typedef const T& const_reference; //!< reference to constant element
-	typedef std::size_t size_type; //!< quantities of elements
-	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-=======
 template<typename T,unsigned Flags=cudaHostAllocDefault>
 class host_allocator
 {
@@ -121,7 +90,6 @@ public:
 	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
 	typedef std::size_t                                   size_type;       //!< quantities of elements
 	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
->>>>>>> ecuda2/master
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -174,19 +142,11 @@ public:
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-<<<<<<< HEAD
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
-	///
-	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
-	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
-=======
 	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
 	/// The block of storage is allocated using cudaHostAlloc and throws std::bad_alloc if it cannot
->>>>>>> ecuda2/master
 	/// allocate the total amount of storage requested.
 	///
 	/// \param n Number of elements (each of size sizeof(value_type)) to be allocated.
@@ -198,16 +158,10 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-<<<<<<< HEAD
-	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
-		pointer ptr = NULL;
-		const cudaError_t result = cudaMallocHost( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
-=======
 	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
 		pointer ptr = NULL;
 		const cudaError_t result = cudaHostAlloc( reinterpret_cast<void**>(&ptr), n*sizeof(T), Flags );
->>>>>>> ecuda2/master
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		return ptr;
 	}
@@ -223,15 +177,10 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::host_allocator<T>).
 	///
-<<<<<<< HEAD
-	inline void deallocate( pointer ptr, size_type /*n*/ ) {
-		if( ptr ) cudaFreeHost( reinterpret_cast<void*>(ptr) );
-=======
 	inline void deallocate( pointer ptr, size_type )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_host_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -262,30 +211,11 @@ public:
 
 };
 
-<<<<<<< HEAD
-
-///
-/// \brief An STL allocator for device memory.
-///
-/// The implementation uses the CUDA API functions cudaMalloc and cudaFree.
-///
-template<typename T>
-class device_allocator {
-
-public:
-	typedef T value_type; //!< element type
-	typedef T* pointer; //!< pointer to element
-	typedef T& reference; //!< reference to element
-	typedef const T* const_pointer; //!< pointer to constant element
-	typedef const T& const_reference; //!< reference to constant element
-	typedef std::size_t size_type; //!< quantities of elements
-	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-=======
 ///
 /// \brief Allocator for device memory.
 ///
 /// Implementation follows the specification of an STL allocator. The main
-/// difference is that the CUDA API functions cudaMalloc and cudaFree are 
+/// difference is that the CUDA API functions cudaMalloc and cudaFree are
 /// used internally to allocate/deallocate memory.
 ///
 /// Unlike the standard std::allocator or ecuda::host_allocator, the
@@ -305,7 +235,6 @@ public:
 	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
 	typedef std::size_t                                   size_type;       //!< quantities of elements
 	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
->>>>>>> ecuda2/master
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -314,41 +243,25 @@ public:
 	///
 	/// \brief Constructs a device allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE device_allocator() throw() {}
-=======
 	__HOST__ __DEVICE__ device_allocator() throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs a device allocator object from another device allocator object.
 	/// \param alloc Allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE device_allocator( const device_allocator& alloc ) throw() {}
-=======
 	__HOST__ __DEVICE__ device_allocator( const device_allocator& alloc ) throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs a device allocator object from another device allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-<<<<<<< HEAD
-	HOST DEVICE device_allocator( const device_allocator<U>& alloc ) throw() {}
-=======
 	__HOST__ __DEVICE__ device_allocator( const device_allocator<U>& alloc ) throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Destructs the device allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE ~device_allocator() throw() {}
-=======
 	__HOST__ __DEVICE__ ~device_allocator() throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the address of x.
@@ -358,11 +271,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline pointer address( reference x ) { return &x; }
-=======
 	__HOST__ __DEVICE__ inline pointer address( reference x ) { return &x; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the address of x.
@@ -372,29 +281,17 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_pointer address( const_reference x ) const { return &x; }
-=======
 	__HOST__ __DEVICE__ inline const_pointer address( const_reference x ) const { return &x; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-<<<<<<< HEAD
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
-	///
-	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
-	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
-=======
 	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
 	/// The block of storage is allocated using cudaMalloc and throws std::bad_alloc if it cannot
->>>>>>> ecuda2/master
 	/// allocate the total amount of storage requested.
 	///
 	/// \param n Number of elements (each of size sizeof(value_type)) to be allocated.
@@ -406,12 +303,8 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-<<<<<<< HEAD
-	HOST pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 ) {
-=======
 	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
 	{
->>>>>>> ecuda2/master
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
 		if( result != cudaSuccess ) throw std::bad_alloc();
@@ -429,15 +322,11 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
-<<<<<<< HEAD
-	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
-=======
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 	}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter)
@@ -447,11 +336,7 @@ public:
 	///
 	/// \return The nubmer of elements that might be allcoated as maximum by a call to member allocate.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
-=======
 	__HOST__ __DEVICE__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
@@ -460,12 +345,8 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_allocator<T>).
 	///
-<<<<<<< HEAD
-	HOST inline void construct( pointer ptr, const_reference val ) {
-=======
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
->>>>>>> ecuda2/master
 		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
 	}
 
@@ -474,42 +355,15 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-<<<<<<< HEAD
-	HOST inline void destroy( pointer ptr ) { ptr->~value_type(); }
-=======
 	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
->>>>>>> ecuda2/master
 
 };
 
 ///
-<<<<<<< HEAD
-/// \brief An STL allocator for hardware aligned device memory.
-///
-/// The implementation uses the CUDA API functions cudaMallocPitch and cudaFree.
-/// This allocator is NOT strictly compatible with STL because the allocated
-/// memory is 2D and has padding to align the allocation in hardware memory.
-///
-/// \todo Possibly re-engineer this to return a specialized pointer that
-///       keeps track of the pitch parameter.  This might make it possible
-///       for this allocator to be more STL-like.
-///
-template<typename T>
-class device_pitch_allocator {
-
-public:
-	typedef T value_type; //!< element type
-	typedef T* pointer; //!< pointer to element
-	typedef T& reference; //!< reference to element
-	typedef const T* const_pointer; //!< pointer to constant element
-	typedef const T& const_reference; //!< reference to constant element
-	typedef std::size_t size_type; //!< quantities of elements
-	typedef std::ptrdiff_t difference_type; //!< difference between two pointers
-=======
 /// \brief Allocator for hardware aligned device memory.
 ///
 /// Implementation follows the specification of an STL allocator. The main
-/// difference is that the CUDA API functions cudaMallocPitch and cudaFree 
+/// difference is that the CUDA API functions cudaMallocPitch and cudaFree
 /// are used internally to allocate/deallocate memory.
 ///
 /// Unlike the standard std::allocator or ecuda::host_allocator, the
@@ -517,10 +371,10 @@ public:
 /// code. Therefore, ecuda::device_pitch_allocator cannot be used as a
 /// replacement allocator for the standard STL containers (e.g. vector).
 ///
-/// This allocator is NOT strictly compatible with STL specification because the 
-/// allocated memory is 2D and has padding to align the allocation in hardware 
+/// This allocator is NOT strictly compatible with STL specification because the
+/// allocated memory is 2D and has padding to align the allocation in hardware
 /// memory. The allocator requires both a width and height to specify size,
-/// instead of a single length. The allocator uses the ecuda::padded_ptr 
+/// instead of a single length. The allocator uses the ecuda::padded_ptr
 /// pointer specialization to store details on the padding of the allocated
 /// memory.
 ///
@@ -536,58 +390,38 @@ public:
 	typedef typename ecuda::add_const<reference>::type         const_reference; //!< reference to constant element
 	typedef std::size_t                                        size_type;       //!< quantities of elements
 	typedef std::ptrdiff_t                                     difference_type; //!< difference between two pointers
->>>>>>> ecuda2/master
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
 
-<<<<<<< HEAD
-=======
 private:
 	template<typename U> struct char_cast;
 	template<typename U> struct char_cast<U*>       { char* type;       };
 	template<typename U> struct char_cast<const U*> { const char* type; };
 
->>>>>>> ecuda2/master
 public:
 	///
 	/// \brief Constructs a device pitched memory allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE device_pitch_allocator() throw() {}
-=======
 	__HOST__ __DEVICE__ device_pitch_allocator() throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs a device pitched memory allocator object from another host allocator object.
 	/// \param alloc Allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE device_pitch_allocator( const device_pitch_allocator& alloc ) throw() {}
-=======
 	__HOST__ __DEVICE__ device_pitch_allocator( const device_pitch_allocator& alloc ) throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs a device pitched memory allocator object from another device pitched memory allocator object with a different element type.
 	/// \param alloc Allocator object.
 	///
 	template<typename U>
-<<<<<<< HEAD
-	HOST DEVICE device_pitch_allocator( const device_pitch_allocator<U>& alloc ) throw() {}
-=======
 	__HOST__ __DEVICE__ device_pitch_allocator( const device_pitch_allocator<U>& alloc ) throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Destructs the device pitched memory allocator object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE ~device_pitch_allocator() throw() {}
-=======
 	__HOST__ __DEVICE__ ~device_pitch_allocator() throw() {}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the address of x.
@@ -597,11 +431,7 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline pointer address( reference x ) { return &x; }
-=======
 	__HOST__ __DEVICE__ inline pointer address( reference x ) { return &x; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the address of x.
@@ -611,37 +441,21 @@ public:
 	/// \param x Reference to object.
 	/// \return A pointer to the object.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_pointer address( const_reference x ) const { return &x; }
-=======
 	__HOST__ __DEVICE__ inline const_pointer address( const_reference x ) const { return &x; }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Allocate block of storage.
 	///
 	/// Attempts to allocate a block of storage with a size large enough to contain n elements of member type
-<<<<<<< HEAD
-	/// value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.
-	///
-	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
-	///
-	/// The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot
-=======
 	/// value_type, and returns a pointer to the first element.
 	///
 	/// The storage is aligned appropriately for object of type value_type, but they are not constructed.
 	///
 	/// The block of storage is allocated using cudaMallocPitch and throws std::bad_alloc if it cannot
->>>>>>> ecuda2/master
 	/// allocate the total amount of storage requested.
 	///
 	/// \param w Width of the matrix (each of size sizeof(value_type)) to be allocated.
 	/// \param h Height of the matrix to be allocated.
-<<<<<<< HEAD
-	/// \param[out] pitch Pitch resulting from the 2D memory allocation.
-=======
->>>>>>> ecuda2/master
 	/// \param hint Either 0 or a value previously obtained by another call to allocate and not
 	///             yet freed with deallocate.  For standard memory allocation, a non-zero value may
 	///             used as a hint to improve performance by allocating the new block near the one
@@ -650,13 +464,6 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-<<<<<<< HEAD
-	HOST pointer allocate( size_type w, size_type h, size_type& pitch, std::allocator<void>::const_pointer hint = 0 ) {
-		pointer ptr = NULL;
-		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(T), h );
-		if( result != cudaSuccess ) throw std::bad_alloc();
-		return ptr;
-=======
 	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 )
 	{
 		typename ecuda::add_pointer<value_type>::type ptr = NULL;
@@ -664,7 +471,6 @@ public:
 		const cudaError_t result = cudaMallocPitch( reinterpret_cast<void**>(&ptr), &pitch, w*sizeof(value_type), h );
 		if( result != cudaSuccess ) throw std::bad_alloc();
 		return pointer( ptr, pitch );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -678,15 +484,11 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
-<<<<<<< HEAD
-	HOST inline void deallocate( pointer ptr, size_type /*n*/ ) { if( ptr ) cudaFree( reinterpret_cast<void*>(ptr) ); }
-=======
 	__HOST__ inline void deallocate( pointer ptr, size_type n )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
 	}
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter)
@@ -696,11 +498,7 @@ public:
 	///
 	/// \return The nubmer of elements that might be allcoated as maximum by a call to member allocate.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
-=======
 	__HOST__ __DEVICE__ inline size_type max_size() const throw() { return std::numeric_limits<size_type>::max(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Constructs an element object on the location pointed by ptr.
@@ -709,10 +507,6 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
-<<<<<<< HEAD
-	HOST inline void construct( pointer ptr, const_reference val ) {
-		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
-=======
 	__HOST__ inline void construct( pointer ptr, const_reference val )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
@@ -724,7 +518,6 @@ public:
 				cudaMemcpyHostToDevice
 			)
 		);
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -732,11 +525,7 @@ public:
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-<<<<<<< HEAD
-	HOST inline void destroy( pointer ptr ) { ptr->~value_type(); }
-=======
 	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
->>>>>>> ecuda2/master
 
 	///
 	/// \brief Returns the address of a given coordinate.
@@ -750,14 +539,9 @@ public:
 	/// \param pitch
 	/// \return A pointer to the location.
 	///
-<<<<<<< HEAD
-	HOST DEVICE inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const {
-		return reinterpret_cast<const_pointer>( reinterpret_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
-=======
 	__HOST__ __DEVICE__ inline const_pointer address( const_pointer ptr, size_type x, size_type y, size_type pitch ) const
 	{
 		return reinterpret_cast<const_pointer>( naked_cast<const char*>(ptr) + x*pitch + y*sizeof(value_type) );
->>>>>>> ecuda2/master
 	}
 
 	///
@@ -769,13 +553,6 @@ public:
 	/// \param ptr
 	/// \param x
 	/// \param y
-<<<<<<< HEAD
-	/// \param pitch
-	/// \return A pointer to the location.
-	///
-	HOST DEVICE inline pointer address( pointer ptr, size_type x, size_type y, size_type pitch ) {
-		return reinterpret_cast<pointer>( reinterpret_cast<char*>(ptr) + x*pitch + y*sizeof(value_type) );
-=======
 	/// \return A pointer to the location.
 	///
 	__HOST__ __DEVICE__ inline pointer address( pointer ptr, size_type x, size_type y )
@@ -789,19 +566,10 @@ public:
 		p = p2;
 		p += y;
 		return pointer( p, ptr.get_pitch() );
->>>>>>> ecuda2/master
 	}
 
 };
 
-<<<<<<< HEAD
-
 } // namespace ecuda
 
 #endif
-
-=======
-} // namespace ecuda
-
-#endif
->>>>>>> ecuda2/master

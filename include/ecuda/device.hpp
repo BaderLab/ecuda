@@ -56,24 +56,16 @@ private:
 	int driverVersion, runtimeVersion;
 
 public:
-<<<<<<< HEAD
-	static int getDeviceCount() {
-=======
 	static int getDeviceCount()
 	{
->>>>>>> ecuda2/master
 		int deviceCount = 0;
 		CUDA_CALL( cudaGetDeviceCount(&deviceCount) );
 		return deviceCount;
 	}
 
 public:
-<<<<<<< HEAD
-	device( const int deviceNumber ) : deviceNumber(deviceNumber) {
-=======
 	device( const int deviceNumber ) : deviceNumber(deviceNumber)
 	{
->>>>>>> ecuda2/master
 		CUDA_CALL( cudaGetDeviceProperties(&deviceProperties,deviceNumber) );
 		CUDA_CALL( cudaDriverGetVersion(&driverVersion) );
 		CUDA_CALL( cudaRuntimeGetVersion(&runtimeVersion) );
@@ -85,12 +77,8 @@ public:
 	inline int get_runtime_version() const { return runtimeVersion; }
 	inline const cudaDeviceProp& get_properties() const { return deviceProperties; }
 
-<<<<<<< HEAD
-	std::string get_driver_version_string() const {
-=======
 	std::string get_driver_version_string() const
 	{
->>>>>>> ecuda2/master
 		std::ostringstream oss;
 		oss << (driverVersion/1000);
 		oss << ".";
@@ -98,12 +86,8 @@ public:
 		return oss.str();
 	}
 
-<<<<<<< HEAD
-	std::string get_runtime_version_string() const {
-=======
 	std::string get_runtime_version_string() const
 	{
->>>>>>> ecuda2/master
 		std::ostringstream oss;
 		oss << (runtimeVersion/1000);
 		oss << ".";
@@ -111,9 +95,6 @@ public:
 		return oss.str();
 	}
 
-<<<<<<< HEAD
-	void print_summary( std::ostream& output = std::cout ) {
-=======
 	void print_summary( std::ostream& output = std::cout )
 	{
 		/*
@@ -124,7 +105,6 @@ public:
 		output << "  (" << std::setw(2) << deviceProperties.multiProcessorCount << ") Multiprocessors, (" << std::setw(3) <<
 		*/
 		#ifdef __CUDACC__
->>>>>>> ecuda2/master
 		output << "name=" << deviceProperties.name << std::endl;
 		output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
 		output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;
@@ -176,13 +156,10 @@ public:
 		output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
 		output << "l2CacheSize=" << deviceProperties.l2CacheSize << std::endl;
 		output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
-<<<<<<< HEAD
-=======
 		#else
 		output << "Not using device, in ecuda host emulation mode." << std::endl;
 		#endif
 
->>>>>>> ecuda2/master
 	}
 
 };
