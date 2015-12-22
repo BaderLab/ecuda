@@ -212,6 +212,12 @@ inline cudaError_t cudaMemcpyToSymbol( T* dest, const T* src, const size_t count
 	return ::cudaMemcpyToSymbol( reinterpret_cast<const char*>(dest), reinterpret_cast<const void*>(src), count*sizeof(T), kind );
 }
 
+template<typename T>
+inline cudaError_t cudaMemcpyToSymbol( T& dest, const T& src, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice )
+{
+	return ::ecuda::cudaMemcpyToSymbol( &dest, &src, 1, kind );
+}
+
 } // namespace ecuda
 
 #endif
