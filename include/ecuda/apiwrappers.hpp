@@ -207,9 +207,9 @@ cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const s
 }
 
 template<typename T>
-inline cudaError_t cudaMemcpyToSymbol( T* dest, const T* src, const size_t count=0, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice )
+inline cudaError_t cudaMemcpyToSymbol( T* dest, const T* src, const size_t count=1, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice )
 {
-	return ::cudaMemcpyToSymbol( reinterpret_cast<const char*>(dest), reinterpret_cast<const void*>(src), count, kind );
+	return ::cudaMemcpyToSymbol( reinterpret_cast<const char*>(dest), reinterpret_cast<const void*>(src), count*sizeof(T), kind );
 }
 
 } // namespace ecuda
