@@ -65,4 +65,4 @@ test/test_matrix.cu
 test/test_models.cu
 test/test_ptr.cu
 test/test_vector.cu
-tools/print_device_info.cpp
+tools/print_device_info.cu

@@ -56,11 +56,17 @@ private:
 	int driverVersion, runtimeVersion;
 
 public:
-	static int getDeviceCount()
+	static int get_device_count()
 	{
+		#ifdef __CUDACC__
 		int deviceCount = 0;
 		CUDA_CALL( cudaGetDeviceCount(&deviceCount) );
 		return deviceCount;
+		#else
+		// in CPU emulation mode say 1 and then make
+		// up the details
+		return 1;
+		#endif
 	}
 
 public:

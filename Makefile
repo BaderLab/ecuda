@@ -77,7 +77,8 @@ test/% :: test/%.cu
 test/cpu/% :: test/%.cu
 	@mkdir -p bin/test/cpu
 	cp $< $<.cpp
-	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+#	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+	$(CXX) -g $(CXXFLAGS) -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
 
 test/ptx/% :: test/%.cu
@@ -97,7 +98,8 @@ t/% :: t/%.cu
 t/cpu/% :: t/%.cu
 	@mkdir -p bin/t/cpu
 	cp $< $<.cpp
-	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+#	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+	$(CXX) -g $(CXXFLAGS) -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
 
 % :: tools/%.cu
@@ -105,6 +107,12 @@ t/cpu/% :: t/%.cu
 	@mkdir -p obj
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
+
+cpu/% :: tools/%.cu
+	@mkdir -p bin/cpu
+	cp $< $<.cpp
+	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
+	rm $<.cpp
 
 unittests :: $(T_FILES)
 .PHONY: unittests
