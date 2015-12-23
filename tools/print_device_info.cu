@@ -23,7 +23,7 @@ int main( int argc, char* argv[] )
 		const cudaDeviceProp& prop = device.get_properties();
 
 		std::cout << "=======================================================================" << std::endl;
-		std::cout << "Device " << i << " | " << prop.name << std::endl;
+		std::cout << "::Device " << i << " is a: " << prop.name << std::endl;
 		std::cout << "-----------------------------------------------------------------------" << std::endl;
 		std::cout << "Versions :: CUDA Driver: " << device.get_driver_version_string() << " CUDA Runtime: " << device.get_runtime_version_string() << " Compute Capability: " << prop.major << "." << prop.minor << std::endl;
 		std::cout << "Memory   :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << " Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
@@ -53,29 +53,33 @@ int main( int argc, char* argv[] )
 
 }
 
+unsigned exp10( unsigned n )
+{
+	unsigned y = 1;
+	for( unsigned i = 0; i < n; ++i ) y *= 10;
+	return y;
+}
 
+bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long x, unsigned long per_unit, const std::string& unitSymbol = std::string() )
+{
+	unsigned long units = x / per_unit;
+	if( !units ) return false;
+	std::stringstream ss;
+	ss << units;
+	const unsigned long remainder = ( x - units * per_unit ) / ( per_unit / exp10(digits) );
+	if( remainder ) ss << "." << std::setw(digits) << std::setfill('0');
+	ss << unitSymbol;
+	out << ss.str();
+	return true;
+}
 
 std::string create_memory_string( const unsigned long x )
 {
-	unsigned long gb = x / 1073741824;
-	if( gb ) {
-		std::stringstream ss;
-		ss << gb << "." << ( ( x - gb * 1073741824 ) / 107374182 ) << "Gb";
-		return ss.str();
-	}
-	unsigned long mb = x / 1048576;
-	if( mb ) {
-		std::stringstream ss;
-		ss << mb << "." << ( ( x - mb * 1048576 ) / 104858 ) << "Mb";
-		return ss.str();
-	}
-	unsigned long kb = x / 1024;
-	if( kb ) {
-		std::stringstream ss;
-		ss << kb << "." << ( ( x - kb * 1024 ) / 102 ) << "kb";
-		return ss.str();
-	}
 	std::stringstream ss;
+	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 1, x, 1048576   , "Mb" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 1, x, 1024      , "Kb" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
 	ss << x << "b";
 	return ss.str();
 }
