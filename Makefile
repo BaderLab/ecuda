@@ -100,9 +100,11 @@ t/cpu/% :: t/%.cu
 	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
 
-% :: tools/%.cpp
+% :: tools/%.cu
 	@mkdir -p bin
-	$(CXX) $(CXXFLAGS) $< -o bin/$@
+	@mkdir -p obj
+	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
+	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
 unittests :: $(T_FILES)
 .PHONY: unittests
