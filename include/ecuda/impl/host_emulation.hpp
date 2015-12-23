@@ -51,6 +51,11 @@ either expressed or implied, of the FreeBSD Project.
 #include <memory>
 #include <ctime>
 
+#define __global__
+#define __device__
+#define __host__
+#define __constant__
+
 enum cudaError_t
 {
 	cudaSuccess

@@ -719,7 +719,7 @@ namespace impl {
 /// unnecessary data that will be useless to the kernel thus reducing register usage (in this
 /// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
 ///
-template< typename T, class Alloc=device_pitch_allocator<T> >
+template< typename T, class Alloc> //=device_pitch_allocator<T> >
 class matrix_kernel_argument : public matrix<T,Alloc,typename ecuda::add_pointer<T>::type>
 {
 
