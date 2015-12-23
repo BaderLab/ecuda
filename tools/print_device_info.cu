@@ -14,6 +14,8 @@ int main( int argc, char* argv[] )
 	std::cout << "There is " << deviceCount << " device supporting ecuda." << std::endl;
 	std::cout << std::endl;
 
+	std::cout << "Arch: " << ( sizeof(unsigned)*8 ) << "-bit" << std::endl;
+
 	for( int i = 0; i < deviceCount; ++i ) {
 
 		ecuda::device device( i );
