@@ -75,7 +75,7 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 	std::stringstream ss;
 	if( x % per_unit ) {
 		const double y = x / static_cast<double>(per_unit);
-		ss << std::setprecision(digits) << std::setfill('0') << y;
+		ss << std::setprecision(digits) << std::fixed << y;
 	} else {
 		ss << units;
 	}
