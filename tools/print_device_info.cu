@@ -3,7 +3,7 @@
 #include <iostream>
 #include "../include/ecuda/device.hpp"
 
-std::string create_memory_string( const unsigned x );
+std::string create_memory_string( const unsigned long x );
 std::string create_frequency_string( const unsigned x );
 
 int main( int argc, char* argv[] )
@@ -14,7 +14,7 @@ int main( int argc, char* argv[] )
 	std::cout << "There is " << deviceCount << " device supporting ecuda." << std::endl;
 	std::cout << std::endl;
 
-	std::cout << "Arch: " << ( sizeof(unsigned)*8 ) << "-bit" << std::endl;
+	std::cout << "Arch: " << ( sizeof(unsigned long)*8 ) << "-bit" << std::endl;
 
 	for( int i = 0; i < deviceCount; ++i ) {
 
@@ -53,21 +53,21 @@ int main( int argc, char* argv[] )
 
 
 
-std::string create_memory_string( const unsigned x )
+std::string create_memory_string( const unsigned long x )
 {
-	unsigned gb = x / 1073741824;
+	unsigned long gb = x / 1073741824;
 	if( gb ) {
 		std::stringstream ss;
 		ss << gb << "." << ( x / 107374182 ) << "Gb";
 		return ss.str();
 	}
-	unsigned mb = x / 1048576;
+	unsigned long mb = x / 1048576;
 	if( mb ) {
 		std::stringstream ss;
 		ss << mb << "." << ( x / 104858 ) << "Mb";
 		return ss.str();
 	}
-	unsigned kb = x / 1024;
+	unsigned long kb = x / 1024;
 	if( kb ) {
 		std::stringstream ss;
 		ss << kb << "." << ( x / 102 ) << "kb";
