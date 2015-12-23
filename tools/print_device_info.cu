@@ -86,7 +86,6 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 
 std::string create_memory_string( unsigned long x )
 {
-	//++x;
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
 	if( try_creating_unit_string( ss, 1, x, 1048576   , "Mb" ) ) return ss.str();
@@ -98,25 +97,10 @@ std::string create_memory_string( unsigned long x )
 
 std::string create_frequency_string( const unsigned x )
 {
-	unsigned GHz = x / 1000000000;
-	if( GHz ) {
-		std::stringstream ss;
-		ss << GHz << "." << std::setw(2) << std::setfill('0') << ( x / 10000000 ) << "GHz";
-		return ss.str();
-	}
-	unsigned MHz = x / 1000000;
-	if( MHz ) {
-		std::stringstream ss;
-		ss << MHz << "." << std::setw(2) << std::setfill('0') << ( x / 10000 ) << "MHz";
-		return ss.str();
-	}
-	unsigned KHz = x / 1000;
-	if( KHz ) {
-		std::stringstream ss;
-		ss << KHz << "." << std::setw(2) << std::setfill('0') << ( x / 10 ) << "KHz";
-		return ss.str();
-	}
 	std::stringstream ss;
+	if( try_creating_unit_string( ss, 2, x, 1000000000, "GHz" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 2, x, 1000000,    "MHz" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 2, x, 1000,       "kHz" ) ) return ss.str();
 	ss << x << "Hz";
 	return ss.str();
 }
