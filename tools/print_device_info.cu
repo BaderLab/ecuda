@@ -27,7 +27,8 @@ int main( int argc, char* argv[] )
 		std::cout << "-----------------------------------------------------------------------" << std::endl;
 		std::cout << "Versions :: CUDA Driver: " << device.get_driver_version_string() << " CUDA Runtime: " << device.get_runtime_version_string() << " Compute Capability: " << prop.major << "." << prop.minor << std::endl;
 		std::cout << "Memory   :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << " Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
-		std::cout << "Number   :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " (=Cores: " << (prop.warpSize*prop.multiProcessorCount) << ") Maximum Threads Per Block: " << prop.maxThreadsPerBlock << " Asynchronous Engines: " << prop.asyncEngineCount << std::endl;
+		std::cout << "Number   :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " (=Cores: " << (prop.warpSize*prop.multiProcessorCount) << ")" << std::endl;
+		std::cout << "            Maximum Threads Per Block: " << prop.maxThreadsPerBlock << " Asynchronous Engines: " << prop.asyncEngineCount << std::endl;
 		std::cout << "Dimension:: Block: [" << prop.maxThreadsDim[0] << " x " << prop.maxThreadsDim[1] << " x " << prop.maxThreadsDim[2] << "] Grid: [" << prop.maxGridSize[0] << " x " << prop.maxGridSize[1] << " x " << prop.maxGridSize[2] << "]" << std::endl;
 		std::cout << "Texture  :: Alignment: " << create_memory_string(prop.textureAlignment) << " Pitch Alignment: " << create_memory_string(prop.texturePitchAlignment) << std::endl;
 		std::cout << "Surface  :: Alignment: " << create_memory_string(prop.surfaceAlignment) << std::endl;
@@ -75,7 +76,7 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 
 std::string create_memory_string( unsigned long x )
 {
-	++x;
+	//++x;
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
 	if( try_creating_unit_string( ss, 1, x, 1048576   , "Mb" ) ) return ss.str();
