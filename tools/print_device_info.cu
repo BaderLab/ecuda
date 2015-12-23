@@ -60,20 +60,24 @@ int main( int argc, char* argv[] )
 
 }
 
-unsigned exp10( unsigned n )
-{
-	unsigned y = 1;
-	for( unsigned i = 0; i < n; ++i ) y *= 10;
-	return y;
-}
-
-unsigned log2( unsigned n )
-{
-	unsigned y = 1;
-	for( unsigned i = 0; i < n; ++i ) y *= 2;
-	return y;
-}
-
+///
+/// \brief Performs a unit conversion and creates a pretty string.
+///
+/// If the provided value is an exact multiple of per_unit then no
+/// decimal places will be displayed, regardless of the value of digits.
+/// (e.g. digits=2 x=2000 per_unit=1000 unitSymbol="k" gives: 2k
+///       digits=2 x=2500 per_unit=1000 unitSymbol="k" gives: 2.50k)
+///
+/// If x < per_unit then the function returns false so that the
+/// user can retry with a smaller unit.
+///
+/// \param out stream to output formatted string to
+/// \param digits number of decimal places
+/// \param x the value to format
+/// \param per_unit the value per unit (e.g. 2^30=1Gb)
+/// \param unitSymbol the symbol for the unit (e.g. "Gb")
+/// \return true if the string was successfully created
+///
 bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long x, unsigned long per_unit, const std::string& unitSymbol = std::string() )
 {
 	unsigned long units = x / per_unit;
@@ -95,8 +99,7 @@ std::string create_memory_string( unsigned long x )
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
 	if( try_creating_unit_string( ss, 1, x, 1048576   , "Mb" ) ) return ss.str();
-	if( try_creating_unit_string( ss, 1, x, 1024      , "Kb" ) ) return ss.str();
-	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
+	if( try_creating_unit_string( ss, 1, x, 1024      , "kb" ) ) return ss.str();
 	ss << x << "b";
 	return ss.str();
 }
@@ -111,93 +114,9 @@ std::string create_frequency_string( const unsigned x )
 	return ss.str();
 }
 
-/*
-
-
-Device <<i>> | <<name>>
-=======================================================================
-Versions :: CUDA Driver: get_driver_version_string() CUDA Runtime: get_runtime_version_string() Compute Capability: <<major>>.<<minor>>
-Memory   :: Global: create_memory_string(<<totalGlobalMem>> Constant: create_memory_string(<<totalConstMem>>) Shared Per Block: create_memory_string(<<sharedMemPerBlock>>) L2 Cache: create_memory_string(<<l2CacheSize>>)
-Number   :: Multiprocessors: <<multiProcessorCount>> Warp Size: <<warpSize>> (=Cores: (<<warpSize>>*<<multiProcessorCount>>)) Maximum Threads Per Block: <<maxThreadsPerBlock>> Asynchronous Engines: <<asyncEngineCount>>
-Dimension:: Block: [<<maxThreadsDim[0]>> x <<maxThreadsDim[1]>> x <<maxThreadsDim[2]>>] Grid: [<<maxGridSize[0]>> x <<maxGridSize[1]>> x <<maxGridSize[2]>>]
-Texture  :: Alignment: create_memory_string(<<textureAlignment>>) Pitch Alignment: create_memory_string(<<texturePitchAlignment>>)
-Surface  :: Alignment: create_memory_string(<<surfaceAlignment>>)
-Other    :: Registers Per Block: <<regsPerBlock>> Maximum Memory Pitch: <<memPitch>>
-Clock    :: GPU: create_frequency_string(<<clockRate*1000>>>) Memory: create_frequency_string(<<memoryClockRate>>)
-Features :: Concurrent copy and execution [<<deviceOverlap?'Y':'N'>>]
-            Run time limit on kernels     [<<kernelExecTimeoutEnabled?'Y':'N'>>]
-            Integrated                    [<<integrated?'Y':'N'>>]
-            Host page-locked memory       [<<canMapHostMemory?'Y':'N'>>]
-            ECC enabled                   [<<ECCEnabled?'Y':'N'>>]
-            Shares a unified address space with host [<<unifiedAddressing?'Y':'N'>>]
-=======================================================================
-Compute mode:
-  Default     meaning: multiple threads can use cudaSetDevice()  [(<<computeMode>>==cudaComputeModeDefault?'X':' ')]
-  Exclusive   meaning: only one thread can use cudaSetDevice()   [(<<computeMode>>==cudaComputeModeExclusive?'X':' ')]
-  Prohibited  meaning: no threads can use cudaSetDevice()        [(<<computeMode>>==cudaComputeModeProhibited?'X':' ')]
-
-
-Default (multiple host threads can use this device simultaneously)
-
- */
-
 
 /*
-output << "Device " << get_device_number() << ": \"" << deviceProperties.name << "\"" << std::endl;
-output << "  CUDA Driver Version / Runtime Version          " << get_driver_version_string() << std::endl;
-output << "  CUDA Capability Major/Minor version number:    " << deviceProperties.major << "."<< deviceProperties.minor << std::endl;
-output << "  Total amount of global memory:                 " << (deviceProperties.totalGlobalMem/1048576.0f) << " (" << deviceProperties.totalGlobalMem << " bytes)" << std::endl;
-output << "  (" << std::setw(2) << deviceProperties.multiProcessorCount << ") Multiprocessors, (" << std::setw(3) <<
-*/
-/*
-#ifdef __CUDACC__
-output << "name=" << deviceProperties.name << std::endl;
-output << "major=" << deviceProperties.major << std::endl;
-output << "minor=" << deviceProperties.minor << std::endl;
-
-output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
-output << "totalConstMem=" << deviceProperties.totalConstMem << std::endl;
-output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;
-output << "l2CacheSize=" << deviceProperties.l2CacheSize << std::endl;
-output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
-
-output << "multiProcessorCount=" << deviceProperties.multiProcessorCount << std::endl;
-output << "warpSize=" << deviceProperties.warpSize << std::endl;
-output << "maxThreadsPerBlock=" << deviceProperties.maxThreadsPerBlock << std::endl;
-output << "asyncEngineCount=" << deviceProperties.asyncEngineCount << std::endl;
-
-output << "maxThreadsDim=" << deviceProperties.maxThreadsDim[0] << "," << deviceProperties.maxThreadsDim[1] << "," << deviceProperties.maxThreadsDim[2] << std::endl;
-output << "maxGridSize=" << deviceProperties.maxGridSize[0] << "," << deviceProperties.maxGridSize[1] << "," << deviceProperties.maxGridSize[2] << std::endl;
-
-output << "textureAlignment=" << deviceProperties.textureAlignment << std::endl;
-output << "texturePitchAlignment=" << deviceProperties.texturePitchAlignment << std::endl;
-
-output << "surfaceAlignment=" << deviceProperties.surfaceAlignment << std::endl;
-
-output << "regsPerBlock=" << deviceProperties.regsPerBlock << std::endl;
-output << "memPitch=" << deviceProperties.memPitch << std::endl;
-output << "concurrentKernels=" << deviceProperties.concurrentKernels << std::endl;
-output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
-
-output << "clockRate=" << deviceProperties.clockRate << std::endl;
-output << "memoryClockRate=" << deviceProperties.memoryClockRate << std::endl;
-
-output << "deviceOverlap=" << deviceProperties.deviceOverlap << std::endl;
-output << "kernelExecTimeoutEnabled=" << deviceProperties.kernelExecTimeoutEnabled << std::endl;
-output << "integrated=" << deviceProperties.integrated << std::endl;
-output << "canMapHostMemory=" << deviceProperties.canMapHostMemory << std::endl;
-output << "ECCEnabled=" << deviceProperties.ECCEnabled << std::endl;
-output << "unifiedAddressing=" << deviceProperties.unifiedAddressing << std::endl;
-output << "tccDriver=" << deviceProperties.tccDriver << std::endl;
-
-output << "computeMode=" << deviceProperties.computeMode << std::endl;
-
-output << "pciBusID=" << deviceProperties.pciBusID << std::endl;
-output << "pciDeviceID=" << deviceProperties.pciDeviceID << std::endl;
-output << "pciDomainID=" << deviceProperties.pciDomainID << std::endl;
-
-
-
+UNREPORTED PROPERTIES:
 output << "maxTexture1D=" << deviceProperties.maxTexture1D << std::endl;
 output << "maxTexture1DLinear=" << deviceProperties.maxTexture1DLinear << std::endl;
 output << "maxTexture2D=" << deviceProperties.maxTexture2D[0] << "," << deviceProperties.maxTexture2D[1] << std::endl;
@@ -215,9 +134,5 @@ output << "maxSurface1DLayered=" << deviceProperties.maxSurface1DLayered[0] << "
 output << "maxSurface2DLayered=" << deviceProperties.maxSurface2DLayered[0] << "," << deviceProperties.maxSurface2DLayered[1] << "," << deviceProperties.maxSurface2DLayered[2] << std::endl;
 output << "maxSurfaceCubemap=" << deviceProperties.maxSurfaceCubemap << std::endl;
 output << "maxSurfaceCubemapLayered=" << deviceProperties.maxSurfaceCubemapLayered[0] << "," << deviceProperties.maxSurfaceCubemapLayered[1] << std::endl;
-
-#else
-output << "Not using device, in ecuda host emulation mode." << std::endl;
-#endif
 */
 
