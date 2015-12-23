@@ -34,6 +34,8 @@ int main( int argc, char* argv[] )
 		std::cout << "Texture    :: Alignment: " << create_memory_string(prop.textureAlignment) << " Pitch Alignment: " << create_memory_string(prop.texturePitchAlignment) << std::endl;
 		std::cout << "Surface    :: Alignment: " << create_memory_string(prop.surfaceAlignment) << std::endl;
 		std::cout << "Other      :: Registers Per Block: " << prop.regsPerBlock << " Maximum Memory Pitch: " << create_memory_string(prop.memPitch) << std::endl;
+		std::cout << "              Concurrent kernels: " << prop.concurrentKernels << std::endl;
+		std::cout << "              Maximum Threads Per Multiprocessor: " << prop.maxThreadsPerMultiProcessor << std::endl;
 		std::cout << "Clock Rate :: GPU: " << create_frequency_string(prop.clockRate*1000) << " Memory: " << create_frequency_string(prop.memoryClockRate) << std::endl;
 		std::cout << "Features   :: Concurrent copy and execution            [" << (prop.deviceOverlap?'Y':'N')            << "]" << std::endl;
 		std::cout << "              Run time limit on kernels                [" << (prop.kernelExecTimeoutEnabled?'Y':'N') << "]" << std::endl;
@@ -41,6 +43,7 @@ int main( int argc, char* argv[] )
 		std::cout << "              Host page-locked memory                  [" << (prop.canMapHostMemory?'Y':'N')         << "]" << std::endl;
 		std::cout << "              ECC enabled                              [" << (prop.ECCEnabled?'Y':'N')               << "]" << std::endl;
 		std::cout << "              Shares a unified address space with host [" << (prop.unifiedAddressing?'Y':'N')        << "]" << std::endl;
+		std::cout << "PCI        :: Domain: " << prop.pciDomainID << " Bus: " << prop.pciBusID << " Device: " << prop.pciDeviceID << std::endl;
 		std::cout << "------------------------------------------------------------------------" << std::endl;
 		std::cout << "Compute mode:" << std::endl;
 		std::cout << "  Default     meaning: multiple threads can use cudaSetDevice()  [" << (prop.computeMode==cudaComputeModeDefault?'X':' ')    << "]" << std::endl;
@@ -170,6 +173,8 @@ output << "surfaceAlignment=" << deviceProperties.surfaceAlignment << std::endl;
 
 output << "regsPerBlock=" << deviceProperties.regsPerBlock << std::endl;
 output << "memPitch=" << deviceProperties.memPitch << std::endl;
+output << "concurrentKernels=" << deviceProperties.concurrentKernels << std::endl;
+output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
 
 output << "clockRate=" << deviceProperties.clockRate << std::endl;
 output << "memoryClockRate=" << deviceProperties.memoryClockRate << std::endl;
@@ -183,10 +188,12 @@ output << "unifiedAddressing=" << deviceProperties.unifiedAddressing << std::end
 
 output << "computeMode=" << deviceProperties.computeMode << std::endl;
 
+output << "pciBusID=" << deviceProperties.pciBusID << std::endl;
+output << "pciDeviceID=" << deviceProperties.pciDeviceID << std::endl;
+output << "pciDomainID=" << deviceProperties.pciDomainID << std::endl;
 
 
 
-output << "concurrentKernels=" << deviceProperties.concurrentKernels << std::endl;
 output << "maxTexture1D=" << deviceProperties.maxTexture1D << std::endl;
 output << "maxTexture1DLinear=" << deviceProperties.maxTexture1DLinear << std::endl;
 output << "maxTexture2D=" << deviceProperties.maxTexture2D[0] << "," << deviceProperties.maxTexture2D[1] << std::endl;
@@ -204,12 +211,9 @@ output << "maxSurface1DLayered=" << deviceProperties.maxSurface1DLayered[0] << "
 output << "maxSurface2DLayered=" << deviceProperties.maxSurface2DLayered[0] << "," << deviceProperties.maxSurface2DLayered[1] << "," << deviceProperties.maxSurface2DLayered[2] << std::endl;
 output << "maxSurfaceCubemap=" << deviceProperties.maxSurfaceCubemap << std::endl;
 output << "maxSurfaceCubemapLayered=" << deviceProperties.maxSurfaceCubemapLayered[0] << "," << deviceProperties.maxSurfaceCubemapLayered[1] << std::endl;
-output << "pciBusID=" << deviceProperties.pciBusID << std::endl;
-output << "pciDeviceID=" << deviceProperties.pciDeviceID << std::endl;
-output << "pciDomainID=" << deviceProperties.pciDomainID << std::endl;
+
 output << "tccDriver=" << deviceProperties.tccDriver << std::endl;
 output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
-output << "maxThreadsPerMultiProcessor=" << deviceProperties.maxThreadsPerMultiProcessor << std::endl;
 #else
 output << "Not using device, in ecuda host emulation mode." << std::endl;
 #endif
