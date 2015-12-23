@@ -28,6 +28,7 @@ int main( int argc, char* argv[] )
 		std::cout << "Version    :: CUDA Driver: " << device.get_driver_version_string() << " CUDA Runtime: " << device.get_runtime_version_string() << " Compute Capability: " << prop.major << "." << prop.minor << std::endl;
 		std::cout << "Memory     :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << std::endl;
 		std::cout << "              Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
+		std::cout << "              Bus Width: " << create_memory_string(prop.memoryBusWidth) << std::endl;
 		std::cout << "Number     :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " (=Cores: " << (prop.warpSize*prop.multiProcessorCount) << ")" << std::endl;
 		std::cout << "              Maximum Threads Per Block: " << prop.maxThreadsPerBlock << " Asynchronous Engines: " << prop.asyncEngineCount << std::endl;
 		std::cout << "Dimension  :: Block: [" << prop.maxThreadsDim[0] << " x " << prop.maxThreadsDim[1] << " x " << prop.maxThreadsDim[2] << "] Grid: [" << prop.maxGridSize[0] << " x " << prop.maxGridSize[1] << " x " << prop.maxGridSize[2] << "]" << std::endl;
@@ -43,6 +44,7 @@ int main( int argc, char* argv[] )
 		std::cout << "              Host page-locked memory                  [" << (prop.canMapHostMemory?'Y':'N')         << "]" << std::endl;
 		std::cout << "              ECC enabled                              [" << (prop.ECCEnabled?'Y':'N')               << "]" << std::endl;
 		std::cout << "              Shares a unified address space with host [" << (prop.unifiedAddressing?'Y':'N')        << "]" << std::endl;
+		std::cout << "              Tesla device using TCC driver            [" << (prop.tccDriver?'Y':'N')                << "]" << std::endl;
 		std::cout << "PCI        :: Domain: " << prop.pciDomainID << " Bus: " << prop.pciBusID << " Device: " << prop.pciDeviceID << std::endl;
 		std::cout << "------------------------------------------------------------------------" << std::endl;
 		std::cout << "Compute mode:" << std::endl;
@@ -157,6 +159,7 @@ output << "totalGlobalMem=" << deviceProperties.totalGlobalMem << std::endl;
 output << "totalConstMem=" << deviceProperties.totalConstMem << std::endl;
 output << "sharedMemPerBlock=" << deviceProperties.sharedMemPerBlock << std::endl;
 output << "l2CacheSize=" << deviceProperties.l2CacheSize << std::endl;
+output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
 
 output << "multiProcessorCount=" << deviceProperties.multiProcessorCount << std::endl;
 output << "warpSize=" << deviceProperties.warpSize << std::endl;
@@ -185,6 +188,7 @@ output << "integrated=" << deviceProperties.integrated << std::endl;
 output << "canMapHostMemory=" << deviceProperties.canMapHostMemory << std::endl;
 output << "ECCEnabled=" << deviceProperties.ECCEnabled << std::endl;
 output << "unifiedAddressing=" << deviceProperties.unifiedAddressing << std::endl;
+output << "tccDriver=" << deviceProperties.tccDriver << std::endl;
 
 output << "computeMode=" << deviceProperties.computeMode << std::endl;
 
@@ -212,8 +216,6 @@ output << "maxSurface2DLayered=" << deviceProperties.maxSurface2DLayered[0] << "
 output << "maxSurfaceCubemap=" << deviceProperties.maxSurfaceCubemap << std::endl;
 output << "maxSurfaceCubemapLayered=" << deviceProperties.maxSurfaceCubemapLayered[0] << "," << deviceProperties.maxSurfaceCubemapLayered[1] << std::endl;
 
-output << "tccDriver=" << deviceProperties.tccDriver << std::endl;
-output << "memoryBusWidth=" << deviceProperties.memoryBusWidth << std::endl;
 #else
 output << "Not using device, in ecuda host emulation mode." << std::endl;
 #endif
