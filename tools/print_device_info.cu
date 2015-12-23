@@ -60,19 +60,19 @@ std::string create_memory_string( const unsigned long x )
 	unsigned long gb = x / 1073741824;
 	if( gb ) {
 		std::stringstream ss;
-		ss << gb << "." << ( x / 107374182 ) << "Gb";
+		ss << gb << "." << ( ( x - gb * 1073741824 ) / 107374182 ) << "Gb";
 		return ss.str();
 	}
 	unsigned long mb = x / 1048576;
 	if( mb ) {
 		std::stringstream ss;
-		ss << mb << "." << ( x / 104858 ) << "Mb";
+		ss << mb << "." << ( ( x - mb * 1048576 ) / 104858 ) << "Mb";
 		return ss.str();
 	}
 	unsigned long kb = x / 1024;
 	if( kb ) {
 		std::stringstream ss;
-		ss << kb << "." << ( x / 102 ) << "kb";
+		ss << kb << "." << ( ( x - kb * 1024 ) / 102 ) << "kb";
 		return ss.str();
 	}
 	std::stringstream ss;
