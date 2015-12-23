@@ -19,7 +19,7 @@ int main( int argc, char* argv[] )
 		ecuda::device device( i );
 		const cudaDeviceProp& prop = device.get_properties();
 
-		std::cout << "Device <<i>> | <<name>>" << std::endl;
+		std::cout << "Device " << i << " | " << prop.name << std::endl;
 		std::cout << "=======================================================================" << std::endl;
 		std::cout << "Versions :: CUDA Driver: " << device.get_driver_version_string() << " CUDA Runtime: " << device.get_runtime_version_string() << " Compute Capability: " << prop.major << "." << prop.minor << std::endl;
 		std::cout << "Memory   :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << " Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
