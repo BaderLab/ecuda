@@ -67,8 +67,7 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 	std::stringstream ss;
 	ss << units;
 	const unsigned long remainder = ( x % per_unit ) / ( per_unit / exp10(digits) );
-	ss << "remainder=" << remainder << std::endl;
-	if( remainder ) ss << "." << std::setw(digits) << std::setfill('0');
+	if( remainder ) ss << "." << std::setw(digits) << std::setfill('0') << remainder;
 	ss << unitSymbol;
 	out << ss.str();
 	return true;
