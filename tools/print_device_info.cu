@@ -11,18 +11,20 @@ int main( int argc, char* argv[] )
 
 	int deviceCount = ecuda::device::get_device_count();
 
-	std::cout << "There is " << deviceCount << " device supporting ecuda." << std::endl;
+	if( deviceCount == 1 )
+		std::cout << "There is " << deviceCount << " device supporting ecuda." << std::endl;
+	else
+		std::cout << "There are " << deviceCount << " devices supporting ecuda." << std::endl;
 	std::cout << std::endl;
-
-	std::cout << "Arch: " << ( sizeof(unsigned long)*8 ) << "-bit" << std::endl;
 
 	for( int i = 0; i < deviceCount; ++i ) {
 
 		ecuda::device device( i );
 		const cudaDeviceProp& prop = device.get_properties();
 
-		std::cout << "Device " << i << " | " << prop.name << std::endl;
 		std::cout << "=======================================================================" << std::endl;
+		std::cout << "Device " << i << " | " << prop.name << std::endl;
+		std::cout << "-----------------------------------------------------------------------" << std::endl;
 		std::cout << "Versions :: CUDA Driver: " << device.get_driver_version_string() << " CUDA Runtime: " << device.get_runtime_version_string() << " Compute Capability: " << prop.major << "." << prop.minor << std::endl;
 		std::cout << "Memory   :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << " Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
 		std::cout << "Number   :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " (=Cores: " << (prop.warpSize*prop.multiProcessorCount) << ") Maximum Threads Per Block: " << prop.maxThreadsPerBlock << " Asynchronous Engines: " << prop.asyncEngineCount << std::endl;
@@ -37,12 +39,12 @@ int main( int argc, char* argv[] )
 		std::cout << "            Host page-locked memory                  [" << (prop.canMapHostMemory?'Y':'N')         << "]" << std::endl;
 		std::cout << "            ECC enabled                              [" << (prop.ECCEnabled?'Y':'N')               << "]" << std::endl;
 		std::cout << "            Shares a unified address space with host [" << (prop.unifiedAddressing?'Y':'N')        << "]" << std::endl;
-		std::cout << "=======================================================================" << std::endl;
+		std::cout << "-----------------------------------------------------------------------" << std::endl;
 		std::cout << "Compute mode:" << std::endl;
 		std::cout << "  Default     meaning: multiple threads can use cudaSetDevice()  [" << (prop.computeMode==cudaComputeModeDefault?'X':' ')    << "]" << std::endl;
 		std::cout << "  Exclusive   meaning: only one thread can use cudaSetDevice()   [" << (prop.computeMode==cudaComputeModeExclusive?'X':' ')  << "]" << std::endl;
 		std::cout << "  Prohibited  meaning: no threads can use cudaSetDevice()        [" << (prop.computeMode==cudaComputeModeProhibited?'X':' ') << "]" << std::endl;
-		//device.print_summary( std::cout );
+		std::cout << "=======================================================================" << std::endl;
 		std::cout << std::endl;
 
 	}
