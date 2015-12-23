@@ -74,7 +74,7 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 	if( !units ) return false;
 	std::stringstream ss;
 	ss << units;
-	const unsigned long remainder = ( x % per_unit ) * 1000 / ( units >> 10 );
+	const unsigned long remainder = ( x % per_unit ) * 1000 / ( per_unit >> 10 );
 	//const double exact_remainder = static_cast<double>( x % per_unit ) / ( static_cast<double>(per_unit) / std::exp(static_cast<double>(digits)) );
 	//const unsigned long remainder = static_cast<unsigned long>(exact_remainder);
 	//const unsigned long remainder = ( x % per_unit ) / ( per_unit / exp10(digits) );
