@@ -112,10 +112,14 @@ either expressed or implied, of the FreeBSD Project.
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 	} while(0);
 #else
+// commenting below out because it triggers -Wvariadic-macros
+// and this should never be called from CPU code anyway
+/*
 // cannot do CUDA calls when emulating with host only
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\
 	} while(0);
+*/
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */

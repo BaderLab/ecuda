@@ -91,14 +91,18 @@ t/% :: t/%.cu
 	@mkdir -p obj/t
 	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
 	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
-	$(NVCC) $(NVCCFLAGS) -std=c++11 -c $< -o obj/$@_c++11.cu.o
-	$(CXX) $(CXXFLAGS) -std=c++11 obj/$@.cu.o $(LDLIBS) -o bin/$@_c++11
+#	$(NVCC) $(NVCCFLAGS) -std=c++11 -c $< -o obj/$@_c++11.cu.o
+#	$(CXX) $(CXXFLAGS) -std=c++11 obj/$@.cu.o $(LDLIBS) -o bin/$@_c++11
 
 t/cpu/% :: t/%.cu
 	@mkdir -p bin/t/cpu
 	cp $< $<.cpp
 	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
+
+% :: tools/%.cpp
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $< -o bin/$@
 
 unittests :: $(T_FILES)
 .PHONY: unittests
