@@ -3,7 +3,7 @@
 #include <iostream>
 #include "../include/ecuda/device.hpp"
 
-std::string create_memory_string( const unsigned long x );
+std::string create_memory_string( unsigned long x );
 std::string create_frequency_string( const unsigned x );
 
 int main( int argc, char* argv[] )
@@ -73,8 +73,9 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 	return true;
 }
 
-std::string create_memory_string( const unsigned long x )
+std::string create_memory_string( unsigned long x )
 {
+	++x;
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
 	if( try_creating_unit_string( ss, 1, x, 1048576   , "Mb" ) ) return ss.str();
