@@ -61,14 +61,22 @@ unsigned exp10( unsigned n )
 	return y;
 }
 
+unsigned log2( unsigned n )
+{
+	unsigned y = 1;
+	for( unsigned i = 0; i < n; ++i ) y *= 2;
+	return y;
+}
+
 bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long x, unsigned long per_unit, const std::string& unitSymbol = std::string() )
 {
 	unsigned long units = x / per_unit;
 	if( !units ) return false;
 	std::stringstream ss;
 	ss << units;
-	const double exact_remainder = static_cast<double>( x % per_unit ) / ( static_cast<double>(per_unit) / std::exp(static_cast<double>(digits)) );
-	const unsigned long remainder = static_cast<unsigned long>(exact_remainder);
+	const unsigned long remainder = ( x % per_unit ) * 1000 / ( units >> 10 );
+	//const double exact_remainder = static_cast<double>( x % per_unit ) / ( static_cast<double>(per_unit) / std::exp(static_cast<double>(digits)) );
+	//const unsigned long remainder = static_cast<unsigned long>(exact_remainder);
 	//const unsigned long remainder = ( x % per_unit ) / ( per_unit / exp10(digits) );
 	if( remainder ) ss << "." << std::setw(digits) << std::setfill('0') << remainder;
 	ss << unitSymbol;
