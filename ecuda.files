@@ -33,12 +33,10 @@ include/ecuda/config.hpp
 include/ecuda/cube.hpp
 include/ecuda/cuda_error.hpp
 include/ecuda/device.hpp
-include/ecuda/device_ptr.hpp
 include/ecuda/ecuda.hpp
 include/ecuda/event.hpp
 include/ecuda/global.hpp
 include/ecuda/iterator.hpp
-include/ecuda/iterators.hpp
 include/ecuda/matrix.hpp
 include/ecuda/memory.hpp
 include/ecuda/numeric.hpp
@@ -47,7 +45,6 @@ include/ecuda/striding_ptr.hpp
 include/ecuda/type_traits.hpp
 include/ecuda/utility.hpp
 include/ecuda/vector.hpp
-include/ecuda/views.hpp
 t/1__allocators.cu
 t/2__models__device_sequence.cu
 t/3__algorithm__copy.cu
@@ -66,3 +63,4 @@ test/test_models.cu
 test/test_ptr.cu
 test/test_vector.cu
 tools/print_device_info.cu
+Makefile

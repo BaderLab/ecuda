@@ -166,12 +166,12 @@ class device_fixed_sequence
 {
 
 public:
-	typedef T                                             value_type;
-	typedef P                                             pointer;
-	typedef typename ecuda::add_lvalue_reference<T>::type reference;
-	typedef typename ecuda::add_const<reference>::type    const_reference;
-	typedef std::size_t                                   size_type;
-	typedef std::ptrdiff_t                                difference_type;
+	typedef T                                                   value_type;
+	typedef P                                                   pointer;
+	typedef typename ecuda::add_lvalue_reference<T>::type       reference;
+	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference;
+	typedef std::size_t                                         size_type;
+	typedef std::ptrdiff_t                                      difference_type;
 
 	typedef device_contiguous_iterator<value_type      > iterator;
 	typedef device_contiguous_iterator<const value_type> const_iterator;

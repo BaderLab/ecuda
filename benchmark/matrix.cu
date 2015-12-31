@@ -29,10 +29,7 @@ void copy_matrices( const typename ecuda::matrix<T,Alloc>::kernel_argument src, 
 {
 	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x;
 	const std::size_t y = blockIdx.y*blockDim.y+threadIdx.y;
-	if( x < src.number_rows() and y < src.number_columns() ) {
-		dest[x][y] = src[x][y];
-	}
-	//ecuda::copy( src.begin(), src.end(), dest.begin() );
+	if( x < src.number_rows() and y < src.number_columns() ) dest(x,y) = src(x,y);
 }
 
 /*
@@ -51,14 +48,42 @@ void fill_with_consecutive_values( T* ptr, const std::size_t rows, const std::si
 
 template<typename T>
 __global__
-void copy_matrices( T* src, T* dest, const std::size_t rows, const std::size_t columns, const size_t src_pitch, const size_t dest_pitch )
+void copy_matrices( const T* src, T* dest, const std::size_t rows, const std::size_t columns, const size_t src_pitch, const size_t dest_pitch )
 {
 	const std::size_t x = blockIdx.x*blockDim.x+threadIdx.x;
 	const std::size_t y = blockIdx.y*blockDim.y+threadIdx.y;
 	if( x < rows and y < columns ) {
-		src  = reinterpret_cast<T*>( reinterpret_cast<char*>(src) + (x*src_pitch) ) + y;
-		dest = reinterpret_cast<T*>( reinterpret_cast<char*>(src) + (x*dest_pitch) ) + y;
+		src  = reinterpret_cast<const T*>( reinterpret_cast<const char*>(src) + (x*src_pitch) ) + y;
+		dest = reinterpret_cast<T*>( reinterpret_cast<char*>(dest) + (x*dest_pitch) ) + y;
 		*dest = *src;
+	}
+}
+
+template<typename T,class Alloc>
+__global__
+void copy_columns( const typename ecuda::matrix<T,Alloc>::kernel_argument src, typename ecuda::matrix<T,Alloc>::kernel_argument dest )
+{
+	const std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;
+	if( t < src.number_columns() ) {
+		typename ecuda::matrix<T>::const_column_type srcColumn = src.get_column(t);
+		typename ecuda::matrix<T>::column_type destColumn = dest.get_column(t);
+		ecuda::copy( srcColumn.begin(), srcColumn.end(), destColumn.begin() );
+	}
+}
+
+template<typename T>
+__global__
+void copy_columns( const T* src, T* dest, const std::size_t rows, const std::size_t columns, const size_t src_pitch, const size_t dest_pitch )
+{
+	const std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;
+	if( t < columns ) {
+		src += t;
+		dest += t;
+		for( std::size_t i = 0; i < rows; ++i ) {
+			src  = reinterpret_cast<const T*>( reinterpret_cast<const char*>(src) + src_pitch );
+			dest = reinterpret_cast<T*>( reinterpret_cast<char*>(dest) + dest_pitch );
+			*dest = *src;
+		}
 	}
 }
 
@@ -115,7 +140,8 @@ void perform_tasks_with_ecuda()
 		start.record();
 		dim3 grid( ROWS, (COLUMNS+THREADS-1)/THREADS ), threads( THREADS, 1 );
 		//CUDA_CALL_KERNEL_AND_WAIT( fill_with_consecutive_values<double><<<grid,threads>>>( deviceMatrix ) );
-		CUDA_CALL_KERNEL_AND_WAIT( copy_matrices<double,typename ecuda::matrix<double>::allocator_type><<<grid,threads>>>( deviceMatrix1, deviceMatrix2 ) );
+		//CUDA_CALL_KERNEL_AND_WAIT( copy_matrices<double,typename ecuda::matrix<double>::allocator_type><<<grid,threads>>>( deviceMatrix1, deviceMatrix2 ) );
+		CUDA_CALL_KERNEL_AND_WAIT( copy_columns<double,typename ecuda::matrix<double>::allocator_type><<<grid,threads>>>( deviceMatrix1, deviceMatrix2 ) );
 		stop.record();
 		stop.synchronize();
 		times[i] = (stop-start);
@@ -139,7 +165,8 @@ void perform_tasks_old_school()
 		start.record();
 		dim3 grid( 1, (N+THREADS-1)/THREADS ), threads( THREADS, 1 );
 		//fill_with_consecutive_values<double><<<grid,threads>>>( ptr, ROWS, COLUMNS, pitch );
-		copy_matrices<<<grid,threads>>>( ptr, ptr, ROWS, COLUMNS, pitch, pitch );
+		//copy_matrices<<<grid,threads>>>( ptr, ptr, ROWS, COLUMNS, pitch, pitch );
+		copy_columns<<<grid,threads>>>( ptr, ptr, ROWS, COLUMNS, pitch, pitch );
 		cudaDeviceSynchronize();
 		stop.record();
 		stop.synchronize();

@@ -37,16 +37,18 @@ CC = gcc -x c
 CFLAGS = -Wall
 CXX = g++
 CXXFLAGS = -Wall -flto -L/usr/local/cuda/lib64 -pedantic
-CXXFLAGS += -I../Catch/include
+#CXXFLAGS += -I../Catch/include
 #-std=c++11 
 FC = gfortran
 NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -O3
 NVCCFLAGS += -Xptxas -v
-NVCCFLAGS += -I../Catch/include
+#NVCCFLAGS += -I../Catch/include
 # for OpenMP support add to above: -X compiler -fopenmp
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
+CATCHDIR = ../Catch/include
+
 
 -include local-config.cfg
 
@@ -77,30 +79,25 @@ test/% :: test/%.cu
 test/cpu/% :: test/%.cu
 	@mkdir -p bin/test/cpu
 	cp $< $<.cpp
-#	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
 	$(CXX) -g $(CXXFLAGS) -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
-
-test/ptx/% :: test/%.cu
-	@mkdir -p ptx/test
-	$(NVCC) -ptx $< -o ptx/$<.ptx
-
-T_FILES = $(basename $(shell find t -name '*.cu'))
 
 t/% :: t/%.cu
 	@mkdir -p bin/t
 	@mkdir -p obj/t
-	$(NVCC) $(NVCCFLAGS) -c $< -o obj/$@.cu.o
-	$(CXX) $(CXXFLAGS) obj/$@.cu.o $(LDLIBS) -o bin/$@
-#	$(NVCC) $(NVCCFLAGS) -std=c++11 -c $< -o obj/$@_c++11.cu.o
-#	$(CXX) $(CXXFLAGS) -std=c++11 obj/$@.cu.o $(LDLIBS) -o bin/$@_c++11
+	$(NVCC) $(NVCCFLAGS) -I$(CATCHDIR) -c $< -o obj/$@.cu.o
+	$(CXX) $(CXXFLAGS) -I$(CATCHDIR) obj/$@.cu.o $(LDLIBS) -o bin/$@
 
 t/cpu/% :: t/%.cu
 	@mkdir -p bin/t/cpu
 	cp $< $<.cpp
-#	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
-	$(CXX) -g $(CXXFLAGS) -Wno-long-long $<.cpp -o bin/$@
+	$(CXX) -g $(CXXFLAGS) -I$(CATCHDIR) -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
+
+T_FILES = $(basename $(shell find t -name '*.cu'))
+
+unittests :: $(T_FILES)
+.PHONY: unittests
 
 % :: tools/%.cu
 	@mkdir -p bin
@@ -113,9 +110,6 @@ cpu/% :: tools/%.cu
 	cp $< $<.cpp
 	$(CXX) -g $(CXXFLAGS) -Wno-variadic-macros -Wno-long-long $<.cpp -o bin/$@
 	rm $<.cpp
-
-unittests :: $(T_FILES)
-.PHONY: unittests
 
 benchmark/% :: benchmark/%.cu
 	@mkdir -p bin/benchmark

@@ -110,13 +110,10 @@ __global__ void kernel_sum_columns(
 }
 \endcode
 
-The \em ecuda equivalent is shorter, more expressive, and looks C++ rather than C.  With some simple preprocessor guards the \em ecuda code can be prototyped without using a GPU:
+The \em ecuda equivalent is shorter, more expressive, and looks like C++ rather than C.  The API also checks at compile-time whether the nvcc compiler is being used, and assumes host memory if not.  With a few checks for the __CUDACC__ preprocessor define, the \em ecuda code can be prototyped without using a GPU:
 
 \code{.cpp}
-#ifdef __CUDACC__
-__global__ 
-#endif
-void kernel_sum_columns(
+__global__ void kernel_sum_columns(
     const ecuda::matrix<double>::kernel_argument matrix,
     ecuda::vector<double>::kernel_argument columnSums
 )
