@@ -218,6 +218,18 @@ inline cudaError_t cudaMemcpyToSymbol( T& dest, const T& src, enum cudaMemcpyKin
 	return ::ecuda::cudaMemcpyToSymbol( &dest, &src, 1, 0, kind );
 }
 
+/*
+ * This is here because of a bizarre compiler bug in nvcc 5.5.
+ * If __threadfence() is called inline (i.e. the at() methods of
+ * each container), then nvcc complains about not knowing about it.
+ *
+ * Example compiler message: error: there are no arguments to ‘__threadfence’ that depend on a template parameter, so a declaration of ‘__threadfence’ must be available
+ *
+ * In CUDA >=6.0 the same code compiles fine. If we do below and just wrap the __threadfence()
+ * call in it's own function then it works in all versions.
+ */
+inline __DEVICE__ threadfence() { __threadfence(); }
+
 } // namespace ecuda
 
 #endif

@@ -473,7 +473,8 @@ public:
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			__threadfence();
+			ecuda::threadfence();
+			//__threadfence();
 			asm("trap;");
 			#endif
 		}
@@ -498,7 +499,8 @@ public:
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			__threadfence();
+			ecuda::threadfence();
+			//__threadfence();
 			asm("trap;");
 			#endif
 		}

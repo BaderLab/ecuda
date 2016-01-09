@@ -468,7 +468,14 @@ public:
 	}
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
-	__HOST__ __DEVICE__ inline const_iterator cend() const   __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
+	__HOST__ __DEVICE__ const_iterator cend() const   __NOEXCEPT__
+	{
+		typedef typename ecuda::make_unmanaged_const<pointer>::type unmanaged_pointer_type;
+		unmanaged_pointer_type p = unmanaged_cast(base_type::get_pointer());
+		p.skip_bytes( p.get_pitch()*base_type::number_rows() );
+		return const_iterator( p, base_type::number_columns() );
+	}
+	// return const_iterator( unmanaged_cast(base_type::get_pointer())+base_type::size() ); }
 	#endif
 
 	__HOST__ __DEVICE__ inline reverse_iterator       rbegin()        __NOEXCEPT__ { return reverse_iterator(end()); }

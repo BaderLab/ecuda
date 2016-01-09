@@ -90,12 +90,15 @@ private:
 	pointer ptr;      //!< pointer to current element
 	size_type stride; //!< amount pointer should move to reach next element
 
-	template<typename T2,typename PointerType2> friend class striding_ptr;
+	template<typename U,typename Q> friend class striding_ptr;
 
 public:
 	__HOST__ __DEVICE__ striding_ptr( pointer ptr = pointer(), size_type stride = 0 ) : ptr(ptr), stride(stride) {}
 
 	__HOST__ __DEVICE__ striding_ptr( const striding_ptr& src ) : ptr(src.ptr), stride(src.stride) {}
+
+        template<typename U,typename Q>
+        __HOST__ __DEVICE__ striding_ptr( const striding_ptr<U,Q>& src ) : ptr(src.ptr), stride(src.stride) {}
 
 	#ifdef __CPP11_SUPPORTED__
 	__HOST__ __DEVICE__ striding_ptr( striding_ptr&& src ) : ptr(std::move(src.ptr)), stride(std::move(src.stride)) {}
