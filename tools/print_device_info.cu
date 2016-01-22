@@ -6,6 +6,8 @@
 std::string create_memory_string( unsigned long x );
 std::string create_frequency_string( const unsigned x );
 
+int ConvertSMVer2Cores( int major, int minor );
+
 int main( int argc, char* argv[] )
 {
 
@@ -22,6 +24,15 @@ int main( int argc, char* argv[] )
 		ecuda::device device( i );
 		const cudaDeviceProp& prop = device.get_properties();
 
+		int cudaCores = -1;
+		try {
+			// this solution for getting the number of CUDA cores from:
+			// https://devtalk.nvidia.com/default/topic/470848/what-39-s-the-proper-way-to-detect-sp-cuda-cores-count-per-sm-/
+			cudaCores = ConvertSMVer2Cores( prop.major, prop.minor ) * prop.multiProcessorCount;
+		} catch( std::runtime_error& ex ) {
+			std::cerr << "WARNING: number of cores for the hardware's SM version is not defined in program source code." << std::endl;
+		}
+
 		std::cout << "========================================================================" << std::endl;
 		std::cout << "::Device " << i << " is a: " << prop.name << std::endl;
 		std::cout << "------------------------------------------------------------------------" << std::endl;
@@ -29,7 +40,7 @@ int main( int argc, char* argv[] )
 		std::cout << "Memory     :: Global: " << create_memory_string(prop.totalGlobalMem) << " Constant: " << create_memory_string(prop.totalConstMem) << std::endl;
 		std::cout << "              Shared Per Block: " << create_memory_string(prop.sharedMemPerBlock) << " L2 Cache: " << create_memory_string(prop.l2CacheSize) << std::endl;
 		std::cout << "              Bus Width: " << create_memory_string(prop.memoryBusWidth) << std::endl;
-		std::cout << "Number     :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " (=Cores: " << (prop.warpSize*prop.multiProcessorCount) << ")" << std::endl;
+		std::cout << "Number     :: Multiprocessors: " << prop.multiProcessorCount << " Warp Size: " << prop.warpSize << " CUDA Cores: " << cudaCores << std::endl;
 		std::cout << "              Maximum Threads Per Block: " << prop.maxThreadsPerBlock << " Asynchronous Engines: " << prop.asyncEngineCount << std::endl;
 		std::cout << "Dimension  :: Block: [" << prop.maxThreadsDim[0] << " x " << prop.maxThreadsDim[1] << " x " << prop.maxThreadsDim[2] << "] Grid: [" << prop.maxGridSize[0] << " x " << prop.maxGridSize[1] << " x " << prop.maxGridSize[2] << "]" << std::endl;
 		std::cout << "Texture    :: Alignment: " << create_memory_string(prop.textureAlignment) << " Pitch Alignment: " << create_memory_string(prop.texturePitchAlignment) << std::endl;
@@ -112,6 +123,38 @@ std::string create_frequency_string( const unsigned x )
 	if( try_creating_unit_string( ss, 2, x, 1000,       "kHz" ) ) return ss.str();
 	ss << x << "Hz";
 	return ss.str();
+}
+
+int ConvertSMVer2Cores( int major, int minor )
+{
+	typedef struct {
+		int SM; // 0xMm (hexidecimal notation), M = SM Major version and m = SM minor version
+		int Cores;
+	} sSMtoCores;
+
+	sSMtoCores nGpuArchCoresPerSM[] =
+	{
+		{ 0x20, 32  }, // Fermi Generation (SM 2.0) GF100 class
+		{ 0x21, 48  }, // Fermi Generation (SM 2.1) GF10x class
+		{ 0x30, 192 }, // Fermi Generation (SM 3.0) GK10x class
+		{ 0x32, 192 }, // Kepler Generation (SM 3.2) GK10x class
+		{ 0x35, 192 }, // Kepler Generation (SM 3.5) GK11x class
+		{ 0x37, 192 }, // Kepler Generation (SM 3.7) GK21x class
+		{ 0x50, 128 }, // Maxwell Generation (SM 5.0) GM10x class
+		{ 0x52, 128 }, // Maxwell Generation (SM 5.2) GM20x class
+		{   -1, -1  }
+	};
+
+	int index = 0;
+
+	while( nGpuArchCoresPerSM[index].SM != -1 ) {
+		if( nGpuArchCoresPerSM[index].SM == ((major << 4) + minor) ) return nGpuArchCoresPerSM[index].Cores;
+		++index;
+	}
+
+	std::stringstream ss;
+	ss << "MapSMtoCores for SM " << major << "." << minor << " is undefined.";
+	throw std::runtime_error( ss.str() );
 }
 
 
