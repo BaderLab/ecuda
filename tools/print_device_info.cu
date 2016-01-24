@@ -1,7 +1,14 @@
-#include <getopt.h>
+#ifdef WIN32
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#define _ITERATOR_DEBUG_LEVEL 0
+#include <Windows.h>
+#endif
+
 #include <iomanip>
 #include <iostream>
-#include "../include/ecuda/device.hpp"
+
+#include <estd/device.hpp>
 
 std::string create_memory_string( unsigned long x );
 std::string create_frequency_string( const unsigned x );

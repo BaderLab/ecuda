@@ -186,7 +186,7 @@ protected:
 private:
 	__HOST__ void init()
 	{
-		if( number_rows() and number_columns() and number_depths() ) {
+		if( number_rows() && number_columns() && number_depths() ) {
 			typename Alloc::pointer p = get_allocator().allocate( number_depths(), number_rows()*number_columns() );
 			typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 			shared_ptr<value_type> sp( naked_cast<raw_pointer_type>(p) );
@@ -251,7 +251,7 @@ public:
 
 	__HOST__ cube& operator=( const cube& src )
 	{
-		if( number_rows() != src.number_rows() or number_columns() != src.number_columns() or number_depths() != src.number_depths() ) {
+		if( number_rows() != src.number_rows() || number_columns() != src.number_columns() || number_depths() != src.number_depths() ) {
 			resize( src.number_rows(), src.number_columns(), src.number_depths() );
 		}
 		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
@@ -612,7 +612,7 @@ public:
 	///
 	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex )
 	{
-		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() || depthIndex >= number_depths() ) {
 			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
@@ -639,7 +639,7 @@ public:
 	///
 	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) const
 	{
-		if( rowIndex >= number_rows() or columnIndex >= number_columns() or depthIndex >= number_depths() ) {
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() || depthIndex >= number_depths() ) {
 			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
 			#else
@@ -703,7 +703,7 @@ public:
 	///
 	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const size_type newNumberDepths, const value_type& value = value_type() )
 	{
-		if( number_rows() == newNumberRows and number_columns() == newNumberColumns and number_depths() == newNumberDepths ) return; // no resize needed
+		if( number_rows() == newNumberRows && number_columns() == newNumberColumns && number_depths() == newNumberDepths ) return; // no resize needed
 		cube newCube( newNumberRows, newNumberColumns, newNumberDepths, value, get_allocator() );
 		for( size_type i = 0; i < std::min(newNumberRows,number_rows()); ++i ) {
 			for( size_type j = 0; j < std::min(newNumberColumns,number_columns()); ++j ) {

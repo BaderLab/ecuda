@@ -177,7 +177,7 @@ protected:
 private:
 	__HOST__ void init()
 	{
-		if( number_rows() and number_columns() ) {
+		if( number_rows() && number_columns() ) {
 			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
 			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
 			//       as the original - the device_contiguous_row_matrix second template parameter which
@@ -243,7 +243,7 @@ public:
 	__HOST__ matrix& operator=( const matrix& other )
 	{
 		allocator = other.allocator;
-		if( number_rows() != other.number_rows() or number_columns() != other.number_columns() )
+		if( number_rows() != other.number_rows() || number_columns() != other.number_columns() )
 			resize( other.number_rows(), other.number_columns() );
 		if( size() ) ecuda::copy( other.begin(), other.end(), begin() );
 		return *this;
@@ -387,7 +387,7 @@ public:
 	///
 	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const value_type& value = value_type() )
 	{
-		if( number_rows() == newNumberRows and number_columns() == newNumberColumns ) return; // no resize needed
+		if( number_rows() == newNumberRows && number_columns() == newNumberColumns ) return; // no resize needed
 		// create new model
 		matrix newMatrix( newNumberRows, newNumberColumns, value, get_allocator() );
 		for( size_type i = 0; i < std::min(number_rows(),newNumberRows); ++i ) {
@@ -403,7 +403,7 @@ public:
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !number_rows() or !number_columns(); }
+	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !number_rows() || !number_columns(); }
 
 	///
 	/// \brief Gets a view object of a single row of the matrix.
@@ -467,7 +467,7 @@ public:
 	///
 	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex )
 	{
-		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
 			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
 			#else
@@ -493,7 +493,7 @@ public:
 	///
 	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const
 	{
-		if( rowIndex >= number_rows() or columnIndex >= number_columns() ) {
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
 			#ifndef __CUDACC__
 			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
 			#else

@@ -60,6 +60,7 @@ template<typename T> using add_lvalue_reference = std::add_lvalue_reference<T>;
 //template<typename T,typename U> struct is_same      { enum { value = 0 }; };
 //template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
 
+template<bool B,typename T> using enable_if = std::enable_if<B,T>;
 
 typedef std::true_type  true_type;
 typedef std::false_type false_type;
@@ -85,6 +86,8 @@ template<> struct is_integral<unsigned long>      { typedef true_type type; };
 template<> struct is_integral<long long>          { typedef true_type type; };
 template<> struct is_integral<unsigned long long> { typedef true_type type; };
 */
+
+template<typename T> using is_const = std::is_const<T>;
 
 template<typename T> using add_pointer = std::add_pointer<T>;
 
@@ -156,6 +159,9 @@ template<> struct is_integral<long>               { typedef true_type type; };
 template<> struct is_integral<unsigned long>      { typedef true_type type; };
 template<> struct is_integral<long long>          { typedef true_type type; };
 template<> struct is_integral<unsigned long long> { typedef true_type type; };
+
+template<typename T> struct is_const : false_type {};
+template<typename T> struct is_const<const T> : true_type {};
 
 template<typename T> struct add_pointer          { typedef typename remove_reference<T>::type* type; };
 //template<typename T> struct add_pointer<const T> { typedef const T* type; }; // confirm this is needed

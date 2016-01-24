@@ -42,6 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 
 #include "global.hpp"
 
+/*
 #ifdef __CPP11_SUPPORTED__
 #include <memory>
 #else
@@ -66,6 +67,7 @@ struct allocator_traits {
 } // namespace std
 
 #endif
+*/
 
 ///
 /// \cond DEVELOPER_DOCUMENTATION

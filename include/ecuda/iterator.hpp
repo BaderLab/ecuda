@@ -186,8 +186,8 @@ public:
 
 	__HOST__ __DEVICE__ inline bool operator<( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
 	__HOST__ __DEVICE__ inline bool operator>( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
-	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator<(other) or operator==(other); }
-	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator<(other) || operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_iterator& other ) const __NOEXCEPT__ { return operator>(other) || operator==(other); }
 
 };
 
@@ -319,8 +319,8 @@ public:
 
 	__HOST__ __DEVICE__ inline bool operator< ( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr < other.ptr; }
 	__HOST__ __DEVICE__ inline bool operator> ( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return base_type::ptr > other.ptr; }
-	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator<(other) or operator==(other); }
-	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator>(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator<=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator<(other) || operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const device_contiguous_block_iterator& other ) const __NOEXCEPT__ { return operator>(other) || operator==(other); }
 
 	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_begin() const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) ); }
 	__HOST__ __DEVICE__ inline contiguous_iterator contiguous_end()   const __NOEXCEPT__ { return contiguous_iterator( naked_cast<typename ecuda::add_pointer<T>::type>( base_type::ptr.get() ) + (width-offset) ); }
@@ -404,8 +404,8 @@ public:
 
 	__HOST__ __DEVICE__ inline bool operator<( const reverse_device_iterator& other ) const { return parentIterator < other.parentIterator; }
 	__HOST__ __DEVICE__ inline bool operator>( const reverse_device_iterator& other ) const { return parentIterator > other.parentIterator; }
-	__HOST__ __DEVICE__ inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) or operator==(other); }
-	__HOST__ __DEVICE__ inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) or operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) || operator==(other); }
+	__HOST__ __DEVICE__ inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) || operator==(other); }
 
 	__HOST__ __DEVICE__ inline reverse_device_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
 	__HOST__ __DEVICE__ inline reverse_device_iterator& operator-=( int x ) { parentIterator += x; return *this; }

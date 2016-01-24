@@ -43,7 +43,9 @@ either expressed or implied, of the FreeBSD Project.
 #include <limits>
 #include <stdexcept>
 #ifdef __CPP11_SUPPORTED__
+#include <initializer_list>
 #include <utility>
+#include <vector>
 #endif
 
 #include "global.hpp"
@@ -135,6 +137,19 @@ public:
 	{
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
+
+	#ifdef __CPP11_SUPPORTED__
+	template<typename U>
+	__HOST__ array( std::initializer_list<U> il ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) )
+	{
+		#ifdef ECUDA_CONSTEXPR_KEYWORD_ENABLED
+		static_assert( il.size() <= N, "" __FILE__ ":" __LINE__ " size of initializer list must not be greater than the array size" );
+		#else
+		if( il.size() > N ) throw std::invalid_argument( EXCEPTION_MSG("size of initializer list must not be greater than the array size") );
+		#endif
+		ecuda::copy( il.begin(), il.end(), begin() );
+	}
+	#endif
 
 	///
 	/// \brief Assignment operator.
@@ -468,7 +483,7 @@ public:
 	/// \param other container to exchange the contents with
 	///
 	__HOST__ __DEVICE__ inline void swap( array& other )
-	#ifdef __CPP11_SUPPORTED__
+	#if defined(__CPP11_SUPPORTED__) && defined(ECUDA_NOEXCEPT_KEYWORD_ENABLED)
 	noexcept(noexcept(swap(std::declval<T&>(),std::declval<T&>())))
 	#endif
 	{

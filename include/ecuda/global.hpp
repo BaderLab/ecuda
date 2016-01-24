@@ -66,6 +66,11 @@ either expressed or implied, of the FreeBSD Project.
 #define __CPP11_SUPPORTED__
 #endif
 
+#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
+#define __CPP11_SUPPORTED__
+#endif
+
+
 ///
 /// Macro function that captures a CUDA error code and then does something
 /// with it.  All calls to functions in the CUDA API that return an error code
@@ -120,6 +125,7 @@ either expressed or implied, of the FreeBSD Project.
 		__VA_ARGS__;\
 	} while(0);
 */
+#define CUDA_CALL_KERNEL_AND_WAIT( ... ) do {} while( 0 );
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
@@ -129,8 +135,15 @@ either expressed or implied, of the FreeBSD Project.
 
 /** Allow noexcept and constexpr if C++11 supported. */
 #ifdef __CPP11_SUPPORTED__
+#if defined(_MSC_VER) && _MSC_VER == 1800 // Visual Studio 2013
+#define __NOEXCEPT__
+#define __CONSTEXPR__
+#else
 #define __NOEXCEPT__ noexcept
+#define ECUDA_NOEXCEPT_KEYWORD_ENABLED
 #define __CONSTEXPR__ constexpr
+#define ECUDA_CONSTEXPR_KEYWORD_ENABLED
+#endif
 #else
 #define __NOEXCEPT__
 #define __CONSTEXPR__
