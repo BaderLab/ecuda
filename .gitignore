@@ -1,2 +1,4 @@
 docs/html/
 ecuda.creator.user
+bin/
+obj/
