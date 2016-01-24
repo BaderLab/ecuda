@@ -1,14 +1,18 @@
 #ifdef WIN32
+#pragma warning(disable:4005)
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#define _ITERATOR_DEBUG_LEVEL 0
+#undef _HAS_ITERATOR_DEBUGGING
+#pragma warning(default:4005)
 #include <Windows.h>
+
+//#define _ITERATOR_DEBUG_LEVEL 0
 #endif
 
 #include <iomanip>
 #include <iostream>
 
-#include <ecuda/device.hpp>
+#include "../include/ecuda/device.hpp"
 
 std::string create_memory_string( unsigned long x );
 std::string create_frequency_string( const unsigned x );
@@ -36,7 +40,7 @@ int main( int argc, char* argv[] )
 			// this solution for getting the number of CUDA cores from:
 			// https://devtalk.nvidia.com/default/topic/470848/what-39-s-the-proper-way-to-detect-sp-cuda-cores-count-per-sm-/
 			cudaCores = ConvertSMVer2Cores( prop.major, prop.minor ) * prop.multiProcessorCount;
-		} catch( std::runtime_error& ex ) {
+		} catch( std::runtime_error& ) {
 			std::cerr << "WARNING: number of cores for the hardware's SM version is not defined in program source code." << std::endl;
 		}
 
