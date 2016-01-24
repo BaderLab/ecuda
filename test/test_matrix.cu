@@ -102,21 +102,21 @@ int main( int argc, char* argv[] ) {
 		ecuda::matrix<double> deviceMatrix( R, C, 99.0 );
 		dummyFunction<double,typename ecuda::matrix<double>::allocator_type>( deviceMatrix );
 		std::cout << "ecuda::distance=" << ecuda::distance( deviceMatrix.begin(), deviceMatrix.end() ) << std::endl;
-		for( std::size_t i = 0; i < R; ++i ) *(deviceMatrix[i].begin()+3) = 33.0;
+//		for( std::size_t i = 0; i < R; ++i ) *(deviceMatrix[i].begin()+3) = 33.0;
 
-		for( std::size_t i = 0; i < deviceMatrix.size(); ++i ) *(deviceMatrix.begin()+i) = 11.0;
-		for( std::size_t i = 0; i < deviceMatrix.size(); ++i ) {
-			typename ecuda::matrix<double>::iterator::difference_type delta = (deviceMatrix.begin()+i) - deviceMatrix.begin();
-			if( static_cast<int>(i) != delta ) throw std::runtime_error("");
-			//std::cout << "SANITY\t" << i << "\t" << delta << std::endl;
-		}
+//		for( std::size_t i = 0; i < deviceMatrix.size(); ++i ) *(deviceMatrix.begin()+i) = 11.0;
+//		for( std::size_t i = 0; i < deviceMatrix.size(); ++i ) {
+//			typename ecuda::matrix<double>::iterator::difference_type delta = (deviceMatrix.begin()+i) - deviceMatrix.begin();
+//			if( static_cast<int>(i) != delta ) throw std::runtime_error("");
+//			//std::cout << "SANITY\t" << i << "\t" << delta << std::endl;
+//		}
 
-		std::cout << "HOST:" << std::endl;
-		for( std::size_t i = 0; i < deviceMatrix.number_rows(); ++i ) {
-			std::cout << "ROW[" << i << "]";
-			for( std::size_t j = 0; j < deviceMatrix.number_columns(); ++j ) std::cout << " " << deviceMatrix[i][j];
-			std::cout << std::endl;
-		}
+//		std::cout << "HOST:" << std::endl;
+//		for( std::size_t i = 0; i < deviceMatrix.number_rows(); ++i ) {
+//			std::cout << "ROW[" << i << "]";
+//			for( std::size_t j = 0; j < deviceMatrix.number_columns(); ++j ) std::cout << " " << deviceMatrix[i][j];
+//			std::cout << std::endl;
+//		}
 	}
 	{
 		std::cerr << "TESTING CONSTRUCTORS" << std::endl;

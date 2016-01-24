@@ -3,7 +3,7 @@
 //#include "../include/ecuda/device_ptr.hpp"
 //#include "../include/ecuda/iterator.hpp"
 #include "../include/ecuda/memory.hpp"
-#include "../include/ecuda/models.hpp"
+//#include "../include/ecuda/models.hpp"
 #include "../include/ecuda/algorithm.hpp"
 
 int main( int argc, char* argv[] ) {
@@ -14,7 +14,7 @@ int main( int argc, char* argv[] ) {
 	ecuda::shared_ptr<double> p2( new double );
 
 	int* ptr = new int;
-	ecuda::padded_ptr<int> pp( ptr, 10, 2, ptr );
+	ecuda::padded_ptr<int> pp( ptr, 10 );
 
 	std::cout << "sizeof(int)=" << sizeof(int) << std::endl;
 

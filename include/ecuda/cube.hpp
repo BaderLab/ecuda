@@ -226,7 +226,8 @@ public:
 	__HOST__ cube( const cube& src ) :
 		base_type( pointer(), src.number_rows()*src.number_columns(), src.number_depths() ),
 		numberRows( src.numberRows ),
-		allocator( std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()) )
+		allocator( src.get_allocator() )
+		//allocator( std::allocator_traits<Alloc>::select_on_container_copy_construction(src.get_allocator()) )
 	{
 		init();
 		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );

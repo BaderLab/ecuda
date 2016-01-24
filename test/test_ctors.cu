@@ -9,7 +9,7 @@
 template<typename Container>
 void print_sequence( const Container& container ) {
 	std::vector<typename Container::value_type> vec( container.size() );
-	container >> vec;
+	ecuda::copy( container.begin(), container.end(), vec.begin() );
 	std::cout << "SEQUENCE";
 	for( typename std::vector<typename Container::value_type>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter ) {
 		std::cout << " " << *iter;

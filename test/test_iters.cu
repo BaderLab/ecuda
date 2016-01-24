@@ -9,7 +9,7 @@
 template<typename Container>
 void print_sequence( const Container& container ) {
 	std::vector<typename Container::value_type> vec( container.size() );
-	container >> vec;
+	ecuda::copy( container.begin(), container.end(), vec.begin() );
 	std::cout << "SEQUENCE";
 	for( typename std::vector<typename Container::value_type>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter ) {
 		std::cout << " " << *iter;
@@ -45,16 +45,16 @@ int main( int argc, char* argv[] ) {
 			hostVec1[i*5+j] = coord2d(i,j);
 
 	ecuda::matrix<coord2d> mat1( 3, 5 );
-	mat1.assign( hostVec1.begin(), hostVec1.end() );
+	ecuda::copy( hostVec1.begin(), hostVec1.end(), mat1.begin() );
 	print_sequence( mat1 );
 
-	mat1.get_row(1).assign( hostVec1.begin(), hostVec1.begin()+5 );
+	ecuda::copy( hostVec1.begin(), hostVec1.begin()+5, mat1.get_row(1).begin() );
 	print_sequence( mat1 );
 
 	// should fail to compile
 	//mat1.get_column(1).assign( hostVec1.begin(), hostVec1.begin()+5 );
 
-	mat1.get_row(1).assign( mat1.get_row(2).begin(), mat1.get_row(2).end() );
+	ecuda::copy( mat1.get_row(2).begin(), mat1.get_row(2).end(), mat1.get_row(1).begin() );
 	print_sequence( mat1 );
 
 	// should fail to compile
