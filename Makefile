@@ -37,6 +37,7 @@ CC = gcc -x c
 CFLAGS = -Wall
 CXX = g++
 CXXFLAGS = -Wall -flto -L/usr/local/cuda/lib64 -pedantic
+CXXFLAGS += -I./include
 #CXXFLAGS += -I../Catch/include
 #-std=c++11 
 FC = gfortran
@@ -44,11 +45,11 @@ NVCC = /usr/local/cuda/bin/nvcc
 NVCCFLAGS = -arch=sm_21 -O3
 NVCCFLAGS += -Xptxas -v
 #NVCCFLAGS += -I../Catch/include
+NVCCFLAGS += -I./include
 # for OpenMP support add to above: -X compiler -fopenmp
 # for C++11 support add to above: -std=c++11
 LDLIBS = -lcudart
 CATCHDIR = ../Catch/include
-
 
 -include local-config.cfg
 

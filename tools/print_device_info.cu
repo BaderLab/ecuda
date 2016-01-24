@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <estd/device.hpp>
+#include <ecuda/device.hpp>
 
 std::string create_memory_string( unsigned long x );
 std::string create_frequency_string( const unsigned x );
