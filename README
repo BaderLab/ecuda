@@ -1,0 +1,102 @@
+                  ecuda Extended CUDA C++ API release 2.x
+
+These are the release notes for ecuda version 2.
+
+WHAT IS ECUDA?
+
+  ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and
+  be functionally equivalent to the C++ Standard Template Library (STL).
+  Specifically: algorithms, containers, and iterators.
+
+WHAT IS REQUIRED?
+
+  ecuda is a header only API, and the only pre-requisite library is the CUDA API
+  version 5 or later. It should work with any C++ compiler, but has been
+  developed and tested with several versions of gcc (most recently 4.8.4) and
+  clang 3.6.
+
+  A correct setup should be able to compile the tools/print_device_info.cu
+  program without issue. You can try:
+
+    $ make print_device_info
+
+  to identify any issues. When run, the program prints out a pretty summary of
+  the current system's GPU hardware and capabilities.
+
+DOCUMENTATION:
+
+ - Documentation is included within the source files themselves using doxygen.
+   doxygen can be used to create an API reference in several formats (HTML, PDF,
+   etc.). The base directory contains a default doxygen.cfg file that will build
+   an HTML API reference in the docs/html subdirectory. Building the default
+   documentation can be done with the command:
+
+     $ doxygen doxygen.cfg
+
+   or using the Makefile:
+
+     $ make docs
+
+INSTALLING:
+
+ - As long as the include/ subdirectory is visible to the compiler, the API can
+   be installed anywhere. Running:
+
+     $ sudo make install
+
+   will copy the contents of the include/ subdirectory to /usr/local/include
+   which should make the API visible to the compiler. Alternatively, it can be
+   placed in a user-owned location and added to the header search list when
+   running the compiler. For example:
+
+     $ mv ecuda $HOME/.
+	 $ g++ -I$HOME/ecuda/include (other arguments...)
+
+
+
+
+-- windows notes
+
+For now CUDA does not work with Visual Studio 2015 (nvcc.exe complains).
+
+- Download the Visual Studio Community 2013 Installer:
+
+    follow download link at https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+
+- Install Visual Studio Community 2013
+
+    i already had Visual Studio Community 2015 installed at this time
+
+- Download and Install the NVIDIA CUDA Toolkit:
+
+    follow the instructions at http://developer.nvidia.com/cuda-downloads
+    i performed a Custom Installation and selected only:
+      CUDA Toolkit 7.5
+      CUDA Visual Studio Integration 7.5
+    optionally you might want to include:
+      CUDA Samples 7.5
+    the other items, especially the Graphics Driver, HD Audio Driver, NVIDIA GeForce Experience, and PhysX System Software should only be installed if they aren't already present on the system or are a lower version
+
+- Create a New Project in Visual Studio
+
+    select CUDA <version> under Installed >> Templates >> NVIDIA
+
+- Include ecuda
+
+    select Project >> <project name> Properties... >> Configuration Properties >> CUDA C/C++
+    add the location of the ecuda include subdirectory to the "Additional Include Directories" field
+    (while you're there you should probably change the "Target Machine Platform" to 64-bit if applicable)
+
+    select Project >> <project name> Properties... >> Configuration Properties >> VC++ Directories
+    add the location of the ecuda include subdirectory to the "Include Directories" field
+
+- trouble with constexpr and noexcept
+   - Installed Visual Studio 2013 Update 5
+
+- in Debug mode Visual Studio's Standard Library uses some sort of mechanism called "checked iterators" which are explained here:
+    https://msdn.microsoft.com/en-us/library/aa985965.aspx
+  when an OutputIterator is passed to an ecuda API method, it seems to have trasmuted from an iterator to a const_iterator, which causes a run-time assertion.  It's unclear to me why these checked iterators are somehow not passing their check...?  Compiling in Release mode runs fine.  I used the following workaround: add:
+    #define _ITERATOR_DEBUG_LEVEL 0
+  to the main program source file. This macro is described at:
+    https://msdn.microsoft.com/en-us/library/hh697468.aspx
+  After this point I could use the ecuda API without issue.
