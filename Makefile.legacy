@@ -1,3 +1,8 @@
+#
+# NOTE: this Makefile is here only for legacy purposes and to
+#       provide a record of the functionality wanted from cmake
+#
+
 SHELL = /bin/sh
 
 packagename = ecuda
