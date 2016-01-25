@@ -5,8 +5,6 @@
 #undef _HAS_ITERATOR_DEBUGGING
 #pragma warning(default:4005)
 #include <Windows.h>
-
-//#define _ITERATOR_DEBUG_LEVEL 0
 #endif
 
 #include <iomanip>

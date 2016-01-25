@@ -8,17 +8,21 @@ WHAT IS ECUDA?
   be functionally equivalent to the C++ Standard Template Library (STL).
   Specifically: algorithms, containers, and iterators.
 
-WHAT IS REQUIRED?
+REQUIREMENTS
 
   ecuda is a header only API, and the only pre-requisite library is the CUDA API
   version 5 or later. It should work with any C++ compiler, but has been
   developed and tested with several versions of gcc (most recently 4.8.4) and
-  clang 3.6. Visual Studio 2013 was also successfully tested.
+  clang 3.6. The C++11 standard is optional, but is utilized if enabled. Visual
+  Studio 2013 on Windows 10 was also successfully tested.
 
   A correct setup should be able to compile the tools/print_device_info.cu
   program without issue. You can try:
 
-    $ make print_device_info
+    $ mkdir bin
+    $ cd bin
+    $ cmake ../tools
+    $ make
 
   to identify any issues. When run, the program prints out a pretty summary of
   the current system's GPU hardware and capabilities.
@@ -41,25 +45,14 @@ INSTALLING:
   Linux/MacOS:
 
    - As long as the include/ subdirectory is visible to the compiler, the API
-     can be installed anywhere. cmake can also be used:
+     can be installed anywhere. A default install using cmake can be done by
+     running:
 
        $ cmake .
        $ sudo make install
 
      This will copy the contents of the include/ subdirectory to
      ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
-
-    - The tools/print_device_info.cu file is a program that displays a pretty
-      summary of the current system's GPU hardware and capabilities. Running:
-
-        $ mkdir bin
-        $ cd bin
-        $ cmake ../tools
-        $ make
-
-      should successfully compile the program. cmake should detect if CUDA is
-      present on your system, so this is a good sanity check to make sure your
-      system is in good shape to do CUDA development.
 
   Windows/Visual Studio:
 
@@ -94,8 +87,7 @@ INSTALLING:
 
         Do whatever makes the most sense for your situation.
 
-    - Start Visual Studio and load the ecuda.sln solution file contained in the
-      ecuda source tree (i.e. the directory this README is in).
+    - Start Visual Studio and load the ecuda.sln solution file.
 
     - The print_device_info project contains a source file that should build
       successfully at this point. Build the Release target, and
@@ -116,3 +108,23 @@ INSTALLING:
     - Since ecuda is not actively developed on Windows, please report any issues
       or workarounds!
 
+FILE DESCRIPTIONS
+
+  benchmarks/
+  docs/
+  include/
+  t/
+  test/
+  tools/
+  CMakeLists.txt  CMake configuration file
+  doxygen.cfg     doxygen configuration file
+  ecuda.config    Qt Creator project file
+  ecuda.creator   Qt Creator project file
+  ecuda.files     Qt Creator project file
+  ecuda.includes  Qt Creator project file
+  ecuda.sln       Visual Studio 2013 Solution file
+  .gitignore
+  LICENSE.txt     Release License
+  MANIFEST        list of files under version control
+  README          this file
+  VERSION         current version of the API
