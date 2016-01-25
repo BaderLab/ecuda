@@ -13,7 +13,7 @@ WHAT IS REQUIRED?
   ecuda is a header only API, and the only pre-requisite library is the CUDA API
   version 5 or later. It should work with any C++ compiler, but has been
   developed and tested with several versions of gcc (most recently 4.8.4) and
-  clang 3.6.
+  clang 3.6. Visual Studio 2013 was also successfully tested.
 
   A correct setup should be able to compile the tools/print_device_info.cu
   program without issue. You can try:
@@ -25,78 +25,94 @@ WHAT IS REQUIRED?
 
 DOCUMENTATION:
 
- - Documentation is included within the source files themselves using doxygen.
-   doxygen can be used to create an API reference in several formats (HTML, PDF,
-   etc.). The base directory contains a default doxygen.cfg file that will build
-   an HTML API reference in the docs/html subdirectory. Building the default
-   documentation can be done with the command:
+ - Documentation can be viewed online:
+
+     https://baderlab.github.io/ecuda/
+
+ - This is generated from the source files themselves using doxygen. The base
+   directory contains a default doxygen.cfg file that will build a local copy of
+   the documentation in the docs/html subdirectory. Make sure you have doxygen
+   installed and run:
 
      $ doxygen doxygen.cfg
 
-   or using the Makefile:
-
-     $ make docs
-
 INSTALLING:
 
- - As long as the include/ subdirectory is visible to the compiler, the API can
-   be installed anywhere. Running:
+  Linux/MacOS:
 
-     $ sudo make install
+   - As long as the include/ subdirectory is visible to the compiler, the API
+     can be installed anywhere. cmake can also be used:
 
-   will copy the contents of the include/ subdirectory to /usr/local/include
-   which should make the API visible to the compiler. Alternatively, it can be
-   placed in a user-owned location and added to the header search list when
-   running the compiler. For example:
+       $ cmake .
+       $ sudo make install
 
-     $ mv ecuda $HOME/.
-	 $ g++ -I$HOME/ecuda/include (other arguments...)
+     This will copy the contents of the include/ subdirectory to
+     ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
 
+    - The tools/print_device_info.cu file is a program that displays a pretty
+      summary of the current system's GPU hardware and capabilities. Running:
 
+        $ mkdir bin
+        $ cd bin
+        $ cmake ../tools
+        $ make
 
+      should successfully compile the program. cmake should detect if CUDA is
+      present on your system, so this is a good sanity check to make sure your
+      system is in good shape to do CUDA development.
 
--- windows notes
+  Windows/Visual Studio:
 
-For now CUDA does not work with Visual Studio 2015 (nvcc.exe complains).
+    - The latest free Visual Studio at the time of last update was Visual
+	  Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported
+      at this time. I managed to get everything working with Visual Studio
+      Community 2013 on Windows 10. Here is my story:
 
-- Download the Visual Studio Community 2013 Installer:
+	- Download and install Visual Studio Community 2013 from:
 
-    follow download link at https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+        https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
 
-- Install Visual Studio Community 2013
+    - Download and install the Nvidia CUDA Toolkit from:
 
-    i already had Visual Studio Community 2015 installed at this time
+        http://developer.nvidia.com/cuda-downloads
 
-- Download and Install the NVIDIA CUDA Toolkit:
+      - The order is important since the CUDA installer integrates with any
+        installed Visual Studio versions that it supports. Also note that in the
+        successful configuration, only the following items in the CUDA
+        installer's custom installation were left checked:
 
-    follow the instructions at http://developer.nvidia.com/cuda-downloads
-    i performed a Custom Installation and selected only:
-      CUDA Toolkit 7.5
-      CUDA Visual Studio Integration 7.5
-    optionally you might want to include:
-      CUDA Samples 7.5
-    the other items, especially the Graphics Driver, HD Audio Driver, NVIDIA GeForce Experience, and PhysX System Software should only be installed if they aren't already present on the system or are a lower version
+          CUDA Toolkit 7.5
+          CUDA Visual Studio Integration 7.5
 
-- Create a New Project in Visual Studio
+        The following items were already installed on the test system with equal
+        or greater version numbers:
 
-    select CUDA <version> under Installed >> Templates >> NVIDIA
+          Graphics Driver
+          HD Audio Driver
+          NVIDIA GeForce Experience
+          PhysX System Software
 
-- Include ecuda
+        Do whatever makes the most sense for your situation.
 
-    select Project >> <project name> Properties... >> Configuration Properties >> CUDA C/C++
-    add the location of the ecuda include subdirectory to the "Additional Include Directories" field
-    (while you're there you should probably change the "Target Machine Platform" to 64-bit if applicable)
+    - Start Visual Studio and load the ecuda.sln solution file contained in the
+      ecuda source tree (i.e. the directory this README is in).
 
-    select Project >> <project name> Properties... >> Configuration Properties >> VC++ Directories
-    add the location of the ecuda include subdirectory to the "Include Directories" field
+    - The print_device_info project contains a source file that should build
+      successfully at this point. Build the Release target, and
+      bin/Release/print_device_info.exe should appear. Running this from
+      the Windows command line should display a pretty summary of the current
+      system's GPU hardware and capabilities.
 
-- trouble with constexpr and noexcept
-   - Installed Visual Studio 2013 Update 5
+    - When building a Debug target, Visual Studio's C++ Standard Library
+      implementation does some kind of "iterator checking" that doesn't play
+      nice with ecuda's custom iterators, causing erroneous assertion failures
+      to get raised at runtime. Placing this at the beginning of a program will
+      turn this off (and suppresses a warning about macro redefinition):
 
-- in Debug mode Visual Studio's Standard Library uses some sort of mechanism called "checked iterators" which are explained here:
-    https://msdn.microsoft.com/en-us/library/aa985965.aspx
-  when an OutputIterator is passed to an ecuda API method, it seems to have trasmuted from an iterator to a const_iterator, which causes a run-time assertion.  It's unclear to me why these checked iterators are somehow not passing their check...?  Compiling in Release mode runs fine.  I used the following workaround: add:
-    #define _ITERATOR_DEBUG_LEVEL 0
-  to the main program source file. This macro is described at:
-    https://msdn.microsoft.com/en-us/library/hh697468.aspx
-  After this point I could use the ecuda API without issue.
+        #pragma warning(disable:4005)
+        #undef _HAS_ITERATOR_DEBUGGING
+        #pragma warning(default:4005)
+
+    - Since ecuda is not actively developed on Windows, please report any issues
+      or workarounds!
+
