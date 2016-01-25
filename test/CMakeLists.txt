@@ -4,6 +4,10 @@ PROJECT(ecuda)
 FIND_PACKAGE(CUDA REQUIRED)
 INCLUDE(FindCUDA)
 
+LIST(APPEND CUDA_NVCC_FLAGS -arch=sm_21 -O3 -Xptxas -v)
+LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wall -pedantic -flto")
+SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+
 INCLUDE_DIRECTORIES(../../Catch/include)
 
 CUDA_ADD_EXECUTABLE(test_algorithms test_algorithms.cu)
@@ -16,6 +20,4 @@ CUDA_ADD_EXECUTABLE(test_models     test_models.cu)
 CUDA_ADD_EXECUTABLE(test_ptr        test_ptr.cu)
 CUDA_ADD_EXECUTABLE(test_vector     test_vector.cu)
 
-LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wall -pedantic -flto")
-LIST(APPEND CUDA_NVCC_FLAGS -arch=sm_21 -O3 -Xptxas -v)
 
