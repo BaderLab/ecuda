@@ -38,7 +38,7 @@ int main( int argc, char* argv[] )
 
 	CUDA_CALL( cudaMemcpy( deviceSequence1, &hostSequence1.front(), N*sizeof(value_type), cudaMemcpyHostToDevice ) );
 
-	dim3 grid( 1, (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( BENCHMARK_THREADS, 1 );
+	dim3 grid( (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( BENCHMARK_THREADS );
 	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<grid,threads>>>( deviceSequence1, deviceSequence2 ) );
 
 	std::vector<value_type> hostSequence2( N );
