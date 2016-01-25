@@ -139,7 +139,7 @@ int main( int argc, char* argv[] ) {
 			std::vector<double> hostVector( R*C, 99.0 );
 			std::cerr << "ecuda::matrix( const ecuda::matrix& ) : " << std::boolalpha << ecuda::equal( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector.begin() ) << std::endl;
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		{
 			std::cerr << "ecuda::matrix( ecuda::matrix&& ) : TEST NOT IMPLEMENTED" << std::endl;
 		}

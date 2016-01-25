@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ either expressed or implied, of the FreeBSD Project.
 
 /// \cond DEVELOPER_DOCUMENTATION
 
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 #include <type_traits>
 
 namespace ecuda {
@@ -115,7 +115,7 @@ template<typename T>            struct is_same<T,T> { enum { value = 1 }; };
 
 template<typename T> struct remove_reference      { typedef T type; };
 template<typename T> struct remove_reference<T&>  { typedef T type; };
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 template<typename T> struct remove_reference<T&&> { typedef T type; };
 #endif
 
@@ -147,7 +147,7 @@ template<> struct is_integral<unsigned char>      { typedef true_type type; };
 #ifdef _GLIBCXX_USE_WCHAR_T
 template<> struct is_integral<wchar_t>            { typedef true_type type; };
 #endif
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 template<> struct is_integral<char16_t>           { typedef true_type type; };
 template<> struct is_integral<char32_t>           { typedef true_type type; };
 #endif

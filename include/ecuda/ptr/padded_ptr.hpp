@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ public:
 	template<typename T2,class P2>
 	__HOST__ __DEVICE__ padded_ptr( const padded_ptr<T2,P2>& src ) : ptr(src.get()), pitch(src.get_pitch()) {}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ padded_ptr( padded_ptr&& src ) : ptr(std::move(src.ptr)), pitch(std::move(src.pitch)) {}
 	__HOST__ __DEVICE__ padded_ptr& operator=( padded_ptr&& src )
 	{
@@ -131,7 +131,7 @@ public:
 	__DEVICE__ inline reference       operator[]( std::size_t i )       { return padded_ptr(*this).operator+=(i).operator*(); }
 	__DEVICE__ inline const_reference operator[]( std::size_t i ) const { return padded_ptr(*this).operator+=(i).operator*(); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Checks if this stores a non-null pointer.
 	///

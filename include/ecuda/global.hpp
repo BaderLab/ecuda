@@ -63,11 +63,11 @@ either expressed or implied, of the FreeBSD Project.
 
 // Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
 #if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
-#define __CPP11_SUPPORTED__
+#define ECUDA_CPP11_AVAILABLE
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
-#define __CPP11_SUPPORTED__
+#define ECUDA_CPP11_AVAILABLE
 #endif
 
 
@@ -129,12 +129,12 @@ either expressed or implied, of the FreeBSD Project.
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
-#ifndef __CPP11_SUPPORTED__
+#ifndef ECUDA_CPP11_AVAILABLE
 #define nullptr NULL
 #endif
 
 /** Allow noexcept and constexpr if C++11 supported. */
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 #if defined(_MSC_VER) && _MSC_VER == 1800 // Visual Studio 2013
 #define __NOEXCEPT__
 #define __CONSTEXPR__
@@ -165,7 +165,7 @@ either expressed or implied, of the FreeBSD Project.
 // This approach was borrowed from the Eigen linear algebra template library
 // (http://eigen.tuxfamily.org).
 //
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 #define ECUDA_STATIC_ASSERT(x,msg) static_assert(x,#msg)
 #else
 

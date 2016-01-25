@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <limits>
 #include <vector>
 
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 #include <initializer_list>
 #include <memory>
 #include <utility>
@@ -54,8 +54,9 @@ either expressed or implied, of the FreeBSD Project.
 #include "algorithm.hpp"
 #include "allocators.hpp"
 #include "memory.hpp"
-#include "impl/models.hpp"
 #include "type_traits.hpp"
+
+#include "model/device_contiguous_sequence.hpp"
 
 namespace ecuda {
 
@@ -92,17 +93,17 @@ template<typename T,class Alloc> class vector_kernel_argument; // forward declar
 /// \endcode
 ///
 template< typename T, class Alloc=device_allocator<T>, class P=shared_ptr<T> >
-class vector : private impl::device_contiguous_sequence< T, P > {
+class vector : private model::device_contiguous_sequence< T, P > {
 
 private:
-	typedef impl::device_contiguous_sequence< T, P > base_type;
+	typedef model::device_contiguous_sequence< T, P > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
 	typedef Alloc                               allocator_type;  //!< allocator type
 	typedef typename base_type::size_type       size_type;       //!< unsigned integral type
 	typedef typename base_type::difference_type difference_type; //!< signed integral type
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	typedef typename base_type::reference                        reference;       //!< cell reference type
 	typedef typename base_type::const_reference                  const_reference; //!< cell const reference type
 	typedef typename std::allocator_traits<Alloc>::pointer       pointer;         //!< cell pointer type
@@ -231,7 +232,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
 	///
@@ -340,7 +341,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator         cbegin() const __NOEXCEPT__ { return base_type::cbegin();         }
 	__HOST__ __DEVICE__ inline const_iterator         cend() const   __NOEXCEPT__ { return base_type::cbegin()+size();  }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()      __NOEXCEPT__ { return base_type::crbegin();        }
@@ -574,7 +575,7 @@ public:
 		n = len;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Replaces the contents with the elements from the initializer list il.
 	///
@@ -690,7 +691,7 @@ public:
 		n += len;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Inserts elements from initializer_list before position.
 	///
@@ -897,7 +898,7 @@ __HOST__ void vector<T,Alloc,P>::growMemory( size_type minimum )
 	while( m2 < minimum ) m2 <<= 1;
 	// allocate larger chunk
 	shared_ptr<value_type> newMemory( get_allocator().allocate( m2 ) );
-	impl::device_contiguous_sequence< value_type, shared_ptr<value_type> > newSequence( newMemory, m2 );
+	model::device_contiguous_sequence< value_type, shared_ptr<value_type> > newSequence( newMemory, m2 );
 	ecuda::copy( begin(), end(), newSequence.begin() );
 	base_type::swap( newSequence );
 }
@@ -932,7 +933,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	vector_kernel_argument( vector_kernel_argument&& src ) : base_type(std::move(src)) {}
 
 	vector_kernel_argument& operator=( vector_kernel_argument&& src )

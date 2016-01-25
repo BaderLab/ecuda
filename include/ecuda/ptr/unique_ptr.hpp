@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -113,14 +113,14 @@ public:
 	__HOST__ __DEVICE__ explicit unique_ptr( T* ptr ) __NOEXCEPT__ : current_ptr(ptr) {}
 	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) __NOEXCEPT__ : current_ptr(ptr), deleter(deleter) {}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
 	template<typename U,class E> __HOST__ __DEVICE__ unique_ptr( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
 	#endif
 
 	__HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	//TODO: review this block
 	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ {
 		current_ptr = std::move(src.ptr);
@@ -160,7 +160,7 @@ public:
 	__HOST__ __DEVICE__ inline deleter_type& get_deleter() { return deleter; }
 	__HOST__ __DEVICE__ inline const deleter_type& get_deleter() const { return deleter; }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ explicit operator bool() const { return get() != NULL; }
 	#else
 	__HOST__ __DEVICE__ operator bool() const { return get() != NULL; }

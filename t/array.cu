@@ -138,7 +138,7 @@ SCENARIO( "array functions correctly", "array" ) {
 			}
 			AND_THEN( "they should reside in different memory locations" ) { REQUIRE( deviceArrayWithDefaultValues.data() != arr2.data() ); }
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		AND_WHEN( "another array is move constructed" ) {
 			ecuda::array<data_type,N> arr2( std::move(deviceArrayWithDefaultValues) );
 			THEN( "the original array should be invalid" ) { REQUIRE( !deviceArrayWithDefaultValues.data() ); }
@@ -257,7 +257,7 @@ SCENARIO( "array functions correctly", "array" ) {
 			}
 			AND_THEN( "they should reside in different memory locations" ) { REQUIRE( deviceArrayWithDefaultValues.data() != arr2.data() ); }
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		AND_WHEN( "another array is move constructed" ) {
 			ecuda::array<data_type,N> arr2( std::move(deviceArrayWithDefaultValues) );
 			THEN( "the original array should be invalid" ) { REQUIRE( !deviceArrayWithDefaultValues.data() ); }

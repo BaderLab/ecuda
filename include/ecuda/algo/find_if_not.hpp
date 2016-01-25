@@ -40,7 +40,7 @@ either expressed or implied, of the FreeBSD Project.
 #ifndef ECUDA_ALGO_FIND_IF_NOT_HPP
 #define ECUDA_ALGO_FIND_IF_NOT_HPP
 
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 
 #include <algorithm>
 #include <iterator>
@@ -108,6 +108,6 @@ all_of( InputIterator first, InputIterator last, UnaryPredicate p )
 
 } // namespace ecuda
 
-#endif // __CPP11_SUPPORTED__
+#endif // ECUDA_CPP11_AVAILABLE
 
 #endif

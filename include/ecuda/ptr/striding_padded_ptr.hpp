@@ -105,7 +105,7 @@ public:
 	template<typename T2,typename P2>
 	__HOST__ __DEVICE__ striding_padded_ptr( const striding_padded_ptr<T2,P2>& src ) : ptr(src.ptr), stride(src.stride) {}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ striding_padded_ptr( striding_padded_ptr&& src ) : ptr(std::move(src.ptr)), stride(std::move(src.stride)) {}
 
 	__HOST__ __DEVICE__ striding_padded_ptr& operator=( striding_padded_ptr&& src )

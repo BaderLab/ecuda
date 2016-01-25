@@ -153,7 +153,7 @@ SCENARIO( "matrix functions correctly", "matrix" ) {
 			}
 			AND_THEN( "they should reside in different memory locations" ) { REQUIRE( deviceMatrixWithDefaultValues.data() != mat2.data() ); }
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		AND_WHEN( "another matrix is move constructed" ) {
 			ecuda::matrix<data_type> mat2( std::move(deviceMatrixWithDefaultValues) );
 			THEN( "the original matrix should be invalid" ) { REQUIRE( !deviceMatrixWithDefaultValues.data() ); }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ either expressed or implied, of the FreeBSD Project.
 #include <algorithm>
 #include <limits>
 #include <stdexcept>
-#ifdef __CPP11_SUPPORTED__
+#ifdef ECUDA_CPP11_AVAILABLE
 #include <initializer_list>
 #include <utility>
 #include <vector>
@@ -52,7 +52,8 @@ either expressed or implied, of the FreeBSD Project.
 #include "algorithm.hpp"   // for copy
 #include "allocators.hpp"  // for device_allocator
 #include "memory.hpp"      // for shared_ptr
-#include "impl/models.hpp" // for impl::device_fixed_sequence
+
+#include "model/device_fixed_sequence.hpp"
 
 namespace ecuda {
 
@@ -76,10 +77,10 @@ template<typename T,std::size_t N> class array_kernel_argument; // forward decla
 /// accessors of general information can be performed on both the host and device.
 ///
 template< typename T, std::size_t N, class P=shared_ptr<T> >
-class array : private impl::device_fixed_sequence< T, N, P > {
+class array : private model::device_fixed_sequence< T, N, P > {
 
 private:
-	typedef impl::device_fixed_sequence< T, N, P > base_type;
+	typedef model::device_fixed_sequence< T, N, P > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -139,7 +140,7 @@ public:
 		ecuda::copy( src.begin(), src.end(), begin() );
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	template<typename U>
 	__HOST__ array( std::initializer_list<U> il ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) )
 	{
@@ -165,7 +166,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Move constructor.
 	///
@@ -404,7 +405,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 
 	///
 	/// \brief Returns a const_iterator to the first element of the container.
@@ -484,7 +485,7 @@ public:
 	/// \param other container to exchange the contents with
 	///
 	__HOST__ __DEVICE__ inline void swap( array& other )
-	#if defined(__CPP11_SUPPORTED__) && defined(ECUDA_NOEXCEPT_KEYWORD_ENABLED)
+	#if defined(ECUDA_CPP11_AVAILABLE) && defined(ECUDA_NOEXCEPT_KEYWORD_ENABLED)
 	noexcept(noexcept(swap(std::declval<T&>(),std::declval<T&>())))
 	#endif
 	{
@@ -579,7 +580,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	array_kernel_argument( array_kernel_argument&& src ) : base_type(std::move(src)) {}
 
 	array_kernel_argument& operator=( array_kernel_argument&& src )

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,7 @@ public:
         template<typename U,typename Q>
         __HOST__ __DEVICE__ striding_ptr( const striding_ptr<U,Q>& src ) : ptr(src.ptr), stride(src.stride) {}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ striding_ptr( striding_ptr&& src ) : ptr(std::move(src.ptr)), stride(std::move(src.stride)) {}
 
 	__HOST__ __DEVICE__ striding_ptr& operator=( striding_ptr&& src )

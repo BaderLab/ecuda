@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_iterator( device_iterator&& src ) : ptr(std::move(src.ptr)) {}
 	__HOST__ device_iterator& operator=( device_iterator&& src )
 	{
@@ -165,7 +165,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_contiguous_iterator( device_contiguous_iterator&& src ) : base_type(std::move(src)) {}
 	__HOST__ device_contiguous_iterator& operator=( device_contiguous_iterator&& src )
 	{
@@ -227,7 +227,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_contiguous_block_iterator( device_contiguous_block_iterator&& src ) :
 		base_type(std::move(src)),
 		width(std::move(src.width)),
@@ -353,7 +353,7 @@ public:
 	template<class Iterator2>
 	__HOST__ __DEVICE__ reverse_device_iterator( const reverse_device_iterator<Iterator2>& src ) : parentIterator(src.base()) {}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ reverse_device_iterator( reverse_device_iterator&& src ) { ecuda::swap( parentIterator, src.parentIterator ); }
 	__HOST__ reverse_device_iterator& operator=( reverse_device_iterator&& src )
 	{

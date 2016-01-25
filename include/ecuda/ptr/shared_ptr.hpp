@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -227,7 +227,7 @@ public:
 		#endif
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Move constructor.
 	///
@@ -321,7 +321,7 @@ public:
 	///
 	template<typename U> __HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr<U>& src ) __NOEXCEPT__ { shared_ptr(src).swap(*this); return *this; }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Replaces the managed object.
 	///
@@ -441,7 +441,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Checks if this stores a non-null pointer.
 	///

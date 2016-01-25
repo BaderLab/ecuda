@@ -44,7 +44,7 @@ int main( int argc, char* argv[] ) {
 			std::vector<double> hostVector( N, 99.0 );
 			std::cout << "ecuda::array( const ecuda::array& ) : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray1;
@@ -72,7 +72,7 @@ int main( int argc, char* argv[] ) {
 			std::cout << "  assignment destination equal : " << std::boolalpha << ecuda::equal( deviceArray2.begin(), deviceArray2.end(), hostVector.begin() ) << std::endl;
 			std::cout << "  assignment source unequal    : " << std::boolalpha << !ecuda::equal( deviceArray1.begin(), deviceArray1.end(), hostVector.begin() ) << std::endl;
 		}
-		#ifdef __CPP11_SUPPORTED__
+		#ifdef ECUDA_CPP11_AVAILABLE
 		{
 			const std::size_t N = 1000;
 			ecuda::array<double,N> deviceArray1;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,9 @@ either expressed or implied, of the FreeBSD Project.
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
 #include "memory.hpp"
-#include "impl/models.hpp"
 #include "type_traits.hpp"
+
+#include "model/device_contiguous_row_matrix.hpp"
 
 namespace ecuda {
 
@@ -122,11 +123,11 @@ template<typename T,class Alloc> class matrix_kernel_argument; // forward declar
 /// next row, and so on...).
 ///
 template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
-class matrix : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ >
+class matrix : private model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ >
 {
 
 private:
-	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ > base_type;
+	typedef model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -250,7 +251,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
 	///
@@ -341,7 +342,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const __NOEXCEPT__ { return base_type::cbegin();  }
 	__HOST__ __DEVICE__ inline const_iterator         cend()    const __NOEXCEPT__ { return base_type::cend();    }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       __NOEXCEPT__ { return base_type::crbegin(); }
@@ -742,7 +743,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	matrix_kernel_argument( matrix_kernel_argument&& src ) : base_type(std::move(src)) {}
 
 	matrix_kernel_argument& operator=( matrix_kernel_argument&& src )

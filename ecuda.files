@@ -1,5 +1,3 @@
-benchmark/device_sequence.cu
-benchmark/matrix.cu
 benchmarks/array.cu
 benchmarks/matrix_multiply.cu
 benchmarks/matrix_transpose.cu
@@ -45,6 +43,11 @@ include/ecuda/striding_ptr.hpp
 include/ecuda/type_traits.hpp
 include/ecuda/utility.hpp
 include/ecuda/vector.hpp
+include/ecuda/model/device_contiguous_row_matrix.hpp
+include/ecuda/model/device_matrix.hpp
+include/ecuda/model/device_sequence.hpp
+include/ecuda/model/device_contiguous_sequence.hpp
+include/ecuda/model/device_fixed_sequence.hpp
 t/1__allocators.cu
 t/2__models__device_sequence.cu
 t/3__algorithm__copy.cu

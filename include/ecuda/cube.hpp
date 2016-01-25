@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Scott Zuyderduyn
+Copyright (c) 2014-2016, Scott Zuyderduyn
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,16 @@ either expressed or implied, of the FreeBSD Project.
 #include <stdexcept>
 #include <vector>
 
-//#include "config.hpp"
 #include "global.hpp"
 #include "allocators.hpp"
 #include "matrix.hpp"
 #include "memory.hpp"
-#include "impl/models.hpp"
 #include "type_traits.hpp"
+
+#include "model/device_sequence.hpp"
+#include "model/device_contiguous_sequence.hpp"
+#include "model/device_matrix.hpp"
+#include "model/device_contiguous_row_matrix.hpp"
 
 namespace ecuda {
 
@@ -123,10 +126,10 @@ template<typename T,class Alloc> class cube_kernel_argument; // forward declarat
 /// that aims to have concurrently running threads accessing depth >>> column > row will run much more efficiently.
 ///
 template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
-class cube : private impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > {
+class cube : private model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > {
 
 private:
-	typedef impl::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > base_type;
+	typedef model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/ P /*>*/ > base_type;
 
 public:
 	typedef typename base_type::value_type      value_type;      //!< cell data type
@@ -138,24 +141,24 @@ public:
 	typedef typename base_type::pointer         pointer;         //!< cell pointer type
 	typedef typename make_const<pointer>::type  const_pointer;   //!< cell const pointer type
 
-	typedef impl::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > row_type;    //!< cube row container type
-	typedef impl::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > column_type; //!< cube column container type
-	typedef impl::device_contiguous_sequence<value_type                                                                                > depth_type;  //!< cube depth container type
-	typedef impl::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_row_type;    //!< cube const row container type
-	typedef impl::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_column_type; //!< cube const column container type
-	typedef impl::device_contiguous_sequence<const value_type                                                                                            > const_depth_type;  //!< cube const depth container type
+	typedef model::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > row_type;    //!< cube row container type
+	typedef model::device_sequence<           value_type, striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > column_type; //!< cube column container type
+	typedef model::device_contiguous_sequence<value_type                                                                                > depth_type;  //!< cube depth container type
+	typedef model::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_row_type;    //!< cube const row container type
+	typedef model::device_sequence<           const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_column_type; //!< cube const column container type
+	typedef model::device_contiguous_sequence<const value_type                                                                                            > const_depth_type;  //!< cube const depth container type
 
 	typedef typename base_type::iterator               iterator;               //!< iterator type
 	typedef typename base_type::const_iterator         const_iterator;         //!< const iterator type
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::device_matrix<                value_type,       striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > slice_xy_type; //!< xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_xz_type; //!< xz section of a cube at a fixed column
-	typedef impl::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_yz_type; //!< yz section of a cube at a fixed row
-	typedef impl::device_matrix<                const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_slice_xy_type; //!< xy section of a cube at a fixed depth
-	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_xz_type; //!< const xz section of a cube at a fixed row
-	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_yz_type; //!< const yz section of a cube at a fixed row
+	typedef model::device_matrix<                value_type,       striding_padded_ptr<value_type,typename ecuda::add_pointer<value_type>::type> > slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef model::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_xz_type; //!< xz section of a cube at a fixed column
+	typedef model::device_contiguous_row_matrix< value_type,       typename ecuda::add_pointer<value_type>::type                                 > slice_yz_type; //!< yz section of a cube at a fixed row
+	typedef model::device_matrix<                const value_type, striding_padded_ptr<const value_type,typename ecuda::add_pointer<const value_type>::type> > const_slice_xy_type; //!< xy section of a cube at a fixed depth
+	typedef model::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_xz_type; //!< const xz section of a cube at a fixed row
+	typedef model::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
 	typedef       impl::cube_kernel_argument<T,Alloc> kernel_argument;       //!< kernel argument type
 	typedef const impl::cube_kernel_argument<T,Alloc> const_kernel_argument; //!< const kernel argument type
@@ -260,7 +263,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	///
 	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
 	///
@@ -408,7 +411,7 @@ public:
 	///
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const    __NOEXCEPT__ { return base_type::cbegin();  }
 	__HOST__ __DEVICE__ inline const_iterator cend() const      __NOEXCEPT__ { return base_type::cend();    }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
@@ -759,7 +762,7 @@ public:
 		return *this;
 	}
 
-	#ifdef __CPP11_SUPPORTED__
+	#ifdef ECUDA_CPP11_AVAILABLE
 	cube_kernel_argument( cube_kernel_argument&& src ) : base_type(std::move(src)) {}
 
 	cube_kernel_argument& operator=( cube_kernel_argument&& src )
