@@ -19,5 +19,3 @@ CUDA_ADD_EXECUTABLE(test_matrix     test_matrix.cu)
 CUDA_ADD_EXECUTABLE(test_models     test_models.cu)
 CUDA_ADD_EXECUTABLE(test_ptr        test_ptr.cu)
 CUDA_ADD_EXECUTABLE(test_vector     test_vector.cu)
-
-
