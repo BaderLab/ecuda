@@ -41,11 +41,14 @@ int main( int argc, char* argv[] )
 	dim3 grid( (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( BENCHMARK_THREADS );
 	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<grid,threads>>>( deviceSequence1, deviceSequence2 ) );
 
-	std::vector<value_type> hostSequence2( N );
-	CUDA_CALL( cudaMemcpy( &hostSequence2.front(), deviceSequence2, N*sizeof(value_type), cudaMemcpyDeviceToHost ) );
+	value_type *hostSequence2;
+	CUDA_CALL( cudaMallocHost( &hostSequence2, N*sizeof(value_type), cudaHostAllocDefault ) );
 
-	const bool isEqual = std::equal( hostSequence2.begin(), hostSequence2.end(), hostSequence1.begin() );
+	CUDA_CALL( cudaMemcpy( hostSequence2, deviceSequence2, N*sizeof(value_type), cudaMemcpyDeviceToHost ) );
 
+	const bool isEqual = std::equal( hostSequence2, hostSequence2+N, hostSequence1.begin() );
+
+	cudaFreeHost( hostSequence2 );
 	cudaFree( deviceSequence1 );
 	cudaFree( deviceSequence2 );
 

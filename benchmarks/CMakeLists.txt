@@ -10,3 +10,6 @@ LIST(APPEND CUDA_NVCC_FLAGS "-arch=sm_21 -O3 -Xptxas -v")
 
 CUDA_ADD_EXECUTABLE(array_add_cuda array_add_cuda.cu)
 CUDA_ADD_EXECUTABLE(array_add_ecuda array_add_ecuda.cu)
+
+CUDA_ADD_EXECUTABLE(matrix_rotate_cuda matrix_rotate_cuda.cu)
+CUDA_ADD_EXECUTABLE(matrix_rotate_ecuda matrix_rotate_ecuda.cu)
