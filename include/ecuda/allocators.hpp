@@ -83,13 +83,13 @@ class host_allocator
 {
 
 public:
-	typedef T                                             value_type;      //!< element type
-	typedef typename ecuda::add_pointer<T>::type          pointer;         //!< pointer to element
-	typedef typename ecuda::add_lvalue_reference<T>::type reference;       //!< reference to element
-	typedef typename make_const<pointer>::type            const_pointer;   //!< pointer to constant element
-	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
-	typedef std::size_t                                   size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
+	typedef T                                                   value_type;      //!< element type
+	typedef typename ecuda::add_pointer<T>::type                pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type       reference;       //!< reference to element
+	typedef typename make_const<pointer>::type                  const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference; //!< reference to constant element
+	typedef std::size_t                                         size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                      difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef host_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -228,13 +228,13 @@ class device_allocator
 {
 
 public:
-	typedef T                                             value_type;      //!< element type
-	typedef typename ecuda::add_pointer<T>::type          pointer;         //!< pointer to element
-	typedef typename ecuda::add_lvalue_reference<T>::type reference;       //!< reference to element
-	typedef typename make_const<pointer>::type            const_pointer;   //!< pointer to constant element
-	typedef typename ecuda::add_const<reference>::type    const_reference; //!< reference to constant element
-	typedef std::size_t                                   size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                                difference_type; //!< difference between two pointers
+	typedef T                                                   value_type;      //!< element type
+	typedef typename ecuda::add_pointer<T>::type                pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type       reference;       //!< reference to element
+	typedef typename make_const<pointer>::type                  const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference; //!< reference to constant element
+	typedef std::size_t                                         size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                      difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -345,17 +345,14 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_allocator<T>).
 	///
-	__HOST__ inline void construct( pointer ptr, const_reference val )
-	{
-		CUDA_CALL( cudaMemcpy( reinterpret_cast<void*>(ptr), reinterpret_cast<const void*>(&val), sizeof(val), cudaMemcpyHostToDevice ) );
-	}
+	__DEVICE__ inline void construct( pointer ptr, const_reference val ); // not supported on device
 
 	///
 	/// \brief Destroys in-place the object pointed by ptr.
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+	__DEVICE__ inline void destroy( pointer ptr ); // not supported on device
 
 };
 
@@ -383,13 +380,13 @@ class device_pitch_allocator
 {
 
 public:
-	typedef T                                                  value_type;      //!< element type
-	typedef padded_ptr<T,typename ecuda::add_pointer<T>::type> pointer;         //!< pointer to element
-	typedef typename ecuda::add_lvalue_reference<T>::type      reference;       //!< reference to element
-	typedef typename make_const<pointer>::type                 const_pointer;   //!< pointer to constant element
-	typedef typename ecuda::add_const<reference>::type         const_reference; //!< reference to constant element
-	typedef std::size_t                                        size_type;       //!< quantities of elements
-	typedef std::ptrdiff_t                                     difference_type; //!< difference between two pointers
+	typedef T                                                   value_type;      //!< element type
+	typedef padded_ptr<T,typename ecuda::add_pointer<T>::type>  pointer;         //!< pointer to element
+	typedef typename ecuda::add_lvalue_reference<T>::type       reference;       //!< reference to element
+	typedef typename make_const<pointer>::type                  const_pointer;   //!< pointer to constant element
+	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference; //!< reference to constant element
+	typedef std::size_t                                         size_type;       //!< quantities of elements
+	typedef std::ptrdiff_t                                      difference_type; //!< difference between two pointers
 	/// \cond DEVELOPER_DOCUMENTATION
 	template<typename U> struct rebind { typedef device_allocator<U> other; }; //!< its member type U is the equivalent allocator type to allocate elements of type U
 	/// \endcond
@@ -507,25 +504,14 @@ public:
 	/// \param val Value to initialize the constructed element to.
 	///            const_reference is a member type (defined as an alias of T& in ecuda::device_pitch_allocator<T>).
 	///
-	__HOST__ inline void construct( pointer ptr, const_reference val )
-	{
-		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
-		CUDA_CALL(
-			cudaMemcpy(
-				detail::void_cast<raw_pointer_type>()( naked_cast<raw_pointer_type>(ptr) ),
-				reinterpret_cast<const void*>(&val),
-				sizeof(val),
-				cudaMemcpyHostToDevice
-			)
-		);
-	}
+	__DEVICE__ inline void construct( pointer ptr, const_reference val ); // not supported on device
 
 	///
 	/// \brief Destroys in-place the object pointed by ptr.
 	///        Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).
 	/// \param ptr Pointer to the object to be destroyed.
 	///
-	__DEVICE__ inline void destroy( pointer ptr ) { ptr->~value_type(); }
+	__DEVICE__ inline void destroy( pointer ptr ); // not supported on device
 
 	///
 	/// \brief Returns the address of a given coordinate.
