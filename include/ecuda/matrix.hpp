@@ -148,7 +148,8 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::matrix_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
+	typedef       impl::matrix_kernel_argument<T,Alloc> kernel_argument;       //!< kernel argument type
+	typedef const impl::matrix_kernel_argument<T,Alloc> const_kernel_argument; //!< const kernel argument type
 
 private:
 	allocator_type allocator;

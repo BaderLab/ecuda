@@ -63,5 +63,8 @@ test/test_models.cu
 test/test_ptr.cu
 test/test_vector.cu
 tools/print_device_info.cu
-Makefile
+CMakeLists.txt
 README
+tools/CMakeLists.txt
+benchmarks/array_add_cuda.cu
+benchmarks/array_add_ecuda.cu

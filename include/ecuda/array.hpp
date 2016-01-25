@@ -95,7 +95,8 @@ public:
 	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
 	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef impl::array_kernel_argument<T,N> kernel_argument; //!< kernel argument type
+	typedef       impl::array_kernel_argument<T,N> kernel_argument;       //!< kernel argument type
+	typedef const impl::array_kernel_argument<T,N> const_kernel_argument; //!< const kernel argument type
 
 	template<typename U,std::size_t M,class Q> friend class array;
 
