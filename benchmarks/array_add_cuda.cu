@@ -14,7 +14,7 @@ template<typename T,std::size_t N>
 __global__
 void copyArray( const T* src, T* dest )
 {
-	const int t = threadIdx.x + blockIdx.x * blockDim.x;
+	const int t = blockIdx.x*blockDim.x+threadIdx.x;
 	if( t < N ) dest[t] = src[t];
 }
 
@@ -38,7 +38,8 @@ int main( int argc, char* argv[] )
 
 	CUDA_CALL( cudaMemcpy( deviceSequence1, &hostSequence1.front(), N*sizeof(value_type), cudaMemcpyHostToDevice ) );
 
-	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<BENCHMARK_THREADS,((N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS)>>>( deviceSequence1, deviceSequence2 ) );
+	dim3 grid( 1, (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( BENCHMARK_THREADS, 1 );
+	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<grid,threads>>>( deviceSequence1, deviceSequence2 ) );
 
 	std::vector<value_type> hostSequence2( N );
 	CUDA_CALL( cudaMemcpy( &hostSequence2.front(), deviceSequence2, N*sizeof(value_type), cudaMemcpyDeviceToHost ) );

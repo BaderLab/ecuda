@@ -15,7 +15,7 @@ template<typename T,std::size_t N>
 __global__
 void copyArray( typename ecuda::array<T,N>::const_kernel_argument src, typename ecuda::array<T,N>::kernel_argument dest )
 {
-	const int t = threadIdx.x + blockIdx.x * blockDim.x;
+	const int t = blockIdx.x*blockDim.x+threadIdx.x;
 	if( t < src.size() ) dest[t] = src[t];
 }
 
@@ -37,7 +37,8 @@ int main( int argc, char* argv[] )
 
 	ecuda::copy( hostSequence.begin(), hostSequence.end(), deviceSequence1.begin() );
 
-	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<BENCHMARK_THREADS,((N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS)>>>( deviceSequence1, deviceSequence2 ) );
+	dim3 grid( 1, (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( BENCHMARK_THREADS, 1 );
+	CUDA_CALL_KERNEL_AND_WAIT( copyArray<value_type,N><<<grid,threads>>>( deviceSequence1, deviceSequence2 ) );
 
 	const bool isEqual = ecuda::equal( deviceSequence2.begin(), deviceSequence2.end(), hostSequence.begin() );
 
