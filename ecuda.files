@@ -61,13 +61,10 @@ tools/CMakeLists.txt
 tools/print_device_info.cu
 doxygen.cfg
 t/allocators.cu
-t/2__models__device_sequence.cu
-t/4__ptr__padded_ptr.cu
 t/algorithm__fill.cu
-t/1__allocators.cu
-t/3__algorithm__copy.cu
 t/matrix.cu
 t/array.cu
+t/model__device_sequence.cu
 README
 VERSION
 Makefile.legacy

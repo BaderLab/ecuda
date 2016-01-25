@@ -30,11 +30,14 @@ SCENARIO( "allocators function correctly", "allocators" ) {
 			WHEN( "the sequences are compared") {
 				THEN( "they should be unequal" ) { REQUIRE( !ecuda::equal( v.begin(), v.end(), ptr ) ); }
 			}
+			#ifndef __CUDACC__
 			AND_WHEN( "each element in the allocated memory is passed to the construct method" ) {
-				for( std::size_t i = 0; i < N; ++i ) alloc.construct( ptr+i, data_type() );
+				data_type dummyValue;
+				for( std::size_t i = 0; i < N; ++i ) alloc.construct( ptr+i, dummyValue );
 				THEN( "the sequences should be equal" ) { REQUIRE( ecuda::equal( v.begin(), v.end(), ptr ) ); }
 				for( std::size_t i = 0; i < N; ++i ) alloc.destroy( ptr+i );
 			}
+			#endif
 			alloc.deallocate( ptr, N );
 			ptr = NULL;
 		}
@@ -47,11 +50,13 @@ SCENARIO( "allocators function correctly", "allocators" ) {
 			WHEN( "the sequences are compared") {
 				THEN( "they should be unequal" ) { REQUIRE( !ecuda::equal( v.begin(), v.end(), ptr ) ); }
 			}
+			#ifndef __CUDACC__
 			AND_WHEN( "each element in the allocated memory is passed to the construct method" ) {
 				for( std::size_t i = 0; i < N; ++i ) alloc.construct( ptr+i, data_type() );
 				THEN( "the sequences should be equal" ) { REQUIRE( ecuda::equal( v.begin(), v.end(), ptr ) ); }
 				for( std::size_t i = 0; i < N; ++i ) alloc.destroy( ptr+i );
 			}
+			#endif
 			alloc.deallocate( ptr, N );
 			ptr = NULL;
 		}
@@ -65,6 +70,7 @@ SCENARIO( "allocators function correctly", "allocators" ) {
 			WHEN( "the sequences are compared") {
 				THEN( "they should be unequal" ) { REQUIRE( !ecuda::equal( v.begin(), v.end(), first ) ); }
 			}
+			#ifndef __CUDACC__
 			AND_WHEN( "each element in the allocated memory is passed to the construct method" ) {
 				ecuda::device_contiguous_block_iterator<data_type,typename ecuda::add_pointer<data_type>::type> out( first );
 				for( std::size_t i = 0; i < N*N; ++i, ++out ) alloc.construct( out.operator->(), data_type() );
@@ -72,6 +78,7 @@ SCENARIO( "allocators function correctly", "allocators" ) {
 				out = first;
 				for( std::size_t i = 0; i < N; ++i ) alloc.destroy( out.operator->() );
 			}
+			#endif
 			AND_WHEN( "the start byte and the end byte are retrieved" ) {
 				const char* rawStart = ecuda::naked_cast<const char*>( ptr );
 				const char* rawEnd = ecuda::naked_cast<const char*>( ptr+(N*N) );
