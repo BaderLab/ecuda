@@ -5,7 +5,8 @@ FIND_PACKAGE(CUDA REQUIRED)
 
 INCLUDE(FindCUDA)
 
-CUDA_ADD_EXECUTABLE(print_device_info print_device_info.cu)
+CUDA_ADD_EXECUTABLE(array_add_cuda array_add_cuda.cu)
+CUDA_ADD_EXECUTABLE(array_add_ecuda array_add_ecuda.cu)
 
 LIST(APPEND CMAKE_CXX_FLAGS "-O3 -Wall -pedantic")
 #LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wall -pedantic -flto")

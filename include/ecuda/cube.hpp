@@ -157,7 +157,8 @@ public:
 	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_xz_type; //!< const xz section of a cube at a fixed row
 	typedef impl::device_contiguous_row_matrix< const value_type, typename ecuda::add_pointer<const value_type>::type                                       > const_slice_yz_type; //!< const yz section of a cube at a fixed row
 
-	typedef impl::cube_kernel_argument<T,Alloc> kernel_argument; //!< kernel argument type
+	typedef       impl::cube_kernel_argument<T,Alloc> kernel_argument;       //!< kernel argument type
+	typedef const impl::cube_kernel_argument<T,Alloc> const_kernel_argument; //!< const kernel argument type
 
 private:
 	size_type numberRows; //!< number of rows
