@@ -228,7 +228,12 @@ inline cudaError_t cudaMemcpyToSymbol( T& dest, const T& src, enum cudaMemcpyKin
  * In CUDA >=6.0 the same code compiles fine. If we do below and just wrap the __threadfence()
  * call in it's own function then it works in all versions.
  */
-inline __DEVICE__ void threadfence() { __threadfence(); }
+inline __DEVICE__ void threadfence()
+{
+	#ifdef __CUDACC__
+	__threadfence();
+	#endif
+}
 
 } // namespace ecuda
 
