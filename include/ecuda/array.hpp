@@ -145,7 +145,7 @@ public:
 	__HOST__ array( std::initializer_list<U> il ) : base_type( shared_ptr<T>( device_allocator<T>().allocate(N) ) )
 	{
 		#ifdef ECUDA_CONSTEXPR_KEYWORD_ENABLED
-		static_assert( il.size() <= N, "" __FILE__ ":" __LINE__ " size of initializer list must not be greater than the array size" );
+		static_assert( il.size() <= N, EXCEPTION_MSG("size of initializer list must not be greater than the array size") );
 		#else
 		if( il.size() > N ) throw std::invalid_argument( EXCEPTION_MSG("size of initializer list must not be greater than the array size") );
 		#endif
