@@ -77,6 +77,7 @@ __HOST__ __DEVICE__ inline bool equal( InputIterator1 first1, InputIterator1 las
 	#endif
 }
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T,typename P>
 __HOST__ __DEVICE__ inline bool equal(
 	device_contiguous_block_iterator<T,P> first1,

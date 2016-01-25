@@ -215,7 +215,8 @@ public:
 	__HOST__ vector( const vector& src ) :
 		base_type(),
 		n(src.n),
-		std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator())
+		allocator(src.get_allocator())
+		//std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator())
 	{
 		if( size() != src.size() ) resize( src.size() );
 		ecuda::copy( src.begin(), src.end(), begin() );

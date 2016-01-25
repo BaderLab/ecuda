@@ -52,6 +52,7 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
+ECUDA_SUPPRESS_HD_WARNINGS
 template<class InputIterator,typename T>
 __HOST__ __DEVICE__ InputIterator
 find( InputIterator first, InputIterator last, const T& value, ecuda::true_type ) // device memory
