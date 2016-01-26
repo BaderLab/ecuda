@@ -12,8 +12,8 @@
 
 #include "../include/ecuda/device.hpp"
 
-std::string create_memory_string( unsigned long x );
-std::string create_frequency_string( const unsigned x );
+std::string create_memory_string( const std::size_t x );
+std::string create_frequency_string( const std::size_t x );
 
 int ConvertSMVer2Cores( int major, int minor );
 
@@ -98,9 +98,9 @@ int main( int argc, char* argv[] )
 /// \param unitSymbol the symbol for the unit (e.g. "Gb")
 /// \return true if the string was successfully created
 ///
-bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long x, unsigned long per_unit, const std::string& unitSymbol = std::string() )
+bool try_creating_unit_string( std::ostream& out, std::size_t digits, std::size_t x, std::size_t per_unit, const std::string& unitSymbol = std::string() )
 {
-	unsigned long units = x / per_unit;
+	std::size_t units = x / per_unit;
 	if( !units ) return false;
 	std::stringstream ss;
 	if( x % per_unit ) {
@@ -114,7 +114,7 @@ bool try_creating_unit_string( std::ostream& out, unsigned digits, unsigned long
 	return true;
 }
 
-std::string create_memory_string( unsigned long x )
+std::string create_memory_string( const std::size_t x )
 {
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 1, x, 1073741824, "Gb" ) ) return ss.str();
@@ -124,7 +124,7 @@ std::string create_memory_string( unsigned long x )
 	return ss.str();
 }
 
-std::string create_frequency_string( const unsigned x )
+std::string create_frequency_string( const std::size_t x )
 {
 	std::stringstream ss;
 	if( try_creating_unit_string( ss, 2, x, 1000000000, "GHz" ) ) return ss.str();

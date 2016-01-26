@@ -3,3 +3,5 @@ ecuda.creator.user
 bin/
 obj/
 local-config.cmake
+ecuda.v12.suo
+tools/vc120.pdb
