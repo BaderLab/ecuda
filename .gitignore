@@ -2,3 +2,4 @@ docs/html/
 ecuda.creator.user
 bin/
 obj/
+local-config.cmake
