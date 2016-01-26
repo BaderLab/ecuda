@@ -1,0 +1,12 @@
+#
+# This is an example of a local-config.cmake file.
+#
+# You can add any CMake directives that apply to your system.
+# Typically, these would add compiler flags to nvcc that specify
+# compute capability and such.
+#
+# Below are some examples:
+#
+INCLUDE_DIRECTORIES(../../Catch/include)
+LIST(APPEND CUDA_NVCC_FLAGS -arch=sm_21 -O3 -Xptxas -v)
+LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wall -pedantic -flto")
