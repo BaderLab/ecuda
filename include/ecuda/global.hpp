@@ -58,23 +58,23 @@ either expressed or implied, of the FreeBSD Project.
 #define ECUDA_SUPPRESS_HD_WARNINGS
 #endif
 
-#include "impl/host_emulation.hpp"
-#include "cuda_error.hpp"
+#include "impl/host_emulation.hpp" // host-only replacements of CUDA C API functions
+#include "cuda_error.hpp"          // specialized std::exception for ecuda/CUDA runtime errors
 
-// Alias for detecting C++11 support because GCC 4.6 screws up the __cplusplus flag
-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
+// Generic check for C++11 support
+#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) // latter check works for GCC 4.6 because it has a bad __cplusplus flag
 #define ECUDA_CPP11_AVAILABLE
 #endif
-
+// Windows check for C++11 support (Visual Studio 2013 and greater)
 #if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
 #define ECUDA_CPP11_AVAILABLE
 #endif
-
 
 ///
 /// Macro function that captures a CUDA error code and then does something
 /// with it.  All calls to functions in the CUDA API that return an error code
 /// should use this.
+///
 #ifdef __CUDACC__
 // Macro function currently throws an ecuda::cuda_error exception containing a
 // description of the problem error code.
@@ -117,15 +117,10 @@ either expressed or implied, of the FreeBSD Project.
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 	} while(0);
 #else
-// commenting below out because it triggers -Wvariadic-macros
-// and this should never be called from CPU code anyway
-/*
 // cannot do CUDA calls when emulating with host only
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\
-	} while(0);
-*/
-#define CUDA_CALL_KERNEL_AND_WAIT( ... ) do {} while( 0 );
+	} while( 0 );
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
@@ -135,7 +130,7 @@ either expressed or implied, of the FreeBSD Project.
 
 /** Allow noexcept and constexpr if C++11 supported. */
 #ifdef ECUDA_CPP11_AVAILABLE
-#if defined(_MSC_VER) && _MSC_VER == 1800 // Visual Studio 2013
+#if defined(_MSC_VER) && _MSC_VER == 1800 // Visual Studio 2013 has only partial C++11 support and doesn't know these
 #define __NOEXCEPT__
 #define __CONSTEXPR__
 #else
@@ -150,10 +145,10 @@ either expressed or implied, of the FreeBSD Project.
 #endif
 
 #ifdef __CUDACC__
-// strip all __host__ and __device__ declarations when using host only
 #define __HOST__ __host__
 #define __DEVICE__ __device__
 #else
+// strip all __host__ and __device__ declarations when using host only
 #define __HOST__
 #define __DEVICE__
 #endif

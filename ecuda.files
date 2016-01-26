@@ -14,7 +14,6 @@ include/ecuda/algo/for_each.hpp
 include/ecuda/algo/lexicographical_compare.hpp
 include/ecuda/algo/find.hpp
 include/ecuda/cuda_error.hpp
-include/ecuda/padded_ptr.hpp
 include/ecuda/model/device_contiguous_row_matrix.hpp
 include/ecuda/model/device_matrix.hpp
 include/ecuda/model/device_sequence.hpp
@@ -30,7 +29,6 @@ include/ecuda/apiwrappers.hpp
 include/ecuda/device.hpp
 include/ecuda/ecuda.hpp
 include/ecuda/allocators.hpp
-include/ecuda/striding_ptr.hpp
 include/ecuda/impl/host_emulation.hpp
 include/ecuda/array.hpp
 include/ecuda/global.hpp
