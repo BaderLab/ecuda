@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -13,7 +14,8 @@ struct Coordinate
 {
 	int x, y;
 	Coordinate( int x = 0, int y = 0 ) : x(x), y(y) {}
-	bool operator!=( const Coordinate& other ) const { return x != other.x or y != other.y; }
+	bool operator!=( const Coordinate& other ) const { return x != other.x || y != other.y; }
+	bool operator==( const Coordinate& other ) const { return x == other.x && y == other.y; }
 };
 
 typedef Coordinate value_type;
@@ -30,43 +32,55 @@ void rotateMatrix( typename ecuda::matrix<T>::const_kernel_argument src, typenam
 int main( int argc, char* argv[] )
 {
 
-	const std::size_t N = 1000;
+	const std::size_t N = 10000;
 
-	ecuda::event start, stop;
-	start.record();
-
-	std::vector<value_type> hostSequence( N*N );
+	std::vector<value_type> hostSequence1( N*N );
 	for( std::size_t i = 0; i < N; ++i ) {
-		for( std::size_t j = 0; j < N; ++j ) hostSequence[i*N+j] = Coordinate(i,j);
+		for( std::size_t j = 0; j < N; ++j ) hostSequence1[i*N+j] = Coordinate(i,j);
 	}
+	std::random_shuffle( hostSequence1.begin(), hostSequence1.end() );
+
+	ecuda::event start1, stop1;
+	start1.record();
 
 	ecuda::matrix<value_type> deviceMatrix1( N, N );
 	ecuda::matrix<value_type> deviceMatrix2( N, N );
 
-	ecuda::copy( hostSequence.begin(), hostSequence.end(), deviceMatrix1.begin() );
+	stop1.record();
+	stop1.synchronize();
+	std::cout << "Initialization Time: " << (stop1-start1) << "ms" << std::endl;
 
-	dim3 grid( (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS, N ), threads( BENCHMARK_THREADS, 1 );
+	ecuda::copy( hostSequence1.begin(), hostSequence1.end(), deviceMatrix1.begin() );
+
+	ecuda::event start2, stop2;
+	start2.record();
+	dim3 grid( N, (N+BENCHMARK_THREADS-1)/BENCHMARK_THREADS ), threads( 1, BENCHMARK_THREADS );
 	CUDA_CALL_KERNEL_AND_WAIT( rotateMatrix<value_type><<<grid,threads>>>( deviceMatrix1, deviceMatrix2 ) );
+	stop2.record();
+	stop2.synchronize();
+	std::cout << "Kernel Time: " << (stop2-start2) << "ms" << std::endl;
 
+	ecuda::event start3, stop3;
+	start3.record();
+
+	std::vector<value_type> hostSequence2( N*N );
+	ecuda::copy( deviceMatrix2.begin(), deviceMatrix2.end(), hostSequence2.begin() );
 	bool isEqual = true;
-	std::vector< value_type, ecuda::host_allocator<Coordinate> > hostColumn( N );
 	for( std::size_t i = 0; i < N; ++i ) {
-		typename ecuda::matrix<value_type>::const_row_type deviceRow = deviceMatrix2[i];
-		ecuda::copy( deviceRow.begin(), deviceRow.end(), hostColumn.begin() );
 		for( std::size_t j = 0; j < N; ++j ) {
-			if( hostSequence[j*N+i] != hostColumn[j] ) { isEqual = false; break; }
+			if( hostSequence1[i*N+j] == hostSequence2[j*N+i] ) continue;
+			isEqual = false;
 		}
 	}
 
-	stop.record();
-	stop.synchronize();
+	stop3.record();
+	stop3.synchronize();
+	std::cout << "Comparison Time: " << (stop3-start3) << "ms" << std::endl;
 
 	if( isEqual )
 		std::cout << "Test successful." << std::endl;
 	else
 		std::cout << "Test failed." << std::endl;
-
-	std::cout << "Execution Time: " << (stop-start) << "ms" << std::endl;
 
 	return EXIT_SUCCESS;
 

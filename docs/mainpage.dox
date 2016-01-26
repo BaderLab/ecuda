@@ -6,6 +6,175 @@
 
 \section intro Introduction
 
+<BLOCKQUOTE>
+ecuda Extended CUDA C++ API release 2.x
+
+These are the release notes for ecuda version 2.
+
+WHAT IS ECUDA?
+
+  ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and
+  be functionally equivalent to the C++ Standard Template Library (STL).
+  Specifically: algorithms, containers, and iterators.
+
+REQUIREMENTS
+
+  ecuda is a header only API, and the only pre-requisite library is the CUDA API
+  version 5 or later. It should work with any C++ compiler, but has been
+  developed and tested with several versions of gcc (most recently 4.8.4) and
+  clang 3.6. The C++11 standard is optional, but is utilized if enabled. Visual
+  Studio 2013 on Windows 10 was also successfully tested (see the INSTALLATION
+  section below).
+
+  A correct setup should be able to compile the tools/print_device_info.cu
+  program without issue. You can try:
+
+\code{.sh}
+    $ mkdir bin
+    $ cd bin
+    $ cmake ../tools
+    $ make
+\endcode
+
+  to identify any issues. When run, the program prints out a pretty summary of
+  the current system's GPU hardware and capabilities.
+
+DOCUMENTATION:
+
+ - Documentation can be viewed online:
+
+     https://baderlab.github.io/ecuda/
+
+ - This is generated from the source files themselves using doxygen. The base
+   directory contains a default doxygen.cfg file that will build a local copy of
+   the documentation in the <tt>docs/html</tt> subdirectory. Make sure you have doxygen
+   installed and run:
+
+\code{.sh}
+  $ doxygen doxygen.cfg
+\endcode
+
+INSTALLATION:
+
+  Linux/MacOS:
+
+   - As long as the include/ subdirectory is visible to the compiler, the API
+     can be installed anywhere. A default install using cmake can be done by
+     running:
+
+     \code{.sh}
+       $ cmake .
+       $ sudo make install
+     \endcode
+
+     This will copy the contents of the include/ subdirectory to
+     ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
+
+  Windows/Visual Studio:
+
+   - The latest free Visual Studio at the time of last update was Visual
+     Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported
+     at this time. I managed to get everything working with Visual Studio
+     Community 2013 on Windows 10. Here is my story:
+
+   - Download and install Visual Studio Community 2013 from:
+
+       https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+
+   - Download and install the Nvidia CUDA Toolkit from:
+
+       http://developer.nvidia.com/cuda-downloads
+
+     - The order is important since the CUDA installer integrates with any
+       installed Visual Studio versions that it supports. Also note that in the
+       successful configuration, only the following items in the CUDA
+       installer's custom installation were left checked:
+
+         CUDA Toolkit 7.5
+         CUDA Visual Studio Integration 7.5
+
+       The following items were already installed on the test system with equal
+       or greater version numbers:
+
+         Graphics Driver
+         HD Audio Driver
+         NVIDIA GeForce Experience
+         PhysX System Software
+
+       Do whatever makes the most sense for your situation.
+
+   - Start Visual Studio and load the ecuda.sln solution file.
+
+   - The print_device_info project contains a source file that should build
+     successfully at this point. Build the Release target with the x64
+     platform, and bin/x64/Release/print_device_info.exe should appear. Running
+     this from the Windows command line should display a pretty summary of the
+     current system's GPU hardware and capabilities.
+
+   - When building a Debug target, Visual Studio's C++ Standard Library
+     implementation does some kind of "iterator checking" that doesn't play
+     nice with ecuda's custom iterators, causing erroneous assertion failures
+     to get raised at runtime. Placing this at the beginning of a program will
+     turn this off (and suppresses a warning about macro redefinition):
+
+\code{.cpp}
+       #pragma warning(disable:4005)
+       #undef _HAS_ITERATOR_DEBUGGING
+       #pragma warning(default:4005)
+\endcode
+
+   - Since ecuda is not actively developed on Windows, please report any issues
+     or workarounds!
+
+BENCHMARKS AND EXAMPLES:
+
+  - The benchmarks/, test/ and t/ directories contain programs that were useful
+    for development. They might be useful examples to see how ecuda can be used.
+    Again, these were used during API development so they can be quite ugly and
+    full of hacks.
+
+  - Each subdirectory contains a CMakeList.txt file so building them should be
+    easy if your system is properly set up. For example, to build the
+    benchmarks/ folder, the following could be used:
+
+\code{.sh}
+      $ mkdir -p bin/benchmarks
+      $ cd bin/benchmarks
+      $ cmake ../../benchmarks
+      $ make
+\endcode
+
+  - Note that a file called local-config.cmake can be created in the release
+    root directory that contains any system-specific CMake directives (e.g.
+    nvcc compiler flags). The local-config.cmake.example file is an example of
+    how this file might look.
+
+FILE DESCRIPTIONS:
+
+<pre>
+  benchmarks/                Programs that compare cuda and ecuda performance.
+  docs/                      Additional elements for building docs with doxygen.
+  include/                   The ecuda API header files.
+  t/                         Catch unit tests.
+  test/                      Programs to loosely test elements of the API.
+  tools/                     Utilities that utilize ecuda.
+  CMakeLists.txt             CMake configuration file
+  doxygen.cfg                doxygen configuration file
+  ecuda.config               Qt Creator project file
+  ecuda.creator              Qt Creator project file
+  ecuda.files                Qt Creator project file
+  ecuda.includes             Qt Creator project file
+  ecuda.sln                  Visual Studio 2013 Solution file
+  local-config.cmake.example Example file with additional CMake directives
+  .gitignore                 local files to omit from version control
+  LICENSE.txt                release license
+  MANIFEST                   list of files under version control
+  README                     this file
+  VERSION                    current version of the API
+</pre>
+
+</BLOCKQUOTE>
+
 The \em ecuda library provides a clean, light-weight interface to CUDA that extends the C++ standard template library (STL) and borrows its semantics. The API is header only, so it's portable and simple to install.
 
 The original motivation for creating the API was to avoid a lot of the headaches and repetition that comes with using naked pointers to device memory to represent common containers. The API features several such container types: array, vector, matrix, and cube. Moreover, the API allows a developer's interaction with the C-based CUDA API to have a more modern C++ sensibility (e.g. the use of smart pointers, the RAII/SBRM paradigm, etc.).

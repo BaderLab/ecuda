@@ -14,7 +14,8 @@ REQUIREMENTS
   version 5 or later. It should work with any C++ compiler, but has been
   developed and tested with several versions of gcc (most recently 4.8.4) and
   clang 3.6. The C++11 standard is optional, but is utilized if enabled. Visual
-  Studio 2013 on Windows 10 was also successfully tested.
+  Studio 2013 on Windows 10 was also successfully tested (see the INSTALLATION
+  section below).
 
   A correct setup should be able to compile the tools/print_device_info.cu
   program without issue. You can try:
@@ -40,91 +41,114 @@ DOCUMENTATION:
 
      $ doxygen doxygen.cfg
 
-INSTALLING:
+INSTALLATION:
 
   Linux/MacOS:
 
-   - As long as the include/ subdirectory is visible to the compiler, the API
-     can be installed anywhere. A default install using cmake can be done by
-     running:
+  - As long as the include/ subdirectory is visible to the compiler, the API
+    can be installed anywhere. A default install using cmake can be done by
+    running:
 
-       $ cmake .
-       $ sudo make install
+      $ cmake .
+      $ sudo make install
 
-     This will copy the contents of the include/ subdirectory to
-     ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
+    This will copy the contents of the include/ subdirectory to
+    ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
 
   Windows/Visual Studio:
 
-    - The latest free Visual Studio at the time of last update was Visual
-	  Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported
-      at this time. I managed to get everything working with Visual Studio
-      Community 2013 on Windows 10. Here is my story:
+   - The latest free Visual Studio at the time of last update was Visual
+     Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported
+     at this time. I managed to get everything working with Visual Studio
+     Community 2013 on Windows 10. Here is my story:
 
-	- Download and install Visual Studio Community 2013 from:
+   - Download and install Visual Studio Community 2013 from:
 
-        https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+       https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
 
-    - Download and install the Nvidia CUDA Toolkit from:
+   - Download and install the Nvidia CUDA Toolkit from:
 
-        http://developer.nvidia.com/cuda-downloads
+       http://developer.nvidia.com/cuda-downloads
 
-      - The order is important since the CUDA installer integrates with any
-        installed Visual Studio versions that it supports. Also note that in the
-        successful configuration, only the following items in the CUDA
-        installer's custom installation were left checked:
+     - The order is important since the CUDA installer integrates with any
+       installed Visual Studio versions that it supports. Also note that in the
+       successful configuration, only the following items in the CUDA
+       installer's custom installation were left checked:
 
-          CUDA Toolkit 7.5
-          CUDA Visual Studio Integration 7.5
+         CUDA Toolkit 7.5
+         CUDA Visual Studio Integration 7.5
 
-        The following items were already installed on the test system with equal
-        or greater version numbers:
+       The following items were already installed on the test system with equal
+       or greater version numbers:
 
-          Graphics Driver
-          HD Audio Driver
-          NVIDIA GeForce Experience
-          PhysX System Software
+         Graphics Driver
+         HD Audio Driver
+         NVIDIA GeForce Experience
+         PhysX System Software
 
-        Do whatever makes the most sense for your situation.
+       Do whatever makes the most sense for your situation.
 
-    - Start Visual Studio and load the ecuda.sln solution file.
+   - Start Visual Studio and load the ecuda.sln solution file.
 
-    - The print_device_info project contains a source file that should build
-      successfully at this point. Build the Release target, and
-      bin/Release/print_device_info.exe should appear. Running this from
-      the Windows command line should display a pretty summary of the current
-      system's GPU hardware and capabilities.
+   - The print_device_info project contains a source file that should build
+     successfully at this point. Build the Release target with the x64
+     platform, and bin/x64/Release/print_device_info.exe should appear. Running
+     this from the Windows command line should display a pretty summary of the
+     current system's GPU hardware and capabilities.
 
-    - When building a Debug target, Visual Studio's C++ Standard Library
-      implementation does some kind of "iterator checking" that doesn't play
-      nice with ecuda's custom iterators, causing erroneous assertion failures
-      to get raised at runtime. Placing this at the beginning of a program will
-      turn this off (and suppresses a warning about macro redefinition):
+   - When building a Debug target, Visual Studio's C++ Standard Library
+     implementation does some kind of "iterator checking" that doesn't play
+     nice with ecuda's custom iterators, causing erroneous assertion failures
+     to get raised at runtime. Placing this at the beginning of a program will
+     turn this off (and suppresses a warning about macro redefinition):
 
-        #pragma warning(disable:4005)
-        #undef _HAS_ITERATOR_DEBUGGING
-        #pragma warning(default:4005)
+       #pragma warning(disable:4005)
+       #undef _HAS_ITERATOR_DEBUGGING
+       #pragma warning(default:4005)
 
-    - Since ecuda is not actively developed on Windows, please report any issues
-      or workarounds!
+   - Since ecuda is not actively developed on Windows, please report any issues
+     or workarounds!
 
-FILE DESCRIPTIONS
+BENCHMARKS AND EXAMPLES:
 
-  benchmarks/
-  docs/
-  include/
-  t/
-  test/
-  tools/
-  CMakeLists.txt  CMake configuration file
-  doxygen.cfg     doxygen configuration file
-  ecuda.config    Qt Creator project file
-  ecuda.creator   Qt Creator project file
-  ecuda.files     Qt Creator project file
-  ecuda.includes  Qt Creator project file
-  ecuda.sln       Visual Studio 2013 Solution file
-  .gitignore
-  LICENSE.txt     Release License
-  MANIFEST        list of files under version control
-  README          this file
-  VERSION         current version of the API
+  - The benchmarks/, test/ and t/ directories contain programs that were useful
+    for development. They might be useful examples to see how ecuda can be used.
+    Again, these were used during API development so they can be quite ugly and
+    full of hacks.
+
+  - Each subdirectory contains a CMakeList.txt file so building them should be
+    easy if your system is properly set up. For example, to build the
+    benchmarks/ folder, the following could be used:
+
+      $ mkdir -p bin/benchmarks
+      $ cd bin/benchmarks
+      $ cmake ../../benchmarks
+      $ make
+
+  - Note that a file called local-config.cmake can be created in the release
+    root directory that contains any system-specific CMake directives (e.g.
+    nvcc compiler flags). The local-config.cmake.example file is an example of
+    how this file might look.
+
+FILE DESCRIPTIONS:
+
+  benchmarks/                Programs that compare cuda and ecuda performance.
+  docs/                      Additional elements for building docs with doxygen.
+  include/                   The ecuda API header files.
+  t/                         Catch unit tests.
+  test/                      Programs to loosely test elements of the API.
+  tools/                     Utilities that utilize ecuda.
+  CMakeLists.txt             CMake configuration file
+  doxygen.cfg                doxygen configuration file
+  ecuda.config               Qt Creator project file
+  ecuda.creator              Qt Creator project file
+  ecuda.files                Qt Creator project file
+  ecuda.includes             Qt Creator project file
+  ecuda.sln                  Visual Studio 2013 Solution file
+  local-config.cmake.example Example file with additional CMake directives
+  .gitignore                 local files to omit from version control
+  LICENSE.txt                release license
+  MANIFEST                   list of files under version control
+  README                     this file
+  VERSION                    current version of the API
+

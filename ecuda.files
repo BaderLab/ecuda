@@ -69,11 +69,12 @@ Makefile.legacy
 benchmarks/matrix_rotate_cuda.cu
 benchmarks/matrix_rotate_ecuda.cu
 benchmarks/CMakeLists.txt
-benchmarks/matrix_transpose.cu
 benchmarks/config.hpp
 benchmarks/array_add_ecuda.cu
 benchmarks/array_add_cuda.cu
-benchmarks/matrix_multiply.cu
-benchmarks/array.cu
 ecuda.files
 LICENSE.txt
+docs/customdoxygen.css
+docs/footer.html
+docs/header.html
+docs/mainpage.dox
