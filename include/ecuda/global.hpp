@@ -147,10 +147,12 @@ either expressed or implied, of the FreeBSD Project.
 #ifdef __CUDACC__
 #define __HOST__ __host__
 #define __DEVICE__ __device__
+#define __CONSTANT__ __constant__
 #else
 // strip all __host__ and __device__ declarations when using host only
 #define __HOST__
 #define __DEVICE__
+#define __CONSTANT__
 #endif
 
 //
