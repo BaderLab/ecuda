@@ -192,6 +192,7 @@ template<> struct static_assertion<true>
 } // namespace ecuda
 
 #define ECUDA_STATIC_ASSERT(x,msg) if(ecuda::impl::static_assertion<static_cast<bool>(x)>::msg) {}
-#endif
+
+#endif // ECUDA_CPP11_AVAILABLE
 
 #endif
