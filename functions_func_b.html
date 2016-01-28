@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -107,7 +106,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -121,31 +120,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h3><a class="anchor" id="index_b"></a>- b -</h3><ul>
 <li>back()
-: <a class="el" href="classecuda_1_1array.html#ade46a3e33eca2b003694dd1adbcdddd6">ecuda::array&lt; T, N &gt;</a>
-, <a class="el" href="classecuda_1_1matrix.html#a9fe4e08fc0013c81b9a184ab7c577b11">ecuda::matrix&lt; T, Alloc &gt;</a>
-, <a class="el" href="classecuda_1_1sequence__view.html#af3346f9aca0d7a93c3cd7a44d0cb5b38">ecuda::sequence_view&lt; T, PointerType &gt;</a>
-, <a class="el" href="classecuda_1_1vector.html#a47096884dbc7e473635b43a655691111">ecuda::vector&lt; T, Alloc &gt;</a>
+: <a class="el" href="classecuda_1_1array.html#a8e1c0e9c1a5033f0fd81e8a37f6e1381">ecuda::array&lt; T, N, P &gt;</a>
+, <a class="el" href="classecuda_1_1matrix.html#a6d092697ef2b612c3b7474f311ec582a">ecuda::matrix&lt; T, Alloc, P &gt;</a>
+, <a class="el" href="classecuda_1_1vector.html#ac990d6c7ddf51327f6cc2db63f5145b8">ecuda::vector&lt; T, Alloc, P &gt;</a>
 </li>
 <li>base()
-: <a class="el" href="classecuda_1_1reverse__device__iterator.html#a00e48d0882b4354045d63e88a26af8b0">ecuda::reverse_device_iterator&lt; BaseIterator &gt;</a>
+: <a class="el" href="classecuda_1_1reverse__device__iterator.html#acaf391d0544ea30811f880746ec517cb">ecuda::reverse_device_iterator&lt; Iterator &gt;</a>
 </li>
 <li>begin()
-: <a class="el" href="classecuda_1_1array.html#af04ae9b4e0f193f783e039ee318293e0">ecuda::array&lt; T, N &gt;</a>
-, <a class="el" href="classecuda_1_1contiguous__matrix__view.html#a8ae03920438e7486e8db9b3a7924a5b5">ecuda::contiguous_matrix_view&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1contiguous__sequence__view.html#a14816c832ff68e94515a575785fdf85e">ecuda::contiguous_sequence_view&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1cube.html#a6908d44374a5941fb6db1dc0323a7a23">ecuda::cube&lt; T, Alloc &gt;</a>
-, <a class="el" href="classecuda_1_1host__array__proxy.html#a5bf6bd53cc398d6d32239f2f1d456e14">ecuda::host_array_proxy&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1matrix.html#a5bf0046182fd3997e24fb087c55fcad8">ecuda::matrix&lt; T, Alloc &gt;</a>
-, <a class="el" href="classecuda_1_1matrix__view.html#a711e43c9af80dcb9f2076bf74fa79c1f">ecuda::matrix_view&lt; T, PointerType, RowType &gt;</a>
-, <a class="el" href="classecuda_1_1sequence__view.html#a55a1ac443a17e0277eac439f79075ca9">ecuda::sequence_view&lt; T, PointerType &gt;</a>
-, <a class="el" href="classecuda_1_1vector.html#a2467abdd66dae3c6a8172f9cdc7568f6">ecuda::vector&lt; T, Alloc &gt;</a>
+: <a class="el" href="classecuda_1_1array.html#ab9511488943e44fb5b6e344b1e89d0ec">ecuda::array&lt; T, N, P &gt;</a>
+, <a class="el" href="classecuda_1_1cube.html#a12106e50b8ff7df797876195c6e32914">ecuda::cube&lt; T, Alloc, P &gt;</a>
+, <a class="el" href="classecuda_1_1matrix.html#a666281d4bd99e10e085ee4f19ea6a209">ecuda::matrix&lt; T, Alloc, P &gt;</a>
+, <a class="el" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">ecuda::vector&lt; T, Alloc, P &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

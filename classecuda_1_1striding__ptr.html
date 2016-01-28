@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Extended CUDA Library (ecuda): ecuda::striding_ptr&lt; T, PointerType &gt; Class Template Reference</title>
+<title>Extended CUDA Library (ecuda): ecuda::striding_ptr&lt; T, P &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -74,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -92,213 +91,238 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classecuda_1_1striding__ptr-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ecuda::striding_ptr&lt; T, PointerType &gt; Class Template Reference</div>  </div>
+<div class="title">ecuda::striding_ptr&lt; T, P &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>A specialized pointer to memory holding a sequence of data with fixed-sized spacing between each value.  
+<p>A specialized pointer to striding memory.  
  <a href="classecuda_1_1striding__ptr.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:adc41cdf171f75ecc7006fca1b173be92"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#adc41cdf171f75ecc7006fca1b173be92">element_type</a></td></tr>
-<tr class="memdesc:adc41cdf171f75ecc7006fca1b173be92"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type represented in allocated memory  <a href="#adc41cdf171f75ecc7006fca1b173be92">More...</a><br/></td></tr>
-<tr class="separator:adc41cdf171f75ecc7006fca1b173be92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b5784c6bb457ac623bb8253b190bec7"><td class="memItemLeft" align="right" valign="top">typedef PointerType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a></td></tr>
-<tr class="memdesc:a6b5784c6bb457ac623bb8253b190bec7"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type pointer  <a href="#a6b5784c6bb457ac623bb8253b190bec7">More...</a><br/></td></tr>
-<tr class="separator:a6b5784c6bb457ac623bb8253b190bec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2d898071ac1e728d74038a785c0773a"><td class="memItemLeft" align="right" valign="top">typedef T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ab2d898071ac1e728d74038a785c0773a">reference</a></td></tr>
-<tr class="memdesc:ab2d898071ac1e728d74038a785c0773a"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type reference  <a href="#ab2d898071ac1e728d74038a785c0773a">More...</a><br/></td></tr>
-<tr class="separator:ab2d898071ac1e728d74038a785c0773a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac76eb0c56f078ffd9b686db35f29903e"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a></td></tr>
-<tr class="memdesc:ac76eb0c56f078ffd9b686db35f29903e"><td class="mdescLeft">&#160;</td><td class="mdescRight">size type for pointer arithmetic and reference counting  <a href="#ac76eb0c56f078ffd9b686db35f29903e">More...</a><br/></td></tr>
-<tr class="separator:ac76eb0c56f078ffd9b686db35f29903e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b83bd728deede92866f88fbd0c0ab47"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a5b83bd728deede92866f88fbd0c0ab47">difference_type</a></td></tr>
-<tr class="memdesc:a5b83bd728deede92866f88fbd0c0ab47"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed integer type of the result of subtracting two pointers  <a href="#a5b83bd728deede92866f88fbd0c0ab47">More...</a><br/></td></tr>
-<tr class="separator:a5b83bd728deede92866f88fbd0c0ab47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5fff7efb7eb390f8aa459cb6cde7b39"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ac5fff7efb7eb390f8aa459cb6cde7b39">element_type</a></td></tr>
+<tr class="separator:ac5fff7efb7eb390f8aa459cb6cde7b39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fb8c9f62147e5df3d7b70e26883d9e4"><td class="memItemLeft" align="right" valign="top">typedef P&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a></td></tr>
+<tr class="separator:a7fb8c9f62147e5df3d7b70e26883d9e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7043e3ba4bfc546768b13024c66996c6"><td class="memItemLeft" align="right" valign="top">typedef T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a></td></tr>
+<tr class="separator:a7043e3ba4bfc546768b13024c66996c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1ed8f99c2b63e847f86a470922e0fae"><td class="memItemLeft" align="right" valign="top">typedef const T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a></td></tr>
+<tr class="separator:ab1ed8f99c2b63e847f86a470922e0fae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4925b0e599c83a7493d45825dbaedb3f"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a></td></tr>
+<tr class="separator:a4925b0e599c83a7493d45825dbaedb3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81b3fd547518c1b9426fb6fb8bf65700"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a81b3fd547518c1b9426fb6fb8bf65700">difference_type</a></td></tr>
+<tr class="separator:a81b3fd547518c1b9426fb6fb8bf65700"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a8558be8a9922140e186ca881a211752e"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a8558be8a9922140e186ca881a211752e">striding_ptr</a> (<a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a> p=<a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a>(), const <a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a> stride=1)</td></tr>
-<tr class="separator:a8558be8a9922140e186ca881a211752e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a441971461d6faf9e6aabaff478513b84"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a441971461d6faf9e6aabaff478513b84">striding_ptr</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;src)</td></tr>
-<tr class="separator:a441971461d6faf9e6aabaff478513b84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a898ffebbb37e7bf11286addf4d43e5e7"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a898ffebbb37e7bf11286addf4d43e5e7">~striding_ptr</a> ()</td></tr>
-<tr class="separator:a898ffebbb37e7bf11286addf4d43e5e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae94e79127218760aeea2cf17c2c9f8a3"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ae94e79127218760aeea2cf17c2c9f8a3">get_stride</a> () const </td></tr>
-<tr class="separator:ae94e79127218760aeea2cf17c2c9f8a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34a05f1e3bc7aff4fd617553fefff9ff"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a34a05f1e3bc7aff4fd617553fefff9ff">get</a> () const </td></tr>
-<tr class="separator:a34a05f1e3bc7aff4fd617553fefff9ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86eb636398b3bc8ca6763e48757ad476"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a86eb636398b3bc8ca6763e48757ad476">operator bool</a> () const </td></tr>
-<tr class="separator:a86eb636398b3bc8ca6763e48757ad476"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a078d209cf443ef5e3a22135ce0b4d66b"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a078d209cf443ef5e3a22135ce0b4d66b">operator typename ecuda::reference&lt; element_type &gt;::pointer_type</a> () const </td></tr>
-<tr class="memdesc:a078d209cf443ef5e3a22135ce0b4d66b"><td class="mdescLeft">&#160;</td><td class="mdescRight">operator T*  <a href="#a078d209cf443ef5e3a22135ce0b4d66b">More...</a><br/></td></tr>
-<tr class="separator:a078d209cf443ef5e3a22135ce0b4d66b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae34528f3161a427d56defe83bf2ca8b6"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ae34528f3161a427d56defe83bf2ca8b6">operator++</a> ()</td></tr>
-<tr class="separator:ae34528f3161a427d56defe83bf2ca8b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafa6f6b1a75db25586afe78504090ae5"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aafa6f6b1a75db25586afe78504090ae5">operator++</a> (int)</td></tr>
-<tr class="separator:aafa6f6b1a75db25586afe78504090ae5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa75dbca66d41cbc354e4ecf0b73edea1"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aa75dbca66d41cbc354e4ecf0b73edea1">operator--</a> ()</td></tr>
-<tr class="separator:aa75dbca66d41cbc354e4ecf0b73edea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcb05d241ca9ae166640173e7f446f24"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#adcb05d241ca9ae166640173e7f446f24">operator--</a> (int)</td></tr>
-<tr class="separator:adcb05d241ca9ae166640173e7f446f24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4f8723d968c7ecbb74faa8fb9b5f0f2"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aa4f8723d968c7ecbb74faa8fb9b5f0f2">operator+=</a> (const int strides)</td></tr>
-<tr class="separator:aa4f8723d968c7ecbb74faa8fb9b5f0f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa277830206f379aaba367c75b3721894"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aa277830206f379aaba367c75b3721894">operator-=</a> (const int strides)</td></tr>
-<tr class="separator:aa277830206f379aaba367c75b3721894"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aadaf6f94c8986a62153dba20c66ac5fe"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aadaf6f94c8986a62153dba20c66ac5fe">operator+</a> (const int strides) const </td></tr>
-<tr class="separator:aadaf6f94c8986a62153dba20c66ac5fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cd9dc0032ec43ce14708b1c0cc79de3"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a0cd9dc0032ec43ce14708b1c0cc79de3">operator-</a> (const int strides) const </td></tr>
-<tr class="separator:a0cd9dc0032ec43ce14708b1c0cc79de3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0a62ccdf7216c271239735d4762a94b"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a5b83bd728deede92866f88fbd0c0ab47">difference_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ab0a62ccdf7216c271239735d4762a94b">operator-</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;other) const </td></tr>
-<tr class="separator:ab0a62ccdf7216c271239735d4762a94b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06179b94964b426d7d0a38978db7871b"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#ab2d898071ac1e728d74038a785c0773a">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a06179b94964b426d7d0a38978db7871b">operator*</a> () const </td></tr>
-<tr class="separator:a06179b94964b426d7d0a38978db7871b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc301a19706b36066236ce45043037f0"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#acc301a19706b36066236ce45043037f0">operator-&gt;</a> () const </td></tr>
-<tr class="separator:acc301a19706b36066236ce45043037f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa72fb2a22c8246c09597ce4e9d257ad"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aaa72fb2a22c8246c09597ce4e9d257ad">operator==</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:aaa72fb2a22c8246c09597ce4e9d257ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5262c204aaea9ed4b30f76c9613a070"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ad5262c204aaea9ed4b30f76c9613a070">operator!=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:ad5262c204aaea9ed4b30f76c9613a070"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a949e9ce51e6bc6a6931f0ba617ff0a96"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a949e9ce51e6bc6a6931f0ba617ff0a96">operator&lt;</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:a949e9ce51e6bc6a6931f0ba617ff0a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa85d8f3be2a757c035f1832749878365"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aa85d8f3be2a757c035f1832749878365">operator&gt;</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:aa85d8f3be2a757c035f1832749878365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0e7f02792aed1f7705273079bb6814f"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#af0e7f02792aed1f7705273079bb6814f">operator&lt;=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:af0e7f02792aed1f7705273079bb6814f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5859eddd3216d92b7d790659c26b1178"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a5859eddd3216d92b7d790659c26b1178">operator&gt;=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other) const </td></tr>
-<tr class="separator:a5859eddd3216d92b7d790659c26b1178"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a272cdca8985eaea4635eb196b19d2ed0"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a272cdca8985eaea4635eb196b19d2ed0">operator=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;other)</td></tr>
-<tr class="separator:a272cdca8985eaea4635eb196b19d2ed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9598ec6bfd3b284be9ab804b2cf00e1c"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a9598ec6bfd3b284be9ab804b2cf00e1c">operator=</a> (PointerType &amp;pt)</td></tr>
-<tr class="separator:a9598ec6bfd3b284be9ab804b2cf00e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7cabcafb9f407b59775f2d03bdef7fe8"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a7cabcafb9f407b59775f2d03bdef7fe8">operator=</a> (T *p)</td></tr>
-<tr class="separator:a7cabcafb9f407b59775f2d03bdef7fe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11c1c8407913a6102aac6df3d629dc35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a11c1c8407913a6102aac6df3d629dc35">striding_ptr</a> (<a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a> ptr=<a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a>(), <a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a> stride=0)</td></tr>
+<tr class="separator:a11c1c8407913a6102aac6df3d629dc35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa61c7c11c8b985ba3a84f4b8e3e9998d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#aa61c7c11c8b985ba3a84f4b8e3e9998d">striding_ptr</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;src)</td></tr>
+<tr class="separator:aa61c7c11c8b985ba3a84f4b8e3e9998d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71eb1ddab3dabcc97aadda7a5045e5e3"><td class="memTemplParams" colspan="2">template&lt;typename U , typename Q &gt; </td></tr>
+<tr class="memitem:a71eb1ddab3dabcc97aadda7a5045e5e3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a71eb1ddab3dabcc97aadda7a5045e5e3">striding_ptr</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; U, Q &gt; &amp;src)</td></tr>
+<tr class="separator:a71eb1ddab3dabcc97aadda7a5045e5e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d4bc02f2b54c3ce8ddea7237a8d5668"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a2d4bc02f2b54c3ce8ddea7237a8d5668">get</a> () const </td></tr>
+<tr class="separator:a2d4bc02f2b54c3ce8ddea7237a8d5668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65d6748ca2b16131243d8e515c6dd04a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a65d6748ca2b16131243d8e515c6dd04a">get_stride</a> () const </td></tr>
+<tr class="separator:a65d6748ca2b16131243d8e515c6dd04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a141d07b1cc9376f4e80be511365bb894"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a141d07b1cc9376f4e80be511365bb894">operator*</a> ()</td></tr>
+<tr class="separator:a141d07b1cc9376f4e80be511365bb894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3b40766780263cdea6e63aabf329655"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ad3b40766780263cdea6e63aabf329655">operator*</a> () const </td></tr>
+<tr class="separator:ad3b40766780263cdea6e63aabf329655"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a895215d191e8cdc1c45d75c533c83d7b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a895215d191e8cdc1c45d75c533c83d7b">operator-&gt;</a> () const </td></tr>
+<tr class="separator:a895215d191e8cdc1c45d75c533c83d7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a279fca6dd8a0564c501383c0c54f5a4b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a279fca6dd8a0564c501383c0c54f5a4b">operator[]</a> (std::size_t i)</td></tr>
+<tr class="separator:a279fca6dd8a0564c501383c0c54f5a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8632db0854b70579c3449abbca8301e3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a8632db0854b70579c3449abbca8301e3">operator[]</a> (std::size_t i) const </td></tr>
+<tr class="separator:a8632db0854b70579c3449abbca8301e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ac1154203a50d379dad9e720201a23f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a9ac1154203a50d379dad9e720201a23f">operator++</a> ()</td></tr>
+<tr class="separator:a9ac1154203a50d379dad9e720201a23f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8201801ba18117849a8ada0faef3834"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ad8201801ba18117849a8ada0faef3834">operator--</a> ()</td></tr>
+<tr class="separator:ad8201801ba18117849a8ada0faef3834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7f6d1ada5d6f4d209e030279505094d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ae7f6d1ada5d6f4d209e030279505094d">operator++</a> (int)</td></tr>
+<tr class="separator:ae7f6d1ada5d6f4d209e030279505094d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fa2470eed2f93629be2cbfd7e3deebf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a9fa2470eed2f93629be2cbfd7e3deebf">operator--</a> (int)</td></tr>
+<tr class="separator:a9fa2470eed2f93629be2cbfd7e3deebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6946597957ab495b0dd84a3d087f6748"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a6946597957ab495b0dd84a3d087f6748">operator+=</a> (int x)</td></tr>
+<tr class="separator:a6946597957ab495b0dd84a3d087f6748"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6331e396e1c980d0b7eb2e54cbaec311"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a6331e396e1c980d0b7eb2e54cbaec311">operator-=</a> (int x)</td></tr>
+<tr class="separator:a6331e396e1c980d0b7eb2e54cbaec311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bdd363aa0e1e3ea66a2055a80db323c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a9bdd363aa0e1e3ea66a2055a80db323c">operator+</a> (int x) const </td></tr>
+<tr class="separator:a9bdd363aa0e1e3ea66a2055a80db323c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a268cced9dc749cd94b5909ec58aa4408"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a268cced9dc749cd94b5909ec58aa4408">operator-</a> (int x) const </td></tr>
+<tr class="separator:a268cced9dc749cd94b5909ec58aa4408"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac38b4ac5cc5de4d2d7518d78478c92bd"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:ac38b4ac5cc5de4d2d7518d78478c92bd"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ac38b4ac5cc5de4d2d7518d78478c92bd">operator==</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:ac38b4ac5cc5de4d2d7518d78478c92bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e10bc824f1388701521bb162c9be917"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a6e10bc824f1388701521bb162c9be917"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a6e10bc824f1388701521bb162c9be917">operator!=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a6e10bc824f1388701521bb162c9be917"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a857ae2e528584fc85f17642965dae34a"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a857ae2e528584fc85f17642965dae34a"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a857ae2e528584fc85f17642965dae34a">operator&lt;</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a857ae2e528584fc85f17642965dae34a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cf4e3e0d4855c01d565d7276a965171"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a7cf4e3e0d4855c01d565d7276a965171"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a7cf4e3e0d4855c01d565d7276a965171">operator&gt;</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a7cf4e3e0d4855c01d565d7276a965171"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a0c113afd4cbae28585de58a43cf481"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a3a0c113afd4cbae28585de58a43cf481"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a3a0c113afd4cbae28585de58a43cf481">operator&lt;=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a3a0c113afd4cbae28585de58a43cf481"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad771b5a60c17bfb94774fad1d73a2a82"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:ad771b5a60c17bfb94774fad1d73a2a82"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#ad771b5a60c17bfb94774fad1d73a2a82">operator&gt;=</a> (const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:ad771b5a60c17bfb94774fad1d73a2a82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a2125712903fd67660d97bef61eeff5f3"><td class="memTemplParams" colspan="2">template&lt;typename U , typename Q &gt; </td></tr>
+<tr class="memitem:a2125712903fd67660d97bef61eeff5f3"><td class="memTemplItemLeft" align="right" valign="top">class&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a2125712903fd67660d97bef61eeff5f3">striding_ptr</a></td></tr>
+<tr class="separator:a2125712903fd67660d97bef61eeff5f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ab5a8df3ad9dd1d9fc4046772ca3421"><td class="memTemplParams" colspan="2">template&lt;typename U , typename V &gt; </td></tr>
+<tr class="memitem:a3ab5a8df3ad9dd1d9fc4046772ca3421"><td class="memTemplItemLeft" align="right" valign="top">std::basic_ostream&lt; U, V &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1striding__ptr.html#a3ab5a8df3ad9dd1d9fc4046772ca3421">operator&lt;&lt;</a> (std::basic_ostream&lt; U, V &gt; &amp;out, const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> &amp;ptr)</td></tr>
+<tr class="separator:a3ab5a8df3ad9dd1d9fc4046772ca3421"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt;<br/>
-class ecuda::striding_ptr&lt; T, PointerType &gt;</h3>
+<div class="textblock"><h3>template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt;<br/>
+class ecuda::striding_ptr&lt; T, P &gt;</h3>
 
-<p>A specialized pointer to memory holding a sequence of data with fixed-sized spacing between each value. </p>
-<p>Strided memory is a block of contiguous memory where elements are separated by fixed-length padding. Thus, one has to "stride" over the padding to reach the next element. The term was borrowed from the GNU Scientific Library. </p>
+<p>A specialized pointer to striding memory. </p>
+<p>A specialized pointer to device memory where traversal of the data takes into a "stride", or a fixed number of elements that are skipped each time the pointer is incremented.</p>
+<p>The specialization is used to create certain views of a matrix or cube (e.g. single matrix column).</p>
+<p>Memory use can be conceptualized as: </p>
+<div class="fragment"><div class="line">|--- stride ----| <span class="comment">// in multiples of sizeof(T)</span></div>
+<div class="line">+-+-------------+</div>
+<div class="line">| |xxxxxxxxxxxxx|</div>
+<div class="line">| |xxxxxxxxxxxxx| x = allocated but not used</div>
+<div class="line">| |xxxxxxxxxxxxx|</div>
+<div class="line">| |xxxxxxxxxxxxx|</div>
+<div class="line">| |xxxxxxxxxxxxx|</div>
+<div class="line">| |xxxxxxxxxxxxx| ... etc. (total size of the allocation is not known internally by <a class="code" href="classecuda_1_1striding__ptr.html#a2125712903fd67660d97bef61eeff5f3">striding_ptr</a>)</div>
+<div class="line">+-+--------+----+</div>
+</div><!-- fragment --><p>For example, a pointer that will traverse the first column of a 10x5 matrix containing elements of type T could be represented with striding_ptr&lt;T&gt;(ptr,5), where ptr points to the first element of the matrix. </p>
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00055">55</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00078">78</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a class="anchor" id="a5b83bd728deede92866f88fbd0c0ab47"></a>
+<a class="anchor" id="ab1ed8f99c2b63e847f86a470922e0fae"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a5b83bd728deede92866f88fbd0c0ab47">difference_type</a></td>
+          <td class="memname">typedef const T&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>signed integer type of the result of subtracting two pointers </p>
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00062">62</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00085">85</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="adc41cdf171f75ecc7006fca1b173be92"></a>
+<a class="anchor" id="a81b3fd547518c1b9426fb6fb8bf65700"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#adc41cdf171f75ecc7006fca1b173be92">element_type</a></td>
+          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a81b3fd547518c1b9426fb6fb8bf65700">difference_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type represented in allocated memory </p>
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00058">58</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00087">87</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a6b5784c6bb457ac623bb8253b190bec7"></a>
+<a class="anchor" id="ac5fff7efb7eb390f8aa459cb6cde7b39"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef PointerType <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a></td>
+          <td class="memname">typedef T <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#ac5fff7efb7eb390f8aa459cb6cde7b39">element_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type pointer </p>
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00059">59</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00082">82</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ab2d898071ac1e728d74038a785c0773a"></a>
+<a class="anchor" id="a7fb8c9f62147e5df3d7b70e26883d9e4"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#ab2d898071ac1e728d74038a785c0773a">reference</a></td>
+          <td class="memname">typedef P <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type reference </p>
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00060">60</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00083">83</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac76eb0c56f078ffd9b686db35f29903e"></a>
+<a class="anchor" id="a7043e3ba4bfc546768b13024c66996c6"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a></td>
+          <td class="memname">typedef T&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>size type for pointer arithmetic and reference counting </p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00084">84</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00061">61</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+</div>
+</div>
+<a class="anchor" id="a4925b0e599c83a7493d45825dbaedb3f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00086">86</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a8558be8a9922140e186ca881a211752e"></a>
+<a class="anchor" id="a11c1c8407913a6102aac6df3d629dc35"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a>&#160;</td>
-          <td class="paramname"><em>p</em> = <code><a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a>()</code>, </td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a>&#160;</td>
+          <td class="paramname"><em>ptr</em> = <code><a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a>()</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a>&#160;</td>
-          <td class="paramname"><em>stride</em> = <code>1</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a>&#160;</td>
+          <td class="paramname"><em>stride</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -313,414 +337,24 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00069">69</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00096">96</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a441971461d6faf9e6aabaff478513b84"></a>
+<a class="anchor" id="aa61c7c11c8b985ba3a84f4b8e3e9998d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, P &gt; &amp;&#160;</td>
           <td class="paramname"><em>src</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00070">70</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a898ffebbb37e7bf11286addf4d43e5e7"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::~<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00073">73</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a34a05f1e3bc7aff4fd617553fefff9ff"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::get </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00077">77</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ae94e79127218760aeea2cf17c2c9f8a3"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#ac76eb0c56f078ffd9b686db35f29903e">size_type</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::get_stride </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00075">75</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a86eb636398b3bc8ca6763e48757ad476"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator bool </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00078">78</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a078d209cf443ef5e3a22135ce0b4d66b"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator typename ecuda::reference&lt; <a class="el" href="classecuda_1_1striding__ptr.html#adc41cdf171f75ecc7006fca1b173be92">element_type</a> &gt;::pointer_type </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>operator T* </p>
-<p>Allows this object to be type-cast to a naked pointer of type T*. </p>
-<div class="fragment"><div class="line"><span class="keyword">static_cast&lt;</span>T*<span class="keyword">&gt;</span>(<span class="keyword">this</span>)</div>
-<div class="line">(T*)(*this)</div>
-</div><!-- fragment --> 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00089">89</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ad5262c204aaea9ed4b30f76c9613a070"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator!= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00125">125</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a06179b94964b426d7d0a38978db7871b"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#ab2d898071ac1e728d74038a785c0773a">reference</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator* </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00121">121</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aadaf6f94c8986a62153dba20c66ac5fe"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator+ </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>strides</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00108">108</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ae34528f3161a427d56defe83bf2ca8b6"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator++ </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00091">91</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aafa6f6b1a75db25586afe78504090ae5"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator++ </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00092">92</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aa4f8723d968c7ecbb74faa8fb9b5f0f2"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator+= </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>strides</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00105">105</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a0cd9dc0032ec43ce14708b1c0cc79de3"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator- </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>strides</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00113">113</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ab0a62ccdf7216c271239735d4762a94b"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a5b83bd728deede92866f88fbd0c0ab47">difference_type</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator- </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00119">119</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aa75dbca66d41cbc354e4ecf0b73edea1"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator-- </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -735,17 +369,241 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 
 </div>
 </div>
-<a class="anchor" id="adcb05d241ca9ae166640173e7f446f24"></a>
+<a class="anchor" id="a71eb1ddab3dabcc97aadda7a5045e5e3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename U , typename Q &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator-- </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; U, Q &gt; &amp;&#160;</td>
+          <td class="paramname"><em>src</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00101">101</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a2d4bc02f2b54c3ce8ddea7237a8d5668"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::get </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00114">114</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a65d6748ca2b16131243d8e515c6dd04a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a4925b0e599c83a7493d45825dbaedb3f">size_type</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::get_stride </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00116">116</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6e10bc824f1388701521bb162c9be917"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator!= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00136">136</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a141d07b1cc9376f4e80be511365bb894"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00118">118</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad3b40766780263cdea6e63aabf329655"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00119">119</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9bdd363aa0e1e3ea66a2055a80db323c"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator+ </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00132">132</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9ac1154203a50d379dad9e720201a23f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00124">124</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ae7f6d1ada5d6f4d209e030279505094d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator++ </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -759,24 +617,24 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00099">99</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00126">126</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa277830206f379aaba367c75b3721894"></a>
+<a class="anchor" id="a6946597957ab495b0dd84a3d087f6748"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator-= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator+= </td>
           <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>strides</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -787,23 +645,340 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00106">106</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00129">129</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="acc301a19706b36066236ce45043037f0"></a>
+<a class="anchor" id="a268cced9dc749cd94b5909ec58aa4408"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1striding__ptr.html#a6b5784c6bb457ac623bb8253b190bec7">pointer</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator-&gt; </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator- </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00133">133</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad8201801ba18117849a8ada0faef3834"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator-- </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00125">125</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9fa2470eed2f93629be2cbfd7e3deebf"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator-- </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00127">127</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6331e396e1c980d0b7eb2e54cbaec311"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator-= </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00130">130</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a895215d191e8cdc1c45d75c533c83d7b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7fb8c9f62147e5df3d7b70e26883d9e4">pointer</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator-&gt; </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00120">120</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a857ae2e528584fc85f17642965dae34a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00137">137</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a3a0c113afd4cbae28585de58a43cf481"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator&lt;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00139">139</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac38b4ac5cc5de4d2d7518d78478c92bd"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00135">135</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a7cf4e3e0d4855c01d565d7276a965171"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator&gt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00138">138</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad771b5a60c17bfb94774fad1d73a2a82"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator&gt;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00140">140</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a279fca6dd8a0564c501383c0c54f5a4b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#a7043e3ba4bfc546768b13024c66996c6">reference</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator[] </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00121">121</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8632db0854b70579c3449abbca8301e3"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1striding__ptr.html#ab1ed8f99c2b63e847f86a470922e0fae">const_reference</a> <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, P &gt;::operator[] </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -818,238 +993,81 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 
 </div>
 </div>
-<a class="anchor" id="a949e9ce51e6bc6a6931f0ba617ff0a96"></a>
+<h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a class="anchor" id="a3ab5a8df3ad9dd1d9fc4046772ca3421"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename U , typename V &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator&lt; </td>
+          <td class="memname">std::basic_ostream&lt;U,V&gt;&amp; operator&lt;&lt; </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
+          <td class="paramtype">std::basic_ostream&lt; U, V &gt; &amp;&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00126">126</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="af0e7f02792aed1f7705273079bb6814f"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator&lt;= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00128">128</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a272cdca8985eaea4635eb196b19d2ed0"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, P &gt; &amp;&#160;</td>
+          <td class="paramname"><em>ptr</em>&#160;</td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00131">131</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a9598ec6bfd3b284be9ab804b2cf00e1c"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator= </td>
-          <td>(</td>
-          <td class="paramtype">PointerType &amp;&#160;</td>
-          <td class="paramname"><em>pt</em></td><td>)</td>
           <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00137">137</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00143">143</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a7cabcafb9f407b59775f2d03bdef7fe8"></a>
+<a class="anchor" id="a2125712903fd67660d97bef61eeff5f3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
+template&lt;typename T, typename P = typename ecuda::add_pointer&lt;T&gt;::type&gt; </div>
+<div class="memtemplate">
+template&lt;typename U , typename Q &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&amp; <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator= </td>
-          <td>(</td>
-          <td class="paramtype">T *&#160;</td>
-          <td class="paramname"><em>p</em></td><td>)</td>
-          <td></td>
+          <td class="memname">friend class <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00142">142</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aaa72fb2a22c8246c09597ce4e9d257ad"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator== </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00124">124</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aa85d8f3be2a757c035f1832749878365"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator&gt; </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00127">127</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a5859eddd3216d92b7d790659c26b1178"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a>&lt; T, PointerType &gt;::operator&gt;= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1striding__ptr.html">striding_ptr</a>&lt; T, PointerType &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00129">129</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="striding__ptr_8hpp_source.html#l00093">93</a> of file <a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/ecuda/<a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a></li>
+<li>include/ecuda/ptr/<a class="el" href="striding__ptr_8hpp_source.html">striding_ptr.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

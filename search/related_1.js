@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['device_5fiterator',['device_iterator',['../classecuda_1_1device__iterator.html#a90b28ca38a67b932bdd3cab80489fa63',1,'ecuda::device_iterator']]]
+  ['cube',['cube',['../classecuda_1_1cube.html#a6d3b8bd6cfcfb591b918e13d39102daf',1,'ecuda::cube']]]
 ];

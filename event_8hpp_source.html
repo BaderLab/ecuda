@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -91,7 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <a href="event_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2014-2015, Scott Zuyderduyn</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2014-2016, Scott Zuyderduyn</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">All rights reserved.</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">Redistribution and use in source and binary forms, with or without</span></div>
@@ -129,56 +129,61 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#ifndef ECUDA_EVENT_HPP</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define ECUDA_EVENT_HPP</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="event_8hpp.html#a7d4dca0274203df3f8298cefa75c7e1c">   40</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define ECUDA_EVENT_HPP</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">namespace </span>ecuda {</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html">   71</a></span>&#160;<span class="keyword">class </span><a class="code" href="classecuda_1_1event.html">event</a> {</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    cudaEvent_t _event;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="global_8hpp.html">global.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="host__emulation_8hpp.html">impl/host_emulation.hpp</a>&quot;</span> <span class="comment">// gets data structure definitions when compiling host-only without nvcc</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">namespace </span>ecuda {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html">   74</a></span>&#160;<span class="keyword">class </span><a class="code" href="classecuda_1_1event.html">event</a> {</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">   82</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">event</a>() { cudaEventCreate(&amp;_event); }</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">   97</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">event</a>( <span class="keywordtype">unsigned</span> flags ) { cudaEventCreateWithFlags(&amp;_event,flags); }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00104"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">  104</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">~event</a>() { cudaEventDestroy(_event); }</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;</div>
-<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">  120</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>( cudaStream_t stream = 0 ) { cudaEventRecord( _event, stream ); }</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;</div>
-<div class="line"><a name="l00136"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">  136</a></span>&#160;    <span class="keyword">inline</span> cudaError_t <a class="code" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">synchronize</a>() { <span class="keywordflow">return</span> cudaEventSynchronize( _event ); }</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;</div>
-<div class="line"><a name="l00150"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">  150</a></span>&#160;    <span class="keyword">inline</span> cudaError_t <a class="code" href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">query</a>() { <span class="keywordflow">return</span> cudaEventQuery( _event ); }</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;</div>
-<div class="line"><a name="l00170"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">  170</a></span>&#160;    <span class="keyword">static</span> <span class="keywordtype">float</span> <a class="code" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">elapsed_time</a>( <a class="code" href="classecuda_1_1event.html">event</a>&amp; start, <a class="code" href="classecuda_1_1event.html">event</a>&amp; end ) {</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        <span class="keywordtype">float</span> t;</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;        cudaEventElapsedTime( &amp;t, start._event, end._event );</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        <span class="keywordflow">return</span> t;</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    }</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;</div>
-<div class="line"><a name="l00184"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">  184</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code" href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">operator-</a>( <a class="code" href="classecuda_1_1event.html">event</a>&amp; other ) { <span class="keywordflow">return</span> <a class="code" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">event::elapsed_time</a>( other, *<span class="keyword">this</span> ); }</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;};</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    cudaEvent_t _event;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">   85</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">event</a>() { cudaEventCreate(&amp;_event); }</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">  100</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">event</a>( <span class="keywordtype">unsigned</span> flags ) { cudaEventCreateWithFlags(&amp;_event,flags); }</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">  107</a></span>&#160;    <a class="code" href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">~event</a>() { cudaEventDestroy(_event); }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">  123</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>( cudaStream_t stream = 0 ) { cudaEventRecord( _event, stream ); }</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">  139</a></span>&#160;    <span class="keyword">inline</span> cudaError_t <a class="code" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">synchronize</a>() { <span class="keywordflow">return</span> cudaEventSynchronize( _event ); }</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;</div>
+<div class="line"><a name="l00153"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">  153</a></span>&#160;    <span class="keyword">inline</span> cudaError_t <a class="code" href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">query</a>() { <span class="keywordflow">return</span> cudaEventQuery( _event ); }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;</div>
+<div class="line"><a name="l00173"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">  173</a></span>&#160;    <span class="keyword">static</span> <span class="keywordtype">float</span> <a class="code" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">elapsed_time</a>( <a class="code" href="classecuda_1_1event.html">event</a>&amp; start, <a class="code" href="classecuda_1_1event.html">event</a>&amp; end ) {</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        <span class="keywordtype">float</span> t;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        cudaEventElapsedTime( &amp;t, start._event, end._event );</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <span class="keywordflow">return</span> t;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    }</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;</div>
+<div class="line"><a name="l00187"></a><span class="lineno"><a class="line" href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">  187</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">float</span> <a class="code" href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">operator-</a>( <a class="code" href="classecuda_1_1event.html">event</a>&amp; other ) { <span class="keywordflow">return</span> <a class="code" href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">event::elapsed_time</a>( other, *<span class="keyword">this</span> ); }</div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;} <span class="comment">// namespace ecuda</span></div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;};</div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="classecuda_1_1event_html_a62679cde80840d976c6b477b31bbbbdc"><div class="ttname"><a href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">ecuda::event::~event</a></div><div class="ttdeci">~event()</div><div class="ttdoc">Destructor. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00104">event.hpp:104</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html"><div class="ttname"><a href="classecuda_1_1event.html">ecuda::event</a></div><div class="ttdoc">Encapsulates CUDA API event objects and functions. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00071">event.hpp:71</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_a81447d459205603c1b513bcae537e2fe"><div class="ttname"><a href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">ecuda::event::event</a></div><div class="ttdeci">event()</div><div class="ttdoc">Default constructor. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00082">event.hpp:82</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_a855793390ea762b7aea5ef23d8eeb09f"><div class="ttname"><a href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">ecuda::event::elapsed_time</a></div><div class="ttdeci">static float elapsed_time(event &amp;start, event &amp;end)</div><div class="ttdoc">Computes the elapsed time between two events (in milliseconds with a resolution of around 0...</div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00170">event.hpp:170</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_abfc2fd3c519dd8c323979093b5e18d64"><div class="ttname"><a href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">ecuda::event::operator-</a></div><div class="ttdeci">float operator-(event &amp;other)</div><div class="ttdoc">Computes the elapsed time between another event and this event. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00184">event.hpp:184</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_aea6c8159da636ccf4481460b97c1781f"><div class="ttname"><a href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">ecuda::event::record</a></div><div class="ttdeci">void record(cudaStream_t stream=0)</div><div class="ttdoc">Records an event. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00120">event.hpp:120</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_aa3c2ce52eaf99b88550a0dfcb79d077f"><div class="ttname"><a href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">ecuda::event::synchronize</a></div><div class="ttdeci">cudaError_t synchronize()</div><div class="ttdoc">Wait until the completion of all device work preceding the most recent call to record(). </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00136">event.hpp:136</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_a0236a0375eaf88485cbdb043d09dc1ae"><div class="ttname"><a href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">ecuda::event::event</a></div><div class="ttdeci">event(unsigned flags)</div><div class="ttdoc">Constructs an event with the given flags. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00097">event.hpp:97</a></div></div>
-<div class="ttc" id="classecuda_1_1event_html_afb55744b692343d5c7584b87a64da9e0"><div class="ttname"><a href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">ecuda::event::query</a></div><div class="ttdeci">cudaError_t query()</div><div class="ttdoc">Query the status of all device work preceding the most recent call to record(). </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00150">event.hpp:150</a></div></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;} <span class="comment">// namespace ecuda</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="classecuda_1_1event_html_a62679cde80840d976c6b477b31bbbbdc"><div class="ttname"><a href="classecuda_1_1event.html#a62679cde80840d976c6b477b31bbbbdc">ecuda::event::~event</a></div><div class="ttdeci">~event()</div><div class="ttdoc">Destructor. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00107">event.hpp:107</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html"><div class="ttname"><a href="classecuda_1_1event.html">ecuda::event</a></div><div class="ttdoc">Encapsulates CUDA API event objects and functions. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00074">event.hpp:74</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_a81447d459205603c1b513bcae537e2fe"><div class="ttname"><a href="classecuda_1_1event.html#a81447d459205603c1b513bcae537e2fe">ecuda::event::event</a></div><div class="ttdeci">event()</div><div class="ttdoc">Default constructor. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00085">event.hpp:85</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_a855793390ea762b7aea5ef23d8eeb09f"><div class="ttname"><a href="classecuda_1_1event.html#a855793390ea762b7aea5ef23d8eeb09f">ecuda::event::elapsed_time</a></div><div class="ttdeci">static float elapsed_time(event &amp;start, event &amp;end)</div><div class="ttdoc">Computes the elapsed time between two events (in milliseconds with a resolution of around 0...</div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00173">event.hpp:173</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_abfc2fd3c519dd8c323979093b5e18d64"><div class="ttname"><a href="classecuda_1_1event.html#abfc2fd3c519dd8c323979093b5e18d64">ecuda::event::operator-</a></div><div class="ttdeci">float operator-(event &amp;other)</div><div class="ttdoc">Computes the elapsed time between another event and this event. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00187">event.hpp:187</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_aea6c8159da636ccf4481460b97c1781f"><div class="ttname"><a href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">ecuda::event::record</a></div><div class="ttdeci">void record(cudaStream_t stream=0)</div><div class="ttdoc">Records an event. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00123">event.hpp:123</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_aa3c2ce52eaf99b88550a0dfcb79d077f"><div class="ttname"><a href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">ecuda::event::synchronize</a></div><div class="ttdeci">cudaError_t synchronize()</div><div class="ttdoc">Wait until the completion of all device work preceding the most recent call to record(). </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00139">event.hpp:139</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_a0236a0375eaf88485cbdb043d09dc1ae"><div class="ttname"><a href="classecuda_1_1event.html#a0236a0375eaf88485cbdb043d09dc1ae">ecuda::event::event</a></div><div class="ttdeci">event(unsigned flags)</div><div class="ttdoc">Constructs an event with the given flags. </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00100">event.hpp:100</a></div></div>
+<div class="ttc" id="host__emulation_8hpp_html"><div class="ttname"><a href="host__emulation_8hpp.html">host_emulation.hpp</a></div></div>
+<div class="ttc" id="global_8hpp_html"><div class="ttname"><a href="global_8hpp.html">global.hpp</a></div></div>
+<div class="ttc" id="classecuda_1_1event_html_afb55744b692343d5c7584b87a64da9e0"><div class="ttname"><a href="classecuda_1_1event.html#afb55744b692343d5c7584b87a64da9e0">ecuda::event::query</a></div><div class="ttdeci">cudaError_t query()</div><div class="ttdoc">Query the status of all device work preceding the most recent call to record(). </div><div class="ttdef"><b>Definition:</b> <a href="event_8hpp_source.html#l00153">event.hpp:153</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

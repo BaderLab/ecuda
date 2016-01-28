@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -91,7 +91,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <a href="apiwrappers_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2014-2015, Scott Zuyderduyn</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2014-2016, Scott Zuyderduyn</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">All rights reserved.</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment">Redistribution and use in source and binary forms, with or without</span></div>
@@ -122,63 +122,133 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">//----------------------------------------------------------------------------</span></div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">// apiwrappers.hpp</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">// Wrappers around CUDA API functions.</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">// Wrappers around CUDA C API functions.</span></div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">//</span></div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">// Author: Scott D. Zuyderduyn, Ph.D. (scott.zuyderduyn@utoronto.ca)</span></div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">//----------------------------------------------------------------------------</span></div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#ifndef ECUDA_APIWRAPPERS_HPP</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define ECUDA_APIWRAPPERS_HPP</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="apiwrappers_8hpp.html#a284cfa1e442ef308968785da985e0bfd">   40</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define ECUDA_APIWRAPPERS_HPP</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="global_8hpp.html">global.hpp</a>&quot;</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="allocators_8hpp.html">allocators.hpp</a>&quot;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="allocators_8hpp.html">allocators.hpp</a>&quot;</span> <span class="comment">// for host_allocator</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="keyword">namespace </span>ecuda {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">   60</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">cudaMemcpy</a>( T* dest, <span class="keyword">const</span> T* src, <span class="keyword">const</span> std::size_t count, cudaMemcpyKind kind ) {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">cudaMemcpy</a>( reinterpret_cast&lt;void*&gt;(dest), reinterpret_cast&lt;const void*&gt;(src), <span class="keyword">sizeof</span>(T)*count, kind );</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;}</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00081"></a><span class="lineno"><a class="line" href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">   81</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">cudaMemcpy2D</a>( T* dest, <span class="keyword">const</span> std::size_t dpitch, <span class="keyword">const</span> T* src, <span class="keyword">const</span> std::size_t spitch, <span class="keyword">const</span> std::size_t width, <span class="keyword">const</span> std::size_t height, cudaMemcpyKind kind ) {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">cudaMemcpy2D</a>( reinterpret_cast&lt;void*&gt;(dest), dpitch, reinterpret_cast&lt;const void*&gt;(src), spitch, width*<span class="keyword">sizeof</span>(T), height, kind );</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a181bf4510a96777fcb4e32a35f309da3">  101</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#a181bf4510a96777fcb4e32a35f309da3">cudaMemset</a>( T* devPtr, <span class="keyword">const</span> T&amp; value, <span class="keyword">const</span> std::size_t count ) {</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="comment">//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    std::vector&lt; T, host_allocator&lt;T&gt; &gt; v( count, value );</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordflow">return</span> cudaMemcpy&lt;T&gt;( devPtr, &amp;v.front(), count, cudaMemcpyHostToDevice );</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;}</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a8e2653ed7ec3a5a643b445754fe2085f">  124</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#a8e2653ed7ec3a5a643b445754fe2085f">cudaMemset2D</a>( T* devPtr, <span class="keyword">const</span> std::size_t pitch, <span class="keyword">const</span> T&amp; value, <span class="keyword">const</span> std::size_t width, <span class="keyword">const</span> std::size_t height ) {</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    std::vector&lt; T, host_allocator&lt;T&gt; &gt; v( width, value );</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordtype">char</span>* charPtr = <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(devPtr);</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <span class="keywordflow">for</span>( std::size_t i = 0; i &lt; height; ++i, charPtr += pitch ) {</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keyword">const</span> cudaError_t rc = cudaMemcpy&lt;T&gt;( <span class="keyword">reinterpret_cast&lt;</span>T*<span class="keyword">&gt;</span>(charPtr), &amp;v.front(), width, cudaMemcpyHostToDevice );</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <span class="keywordflow">if</span>( rc != cudaSuccess ) <span class="keywordflow">return</span> rc;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    }</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keywordflow">return</span> cudaSuccess;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;} <span class="comment">// namespace ecuda</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="namespaceecuda_html_aa6443f3fc662e4015397a140d906662a"><div class="ttname"><a href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">ecuda::cudaMemcpy2D</a></div><div class="ttdeci">cudaError_t cudaMemcpy2D(T *dest, const std::size_t dpitch, const T *src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind)</div><div class="ttdoc">Wrapper around CUDA API function cudaMemcpy2D. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00081">apiwrappers.hpp:81</a></div></div>
-<div class="ttc" id="namespaceecuda_html_a181bf4510a96777fcb4e32a35f309da3"><div class="ttname"><a href="namespaceecuda.html#a181bf4510a96777fcb4e32a35f309da3">ecuda::cudaMemset</a></div><div class="ttdeci">cudaError_t cudaMemset(T *devPtr, const T &amp;value, const std::size_t count)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset that allows for any data type. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00101">apiwrappers.hpp:101</a></div></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">namespace </span>ecuda {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="namespaceecuda.html#aa9bd1e585fb42fdb1c4dfb0548529b3a">   62</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#aa9bd1e585fb42fdb1c4dfb0548529b3a">cudaMemcpy</a>( T* dest, <span class="keyword">const</span> T* src, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a>, cudaMemcpyKind kind )</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;{</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <a class="code" href="namespaceecuda.html#aa9bd1e585fb42fdb1c4dfb0548529b3a">return ::cudaMemcpy</a>( reinterpret_cast&lt;void*&gt;(dest), reinterpret_cast&lt;const void*&gt;(src), <span class="keyword">sizeof</span>(T)*count, kind );</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;}</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a7e659446682da379a4424c59a87d4956">   84</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#a7e659446682da379a4424c59a87d4956">cudaMemcpy2D</a>( T* dest, <span class="keyword">const</span> <span class="keywordtype">size_t</span> dpitch, <span class="keyword">const</span> T* src, <span class="keyword">const</span> <span class="keywordtype">size_t</span> spitch, <span class="keyword">const</span> <span class="keywordtype">size_t</span> width, <span class="keyword">const</span> <span class="keywordtype">size_t</span> height, cudaMemcpyKind kind )</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;{</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <a class="code" href="namespaceecuda.html#a7e659446682da379a4424c59a87d4956">return ::cudaMemcpy2D</a>( reinterpret_cast&lt;void*&gt;(dest), dpitch, reinterpret_cast&lt;const void*&gt;(src), spitch, width*<span class="keyword">sizeof</span>(T), height, kind );</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;}</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keyword">namespace </span>impl {</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keywordtype">bool</span> is_equal_bytes( <span class="keyword">const</span> T&amp; value )</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;{</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* p = <span class="keyword">reinterpret_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(&amp;value);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* q = p; ++q;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordflow">for</span>( <span class="keywordtype">int</span> i = 1; i &lt; <span class="keyword">sizeof</span>(T); ++i, ++q ) <span class="keywordflow">if</span>( *p != *q ) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;}</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;} <span class="comment">// namespace impl</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">  124</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">cudaMemset</a>( <span class="keywordtype">char</span>* devPtr, <span class="keyword">const</span> <span class="keywordtype">char</span>&amp; value, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a> )</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;{</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <a class="code" href="namespaceecuda.html#a28ae274259bfd1683e70148e21b25681">return ::cudaMemset</a>( static_cast&lt;void*&gt;(devPtr), static_cast&lt;int&gt;(value), count );</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;}</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00147"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a28ae274259bfd1683e70148e21b25681">  147</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">cudaMemset</a>( T* devPtr, <span class="keyword">const</span> T&amp; value, <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a> )</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;{</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="comment">//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keywordflow">if</span>( impl::is_equal_bytes(value) ) {</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">cudaMemset</a>( reinterpret_cast&lt;char*&gt;(devPtr), *reinterpret_cast&lt;const char*&gt;(&amp;value), count*<span class="keyword">sizeof</span>(T) );</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    }</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    std::vector&lt; T, host_allocator&lt;T&gt; &gt; v( count, value );</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keywordflow">return</span> cudaMemcpy&lt;T&gt;( devPtr, &amp;v.front(), <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a>, cudaMemcpyHostToDevice );</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;}</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;</div>
+<div class="line"><a name="l00170"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">  170</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">cudaMemset2D</a>( <span class="keywordtype">char</span>* devPtr, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pitch, <span class="keyword">const</span> <span class="keywordtype">char</span>&amp; value, <span class="keyword">const</span> <span class="keywordtype">size_t</span> width, <span class="keyword">const</span> <span class="keywordtype">size_t</span> height )</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;{</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <a class="code" href="namespaceecuda.html#ab103e9d8b086f7d23a0a28861c571072">return ::cudaMemset2D</a>( static_cast&lt;void*&gt;(devPtr), pitch, static_cast&lt;int&gt;(value), width, height );</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;}</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00195"></a><span class="lineno"><a class="line" href="namespaceecuda.html#ab103e9d8b086f7d23a0a28861c571072">  195</a></span>&#160;cudaError_t <a class="code" href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">cudaMemset2D</a>( T* devPtr, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pitch, <span class="keyword">const</span> T&amp; value, <span class="keyword">const</span> <span class="keywordtype">size_t</span> width, <span class="keyword">const</span> <span class="keywordtype">size_t</span> height )</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;{</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keywordflow">if</span>( impl::is_equal_bytes(value) ) {</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">cudaMemset2D</a>( reinterpret_cast&lt;char*&gt;(devPtr), pitch, *reinterpret_cast&lt;const char*&gt;(&amp;value), width*<span class="keyword">sizeof</span>(T), height );</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    }</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    std::vector&lt; T, host_allocator&lt;T&gt; &gt; v( width, value );</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <span class="keywordtype">char</span>* charPtr = <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(devPtr);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <span class="keywordflow">for</span>( std::size_t i = 0; i &lt; height; ++i, charPtr += pitch ) {</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        <span class="keyword">const</span> cudaError_t rc = cudaMemcpy&lt;T&gt;( <span class="keyword">reinterpret_cast&lt;</span>T*<span class="keyword">&gt;</span>(charPtr), &amp;v.front(), width, cudaMemcpyHostToDevice );</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;        <span class="keywordflow">if</span>( rc != cudaSuccess ) <span class="keywordflow">return</span> rc;</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    }</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    <span class="keywordflow">return</span> cudaSuccess;</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;}</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00210"></a><span class="lineno"><a class="line" href="namespaceecuda.html#aea59a07fa63a11bdf5a5d2442972dfea">  210</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#aea59a07fa63a11bdf5a5d2442972dfea">cudaMemcpyToSymbol</a>( T* dest, <span class="keyword">const</span> T* src, <span class="keywordtype">size_t</span> <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a>=1, <span class="keywordtype">size_t</span> offset=0, <span class="keyword">enum</span> cudaMemcpyKind kind=cudaMemcpyHostToDevice )</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;{</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <a class="code" href="namespaceecuda.html#a7f04181a584d9069d901ec8a4f0e9054">return ::cudaMemcpyToSymbol</a>( reinterpret_cast&lt;const char*&gt;(dest), reinterpret_cast&lt;const void*&gt;(src), <a class="code" href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">count</a>*<span class="keyword">sizeof</span>(T), offset, kind );</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;}</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00216"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a7f04181a584d9069d901ec8a4f0e9054">  216</a></span>&#160;<span class="keyword">inline</span> cudaError_t <a class="code" href="namespaceecuda.html#aea59a07fa63a11bdf5a5d2442972dfea">cudaMemcpyToSymbol</a>( T&amp; dest, <span class="keyword">const</span> T&amp; src, <span class="keyword">enum</span> cudaMemcpyKind kind=cudaMemcpyHostToDevice )</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;{</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <a class="code" href="namespaceecuda.html#a7f04181a584d9069d901ec8a4f0e9054">return ::ecuda::cudaMemcpyToSymbol</a>( &amp;dest, &amp;src, 1, 0, kind );</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;}</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment"> * This is here because of a bizarre compiler bug in nvcc 5.5.</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment"> * If __threadfence() is called inline (i.e. the at() methods of</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment"> * each container), then nvcc complains about not knowing about it.</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment"> * Example compiler message: error: there are no arguments to ‘__threadfence’ that depend on a template parameter, so a declaration of ‘__threadfence’ must be available</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment"> * In CUDA &gt;=6.0 the same code compiles fine. If we do below and just wrap the __threadfence()</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment"> * call in it&#39;s own function then it works in all versions.</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno"><a class="line" href="namespaceecuda.html#a985c26070efac911941cd9e6408b93c8">  231</a></span>&#160;<span class="keyword">inline</span> <a class="code" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <span class="keywordtype">void</span> <a class="code" href="namespaceecuda.html#a985c26070efac911941cd9e6408b93c8">threadfence</a>()</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;{</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="preprocessor">    #ifdef __CUDACC__</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="preprocessor"></span>    __threadfence();</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="preprocessor">    #endif</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="preprocessor"></span>}</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;} <span class="comment">// namespace ecuda</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="namespaceecuda_html_ad434d4d608702c94e707a00c84eef984"><div class="ttname"><a href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">ecuda::cudaMemset</a></div><div class="ttdeci">cudaError_t cudaMemset(char *devPtr, const char &amp;value, const size_t count)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset that enforces a single-byte value. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00124">apiwrappers.hpp:124</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a3cefd65379eeb181746c749d665e2289"><div class="ttname"><a href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">ecuda::cudaMemset2D</a></div><div class="ttdeci">cudaError_t cudaMemset2D(char *devPtr, const size_t pitch, const char &amp;value, const size_t width, const size_t height)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset2D that enforces a single-byte value. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00170">apiwrappers.hpp:170</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a28ae274259bfd1683e70148e21b25681"><div class="ttname"><a href="namespaceecuda.html#a28ae274259bfd1683e70148e21b25681">ecuda::cudaMemset</a></div><div class="ttdeci">cudaError_t cudaMemset(T *devPtr, const T &amp;value, const size_t count)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset that allows for any data type. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00147">apiwrappers.hpp:147</a></div></div>
+<div class="ttc" id="namespaceecuda_html_aea59a07fa63a11bdf5a5d2442972dfea"><div class="ttname"><a href="namespaceecuda.html#aea59a07fa63a11bdf5a5d2442972dfea">ecuda::cudaMemcpyToSymbol</a></div><div class="ttdeci">cudaError_t cudaMemcpyToSymbol(T *dest, const T *src, size_t count=1, size_t offset=0, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice)</div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00210">apiwrappers.hpp:210</a></div></div>
+<div class="ttc" id="namespaceecuda_html_aa9bd1e585fb42fdb1c4dfb0548529b3a"><div class="ttname"><a href="namespaceecuda.html#aa9bd1e585fb42fdb1c4dfb0548529b3a">ecuda::cudaMemcpy</a></div><div class="ttdeci">cudaError_t cudaMemcpy(T *dest, const T *src, const size_t count, cudaMemcpyKind kind)</div><div class="ttdoc">Wrapper around CUDA API function cudaMemcpy. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00062">apiwrappers.hpp:62</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a7e659446682da379a4424c59a87d4956"><div class="ttname"><a href="namespaceecuda.html#a7e659446682da379a4424c59a87d4956">ecuda::cudaMemcpy2D</a></div><div class="ttdeci">cudaError_t cudaMemcpy2D(T *dest, const size_t dpitch, const T *src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind)</div><div class="ttdoc">Wrapper around CUDA API function cudaMemcpy2D. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00084">apiwrappers.hpp:84</a></div></div>
 <div class="ttc" id="allocators_8hpp_html"><div class="ttname"><a href="allocators_8hpp.html">allocators.hpp</a></div></div>
-<div class="ttc" id="namespaceecuda_html_a759c78a1e4125b3f4f3a60f13770c9df"><div class="ttname"><a href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">ecuda::cudaMemcpy</a></div><div class="ttdeci">cudaError_t cudaMemcpy(T *dest, const T *src, const std::size_t count, cudaMemcpyKind kind)</div><div class="ttdoc">Wrapper around CUDA API function cudaMemcpy. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00060">apiwrappers.hpp:60</a></div></div>
+<div class="ttc" id="namespaceecuda_html_ab103e9d8b086f7d23a0a28861c571072"><div class="ttname"><a href="namespaceecuda.html#ab103e9d8b086f7d23a0a28861c571072">ecuda::cudaMemset2D</a></div><div class="ttdeci">cudaError_t cudaMemset2D(T *devPtr, const size_t pitch, const T &amp;value, const size_t width, const size_t height)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset2D that allows for any data type. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00195">apiwrappers.hpp:195</a></div></div>
 <div class="ttc" id="global_8hpp_html"><div class="ttname"><a href="global_8hpp.html">global.hpp</a></div></div>
-<div class="ttc" id="namespaceecuda_html_a8e2653ed7ec3a5a643b445754fe2085f"><div class="ttname"><a href="namespaceecuda.html#a8e2653ed7ec3a5a643b445754fe2085f">ecuda::cudaMemset2D</a></div><div class="ttdeci">cudaError_t cudaMemset2D(T *devPtr, const std::size_t pitch, const T &amp;value, const std::size_t width, const std::size_t height)</div><div class="ttdoc">Re-implementation of CUDA API function cudaMemset2D that allows for any data type. </div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00124">apiwrappers.hpp:124</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a985c26070efac911941cd9e6408b93c8"><div class="ttname"><a href="namespaceecuda.html#a985c26070efac911941cd9e6408b93c8">ecuda::threadfence</a></div><div class="ttdeci">__DEVICE__ void threadfence()</div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00231">apiwrappers.hpp:231</a></div></div>
+<div class="ttc" id="global_8hpp_html_a717730334071fc822cf698f433ca9205"><div class="ttname"><a href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a></div><div class="ttdeci">#define __DEVICE__</div><div class="ttdef"><b>Definition:</b> <a href="global_8hpp_source.html#l00151">global.hpp:151</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a902187585c1ae9933b4289ebbeef4d21"><div class="ttname"><a href="namespaceecuda.html#a902187585c1ae9933b4289ebbeef4d21">ecuda::count</a></div><div class="ttdeci">ECUDA_SUPPRESS_HD_WARNINGS __HOST__ __DEVICE__ ecuda::iterator_traits&lt; InputIterator &gt;::difference_type count(InputIterator first, InputIterator last, const T &amp;value)</div><div class="ttdef"><b>Definition:</b> <a href="count_8hpp_source.html#l00092">count.hpp:92</a></div></div>
+<div class="ttc" id="namespaceecuda_html_a7f04181a584d9069d901ec8a4f0e9054"><div class="ttname"><a href="namespaceecuda.html#a7f04181a584d9069d901ec8a4f0e9054">ecuda::cudaMemcpyToSymbol</a></div><div class="ttdeci">cudaError_t cudaMemcpyToSymbol(T &amp;dest, const T &amp;src, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice)</div><div class="ttdef"><b>Definition:</b> <a href="apiwrappers_8hpp_source.html#l00216">apiwrappers.hpp:216</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:57 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['striding_5fptr_2ehpp',['striding_ptr.hpp',['../striding__ptr_8hpp.html',1,'']]]
+  ['lexicographical_5fcompare_2ehpp',['lexicographical_compare.hpp',['../lexicographical__compare_8hpp.html',1,'']]]
 ];

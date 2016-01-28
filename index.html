@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li class="current"><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -67,7 +66,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -82,346 +81,434 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="toc"><h3>Table of Contents</h3>
-<ul><li class="level1"><a href="#intro">Introduction</a><ul><li class="level2"><a href="#overview_thrust">Comparison to the Thrust Library</a></li>
+<ul><li class="level1"><a href="#intro">Overview</a></li>
+<li class="level1"><a href="#quick_ref">A Few Things You Should Know</a><ul><li class="level2"><a href="#quick_ref_kernels">Containers as Kernel Arguments</a></li>
+<li class="level2"><a href="#quick_ref_ops">Direct Access Operators</a></li>
+<li class="level2"><a href="#quick_ref_contiguity">Memory Contiguity</a></li>
+<li class="level2"><a href="#quick_ref_macros">Macros</a></li>
+<li class="level2"><a href="#quick_ref_hostemu">Host Emulation</a></li>
 </ul>
 </li>
-<li class="level1"><a href="#requirements">Requirements</a></li>
-<li class="level1"><a href="#installation">Installation</a></li>
-<li class="level1"><a href="#overview">Overview</a><ul><li class="level2"><a href="#overview_containers">Containers</a></li>
-<li class="level2"><a href="#overview_allocators">Allocators</a></li>
-<li class="level2"><a href="#overview_iterators">Iterators</a></li>
-<li class="level2"><a href="#overview_views">Views</a></li>
-<li class="level2"><a href="#overview_pointers">Specialized Pointers</a></li>
-<li class="level2"><a href="#overview_misc">Miscellaneous</a><ul><li class="level3"><a href="#overview_misc_cudawrapper">Capturing CUDA API Errors</a></li>
-<li class="level3"><a href="#overview_misc_cstyle">Using C-style Arrays</a></li>
-<li class="level3"><a href="#overview_misc_events">CUDA Events</a></li>
+<li class="level1"><a href="#example">Core Concepts and Examples</a><ul><li class="level2"><a href="#example_array">Arrays</a></li>
+<li class="level2"><a href="#example_vector">Vectors</a></li>
+<li class="level2"><a href="#example_matrix">Matrices</a></li>
+<li class="level2"><a href="#example_cube">Cubes</a></li>
+<li class="level2"><a href="#example_host_alloc">Allocators</a></li>
+<li class="level2"><a href="#example_exception">Exceptions</a></li>
+<li class="level2"><a href="#example_events">Events</a></li>
 </ul>
 </li>
-<li class="level2"><a href="#overview_misc_stl_algo">STL Functions</a></li>
+<li class="level1"><a href="#faq">Frequently Asked Questions</a><ul><li class="level2"><a href="#faq_thrust">Why not Thrust?</a></li>
+<li class="level2"><a href="#faq_overhead">How much overhead?</a></li>
+<li class="level2"><a href="#faq_performance">How much of a performance penalty?</a></li>
 </ul>
 </li>
-<li class="level1"><a href="#optimizing_threads">Optimizing Thread Operations</a></li>
-<li class="level1"><a href="#performance">Performance</a></li>
-<li class="level1"><a href="#compatibility">Compatibility</a><ul><li class="level2"><a href="#overview_cpp11">C++11 Support and CUDA >= 7.0</a></li>
-</ul>
-</li>
-<li class="level1"><a href="#section_examples">Example Programs</a></li>
+<li class="level1"><a href="#compatibility">Compatibility</a></li>
 <li class="level1"><a href="#section_future_work">Future Work</a></li>
+<li class="level1"><a href="#changes">Changes from v.1.0</a></li>
 <li class="level1"><a href="#license">License</a></li>
 <li class="level1"><a href="#author">Author</a></li>
 <li class="level1"><a href="#acknowledgements">Acknowledgements</a></li>
 </ul>
 </div>
 <div class="textblock"><h1><a class="anchor" id="intro"></a>
-Introduction</h1>
-<p>The <em>ecuda</em> library is a set of templates fashioned after the C++ Standard Template Library (STL) that provide several useful containers for use with the CUDA API. These containers remove most of the repetitive low-level tasks that are required when assigning, traversing, and manipulating data in device memory. The containers can be instantiated in host code and passed to kernel functions, so familiar STL-style semantics can be used inside the device code itself. The library is header only, so it's portable and simple to install.</p>
-<p>The original motivation for creating the library was to remove a lot of the headaches and inherent lack of safety when using naked pointers to device memory and to create containers that were more intuitive to work with.</p>
-<p>For example, here's some typical looking code using the CUDA API that a) creates a matrix and b) uses the GPU to calculate the column sums:</p>
-<p><b>Before</b> </p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> width = 100;</div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> height = 100;</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create a 2D array in device memory</span></div>
-<div class="line"><span class="keywordtype">double</span>* deviceMatrix;</div>
-<div class="line"><span class="keywordtype">size_t</span> pitch;</div>
-<div class="line">cudaMalloc2D( &amp;deviceMatrix, &amp;pitch, width*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>), height );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create linearized row-major matrix in host memory</span></div>
-<div class="line">std::vector&lt;double&gt; hostMatrix( width*height );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// ... do stuff to prepare matrix data</span></div>
-<div class="line"></div>
-<div class="line"><span class="comment">// copy matrix from host to device</span></div>
-<div class="line"><a class="code" href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">cudaMemcpy2D</a>( deviceMatrix, pitch, &amp;hostMatrix.front(), width*<span class="keyword">sizeof</span>(double), width*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>), height, cudaMemcpyHostToDevice );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create an array on device to hold results</span></div>
-<div class="line"><span class="keywordtype">double</span>* deviceColumnSums;</div>
-<div class="line">cudaMalloc( &amp;deviceColumnSums, width*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>) );</div>
-<div class="line"><a class="code" href="namespaceecuda.html#a181bf4510a96777fcb4e32a35f309da3">cudaMemset</a>( deviceColumnSums, 0, width*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>) ); <span class="comment">// set initial values to zero</span></div>
-<div class="line"></div>
-<div class="line"><span class="comment">// run kernel</span></div>
-<div class="line">sumColumns&lt;&lt;&lt;1,width&gt;&gt;&gt;( deviceMatrix, pitch, width, height, deviceColumnSums );</div>
-<div class="line">cudaDeviceSynchronize();</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create an array with page-locked memory to store results off device</span></div>
-<div class="line"><span class="keywordtype">double</span>* hostColumnSums;</div>
-<div class="line">cudaMallocHost( &amp;hostColumnSums, width );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// copy results from device to host</span></div>
-<div class="line"><a class="code" href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">cudaMemcpy</a>( hostColumnSums, deviceColumnSums, width*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>), cudaMemcpyDeviceToHost );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">//... do stuff with the results</span></div>
-<div class="line"></div>
-<div class="line"><span class="comment">// deallocate memory</span></div>
-<div class="line">cudaFreeHost( hostColumnSums );</div>
-<div class="line">cudaFree( columnSums );</div>
-<div class="line">cudaFree( deviceMatrix );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// kernel function</span></div>
-<div class="line">__global__ <span class="keywordtype">void</span> sumColumns( <span class="keyword">const</span> <span class="keywordtype">char</span>* matrix, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pitch, <span class="keyword">const</span> <span class="keywordtype">size_t</span> width, <span class="keyword">const</span> <span class="keywordtype">size_t</span> height, <span class="keywordtype">double</span>* columnSums ) {</div>
-<div class="line"></div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">  <span class="keywordflow">if</span>( threadNum &lt; width ) {</div>
-<div class="line">    <span class="keywordtype">double</span> columnSum = 0;</div>
-<div class="line">    <span class="keyword">const</span> <span class="keywordtype">char</span>* pRow = matrix;</div>
-<div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">size_t</span> i = 0; i &lt; height; ++i ) {</div>
-<div class="line">      pRow += pitch; <span class="comment">// move pointer to next row</span></div>
-<div class="line">      <span class="keyword">const</span> <span class="keywordtype">double</span>* pElement = <span class="keyword">reinterpret_cast&lt;</span><span class="keyword">const </span><span class="keywordtype">double</span>*<span class="keyword">&gt;</span>(ptr); <span class="comment">// cast to proper type!</span></div>
-<div class="line">      columnSum += pElement[threadNum];</div>
-<div class="line">    }</div>
-<div class="line">    columnSums[threadNum] = columnSum;</div>
-<div class="line">  }</div>
-<div class="line"></div>
-<div class="line">}</div>
-</div><!-- fragment --><p>There are so many places to innocently go wrong. Did you remember to specify <code>width*sizeof(double)</code> instead of just <code>width</code>? Did you remember to free the allocated memory? Did you remember to account for the padding in the matrix memory that properly aligns the memory? Did you remember that the padding is in bytes and might not be a strict multiple of the size of the data type you're storing? Are you an adherent to the RAII programming idiom and using CUDA makes you generally uncomfortable?</p>
-<p>Here's the equivalent code using <em>ecuda:</em> </p>
-<p><b>After</b> </p>
-<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> width = 100;</div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> height = 100;</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create 2D matrix on device</span></div>
-<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( width, height );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create linearized row-major matrix in host memory</span></div>
-<div class="line">std::vector&lt;double&gt; hostMatrix( width*height );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// ... do stuff to prepare matrix data</span></div>
-<div class="line"></div>
-<div class="line"><span class="comment">// copy matrix from host to device</span></div>
-<div class="line">deviceMatrix.assign( hostMatrix.begin(), hostMatrix.end() );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create vector on device to hold results</span></div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceColumnSums( width ); </div>
-<div class="line"></div>
-<div class="line"><span class="comment">// run kernel</span></div>
-<div class="line">sumColumns&lt;&lt;&lt;1,width&gt;&gt;&gt;( deviceMatrix, deviceColumnSums );</div>
-<div class="line">cudaDeviceSynchronize();</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// create a vector with page-locked memory to store results off device</span></div>
-<div class="line">std::vector&lt; double, ecuda::host_allocator&lt;double&gt; &gt; hostColumnSums( width );</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// copy results from device to host</span></div>
-<div class="line">deviceColumnSums &gt;&gt; hostColumnSums;</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// ... do stuff with the results</span></div>
-<div class="line"></div>
-<div class="line"><span class="comment">// kernel function</span></div>
-<div class="line">__global__ <span class="keywordtype">void</span> sumColumns( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> columnSums ) {</div>
-<div class="line"></div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">  <span class="keywordflow">if</span>( threadNum &lt; matrix.<a class="code" href="classecuda_1_1matrix.html#a54d63816227c0ab01aed53486fd9932f">number_columns</a>() ) {</div>
-<div class="line">    <span class="keywordtype">double</span> columnSum = 0;</div>
-<div class="line">    <a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;double&gt;::const_column_type</a> column = matrix.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>( threadNum );</div>
-<div class="line">    <span class="keywordflow">for</span>( <a class="code" href="classecuda_1_1device__iterator.html">ecuda::matrix&lt;double&gt;::const_column_type::iterator</a> iter = column.<a class="code" href="classecuda_1_1sequence__view.html#a033e5d9295ade2a2854056f488998687">begin</a>(); iter != column.<a class="code" href="classecuda_1_1sequence__view.html#a2f852376a47222ecd785e4b8c3cee613">end</a>(); ++iter )</div>
-<div class="line">      columnSum += *iter;</div>
-<div class="line">    columnSums[threadNum] = columnSum;</div>
-<div class="line">  }</div>
-<div class="line"></div>
-<div class="line">}</div>
-</div><!-- fragment --><p>Besides being more compact and readable, there are no naked pointers, allocation or deallocation operations, or worries about device memory padding. STL semantics like the use of iterators in the kernel function are also much more recognizable. With the very recent addition of C++11 support to the nvcc compiler (yah!), developers using CUDA 7 and later could even replace the column sum loop with:</p>
-<div class="fragment"><div class="line"><span class="keywordflow">for</span>( <span class="keywordtype">double</span> x : matrix.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>( threadNum ) ) columnSum += x;</div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_thrust"></a>
-Comparison to the Thrust Library</h2>
-<p>Whereas <a href="http://docs.nvidia.com/cuda/thrust/">Thrust</a>, available from NVIDIA, is a CUDA-parallelized <em>replacement</em> of the STL, <em>ecuda</em> is a CUDA-capable <em>extension</em> to the STL. For example, Thrust has parallelized versions of common STL algorithms like sort. It currently has only two containers: thrust::host_vector and thrust:device_vector, whereas <em>ecuda</em> simply has <a class="el" href="classecuda_1_1vector.html" title="A resizable vector stored in device memory. ">ecuda::vector</a> that can work in concert with the existing std::vector. <em>ecuda</em> also focuses on the inclusion of higher-dimensional containers like <a class="el" href="classecuda_1_1matrix.html" title="A resizable matrix stored in device memory. ">ecuda::matrix</a> and <a class="el" href="classecuda_1_1cube.html" title="A resizable cube stored in device memory. ">ecuda::cube</a> which are often an intuitive way to represent data for device-bound tasks. Thrust is also not designed such that you'd pass the containers themselves to kernel functions, whereas this is a central feature of <em>ecuda</em>.</p>
-<p>I have had no extensive hands-on experience using Thrust, but I imagine it and <em>ecuda</em> are excellent complementary toolkits. For example:</p>
-<p><b>Good</b> task for Thrust:</p>
-<div class="fragment"><div class="line"><span class="comment">// I have 1000 measurements from 1000 experiments, and I want to sort each experiment</span></div>
-<div class="line"><span class="keywordflow">for</span>( std::size_t i = 0; i &lt; 1000; ++i ) {</div>
-<div class="line">  std::vector&lt;double&gt; measurements( 1000 );</div>
-<div class="line">  <span class="comment">// ... load measurements for i-th experiment</span></div>
-<div class="line">  thrust::sort( measurements.begin(), measurements.end() ); <span class="comment">// parallelized!</span></div>
-<div class="line">}</div>
-</div><!-- fragment --><p><b>Good</b> task for ecuda:</p>
-<div class="fragment"><div class="line"><span class="comment">// I have 1000 measurements from 1000 experiments, and I want to run my fancy stats on each experiment</span></div>
-<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> data( 1000, 1000 );</div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> result( 1000 );</div>
-<div class="line"><span class="comment">// ... load measurements</span></div>
-<div class="line">runStatistics&lt;&lt;&lt;1,1000&gt;&gt;&gt;( data, result );</div>
-<div class="line">CUDA_CALL( cudaDeviceSynchronize() );</div>
-<div class="line"></div>
-<div class="line">__global__void runStatistics( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> data, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> result ) {</div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">  <span class="keywordflow">if</span>( threadNum &lt; data.<a class="code" href="classecuda_1_1matrix.html#a54d63816227c0ab01aed53486fd9932f">number_columns</a>() ) {</div>
-<div class="line">    <span class="keywordtype">double</span> fancyStat;</div>
-<div class="line">    <a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;double&gt;::const_column_type</a> measurements = data.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>(threadNum);</div>
-<div class="line">    <span class="comment">// ... calculate fancy stat</span></div>
-<div class="line">    result[threadNum] = fancyStat;</div>
-<div class="line">  }</div>
-<div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="requirements"></a>
-Requirements</h1>
-<p>There are no additional requirements other than your existing toolchain to compile CUDA code (minimally the CUDA API and a C++ compiler).</p>
-<h1><a class="anchor" id="installation"></a>
-Installation</h1>
-<p>The library is header only, so the <code>include</code> subdirectory can be placed anywhere and made visible to the compiler (e.g. <code>-I/some/path/include</code>). A <code>Makefile</code> is included that simply copies the <code>include/ecuda</code> directory to <code>/usr/local/include</code> by issuing the command:</p>
-<div class="fragment"><div class="line">sudo make install</div>
-</div><!-- fragment --><p>The required containers can be declared in your CUDA code with, for example:</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="array_8hpp.html">ecuda/array.hpp</a>&gt;</span></div>
-<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="vector_8hpp.html">ecuda/vector.hpp</a>&gt;</span></div>
-<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="matrix_8hpp.html">ecuda/matrix.hpp</a>&gt;</span></div>
-<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cube_8hpp.html">ecuda/cube.hpp</a>&gt;</span></div>
-</div><!-- fragment --><p>If you use the CUDA device information or event wrapper then:</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="device_8hpp.html">ecuda/device.hpp</a>&gt;</span></div>
-<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="event_8hpp.html">ecuda/event.hpp</a>&gt;</span></div>
-</div><!-- fragment --><p>Other headers are utilized internally as needed.</p>
-<p>If you have <a href="http://www.doxygen.org">Doxygen</a> installed, you can create a local copy of this documentation with:</p>
-<div class="fragment"><div class="line">make docs</div>
-</div><!-- fragment --><h1><a class="anchor" id="overview"></a>
 Overview</h1>
-<h2><a class="anchor" id="overview_containers"></a>
-Containers</h2>
-<div class="image">
-<img src="containers.png" alt="containers.png"/>
-<div class="caption">
-The four core containers.</div></div>
-<p> The library features four containers:</p>
-<ol type="1">
-<li>fixed-sized <b>array</b> </li>
-<li>variable-sized <b>vector</b> </li>
-<li>2D <b>matrix</b> </li>
-<li>3D <b>cube</b> </li>
-</ol>
-<p>The <a class="el" href="classecuda_1_1array.html">ecuda::array</a> and <a class="el" href="classecuda_1_1vector.html">ecuda::vector</a> are functionally equivalent to the identically named containers in the STL (with the array being introduced in C++11):</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,100&gt;</a> deviceArray; <span class="comment">// create fixed 100 element array</span></div>
-<div class="line">deviceArray.<a class="code" href="classecuda_1_1array.html#a8ce14930b529dd0639d388b0317cee6b">fill</a>( 66 ); <span class="comment">// fill array with value 66</span></div>
+<p>This can also be found in the README file:</p>
+<blockquote class="doxtable">
+<p>ecuda Extended CUDA C++ API release 2.x</p>
+<p>These are the release notes for ecuda version 2.</p>
+<p>WHAT IS ECUDA?</p>
+<p>ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and be functionally equivalent to the C++ Standard Template Library (STL). Specifically: algorithms, containers, and iterators.</p>
+<p>REQUIREMENTS</p>
+<p>ecuda is a header only API, and the only pre-requisite library is the CUDA API version 5 or later. It should work with any C++ compiler, but has been developed and tested with several versions of gcc (most recently 4.8.4) and clang 3.6. The C++11 standard is optional, but is utilized if enabled. Visual Studio 2013 on Windows 10 was also successfully tested (see the INSTALLATION section below).</p>
+<p>A correct setup should be able to compile the tools/print_device_info.cu program without issue. You can try:</p>
+<div class="fragment"><div class="line">$ mkdir bin</div>
+<div class="line">$ cd bin</div>
+<div class="line">$ cmake ../tools</div>
+<div class="line">$ make</div>
+</div><!-- fragment --><p>to identify any issues. When run, the program prints out a pretty summary of the current system's GPU hardware and capabilities.</p>
+<p>DOCUMENTATION:</p>
+<ul>
+<li><p class="startli">Documentation can be viewed online:</p>
+<p class="startli"><a href="https://baderlab.github.io/ecuda/">https://baderlab.github.io/ecuda/</a></p>
+</li>
+<li>This is generated from the source files themselves using doxygen. The base directory contains a default doxygen.cfg file that will build a local copy of the documentation in the <code>docs/html</code> subdirectory. Make sure you have doxygen installed and run:</li>
+</ul>
+<div class="fragment"><div class="line">$ doxygen doxygen.cfg</div>
+</div><!-- fragment --><p>INSTALLATION:</p>
+<p>Linux/MacOS:</p>
+<ul>
+<li>As long as the include/ subdirectory is visible to the compiler, the API can be installed anywhere. A default install using CMake can be done by running:</li>
+</ul>
+<div class="fragment"><div class="line">$ cmake .</div>
+<div class="line">$ sudo make install</div>
+</div><!-- fragment --><p>This will copy the contents of the include/ subdirectory to ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).</p>
+<p>Windows/Visual Studio:</p>
+<ul>
+<li>The latest free Visual Studio at the time of last update was Visual Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported at this time. I managed to get everything working with Visual Studio Community 2013 on Windows 10. Here is my story:</li>
+<li><p class="startli">Download and install Visual Studio Community 2013 from:</p>
+<p class="startli"><a href="https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx">https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx</a></p>
+</li>
+<li><p class="startli">Download and install the Nvidia CUDA Toolkit from:</p>
+<p class="startli"><a href="http://developer.nvidia.com/cuda-downloads">http://developer.nvidia.com/cuda-downloads</a></p>
+<ul>
+<li><p class="startli">The order is important since the CUDA installer integrates with any installed Visual Studio versions that it supports. Also note that in the successful configuration, only the following items in the CUDA installer's custom installation were left checked:</p>
+<ul>
+<li>CUDA Toolkit 7.5</li>
+<li>CUDA Visual Studio Integration 7.5</li>
+</ul>
+<p class="startli">The following items were already installed on the test system with equal or greater version numbers:</p>
+<ul>
+<li>Graphics Driver</li>
+<li>HD Audio Driver</li>
+<li>NVIDIA GeForce Experience</li>
+<li>PhysX System Software</li>
+</ul>
+<p class="startli">Do whatever makes the most sense for your situation.</p>
+</li>
+</ul>
+</li>
+<li>Start Visual Studio and load the ecuda.sln solution file.</li>
+<li>The print_device_info project contains a source file that should build successfully at this point. Build the Release target with the x64 platform, and bin/x64/Release/print_device_info.exe should appear. Running this from the Windows command line should display a pretty summary of the current system's GPU hardware and capabilities.</li>
+<li>When building a Debug target, Visual Studio's C++ Standard Library implementation does some kind of "iterator checking" that doesn't play nice with ecuda's custom iterators, causing erroneous assertion failures to get raised at runtime. Placing this at the beginning of a program will turn this off (and suppresses a warning about macro redefinition):</li>
+</ul>
+<div class="fragment"><div class="line"><span class="preprocessor">#pragma warning(disable:4005)</span></div>
+<div class="line"><span class="preprocessor"></span><span class="preprocessor">#undef _HAS_ITERATOR_DEBUGGING</span></div>
+<div class="line"><span class="preprocessor">#pragma warning(default:4005)</span></div>
+</div><!-- fragment --><ul>
+<li>Since ecuda is not actively developed on Windows, please report any issues or workarounds!</li>
+</ul>
+<p>BENCHMARKS AND EXAMPLES:</p>
+<ul>
+<li>The benchmarks/, test/ and t/ directories contain programs that were useful for development. They might be useful examples to see how ecuda can be used. Again, these were used during API development so they can be quite ugly and full of hacks.</li>
+<li>Each subdirectory contains a CMakeList.txt file so building them should be easy if your system is properly set up. For example, to build the benchmarks/ folder, the following could be used:</li>
+</ul>
+<div class="fragment"><div class="line">$ mkdir -p bin/benchmarks</div>
+<div class="line">$ cd bin/benchmarks</div>
+<div class="line">$ cmake ../../benchmarks</div>
+<div class="line">$ make</div>
+</div><!-- fragment --><ul>
+<li>Note that a file called local-config.cmake can be created in the release root directory that contains any system-specific CMake directives (e.g. nvcc compiler flags). The local-config.cmake.example file is an example of how this file might look.</li>
+</ul>
+<p>FILE DESCRIPTIONS:</p>
+<pre>
+  benchmarks/                Programs that compare cuda and ecuda performance.
+  docs/                      Additional elements for building docs with doxygen.
+  include/                   The ecuda API header files.
+  t/                         Catch unit tests.
+  test/                      Programs to loosely test elements of the API.
+  tools/                     Utilities that utilize ecuda.
+  CMakeLists.txt             CMake configuration file
+  doxygen.cfg                doxygen configuration file
+  ecuda.config               Qt Creator project file
+  ecuda.creator              Qt Creator project file
+  ecuda.files                Qt Creator project file
+  ecuda.includes             Qt Creator project file
+  ecuda.sln                  Visual Studio 2013 Solution file
+  local-config.cmake.example Example file with additional CMake directives
+  .gitignore                 local files to omit from version control
+  LICENSE.txt                release license
+  MANIFEST                   list of files under version control
+  README                     this file
+  VERSION                    current version of the API
+</pre><p></p>
+</blockquote>
+<h1><a class="anchor" id="quick_ref"></a>
+A Few Things You Should Know</h1>
+<p>ecuda was written to be light-weight, intuitive and to follow the STL specification. Code should naturally follow modern C++ programming paradigms (e.g. RAII/SBRM, smart pointers). This can prevent many issues that arise from using the CUDA C API. That said, there are a few key, non-obvious concepts that you should know before using ecuda.</p>
+<h2><a class="anchor" id="quick_ref_kernels"></a>
+Containers as Kernel Arguments</h2>
+<p>When passing base containers to a kernel function, declare the type as <code>Container::kernel_argument</code> or <code>Container::const_kernel_argument</code>.</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#af76006899e4498393c189e5dd2ef68e1">ecuda::vector&lt;double&gt;::const_kernel_argument</a> src, <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> dest );</div>
+</div><!-- fragment --><p>This is not necessary for other container constructs.</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#ad0ffcd571700bbe2403095403cd445f9">ecuda::matrix&lt;double&gt;::const_row_type</a> src, <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a7947927ff51492aaa2e788151befca99">ecuda::matrix&lt;double&gt;::row_type</a> dest );</div>
+</div><!-- fragment --><p>This should be done even in later versions of CUDA that support pass-by-reference, since one of the features of the <code>kernel_argument</code> subclass is that it strips away the reference-counting smart pointer from the container, sparing some registers.</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">const</span> <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a>&amp; src, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a>&amp; dest ); <span class="comment">// NO!</span></div>
+<div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#af76006899e4498393c189e5dd2ef68e1">ecuda::vector&lt;double&gt;::const_kernel_argument</a>&amp; src, <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a>&amp; dest ); <span class="comment">// OK :/</span></div>
+</div><!-- fragment --><h2><a class="anchor" id="quick_ref_ops"></a>
+Direct Access Operators</h2>
+<p>Containers implements both <code>operator[]</code> and <code>operator()</code>. The latter should be used when directly accessing a single element in a multidimensional container. For linear containers like <a class="el" href="classecuda_1_1array.html" title="A fixed-size array stored in device memory. ">ecuda::array</a> and <a class="el" href="classecuda_1_1vector.html" title="A resizable vector stored in device memory. ">ecuda::vector</a> the operators are equivalent. The <code>at()</code> method can also be used. However, as with <code>std</code>:: containers, bounds checking is performed which is more expensive.</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a916ec29b2a5e8d6323e5bee8688cddda">ecuda::matrix&lt;double&gt;::kernel_argument</a> mat )</div>
+<div class="line">{</div>
+<div class="line">  <span class="comment">// ...</span></div>
+<div class="line">  std::size_t x, y;</div>
+<div class="line">  <span class="comment">// ...</span></div>
+<div class="line">  <span class="keywordtype">double</span>&amp; val = mat[x][y];   <span class="comment">// slow</span></div>
+<div class="line">  <span class="keywordtype">double</span>&amp; val = mat.<a class="code" href="classecuda_1_1matrix.html#ac88b00a0d29a03613fca18865c93cda4">at</a>(x,y); <span class="comment">// faster, kernel terminates and throws ecuda::cuda_error if x or y out of bounds</span></div>
+<div class="line">  <span class="keywordtype">double</span>&amp; val = mat(x,y);    <span class="comment">// fastest</span></div>
+<div class="line">  <span class="comment">// ...</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="quick_ref_contiguity"></a>
+Memory Contiguity</h2>
+<p>Be mindful that host copy commands that involve device memory require that memory to be contiguous. A compile-time assertion will be raised if you forget.</p>
+<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( 100, 100 );</div>
+<div class="line">std::vector&lt;double&gt; vec( 100 );</div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( vec.begin(), vec.end(), deviceMatrix.get_row(22).begin() ); <span class="comment">// fine</span></div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( vec.begin(), vec.end(), deviceMatrix.get_column(22).begin() ); <span class="comment">// compile-time assertion CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY</span></div>
+</div><!-- fragment --><p>This rule doesn't apply in device code.</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#af76006899e4498393c189e5dd2ef68e1">ecuda::vector&lt;double&gt;::const_kernel_argument</a> src, <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a916ec29b2a5e8d6323e5bee8688cddda">ecuda::matrix&lt;double&gt;::kernel_argument</a> dest )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t t = threadIdx.x;</div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( src.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), src.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), dest.<a class="code" href="classecuda_1_1matrix.html#a473a3209c4a77046c99b95833700769d">get_row</a>(t).begin() ); <span class="comment">// fine</span></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( src.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), src.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), dest.<a class="code" href="classecuda_1_1matrix.html#aa1697da9b4512e34dd46431be3204df2">get_column</a>(t).begin() ); <span class="comment">// also fine</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="quick_ref_macros"></a>
+Macros</h2>
+<table class="doxtable">
+<tr>
+<th>Macro </th><th>Description  </th></tr>
+<tr>
+<td>CUDA_CALL(...) </td><td>execute ... and if cudaSuccess is not returned, throw an <a class="el" href="classecuda_1_1cuda__error.html" title="Exception for CUDA API cudaError_t errors. ">ecuda::cuda_error</a>  </td></tr>
+<tr>
+<td><a class="el" href="global_8hpp.html#a948ab4bf2c74fff2fd55935897aff2c6">CUDA_CHECK_ERRORS()</a> </td><td>check for current CUDA error with cudaCheckLastError throw <a class="el" href="classecuda_1_1cuda__error.html" title="Exception for CUDA API cudaError_t errors. ">ecuda::cuda_error</a> if present  </td></tr>
+<tr>
+<td>CUDA_CALL_KERNEL_AND_WAIT(...) </td><td>combines the above two macros with an additional call to cudaDeviceSynchronize() that waits for the kernel ... to complete  </td></tr>
+</table>
+<h2><a class="anchor" id="quick_ref_hostemu"></a>
+Host Emulation</h2>
+<p>ecuda will behave appropriately if code is compiled for host only execution. This is useful for prototyping. You'll have to use the <code>__CUDACC__</code> define in a few places, however. Here's an example:</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="ecuda_8hpp.html">ecuda/ecuda.hpp</a>&gt;</span></div>
 <div class="line"></div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector1( 100, 66 ); <span class="comment">// create 100 element vector filled with value 66</span></div>
-<div class="line">deviceVector1.resize( 200, 99 ); <span class="comment">// expand the vector to 200 elements filling new elements with value 99</span></div>
+<div class="line"><span class="keyword">const</span> std::size_t N = 100000;</div>
 <div class="line"></div>
-<div class="line">std::vector&lt;int&gt; hostVector( 50 ); <span class="comment">// create 50 element vector in host memory</span></div>
-<div class="line"><span class="keywordflow">for</span>( <span class="keywordtype">unsigned</span> i = 0; i &lt; 50; ++i ) hostVector[i] = i; <span class="comment">// set the values to range from 0-49</span></div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector2( hostVector.begin(), hostVector.end() ); <span class="comment">// create a vector in device memory and initialize with the host values</span></div>
-</div><!-- fragment --><p>The <a class="el" href="classecuda_1_1matrix.html">ecuda::matrix</a> matrix and <a class="el" href="classecuda_1_1cube.html">ecuda::cube</a> cube try to implement STL conventions as faithfully as possible so using them is intuitive.</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( 100, 100 ); <span class="comment">// create 100x100 matrix</span></div>
-<div class="line"></div>
-<div class="line">std::vector&lt;double&gt; hostVector( 100 ); <span class="comment">// create 100 element vector in host memory</span></div>
-<div class="line"><span class="keywordflow">for</span>( <span class="keywordtype">unsigned</span> i = 0; i &lt; 100; ++i ) hostVector[i] = i; <span class="comment">// set the values to range from 0-99</span></div>
-<div class="line"></div>
-<div class="line"><span class="keywordflow">for</span>( <span class="keywordtype">unsigned</span> i = 0; i &lt; 100; ++i ) </div>
-<div class="line">   deviceMatrix[i].assign( hostVector.begin(), hostVector.end() ); <span class="comment">// set each row of matrix to hold this sequence of values</span></div>
-</div><!-- fragment --><p>The containers can then be passed to kernel functions and manipulated as needed.</p>
-<div class="fragment"><div class="line">__global__ </div>
-<div class="line"><span class="keywordtype">void</span> addColumns( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> srcMatrix, <a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,100&gt;</a> columnSums ) {</div>
-<div class="line"></div>
-<div class="line">   <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">   <span class="keyword">typedef</span> <a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;double&gt;::const_column_type</a> ColumnType;</div>
-<div class="line"></div>
-<div class="line">   <span class="keywordflow">if</span>( threadNum &lt; 100 ) {</div>
-<div class="line">      ColumnType column = srcMatrix.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>(threadNum);</div>
-<div class="line">      <span class="keywordflow">for</span>( ColumnType::iterator iter = column.begin(); iter != column.end(); ++iter )</div>
-<div class="line">         columnSums[threadNum] += *iter;</div>
-<div class="line">   }</div>
-<div class="line"></div>
+<div class="line">__global__</div>
+<div class="line"><span class="keywordtype">void</span> reverseVector( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> vec )</div>
+<div class="line">{</div>
+<div class="line"><span class="preprocessor">  #ifdef __CUDACC__</span></div>
+<div class="line"><span class="preprocessor"></span>  <span class="keyword">const</span> std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;</div>
+<div class="line"><span class="preprocessor">  #else</span></div>
+<div class="line"><span class="preprocessor"></span>  <span class="keywordflow">for</span>( std::size_t t = 0; t &lt; vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>(); ++t )</div>
+<div class="line">  #endif</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; (vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()/2) ) {</div>
+<div class="line">    <span class="keyword">const</span> std::size_t u = vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()-t-1;</div>
+<div class="line">    <a class="code" href="namespaceecuda.html#abc2b93d379cadb08c39f2ae420afcf11">ecuda::swap</a>( vec[t], vec[u] );</div>
+<div class="line">  }</div>
 <div class="line">}</div>
 <div class="line"></div>
-<div class="line"><a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,100&gt;</a> deviceArray;</div>
-<div class="line">addColumns&lt;&lt;&lt;1,100&gt;&gt;&gt;( deviceMatrix, deviceArray );</div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_allocators"></a>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main( <span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[] )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t THREADS = 512;</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector( N );</div>
+<div class="line"></div>
+<div class="line">  std::vector&lt;double&gt; hostVector( N );</div>
+<div class="line">  <span class="comment">// ... initialize host vector values</span></div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( hostVector.begin(), hostVector.end(), deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>() );</div>
+<div class="line"></div>
+<div class="line"><span class="preprocessor">  #ifdef __CUDACC__</span></div>
+<div class="line"><span class="preprocessor"></span>  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( reverseVector&lt;&lt;&lt;((N+THREADS-1)/THREADS),THREADS&gt;&gt;&gt;( deviceVector ) );</div>
+<div class="line"><span class="preprocessor">  #else</span></div>
+<div class="line"><span class="preprocessor"></span>  reverseVector( deviceVector )</div>
+<div class="line">  <span class="preprocessor">#endif</span></div>
+<div class="line"><span class="preprocessor"></span></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), deviceVector.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), hostVector.begin() );</div>
+<div class="line">  <span class="comment">// ... host vector now contains result</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">return</span> 0;</div>
+<div class="line"></div>
+<div class="line">}</div>
+</div><!-- fragment --><p>If compiled with just the C++ compiler (e.g. g++), the resulting program will run as expected without the GPU.</p>
+<h1><a class="anchor" id="example"></a>
+Core Concepts and Examples</h1>
+<h2><a class="anchor" id="example_array"></a>
+Arrays</h2>
+<p>Specification is identical to the C++11 std::array. More efficient when a sequence size is known at compile time. However, <a class="el" href="classecuda_1_1array.html" title="A fixed-size array stored in device memory. ">ecuda::array</a> doesn't require C++11.</p>
+<p>This example requires CUDA &gt;= 7.0 and C++11 support since it uses &lt;array&gt;.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;array&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="ecuda_8hpp.html">ecuda/ecuda.hpp</a>&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">const</span> std::size_t N = 100000;</div>
+<div class="line"></div>
+<div class="line">__global__</div>
+<div class="line"><span class="keywordtype">void</span> squareRootArray( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1array.html#a3809f65553e4c7f3ec47bd2d5ba8ce5d">ecuda::array&lt;double,N&gt;::kernel_argument</a> arr )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; arr.<a class="code" href="classecuda_1_1array.html#a2ff59268df5ef067404c45403e3b15c2">size</a>() ) {</div>
+<div class="line">    <span class="keywordtype">double</span> x = arr[t];</div>
+<div class="line">    x = sqrt(x);</div>
+<div class="line">    arr[t] = x;</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main( <span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[] )</div>
+<div class="line">{</div>
+<div class="line"></div>
+<div class="line">  <span class="keyword">const</span> std::size_t THREADS = 512;</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1array.html">ecuda::array&lt;double,N&gt;</a> deviceArray;</div>
+<div class="line"></div>
+<div class="line">  std::array&lt;double,N&gt; hostArray;</div>
+<div class="line">  <span class="comment">// ... initialize host array values</span></div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( hostArray.begin(), hostArray.end(), deviceArray.<a class="code" href="classecuda_1_1array.html#ab9511488943e44fb5b6e344b1e89d0ec">begin</a>() );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( squareRootArray&lt;&lt;&lt;((N+THREADS-1)/THREADS),THREADS&gt;&gt;&gt;( deviceArray ) );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceArray.<a class="code" href="classecuda_1_1array.html#ab9511488943e44fb5b6e344b1e89d0ec">begin</a>(), deviceArray.<a class="code" href="classecuda_1_1array.html#aad7a69116e73fac8114f404bd940716f">end</a>(), hostArray.begin() );</div>
+<div class="line">  <span class="comment">// ... host array now contains result</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">return</span> 0;</div>
+<div class="line"></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="example_vector"></a>
+Vectors</h2>
+<p>Specification is identical to std::vector. Will automatically grow in size to accomodate new data (e.g. <a class="el" href="classecuda_1_1vector.html#a3df939d3b084d053f22f4460f0fec9a2" title="Inserts value before position. ">ecuda::vector::insert</a>, <a class="el" href="classecuda_1_1vector.html#ae607e78a460ea63e371acb66e3602189" title="Replaces the contents of the container. ">ecuda::vector::assign</a>, <a class="el" href="classecuda_1_1vector.html" title="A resizable vector stored in device memory. ">ecuda::vector</a>:resize).</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="ecuda_8hpp.html">ecuda/ecuda.hpp</a>&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">const</span> std::size_t N = 100000;</div>
+<div class="line"></div>
+<div class="line">__global__</div>
+<div class="line"><span class="keywordtype">void</span> reverseVector( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> vec )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; (vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()/2) ) {</div>
+<div class="line">    <span class="keyword">const</span> std::size_t u = vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()-t-1;</div>
+<div class="line">    <a class="code" href="namespaceecuda.html#abc2b93d379cadb08c39f2ae420afcf11">ecuda::swap</a>( vec[t], vec[u] );</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main( <span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[] )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t THREADS = 512;</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector( N );</div>
+<div class="line"></div>
+<div class="line">  std::vector&lt;double&gt; hostVector( N );</div>
+<div class="line">  <span class="comment">// ... initialize host vector values</span></div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( hostVector.begin(), hostVector.end(), deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>() );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( reverseVector&lt;&lt;&lt;((N+THREADS-1)/THREADS),THREADS&gt;&gt;&gt;( deviceVector ) );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), deviceVector.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), hostVector.begin() );</div>
+<div class="line">  <span class="comment">// ... host vector now contains result</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">return</span> 0;</div>
+<div class="line"></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="example_matrix"></a>
+Matrices</h2>
+<p>A logical extension of an STL container to two dimensions. Memory is column-wise contiguous (i.e. (0,1) is followed by (0,2)). Separate threads should ideally access different columns for best memory coalescing. Utilizes memory allocation that is hardware aligned, so memory coalescing is more consistent. Rows and columns can be accessed and will have the same functionality as <a class="el" href="classecuda_1_1vector.html" title="A resizable vector stored in device memory. ">ecuda::vector</a>.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;algorithm&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="ecuda_8hpp.html">ecuda/ecuda.hpp</a>&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">const</span> std::size_t ROWS = 1000;</div>
+<div class="line"><span class="keyword">const</span> std::size_t COLS = 1000;</div>
+<div class="line"></div>
+<div class="line">__global__</div>
+<div class="line"><span class="keywordtype">void</span> sumMatrixColumns(</div>
+<div class="line">  <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a301256d70b0f6a10804589d040c120c1">ecuda::matrix&lt;double&gt;::const_kernel_argument</a> mat,</div>
+<div class="line">  <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> vec</div>
+<div class="line">)</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; mat.<a class="code" href="classecuda_1_1matrix.html#ace012e99870f617eb65233cf90bb2039">number_columns</a>() ) {</div>
+<div class="line">    vec[t] = <a class="code" href="namespaceecuda.html#a1165795685483cef9b23bb33bd48c829">ecuda::accumulate</a>( mat.<a class="code" href="classecuda_1_1matrix.html#aa1697da9b4512e34dd46431be3204df2">get_column</a>(t).begin(), mat.<a class="code" href="classecuda_1_1matrix.html#aa1697da9b4512e34dd46431be3204df2">get_column</a>(t).end(), <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(0) );</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main( <span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[] )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t THREADS = 512;</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( ROWS, COLS );</div>
+<div class="line"></div>
+<div class="line">  std::vector&lt;double&gt; hostVector( COLS );</div>
+<div class="line">  <span class="comment">// ... initialize host vector values</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">for</span>( std::size_t i = 0; i &lt; ROWS; ++i ) {</div>
+<div class="line">    std::random_shuffle( hostVector.begin(), hostVector.end() );</div>
+<div class="line">    <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( hostVector.begin(), hostVector.end(), deviceMatrix[i].begin() );</div>
+<div class="line">  }</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceSums( COLS );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( sumMatrixColumns&lt;&lt;&lt;((COLS+THREADS-1)/THREADS),THREADS&gt;&gt;&gt;( deviceMatrix, deviceSums ) );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceSums.begin(), deviceSums.end(), hostVector.begin() );</div>
+<div class="line">  <span class="comment">// ... host vector now contains result</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">return</span> 0;</div>
+<div class="line"></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="example_cube"></a>
+Cubes</h2>
+<p>A logical extension of the <a class="el" href="classecuda_1_1matrix.html" title="A resizable matrix stored in device memory. ">ecuda::matrix</a> to to three dimensions. Memory is depth-wise contiguous (i.e. (0,1,2) is followed by (0,1,3)). Separate threads should ideally access different depths (and then different columns) for best memory coalescing. Utilizes memory allocation that is hardware aligned, so memory coalescing is more consistent. XY, XZ, and YZ slices can be accessed and will have the same functionality as <a class="el" href="classecuda_1_1matrix.html" title="A resizable matrix stored in device memory. ">ecuda::matrix</a>. Individual rows, columns, and depths can be accessed and will have the same functionality as <a class="el" href="classecuda_1_1vector.html" title="A resizable vector stored in device memory. ">ecuda::vector</a>.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;algorithm&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="ecuda_8hpp.html">ecuda/ecuda.hpp</a>&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">const</span> std::size_t ROWS = 100;</div>
+<div class="line"><span class="keyword">const</span> std::size_t COLS = 100;</div>
+<div class="line"><span class="keyword">const</span> std::size_t DEPS = 1024;</div>
+<div class="line"></div>
+<div class="line">__global__</div>
+<div class="line"><span class="keywordtype">void</span> sumMatrix(</div>
+<div class="line">  <span class="keyword">typename</span> <a class="code" href="classecuda_1_1cube.html#a7e3bd578d963d0aab9a95f7ed67a456d">ecuda::cube&lt;double&gt;::const_kernel_argument</a> cbe,</div>
+<div class="line">  <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> vec</div>
+<div class="line">)</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t t = blockIdx.x*blockDim.x+threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; cbe.<a class="code" href="classecuda_1_1cube.html#abb8e3fc3e3e73fd1545ca43b133aa3db">number_depths</a>() ) {</div>
+<div class="line">    vec[t] = <a class="code" href="namespaceecuda.html#a1165795685483cef9b23bb33bd48c829">ecuda::accumulate</a>( cbe.<a class="code" href="classecuda_1_1cube.html#a25a97c19172e8647e58225e3d0978b1b">get_xy</a>(t).begin(), cbe.<a class="code" href="classecuda_1_1cube.html#a25a97c19172e8647e58225e3d0978b1b">get_xy</a>(t).end(), <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(0) );</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main( <span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>* argv[] )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> std::size_t THREADS = 512;</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1cube.html">ecuda::cube&lt;double&gt;</a> deviceCube( ROWS, COLS, DEPS );</div>
+<div class="line">  <span class="keywordflow">for</span>( std::size_t i = 0; i &lt; ROWS; ++i ) {</div>
+<div class="line">    <span class="keyword">typename</span> <a class="code" href="classecuda_1_1cube.html#aec0ef90f4fb323b0b27784268f00a4a8">ecuda::cube&lt;double&gt;::slice_yz_type</a> sliceYZ = deviceCube.get_yz(i);</div>
+<div class="line">    std::vector&lt;double&gt; hostMatrix( COLS*DEPS );</div>
+<div class="line">    <span class="comment">// ... initialize host matrix</span></div>
+<div class="line">    <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( hostMatrix.begin(), hostMatrix.end(), sliceYZ.<a class="code" href="classecuda_1_1cube.html#a12106e50b8ff7df797876195c6e32914">begin</a>() );</div>
+<div class="line">  }</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceSums( DEPS );</div>
+<div class="line"></div>
+<div class="line">  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( sumMatrix&lt;&lt;&lt;((DEPS+THREADS-1)/THREADS),THREADS&gt;&gt;&gt;( deviceCube, deviceSums ) );</div>
+<div class="line"></div>
+<div class="line">  std::vector&lt;double&gt; hostSums( DEPS );</div>
+<div class="line">  <a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceSums.begin(), deviceSums.end(), hostSums.begin() );</div>
+<div class="line">  <span class="comment">// ... host vector now contains result</span></div>
+<div class="line"></div>
+<div class="line">  <span class="keywordflow">return</span> 0;</div>
+<div class="line"></div>
+<div class="line">}</div>
+</div><!-- fragment --><h2><a class="anchor" id="example_host_alloc"></a>
 Allocators</h2>
-<div class="image">
-<img src="allocators.png" alt="allocators.png"/>
-<div class="caption">
-The three memory allocators.</div></div>
-<p> STL containers often include an optional "Allocator" template parameter so that memory allocation can be specialized. <em>ecuda</em> uses the same design pattern to handle any allocations of device memory. The default allocator parameter for <em>ecuda</em> containers work fine, so this aspect of the library doesn't require much mention. However, the <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a> allocates page-locked memory and can be useful if you want to use STL containers as a staging point to exchange data between the host and device memory (see the CUDA API documentation for the <code>cudaMallocHost</code> function for a more complete discussion of the advantages and considerations of using page-locked memory).</p>
-<p>For example:</p>
+<p>ecuda uses custom STL allocators to handle device memory allocation (<a class="el" href="classecuda_1_1device__allocator.html" title="Allocator for device memory. ">ecuda::device_allocator</a> and <a class="el" href="classecuda_1_1device__pitch__allocator.html" title="Allocator for hardware aligned device memory. ">ecuda::device_pitch_allocator</a>). One normally doesn't need to worry about these.</p>
+<p>However, the <a class="el" href="classecuda_1_1host__allocator.html" title="Allocator for page-locked host memory. ">ecuda::host_allocator</a> can be useful when allocating memory used as "staging" for transfers between the host and device (see the CUDA API cudaHostAlloc for more discussion). You can specify this as an allocator type when a host container is being used in this way.</p>
 <div class="fragment"><div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector( 1000 );</div>
 <div class="line"><span class="comment">// ... do stuff</span></div>
 <div class="line"></div>
-<div class="line">std::vector&lt; double, ecuda::host_allocator&lt;double&gt; &gt; hostVector1( 1000 ); <span class="comment">// underlying memory allocated using cudaMallocHost</span></div>
+<div class="line">std::vector&lt; double, ecuda::host_allocator&lt;double&gt; &gt; hostVector1( 1000 ); <span class="comment">// underlying memory allocated using cudaHostAlloc</span></div>
 <div class="line">std::vector&lt;double&gt; hostVector2( 1000 ); <span class="comment">// underlying memory allocated using standard &quot;new&quot;</span></div>
 <div class="line"></div>
-<div class="line">deviceVector &gt;&gt; hostVector1; <span class="comment">// faster</span></div>
-<div class="line">deviceVector &gt;&gt; hostVector2; <span class="comment">// slower</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_iterators"></a>
-Iterators</h2>
-<div class="image">
-<img src="iterators.png" alt="iterators.png"/>
-</div>
-<p> Iterators are used extensively in the STL to traverse ranges of elements in a container. They do this more optimally than, say, repeatedly calling the [] operator using an index value. The STL classifies iterators into different "categories" depending on their functionality (from least to most capabilties: Input, Output &lt; Forward &lt; Bidirectional &lt; Random Access). In <em>ecuda</em>, two additional categories are defined: a device_iterator and a contiguous_device_iterator. A reverse iterator, which simply reverses the order of traversal is also available. By design, regular STL iterators are compatible with <em>ecuda</em> containers and views, but not vice versa (since STL containers cannot access device memory).</p>
-<p>Under normal use, a developer doesn't have to worry about the iterator classes themselves. They are typically obtained from containers using the <code>begin()</code>, <code>end()</code>, <code>rbegin()</code>, and <code>rend()</code> methods and their type defined as a container-specific <code>typedef</code>. For example:</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector1( 1000 ); <span class="comment">// create 1000 element vector in device memory</span></div>
-<div class="line"><a class="code" href="classecuda_1_1contiguous__device__iterator.html">ecuda::vector&lt;int&gt;::iterator</a> begin = deviceVector1.begin();</div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector2( begin, begin+50 ); <span class="comment">// create a new vector initialized with the first 50 elements</span></div>
-</div><!-- fragment --><p><em>ecuda</em> containers will also accept standard STL host iterators for most operations.</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector; <span class="comment">// create empty vector in device memory</span></div>
-<div class="line">std::vector&lt;int&gt; hostVector( 1000 ); <span class="comment">// create 1000 element vector in host memory</span></div>
-<div class="line">deviceVector.<a class="code" href="classecuda_1_1vector.html#a11024cc69b967283013d084390a88b62">assign</a>( hostVector.begin(), hostVector.end() ); <span class="comment">// copy elements from host to device, vector will grow to accomodate</span></div>
-</div><!-- fragment --><p>Keep in mind that iterator-based operations that occur on the host that involve device memory requires that the device memory be contiguous (since the code behind the scenes utilizes <code>cudaMemcpy</code> or <code>cudaMemcpy2D</code>). However, code that doesn't follow this rule will simply fail to compile so you'll know that you've violated this.</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;int&gt;</a> deviceMatrix( 100, 100 );</div>
-<div class="line"><a class="code" href="classecuda_1_1contiguous__sequence__view.html">ecuda::matrix&lt;int&gt;::row_type</a> row = deviceMatrix.get_row(0); <span class="comment">// rows are contiguous</span></div>
-<div class="line"><a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;int&gt;::column_type</a> column = deviceMatrix.get_column(0); <span class="comment">// columns are non-contiguous</span></div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector;</div>
-<div class="line">deviceArray.assign( row.<a class="code" href="classecuda_1_1contiguous__sequence__view.html#a14816c832ff68e94515a575785fdf85e">begin</a>(), row.<a class="code" href="classecuda_1_1contiguous__sequence__view.html#af5719deabcfa6f34a496cb4bbf6e0c46">end</a>() ); <span class="comment">// works fine</span></div>
-<div class="line">deviceArray.assign( row.<a class="code" href="classecuda_1_1contiguous__sequence__view.html#a78e4c409786016cab7f19a6562ea9d6e">rbegin</a>(), row.<a class="code" href="classecuda_1_1contiguous__sequence__view.html#a5d8750cba15b1d40663d966402b348e3">rend</a>() ); <span class="comment">// won&#39;t compile, elements in the wrong order</span></div>
-<div class="line">deviceArray.assign( column.<a class="code" href="classecuda_1_1sequence__view.html#a033e5d9295ade2a2854056f488998687">begin</a>(), column.<a class="code" href="classecuda_1_1sequence__view.html#a2f852376a47222ecd785e4b8c3cee613">end</a>() ); <span class="comment">// won&#39;t compile, elements not in contiguous memory</span></div>
-</div><!-- fragment --><p>The same operations in kernel code will compile and work fine though, since element-by-element copying is used.</p>
-<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> copyColumn( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;int&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> vector ) {</div>
-<div class="line">  <a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;int&gt;::const_column_type</a> column = matrix.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>(0);</div>
-<div class="line">  vector.<a class="code" href="classecuda_1_1vector.html#a11024cc69b967283013d084390a88b62">assign</a>( column.<a class="code" href="classecuda_1_1sequence__view.html#a033e5d9295ade2a2854056f488998687">begin</a>(), column.<a class="code" href="classecuda_1_1sequence__view.html#a2f852376a47222ecd785e4b8c3cee613">end</a>() ); <span class="comment">// now compiles and works fine</span></div>
-<div class="line">}</div>
-</div><!-- fragment --><p>Copying device data to host containers should be done through the &gt;&gt; operator, which is defined for all containers and contiguous views.</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector( 1000 );</div>
-<div class="line"><span class="comment">// ... do stuff to device vector</span></div>
-<div class="line">std::vector&lt;int&gt; hostVector( 1000 );</div>
-<div class="line">deviceVector &gt;&gt; hostVector; <span class="comment">// copy vector contents to host</span></div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), deviceVector.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), hostVector1.begin() ); <span class="comment">// faster</span></div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceVector.<a class="code" href="classecuda_1_1vector.html#a349bbad8dcc59294fd9eb977569a2709">begin</a>(), deviceVector.<a class="code" href="classecuda_1_1vector.html#af0acbfb1488fe04fe136df3b6c5cd8c3">end</a>(), hostVector2.begin() ); <span class="comment">// slower</span></div>
 <div class="line"></div>
-<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;int&gt;</a> deviceMatrix( 10, 1000 );</div>
-<div class="line"><span class="comment">// ... do stuff to device matrix</span></div>
-<div class="line">std::vector&lt;int&gt; hostRow( 1000 );</div>
-<div class="line">deviceMatrix[5] &gt;&gt; hostRow; <span class="comment">// copy individial matrix row to host</span></div>
-<div class="line">std::vector&lt;int&gt; hostMatrix( 10*1000 );</div>
-<div class="line">deviceMatrix &gt;&gt; hostMatrix; <span class="comment">// copy entire matrix to host</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_views"></a>
-Views</h2>
-<div class="image">
-<img src="views.png" alt="views.png"/>
-</div>
-<p> The core <em>ecuda</em> containers can be used without having to directly create a view, but it can be useful to know they exist since they are returned by methods such as <a class="el" href="classecuda_1_1matrix.html" title="A resizable matrix stored in device memory. ">ecuda::matrix</a>'s <code>get_row</code>. These act as views of a subset of an existing container without carrying responsibility for memory [de]allocation. For example, a pointer to the start of a single row or column of a <a class="el" href="classecuda_1_1matrix.html">ecuda::matrix</a> is provided to a <a class="el" href="classecuda_1_1contiguous__sequence__view.html">ecuda::contiguous_sequence_view</a> or <a class="el" href="classecuda_1_1sequence__view.html">ecuda::sequence_view</a>, respectively, so that the memory in the matrix can be traversed and acted upon as a sequence. Similarly, a slice of a <a class="el" href="classecuda_1_1cube.html">ecuda::cube</a> along the x-y, x-z, or y-z plane would be represented as a <a class="el" href="classecuda_1_1matrix__view.html">ecuda::matrix_view</a> or <a class="el" href="classecuda_1_1contiguous__matrix__view.html">ecuda::contiguous_matrix_view</a>. Like iterators, they are aliased through a container-specific <code>typedef</code> and aren't referenced explicity under normal use. For example:</p>
-<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;int&gt;</a> deviceMatrix( 100, 100 ); <span class="comment">// create 100x100 matrix</span></div>
-<div class="line"><a class="code" href="classecuda_1_1contiguous__sequence__view.html">ecuda::matrix&lt;int&gt;::row_type</a> row = deviceMatrix.get_row(0); <span class="comment">// is a contiguous_sequence_view</span></div>
-<div class="line"><a class="code" href="classecuda_1_1sequence__view.html">ecuda::matrix&lt;int&gt;::column_type</a> column = deviceMatrix.get_row(0); <span class="comment">// is a sequence_view</span></div>
-<div class="line"></div>
-<div class="line"><a class="code" href="classecuda_1_1cube.html">ecuda::cube&lt;int&gt;</a> deviceCube( 100, 100, 100 ); <span class="comment">// create 100x100x100 cube</span></div>
-<div class="line"><a class="code" href="classecuda_1_1matrix__view.html">ecuda::cube&lt;int&gt;::slice_xy_type</a> xy = deviceCube.get_xy(0); <span class="comment">// is a matrix_view</span></div>
-<div class="line"><a class="code" href="classecuda_1_1contiguous__matrix__view.html">ecuda::cube&lt;int&gt;::slice_xz_type</a> xz = deviceCube.get_xz(0); <span class="comment">// is a contiguous_matrix_view</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_pointers"></a>
-Specialized Pointers</h2>
-<dl class="section warning"><dt>Warning</dt><dd>This section is optional reading since a developer doesn't interact with specialized pointers directly. They are used by the API internally.</dd></dl>
-<div class="image">
-<img src="pointers.png" alt="pointers.png"/>
-</div>
-<p> <a class="el" href="classecuda_1_1device__ptr.html">ecuda::device_ptr</a> is a reference-counting smart pointer to device memory which takes responsibility over an allocation of device memory and then automatically deallocates it when the reference count reaches zero. It's quite similar to a std::shared_ptr. All <em>ecuda</em> containers use a <a class="el" href="classecuda_1_1device__ptr.html">ecuda::device_ptr</a> to interface with any underlying device memory.</p>
-<p><a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a> and <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a> are pointer-like classes (allow all of the same operations as naked pointers) but abstract away any non-contiguity in the memory being traversed. For example, traversing the elements of a particular column of a row-major matrix is facilitated through the use of a <a class="el" href="classecuda_1_1striding__ptr.html">ecuda::striding_ptr</a> where the "stride" is set to the number of columns. CUDA also allocates 2D memory in a way that optimizes read/write operations across many threads (see <a class="el" href="index.html#optimizing_threads">Optimizing Thread Operations</a> below for more discussion on this), and results in empty padding at the end of each row. A <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a> is used to traverse these elements while automatically skipping the padding. These two specialized pointers can also be combined. They're used internally to create efficient views and iterators.</p>
-<h2><a class="anchor" id="overview_misc"></a>
-Miscellaneous</h2>
-<p>The library contains additional classes, functions, and macros to simplify some common CUDA programming tasks.</p>
-<h3><a class="anchor" id="overview_misc_cudawrapper"></a>
-Capturing CUDA API Errors</h3>
-<p>A macro called CUDA_CALL is defined that captures errors from any of the low-level CUDA API functions and throws an <a class="el" href="classecuda_1_1cuda__error.html">ecuda::cuda_error</a> exception.</p>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">std::copy</a>( hostVector1.begin(), hostVector1.begin()+500, hostVector1.begin()+500 ); <span class="comment">// slower</span></div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">std::copy</a>( hostVector2.begin(), hostVector2.begin()+500, hostVector2.begin()+500 ); <span class="comment">// faster</span></div>
+</div><!-- fragment --><h2><a class="anchor" id="example_exception"></a>
+Exceptions</h2>
+<p>ecuda will catch any errors that arise from calls to the CUDA C API and throw an <a class="el" href="classecuda_1_1cuda__error.html" title="Exception for CUDA API cudaError_t errors. ">ecuda::cuda_error</a> exception. This will also occur if a kernel crashes.</p>
 <div class="fragment"><div class="line"><span class="keywordflow">try</span> {</div>
-<div class="line">  CUDA_CALL( cudaDeviceSynchronize() );</div>
+<div class="line">  <a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( kernelFunction&lt;&lt;&lt;THREADS&gt;&gt;&gt;( ... ) );</div>
 <div class="line">} <span class="keywordflow">catch</span>( <a class="code" href="classecuda_1_1cuda__error.html">ecuda::cuda_error</a>&amp; ex ) {</div>
-<div class="line">  std::cerr &lt;&lt; <span class="stringliteral">&quot;CUDA API error: &quot;</span> &lt;&lt; ex.what() &lt;&lt; std::endl;</div>
+<div class="line">  std::cerr &lt;&lt; <span class="stringliteral">&quot;kernel failed: &quot;</span> &lt;&lt; ex.what() &lt;&lt; <span class="stringliteral">&quot; (code: &quot;</span> &lt;&lt; ex.<a class="code" href="classecuda_1_1cuda__error.html#a1343dee5cde6ea44c14545f7a3b7cef8">get_error_code</a>() &lt;&lt; <span class="stringliteral">&quot;)&quot;</span> &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>The macro is also used with any such calls within the <em>ecuda</em> library.</p>
-<p>Additionally, a macro called CUDA_CHECK_ERRORS can be used after starting a kernel to capture any error that would normally be checked using cudaGetLastError(). Any error will be converted to an <a class="el" href="classecuda_1_1cuda__error.html">ecuda::cuda_error</a> exception and thrown.</p>
-<div class="fragment"><div class="line"><span class="keywordflow">try</span> {</div>
-<div class="line">  myKernel&lt;&lt;&lt;10,1000&gt;&gt;&gt;( ... );</div>
-<div class="line">  CUDA_CHECK_ERRORS();</div>
-<div class="line">} <span class="keywordflow">catch</span>( <a class="code" href="classecuda_1_1cuda__error.html">ecuda::cuda_error</a>&amp; ex ) {</div>
-<div class="line">  std::cerr &lt;&lt; <span class="stringliteral">&quot;CUDA kernel error: &quot;</span> &lt;&lt; ex.what() &lt;&lt; std::endl;</div>
-<div class="line">}</div>
-</div><!-- fragment --><h3><a class="anchor" id="overview_misc_cstyle"></a>
-Using C-style Arrays</h3>
-<p>The <a class="el" href="classecuda_1_1host__array__proxy.html">ecuda::host_array_proxy</a> is a simple wrapper that allows C-style arrays to function as a standard container. This is useful for incorporating other libraries, like the GNU Scientific Library, that still use naked pointers.</p>
-<div class="fragment"><div class="line">gsl_matrix* mat = gsl_matrix_alloc( 10, 20 );</div>
-<div class="line"><span class="comment">// ... prepare matrix values</span></div>
-<div class="line"><a class="code" href="classecuda_1_1host__array__proxy.html">ecuda::host_array_proxy&lt;double&gt;</a> proxy( mat-&gt;data, 10*20 );</div>
-<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( 10, 20 );</div>
-<div class="line">deviceMatrix.assign( proxy.begin(), proxy.end() ); <span class="comment">// copies gsl_matrix to device matrix via the proxy</span></div>
-<div class="line">deviceMatrix &gt;&gt; proxy; <span class="comment">// copies device matrix to gsl_matrix via the proxy</span></div>
-</div><!-- fragment --><h3><a class="anchor" id="overview_misc_events"></a>
-CUDA Events</h3>
+</div><!-- fragment --><h2><a class="anchor" id="example_events"></a>
+Events</h2>
 <p>A wrapper around CUDA event objects called <a class="el" href="classecuda_1_1event.html">ecuda::event</a> makes these more C++-like.</p>
 <div class="fragment"><div class="line"><span class="comment">// record kernel execution time</span></div>
 <div class="line"><a class="code" href="classecuda_1_1event.html">ecuda::event</a> start, stop;</div>
@@ -429,121 +516,95 @@ CUDA Events</h3>
 <div class="line">start.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>(); <span class="comment">// record start time</span></div>
 <div class="line">myKernel&lt;&lt;&lt;10,1000&gt;&gt;&gt;( ... );</div>
 <div class="line">stop.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>(); <span class="comment">// record stop time</span></div>
-<div class="line"></div>
 <div class="line">stop.<a class="code" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">synchronize</a>(); <span class="comment">// kernel execution is asynchronous, wait until it finishes</span></div>
 <div class="line"></div>
 <div class="line">std::cerr &lt;&lt; <span class="stringliteral">&quot;EXECUTION TIME: &quot;</span> &lt;&lt; ( stop-start ) &lt;&lt; <span class="stringliteral">&quot;milliseconds&quot;</span> &lt;&lt; std::endl;</div>
-</div><!-- fragment --><h2><a class="anchor" id="overview_misc_stl_algo"></a>
-STL Functions</h2>
-<p>Some standard STL functions are re-implemented, or extended to work in kernels or utilize <em>ecuda</em> classes. For example, <code>max_element</code>, <code>swap</code>, <code>copy</code>, <code>distance</code> etc. A <a href="namespaceecuda.html">complete list</a> is available in the generated documentation. These were implemented only to support specific tasks within the API, so <em>ecuda</em> does not exhaustively treat the many STL functions in headers like &lt;algorithm&gt;, &lt;iterator&gt;, or &lt;type_traits&gt;.</p>
-<div class="fragment"><div class="line">std::vector&lt;int&gt; hostVectorFragment1( 50, 99 );</div>
-<div class="line">std::vector&lt;int&gt; hostVectorFragment1( 50, 66 );</div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector( 100 );</div>
-<div class="line"><a class="code" href="namespaceecuda.html#a9a80e5f8f27e09d32181797366876fc1">ecuda::copy</a>( hostVectorFragment1.begin(), hostVectorFragment1.end(), deviceVector.<a class="code" href="classecuda_1_1vector.html#a2467abdd66dae3c6a8172f9cdc7568f6">begin</a>() ); <span class="comment">// works with device iterators</span></div>
-<div class="line"><a class="code" href="namespaceecuda.html#a9a80e5f8f27e09d32181797366876fc1">ecuda::copy</a>( hostVectorFragment2.begin(), hostVectorFragment2.end(), deviceVector.<a class="code" href="classecuda_1_1vector.html#a2467abdd66dae3c6a8172f9cdc7568f6">begin</a>()+50 ); <span class="comment">// works with device iterators</span></div>
-<div class="line"><a class="code" href="namespaceecuda.html#a9a80e5f8f27e09d32181797366876fc1">std::copy</a>( hostVectorFragment1.begin(), hostVectorFragment1.end(), deviceVector.<a class="code" href="classecuda_1_1vector.html#a2467abdd66dae3c6a8172f9cdc7568f6">begin</a>() ); <span class="comment">// compiler barfs, STL doesn&#39;t recognize device iterators</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="optimizing_threads"></a>
-Optimizing Thread Operations</h1>
-<p>One of the central concerns when CUDA programming is that read/write operations to device memory are extremely time-consuming, so organizing these operations so that different threads access data in close physical proximity greatly optimizes the program. This can be a source of optimization with any program, but it is particularly impactful for multi-threading with GPUs. The specifics depend on the hardware, but the bus might always transfer say, 128 bits of memory per read operation. If each data element is 8 bytes then a single read can potentially supply 16 threads with the information it requires. When using the <a class="el" href="classecuda_1_1matrix.html">ecuda::matrix</a> matrix and <a class="el" href="classecuda_1_1cube.html">ecuda::cube</a> containers, it's important to note how these are represented in memory and which dimension different threads should preferably access. The rule of thumb is that the minor dimension should be the target of separate threads. For a matrix, this is a column; for a cube, this is a depth (and secondarily, a column). For example, given these two kernel functions:</p>
-<div class="fragment"><div class="line"><span class="comment">// kernel #1</span></div>
-<div class="line">__global__ <span class="keywordtype">void</span> rowSums( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> sums ) {</div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">  <span class="keywordflow">if</span>( threadNum &lt; matrix.<a class="code" href="classecuda_1_1matrix.html#a00cd78b7556febca832023c4d6ef3812">number_rows</a>() ) {</div>
-<div class="line">    <span class="keywordtype">double</span> sum = 0.0;</div>
-<div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">double</span> x : matrix.<a class="code" href="classecuda_1_1matrix.html#a92fec8d606dfb1084a92275c78e5159e">get_row</a>(threadNum) ) sum += x; <span class="comment">// C++11 range-based loop (CUDA &gt;=7.0)</span></div>
-<div class="line">    sums[threadNum] = sum;</div>
+</div><!-- fragment --><h1><a class="anchor" id="faq"></a>
+Frequently Asked Questions</h1>
+<p>At this point, this section is really an "anticipated" FAQ.</p>
+<h2><a class="anchor" id="faq_thrust"></a>
+Why not Thrust?</h2>
+<p>The <a href="http://docs.nvidia.com/cuda/thrust/">Thrust library</a> is officially supported by NVidia and is similar in that it makes CUDA more C++ friendly. However, the emphasis is quite different in that it aims to parallelize common algorithms like <code>sort</code>. It also features only two containers: <code>thrust::host_vector</code> and <code>thrust::device_vector</code>.</p>
+<p>ecuda is focused more on the data structures themselves, making them easier to manipulate in device code and providing an intuitive relationship between device and host memory (and code).</p>
+<p>Whether you use ecuda or Thrust (or both) depends on the focus of your project.</p>
+<p>Good task for Thrust:</p>
+<div class="fragment"><div class="line"><span class="comment">// I have 1000 measurements from 1000 experiments, and I want to sort each experiment</span></div>
+<div class="line"><span class="keywordflow">for</span>( std::size_t i = 0; i &lt; 1000; ++i ) {</div>
+<div class="line">  std::vector&lt;double&gt; measurements( 1000 );</div>
+<div class="line">  <span class="comment">// ... load measurements for i-th experiment</span></div>
+<div class="line">  thrust::sort( measurements.begin(), measurements.end() ); <span class="comment">// parallelized!</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Good task for ecuda:</p>
+<div class="fragment"><div class="line"><span class="comment">// I have 1000 measurements from 1000 experiments, and I want to run my fancy stats on each experiment</span></div>
+<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> data( 1000, 1000 );</div>
+<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> result( 1000 );</div>
+<div class="line"><span class="comment">// ... load measurements</span></div>
+<div class="line"><a class="code" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>( runStatistics&lt;&lt;&lt;1,1000&gt;&gt;&gt;( data, result ) );</div>
+<div class="line"></div>
+<div class="line">__global__void runStatistics( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html#a916ec29b2a5e8d6323e5bee8688cddda">ecuda::matrix&lt;double&gt;::kernel_argument</a> data, <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> result )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> t = threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; data.<a class="code" href="classecuda_1_1matrix.html#ace012e99870f617eb65233cf90bb2039">number_columns</a>() ) {</div>
+<div class="line">    <span class="keywordtype">double</span> fancyStat;</div>
+<div class="line">    <a class="code" href="classecuda_1_1matrix.html#a6206e8f8dfd5a5971cc066ad48aa8ee5">ecuda::matrix&lt;double&gt;::const_column_type</a> measurements = data.<a class="code" href="classecuda_1_1matrix.html#aa1697da9b4512e34dd46431be3204df2">get_column</a>(t);</div>
+<div class="line">    <span class="comment">// ... calculate fancy stat</span></div>
+<div class="line">    result[t] = fancyStat;</div>
 <div class="line">  }</div>
 <div class="line">}</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// kernel #2</span></div>
-<div class="line">__global__ <span class="keywordtype">void</span> columnSums( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> sums ) {</div>
-<div class="line">  <span class="keyword">const</span> <span class="keywordtype">int</span> threadNum = threadIdx.x;</div>
-<div class="line">  <span class="keywordflow">if</span>( threadNum &lt; matrix.<a class="code" href="classecuda_1_1matrix.html#a54d63816227c0ab01aed53486fd9932f">number_columns</a>() ) {</div>
-<div class="line">    <span class="keywordtype">double</span> sum = 0.0;</div>
-<div class="line">    <span class="keywordflow">for</span>( <span class="keywordtype">double</span> x : matrix.<a class="code" href="classecuda_1_1matrix.html#a673e78abb3a630b5b98cb1a58906c9a3">get_column</a>(threadNum) ) sum += x; <span class="comment">// C++11 range-based loop (CUDA &gt;=7.0)</span></div>
-<div class="line">    sums[threadNum] = sum;</div>
+</div><!-- fragment --><h2><a class="anchor" id="faq_overhead"></a>
+How much overhead?</h2>
+<p>Ideally none. ecuda does pray that the compiler will help in this. In some cases, additional overhead is not easily avoidable. For example:</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a916ec29b2a5e8d6323e5bee8688cddda">ecuda::matrix&lt;int64_t&gt;::kernel_argument</a> mat1, <span class="keyword">typename</span> <a class="code" href="classecuda_1_1matrix.html#a916ec29b2a5e8d6323e5bee8688cddda">ecuda::matrix&lt;double&gt;::kernel_argument</a> mat2 );</div>
+</div><!-- fragment --><p>will never beat:</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> kernelFunction( int64_t* mat1, <span class="keywordtype">double</span>* mat2, <span class="keyword">const</span> <span class="keywordtype">size_t</span> pitch, <span class="keyword">const</span> <span class="keywordtype">size_t</span> nr, <span class="keyword">const</span> <span class="keywordtype">size_t</span> nc );</div>
+</div><!-- fragment --><p>in the case where it is known that both matrices have the same dimension. This has never been an issue for me in practice.</p>
+<h2><a class="anchor" id="faq_performance"></a>
+How much of a performance penalty?</h2>
+<p>None where it matters, some where it shouldn't. In cases where ecuda code takes longer to execute, it is probably worth it in terms of safety and consistency. For example:</p>
+<div class="fragment"><div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> mat( 100, 100 );</div>
+<div class="line"><span class="comment">/// ... set values</span></div>
+</div><!-- fragment --><p>is slower than:</p>
+<div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> rows = 100;</div>
+<div class="line"><span class="keyword">const</span> <span class="keywordtype">size_t</span> cols = 100;</div>
+<div class="line"><span class="keywordtype">double</span>* mat;</div>
+<div class="line"><span class="keywordtype">size_t</span> pitch;</div>
+<div class="line"><a class="code" href="global_8hpp.html#a6694bb1be0e7de8ed06a4bdc2ea374f1">CUDA_CALL</a>( cudaMalloc2D( &amp;mat, &amp;pitch, cols*<span class="keyword">sizeof</span>(<span class="keywordtype">double</span>), rows ) );</div>
+<div class="line"><span class="comment">/// ... set values</span></div>
+</div><!-- fragment --><p>but only because the former will always initialize the contents (e.g. with a <a class="el" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984" title="Re-implementation of CUDA API function cudaMemset that enforces a single-byte value. ">cudaMemset()</a> call where it makes sense).</p>
+<p>Within a kernel function, typical data access and manipulation will run identically. For example:</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> reverseSequence( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1vector.html#a18ba7cbc4f9ebfee1d5ec8cbac83be4d">ecuda::vector&lt;double&gt;::kernel_argument</a> v )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> t = threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; (v.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()/2) ) <a class="code" href="namespaceecuda.html#abc2b93d379cadb08c39f2ae420afcf11">ecuda::swap</a>( v[t], v[vec.<a class="code" href="classecuda_1_1vector.html#ad16a3e7f04d5fabb57880ab06aee0dcb">size</a>()-t-1] );</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>will run just as fast as:</p>
+<div class="fragment"><div class="line">__global__ <span class="keywordtype">void</span> reverseSequence( <span class="keywordtype">double</span>* seq, <span class="keyword">const</span> <span class="keywordtype">size_t</span> len )</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">const</span> <span class="keywordtype">size_t</span> t = threadIdx.x;</div>
+<div class="line">  <span class="keywordflow">if</span>( t &lt; (len/2) ) {</div>
+<div class="line">    <span class="keywordtype">double</span> tmp = seq[t];</div>
+<div class="line">    seq[t] = seq[len-t-1];</div>
+<div class="line">    seq[u] = tmp;</div>
 <div class="line">  }</div>
 <div class="line">}</div>
-<div class="line"></div>
-<div class="line"><span class="comment">// host code</span></div>
-<div class="line"><a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;double&gt;</a> deviceMatrix( 1000, 1000 ); <span class="comment">// create 1000x1000 matrix</span></div>
-<div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;double&gt;</a> deviceVector( 1000 ); <span class="comment">// create zero-initialized vector</span></div>
-<div class="line"><span class="comment">// ... put stuff into deviceMatrix</span></div>
-<div class="line">{</div>
-<div class="line">  <a class="code" href="classecuda_1_1event.html">ecuda::event</a> start, stop;</div>
-<div class="line">  start.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>();</div>
-<div class="line">  rowSums&lt;&lt;&lt;1,1000&gt;&gt;&gt;( deviceMatrix, deviceVector );</div>
-<div class="line">  stop.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>();</div>
-<div class="line">  stop.<a class="code" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">synchronize</a>();</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;EXECUTION TIME: &quot;</span> &lt;&lt; (stop-start) &lt;&lt; <span class="stringliteral">&quot;ms&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">}</div>
-<div class="line">{</div>
-<div class="line">  <a class="code" href="classecuda_1_1event.html">ecuda::event</a> start, stop;</div>
-<div class="line">  start.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>();</div>
-<div class="line">  columnSums&lt;&lt;&lt;1,1000&gt;&gt;&gt;( deviceMatrix, deviceVector );</div>
-<div class="line">  stop.<a class="code" href="classecuda_1_1event.html#aea6c8159da636ccf4481460b97c1781f">record</a>();</div>
-<div class="line">  stop.<a class="code" href="classecuda_1_1event.html#aa3c2ce52eaf99b88550a0dfcb79d077f">synchronize</a>();</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;EXECUTION TIME: &quot;</span> &lt;&lt; (stop-start) &lt;&lt; <span class="stringliteral">&quot;ms&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>The execution time of the second kernel will invariably be <em>much</em> faster than the first. These considerations are also discussed and expanded on in the generated documentation for each container.</p>
-<h1><a class="anchor" id="performance"></a>
-Performance</h1>
-<p>Considerable effort was dedicated to minimizing the overhead of using <em>ecuda</em>. Several benchmarks suggest that the overhead is trivial, with no consistent difference between programs using direct CUDA calls and those utilizing <em>ecuda</em> containers. If you're not an experienced CUDA developer, there will likely be a performance increase if your normal approach would not have been optimized and there will certainly be less headaches with raw pointers. If you're already familiar with C++/STL <em>ecuda</em> should greatly ease your introduction to CUDA programming. There are several programs in the <code>benchmarks</code> folder you can compile to look at the performance and the design of the test problems used. They are not optimal implementations of a matrix transpose or multiplication by any means, but are solely designed to identify any performance costs from the additional <em>ecuda</em> layer over direct CUDA API calls.</p>
-<p>On a test machine containing an NVIDIA Tesla M2090 GPU and Intel Xeon E5-2620 CPU, some results were:</p>
-<table class="doxtable">
-<tr>
-<th>Program </th><th>Matrix Size </th><th>CPU only </th><th>GPU + CUDA </th><th>GPU + ecuda  </th></tr>
-<tr>
-<td>matrix_tranpose </td><td>10000x10000 </td><td>1420ms </td><td>44ms </td><td>44ms </td></tr>
-<tr>
-<td>matrix_multiply </td><td>1000x1000 </td><td>9760ms </td><td>40ms </td><td>40ms </td></tr>
-<tr>
-<td>matrix_multiply </td><td>5000x5000 </td><td>~18min </td><td>4900ms </td><td>4900ms </td></tr>
-</table>
-<h1><a class="anchor" id="compatibility"></a>
+</div><!-- fragment --><h1><a class="anchor" id="compatibility"></a>
 Compatibility</h1>
-<p>The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1. CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 also compiled successfully but no example programs were tested. CUDA &lt;5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in __host__/__device__ methods that create a host-specific and device-specific implementation).</p>
-<dl class="section warning"><dt>Warning</dt><dd>Users of libc++ (e.g. Mac users developing with XCode) READ THIS </dd>
-<dd>
-The initial 1.0 release contained some minor problems that caused failed compilation with libc++. Since I did all tests on platforms that used libstdc++, these weren't known until after release. If this applies to you, you'll have to pull the latest source code directly rather than download the bundled release. </dd>
-<dd>
-<div class="fragment"><div class="line">git clone https:<span class="comment">//github.com/BaderLab/ecuda.git</span></div>
-</div><!-- fragment --></dd>
-<dd>
-This won't apply to releases post-1.0 since these issues have been fixed.</dd></dl>
-<p>The only pernicious bug I encountered was in an experimental version of the API (that was ultimately not adopted for final release), when using test programs with a larger number (&gt;10) of separate kernels in the same file. Specifically, this code fragment:</p>
-<div class="fragment"><div class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line">__global__ <span class="keywordtype">void</span> linearizeMatrix( <span class="keyword">const</span> <a class="code" href="classecuda_1_1matrix.html">ecuda::matrix&lt;T&gt;</a> matrix, <a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;T&gt;</a> vector ) {</div>
-<div class="line">  <span class="comment">// use iterator to get data from src, and index to set data in dest</span></div>
-<div class="line">  std::size_t index = 0;</div>
-<div class="line">  <span class="keywordflow">for</span>( <span class="keyword">typename</span> <a class="code" href="classecuda_1_1device__iterator.html">ecuda::matrix&lt;T&gt;::const_iterator</a> iter = matrix.<a class="code" href="classecuda_1_1matrix.html#a1a6c98eb22a8c57990818eb045dab534">begin</a>(); iter != matrix.<a class="code" href="classecuda_1_1matrix.html#af795712961534a0667aa8b8b2e8afdd1">end</a>(); ++iter, ++index ) vector[index] = *iter;</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>The value of <code>index</code> would not increment. The issue disappeared if I ran only that kernel in CUDA 5.5, and was never an issue regardless of how many kernels were run in CUDA 6.0. I concluded that it was a problem with the CUDA 5.5 <code>nvcc</code> compiler, but I'm including it here for transparency and in case a similar issue arises again.</p>
-<p><em>ecuda</em> has not been tested on Windows platforms, although it should be straightforward to drop into a Visual Studio project and check. I seem to recall there were issues with using <b>and</b> and <b>or</b> (a personal C++ idiosyncracy of mine) in place of <b><code>&amp;&amp;</code></b> and <b><code>||</code></b> with Windows compilers in other code I've worked on. If this is real problem I'm remembering correctly, I will replace these in a future release. YMMV, but I expect any problems can be easily identified and hacked into working form. Please contact me if you run into issues.</p>
-<h2><a class="anchor" id="overview_cpp11"></a>
-C++11 Support and CUDA &gt;= 7.0</h2>
-<p>C++11 support was finally added to CUDA 7.0. <em>ecuda</em> does implement the additions to the STL specification that came with C++11. These have been included in <em>ecuda</em> for quite some time in an attempt to future-proof the API, and it's paid off just in time for release. The move constructor is defined, std::initializer_list is supported, and the methods cbegin(), cend(), crbegin(), and crend() to explicitly acquire constant iterators even if the container they are being requested from is non-const. The API has not been extensively tested with CUDA 7.0, but test programs that utilize these features compile without issue.</p>
-<p>The keywords <code>constexpr</code> and <code>noexcept</code> are also utilized (the __CONSTEXPR__ and __NOEXCEPT__ macros, which can be seen in the generated documentation for various methods, indicate these keywords and they are enabled only if C++11 support is detected), so some minor performance benefit might occur when compiling with CUDA 7.0 (and the -std=c++11 flag).</p>
-<h1><a class="anchor" id="section_examples"></a>
-Example Programs</h1>
-<p>There are a number of programs in the <code>test</code>, <code>examples</code>, and <code>benchmarks</code> subdirectories of the release. These should all compile with GNU Make:</p>
-<div class="fragment"><div class="line">make test/test_array</div>
-<div class="line">make examples/euclidean</div>
-<div class="line">make benchmarks/matrix_transpose</div>
-<div class="line">... and so forth</div>
-</div><!-- fragment --><p>You may have to change the Makefile parameters to reflect your setup if you're using a compiler other than GCC or have CUDA installed in a non-standard location. Look for:</p>
-<div class="fragment"><div class="line">CXX = g++</div>
-<div class="line">CXXFLAGS = -O3 -Wall -flto -L/usr/local/cuda/lib64 -pedantic</div>
-<div class="line">NVCC = /usr/local/cuda/bin/nvcc</div>
-<div class="line">NVCCFLAGS = -arch=sm_21 -O3</div>
-<div class="line">LDLIBS = -lcudart</div>
-</div><!-- fragment --><p>Alternatively, the Makefile will take any variables defined in a file named <code>local-config.cfg</code> if it is present, so you can simply create that file and redeclare the relevant lines with different values there.</p>
-<p>The programs are not intended to be pretty or well organized, but they will give a taste of how to use the API in practice. They're basically hacky code that I used to check that the API was performing tasks correctly.</p>
+<p>The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1 and 4.8.4. CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 and CUDA 7.5 with GCC 4.8.4 also compiled successfully but no example programs were tested. CUDA &lt;5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in __host__/__device__ methods that create a host-specific and device-specific implementation).</p>
+<p>Some very cursory tests with Windows 10, Visual Studio 2013, and CUDA 7.5 were also done successfully. Unlike with Linux, ecuda has not been used in a production setting on Windows, however.</p>
 <h1><a class="anchor" id="section_future_work"></a>
 Future Work</h1>
-<p>I'll continue to develop this as time permits. The specifications for the core container should remain fixed, so I don't anticipate any backwards compatibility issues from any future improvements.</p>
-<p>There are a number of architectural changes that are possible to the API that are on a to-do list. In one ill-fated trip down the C++ template/metaprogramming rabbit hole, I was able to make containers subclasses of views, and reworked specialized pointers in a way that was more appealing. Unfortunately, the API took a huge performance hit. It's well-known that too much templating eventually hinders C++ compilers (and presumably the nvcc compiler) from making good optimizations, so this is something to keep in mind. As of now, the design is in a good place as far as performance versus code duplication.</p>
-<p>Finally, apologies in advance for any cosmetic blemishes in variable names and documentation. These will be cleaned up as they are found.</p>
+<p>I've been developing and using ecuda in a production setting performing scientific computing that is heavily focused on statistics and information theory. All of the problems with version 1.0 have been addressed in this release and I'm fairly confident in its robustness at this point.</p>
+<p>A fixed-size matrix and cube (like std::vector is to std::array) could potentially be useful. I'll likely add it when I actually need it.</p>
+<p>Hopefully, any future work will be confined to bug fixes or addressing user difficulties.</p>
+<h1><a class="anchor" id="changes"></a>
+Changes from v.1.0</h1>
+<p>The entire API was refined based on lessons learned. Broadly, the changes were:</p>
+<ul>
+<li>Removal of container operator&lt;&lt; and operator&gt;&gt; to transfer between host and device memory. The <a class="el" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d" title="Replacement for std::copy. ">ecuda::copy</a> function (equivalent to std::copy) should now be used. </li>
+<li>Any container passed to a kernel function as an argument should be declared as Container::kernel_argument. </li>
+<li>Copy constructors now work as expected (memory is allocated and the contents copied). </li>
+<li>Container at() method now performs bounds-checking (which is more consistent with the STL specification), and direct access to a particular container element is now done using operator().</li>
+</ul>
 <h1><a class="anchor" id="license"></a>
 License</h1>
 <p>The <em>ecuda</em> library is open source and released under the FreeBSD license.</p>
@@ -586,7 +647,7 @@ Acknowledgements</h1>
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

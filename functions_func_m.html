@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -107,7 +106,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -121,25 +120,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h3><a class="anchor" id="index_m"></a>- m -</h3><ul>
 <li>matrix()
-: <a class="el" href="classecuda_1_1matrix.html#a98e330a7d3ba8c03e7cfa21f18ab3d53">ecuda::matrix&lt; T, Alloc &gt;</a>
-</li>
-<li>matrix_view()
-: <a class="el" href="classecuda_1_1matrix__view.html#aaf4fcd8057487992da5db49f520656f4">ecuda::matrix_view&lt; T, PointerType, RowType &gt;</a>
+: <a class="el" href="classecuda_1_1matrix.html#aeb4e594239e4434c92e90ccfb7831a7b">ecuda::matrix&lt; T, Alloc, P &gt;</a>
 </li>
 <li>max_size()
-: <a class="el" href="classecuda_1_1array.html#ab10f34d5d4945624a16a22e388caa864">ecuda::array&lt; T, N &gt;</a>
-, <a class="el" href="classecuda_1_1device__allocator.html#a53d49388b84667a182de2b1558473b76">ecuda::device_allocator&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1device__pitch__allocator.html#a308516affd94ec1b7076c446b4275b8f">ecuda::device_pitch_allocator&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1host__allocator.html#a4cdd6302ef94a3eacc67175181225c93">ecuda::host_allocator&lt; T &gt;</a>
-, <a class="el" href="classecuda_1_1matrix.html#a897e4a51a1815834d02090032bfd420b">ecuda::matrix&lt; T, Alloc &gt;</a>
-, <a class="el" href="classecuda_1_1vector.html#ac23c4ce0190a3db78e826e719bcba9b8">ecuda::vector&lt; T, Alloc &gt;</a>
+: <a class="el" href="classecuda_1_1array.html#a7cdcf701f0f0be10775de96357e2c4da">ecuda::array&lt; T, N, P &gt;</a>
+, <a class="el" href="classecuda_1_1device__allocator.html#a0da7e65b7bf7c5e764d54d9e1c2bdb0f">ecuda::device_allocator&lt; T &gt;</a>
+, <a class="el" href="classecuda_1_1device__pitch__allocator.html#acfb4a9f328d0bd3a58a2e85831c4e4d3">ecuda::device_pitch_allocator&lt; T &gt;</a>
+, <a class="el" href="classecuda_1_1host__allocator.html#aaa9ad8ca4f4dda3a5a1618b3afaa16e9">ecuda::host_allocator&lt; T, Flags &gt;</a>
+, <a class="el" href="classecuda_1_1matrix.html#aa4b33fbb7877e42fe2dd95afb54d6ee7">ecuda::matrix&lt; T, Alloc, P &gt;</a>
+, <a class="el" href="classecuda_1_1vector.html#a47fb155d99d7d79d42cb110070335a62">ecuda::vector&lt; T, Alloc, P &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

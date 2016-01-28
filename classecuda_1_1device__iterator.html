@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Extended CUDA Library (ecuda): ecuda::device_iterator&lt; T, PointerType, Category &gt; Class Template Reference</title>
+<title>Extended CUDA Library (ecuda): ecuda::device_iterator&lt; T, P, Category &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -74,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -95,216 +94,173 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#friends">Friends</a> &#124;
 <a href="classecuda_1_1device__iterator-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ecuda::device_iterator&lt; T, PointerType, Category &gt; Class Template Reference</div>  </div>
+<div class="title">ecuda::device_iterator&lt; T, P, Category &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Iterator template compatible with pointers to device memory.  
- <a href="classecuda_1_1device__iterator.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>&gt;</code></p>
-<div class="dynheader">
-Inheritance diagram for ecuda::device_iterator&lt; T, PointerType, Category &gt;:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="classecuda_1_1device__iterator.png" usemap="#ecuda::device_iterator&lt; T, PointerType, Category &gt;_map" alt=""/>
-  <map id="ecuda::device_iterator&lt; T, PointerType, Category &gt;_map" name="ecuda::device_iterator&lt; T, PointerType, Category &gt;_map">
-</map>
- </div></div>
+<p><code>#include &lt;<a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a402f6f3090ae661a0c06e9607d50c26d"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
-base_iterator_type::iterator_category&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a402f6f3090ae661a0c06e9607d50c26d">iterator_category</a></td></tr>
-<tr class="memdesc:a402f6f3090ae661a0c06e9607d50c26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">STL iterator category.  <a href="#a402f6f3090ae661a0c06e9607d50c26d">More...</a><br/></td></tr>
-<tr class="separator:a402f6f3090ae661a0c06e9607d50c26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3365916701bef37a22fd08844d871d1c"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
-base_iterator_type::value_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a3365916701bef37a22fd08844d871d1c">value_type</a></td></tr>
-<tr class="memdesc:a3365916701bef37a22fd08844d871d1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">type of elements pointed by the iterator  <a href="#a3365916701bef37a22fd08844d871d1c">More...</a><br/></td></tr>
-<tr class="separator:a3365916701bef37a22fd08844d871d1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99208a890c8e61a9decb7f9a7dc1157c"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
-base_iterator_type::difference_type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a99208a890c8e61a9decb7f9a7dc1157c">difference_type</a></td></tr>
-<tr class="memdesc:a99208a890c8e61a9decb7f9a7dc1157c"><td class="mdescLeft">&#160;</td><td class="mdescRight">type to represent difference between two iterators  <a href="#a99208a890c8e61a9decb7f9a7dc1157c">More...</a><br/></td></tr>
-<tr class="separator:a99208a890c8e61a9decb7f9a7dc1157c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa07ec93330f11e08921ebb59066c0cb7"><td class="memItemLeft" align="right" valign="top">typedef base_iterator_type::pointer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aa07ec93330f11e08921ebb59066c0cb7">pointer</a></td></tr>
-<tr class="memdesc:aa07ec93330f11e08921ebb59066c0cb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">type to represent a pointer to an element pointed by the iterator  <a href="#aa07ec93330f11e08921ebb59066c0cb7">More...</a><br/></td></tr>
-<tr class="separator:aa07ec93330f11e08921ebb59066c0cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbee1c2547c41195daf09b6223066170"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
-base_iterator_type::reference&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#adbee1c2547c41195daf09b6223066170">reference</a></td></tr>
-<tr class="memdesc:adbee1c2547c41195daf09b6223066170"><td class="mdescLeft">&#160;</td><td class="mdescRight">type to represent a reference to an element pointed by the iterator  <a href="#adbee1c2547c41195daf09b6223066170">More...</a><br/></td></tr>
-<tr class="separator:adbee1c2547c41195daf09b6223066170"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab74d18fe0aa208af4d83ea680c99c62f"><td class="memItemLeft" align="right" valign="top">typedef Category&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ab74d18fe0aa208af4d83ea680c99c62f">iterator_category</a></td></tr>
+<tr class="separator:ab74d18fe0aa208af4d83ea680c99c62f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ae9ff6d7b9aaa24cced6e0eb8d03634"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a6ae9ff6d7b9aaa24cced6e0eb8d03634">value_type</a></td></tr>
+<tr class="separator:a6ae9ff6d7b9aaa24cced6e0eb8d03634"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeba76a768d9d8a717ec81b68539558e3"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aeba76a768d9d8a717ec81b68539558e3">difference_type</a></td></tr>
+<tr class="separator:aeba76a768d9d8a717ec81b68539558e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adffbcbfc908286c1dc0144cae47290d4"><td class="memItemLeft" align="right" valign="top">typedef P&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a></td></tr>
+<tr class="separator:adffbcbfc908286c1dc0144cae47290d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8593cc082467779e09497cbfd86fe672"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
+ecuda::add_lvalue_reference&lt; T &gt;<br class="typebreak"/>
+::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a8593cc082467779e09497cbfd86fe672">reference</a></td></tr>
+<tr class="separator:a8593cc082467779e09497cbfd86fe672"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a551773d19b87765395861d7dcd894a69"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a551773d19b87765395861d7dcd894a69">device_iterator</a> (const PointerType &amp;ptr=PointerType())</td></tr>
-<tr class="memdesc:a551773d19b87765395861d7dcd894a69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="#a551773d19b87765395861d7dcd894a69">More...</a><br/></td></tr>
-<tr class="separator:a551773d19b87765395861d7dcd894a69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa49e3a6c1829e416e9af11c037fba061"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aa49e3a6c1829e416e9af11c037fba061">device_iterator</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, PointerType, Category &gt; &amp;src)</td></tr>
-<tr class="memdesc:aa49e3a6c1829e416e9af11c037fba061"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy constructor.  <a href="#aa49e3a6c1829e416e9af11c037fba061">More...</a><br/></td></tr>
-<tr class="separator:aa49e3a6c1829e416e9af11c037fba061"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ce7b5038af407c8b74eec147924a2ea"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename PointerType2 &gt; </td></tr>
-<tr class="memitem:a8ce7b5038af407c8b74eec147924a2ea"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a8ce7b5038af407c8b74eec147924a2ea">device_iterator</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T2, PointerType2, Category &gt; &amp;src)</td></tr>
-<tr class="memdesc:a8ce7b5038af407c8b74eec147924a2ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy constructor.  <a href="#a8ce7b5038af407c8b74eec147924a2ea">More...</a><br/></td></tr>
-<tr class="separator:a8ce7b5038af407c8b74eec147924a2ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af072c33b7fec3bf0837bd812c21d6502"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#af072c33b7fec3bf0837bd812c21d6502">~device_iterator</a> ()</td></tr>
-<tr class="memdesc:af072c33b7fec3bf0837bd812c21d6502"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="#af072c33b7fec3bf0837bd812c21d6502">More...</a><br/></td></tr>
-<tr class="separator:af072c33b7fec3bf0837bd812c21d6502"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdb0da57df0e838ffee667b613d6d544"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#acdb0da57df0e838ffee667b613d6d544">operator++</a> ()</td></tr>
-<tr class="memdesc:acdb0da57df0e838ffee667b613d6d544"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix increments the position of the iterator.  <a href="#acdb0da57df0e838ffee667b613d6d544">More...</a><br/></td></tr>
-<tr class="separator:acdb0da57df0e838ffee667b613d6d544"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27d76b6665d6bed2b963483468036364"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a27d76b6665d6bed2b963483468036364">operator++</a> (int)</td></tr>
-<tr class="memdesc:a27d76b6665d6bed2b963483468036364"><td class="mdescLeft">&#160;</td><td class="mdescRight">Postfix increments the position of the iterator.  <a href="#a27d76b6665d6bed2b963483468036364">More...</a><br/></td></tr>
-<tr class="separator:a27d76b6665d6bed2b963483468036364"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace82a52346a2130773fc6b917b2df431"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ace82a52346a2130773fc6b917b2df431">operator--</a> ()</td></tr>
-<tr class="memdesc:ace82a52346a2130773fc6b917b2df431"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefix decrements the position of the iterator.  <a href="#ace82a52346a2130773fc6b917b2df431">More...</a><br/></td></tr>
-<tr class="separator:ace82a52346a2130773fc6b917b2df431"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab53c2bc657692a4099a492eab582ef01"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ab53c2bc657692a4099a492eab582ef01">operator--</a> (int) const </td></tr>
-<tr class="memdesc:ab53c2bc657692a4099a492eab582ef01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Postfix decrements the position of the iterator.  <a href="#ab53c2bc657692a4099a492eab582ef01">More...</a><br/></td></tr>
-<tr class="separator:ab53c2bc657692a4099a492eab582ef01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac71b3971ec8b24161136bd57ad543ec4"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ac71b3971ec8b24161136bd57ad543ec4">operator==</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other) const </td></tr>
-<tr class="memdesc:ac71b3971ec8b24161136bd57ad543ec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Equality comparison of this iterator with another.  <a href="#ac71b3971ec8b24161136bd57ad543ec4">More...</a><br/></td></tr>
-<tr class="separator:ac71b3971ec8b24161136bd57ad543ec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9c44f5e642ea2da75f2c16b7fe0e4d5"><td class="memItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aa9c44f5e642ea2da75f2c16b7fe0e4d5">operator!=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other) const </td></tr>
-<tr class="memdesc:aa9c44f5e642ea2da75f2c16b7fe0e4d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inequality comparison of this iterator with another.  <a href="#aa9c44f5e642ea2da75f2c16b7fe0e4d5">More...</a><br/></td></tr>
-<tr class="separator:aa9c44f5e642ea2da75f2c16b7fe0e4d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43f993bccca6d5a4ea29d84d31a0e21b"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1device__iterator.html#adbee1c2547c41195daf09b6223066170">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a43f993bccca6d5a4ea29d84d31a0e21b">operator*</a> () const </td></tr>
-<tr class="memdesc:a43f993bccca6d5a4ea29d84d31a0e21b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a reference to the element pointed at by this iterator.  <a href="#a43f993bccca6d5a4ea29d84d31a0e21b">More...</a><br/></td></tr>
-<tr class="separator:a43f993bccca6d5a4ea29d84d31a0e21b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13595f93926f88be04ae05346bd6bcac"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1device__iterator.html#aa07ec93330f11e08921ebb59066c0cb7">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a13595f93926f88be04ae05346bd6bcac">operator-&gt;</a> () const </td></tr>
-<tr class="memdesc:a13595f93926f88be04ae05346bd6bcac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a pointer to the element pointed at by this iterator.  <a href="#a13595f93926f88be04ae05346bd6bcac">More...</a><br/></td></tr>
-<tr class="separator:a13595f93926f88be04ae05346bd6bcac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa29eaa3eb2b9fe5b1a518878dcc9c2ed"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aa29eaa3eb2b9fe5b1a518878dcc9c2ed">operator=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other)</td></tr>
-<tr class="memdesc:aa29eaa3eb2b9fe5b1a518878dcc9c2ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assigns a copy of another iterators position to this iterator.  <a href="#aa29eaa3eb2b9fe5b1a518878dcc9c2ed">More...</a><br/></td></tr>
-<tr class="separator:aa29eaa3eb2b9fe5b1a518878dcc9c2ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a04cf530c2fa58facdf9d2a946ae1ab5a"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename PointerType2 &gt; </td></tr>
-<tr class="memitem:a04cf530c2fa58facdf9d2a946ae1ab5a"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a04cf530c2fa58facdf9d2a946ae1ab5a">operator=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T2, PointerType2, Category &gt; &amp;other)</td></tr>
-<tr class="memdesc:a04cf530c2fa58facdf9d2a946ae1ab5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assigns a copy of another iterators position to this iterator.  <a href="#a04cf530c2fa58facdf9d2a946ae1ab5a">More...</a><br/></td></tr>
-<tr class="separator:a04cf530c2fa58facdf9d2a946ae1ab5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4334c94a8b2c013b589f547b7eca5e80"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a4334c94a8b2c013b589f547b7eca5e80">device_iterator</a> (const <a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a> &amp;ptr=<a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a>())</td></tr>
+<tr class="separator:a4334c94a8b2c013b589f547b7eca5e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfb0111126861ec4bfb0cf94d26aca35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#abfb0111126861ec4bfb0cf94d26aca35">device_iterator</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;src)</td></tr>
+<tr class="separator:abfb0111126861ec4bfb0cf94d26aca35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeefe345921117ac417c5fec4811c2193"><td class="memTemplParams" colspan="2">template&lt;typename U , typename Q &gt; </td></tr>
+<tr class="memitem:aeefe345921117ac417c5fec4811c2193"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aeefe345921117ac417c5fec4811c2193">device_iterator</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; U, Q, Category &gt; &amp;src)</td></tr>
+<tr class="separator:aeefe345921117ac417c5fec4811c2193"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e6b1719db70b0f532b49a59118b5b02"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <br class="typebreak"/>
+<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a7e6b1719db70b0f532b49a59118b5b02">operator=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other)</td></tr>
+<tr class="separator:a7e6b1719db70b0f532b49a59118b5b02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae15667d182d5298c8a4c5c16e061ea17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <br class="typebreak"/>
+<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ae15667d182d5298c8a4c5c16e061ea17">operator++</a> ()</td></tr>
+<tr class="separator:ae15667d182d5298c8a4c5c16e061ea17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63e28ec12086374f242ca274b3a1bad7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a63e28ec12086374f242ca274b3a1bad7">operator++</a> (int)</td></tr>
+<tr class="separator:a63e28ec12086374f242ca274b3a1bad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ba278c4dfa2feda2f5883ccb0e09fb9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <br class="typebreak"/>
+<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a8ba278c4dfa2feda2f5883ccb0e09fb9">operator--</a> ()</td></tr>
+<tr class="separator:a8ba278c4dfa2feda2f5883ccb0e09fb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac4d794745fbd0406945a2c2cebc4690"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aac4d794745fbd0406945a2c2cebc4690">operator--</a> (int)</td></tr>
+<tr class="separator:aac4d794745fbd0406945a2c2cebc4690"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16b27db0645b970d561356806efaea8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a16b27db0645b970d561356806efaea8c">operator==</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other) const <a class="el" href="global_8hpp.html#ac357af947bf0fb6c15fe2ac07aea5382">__NOEXCEPT__</a></td></tr>
+<tr class="separator:a16b27db0645b970d561356806efaea8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2a102ed98cc19489e2eaf615e8e4d5a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ad2a102ed98cc19489e2eaf615e8e4d5a">operator!=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;other) const <a class="el" href="global_8hpp.html#ac357af947bf0fb6c15fe2ac07aea5382">__NOEXCEPT__</a></td></tr>
+<tr class="separator:ad2a102ed98cc19489e2eaf615e8e4d5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c05dd7d8b311785a266a23638de8641"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html#a8593cc082467779e09497cbfd86fe672">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a4c05dd7d8b311785a266a23638de8641">operator*</a> ()</td></tr>
+<tr class="separator:a4c05dd7d8b311785a266a23638de8641"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab105eb9905b6cc41c4a85c45b2db949"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#aab105eb9905b6cc41c4a85c45b2db949">operator-&gt;</a> () const </td></tr>
+<tr class="separator:aab105eb9905b6cc41c4a85c45b2db949"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1d222a268c5cc519559a58eb358ca5c"><td class="memTemplParams" colspan="2">template&lt;typename U , typename Q &gt; </td></tr>
+<tr class="memitem:ab1d222a268c5cc519559a58eb358ca5c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <br class="typebreak"/>
+<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ab1d222a268c5cc519559a58eb358ca5c">operator=</a> (const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; U, Q, Category &gt; &amp;other)</td></tr>
+<tr class="separator:ab1d222a268c5cc519559a58eb358ca5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:a90b28ca38a67b932bdd3cab80489fa63"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename PointerType2 , class Category2 &gt; </td></tr>
+<tr class="memitem:a90b28ca38a67b932bdd3cab80489fa63"><td class="memTemplParams" colspan="2">template&lt;typename U , typename Q , typename Category2 &gt; </td></tr>
 <tr class="memitem:a90b28ca38a67b932bdd3cab80489fa63"><td class="memTemplItemLeft" align="right" valign="top">class&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a90b28ca38a67b932bdd3cab80489fa63">device_iterator</a></td></tr>
 <tr class="separator:a90b28ca38a67b932bdd3cab80489fa63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab99e3564c18e97975c64a60d9e7cfab4"><td class="memTemplParams" colspan="2">template&lt;typename T2 &gt; </td></tr>
-<tr class="memitem:ab99e3564c18e97975c64a60d9e7cfab4"><td class="memTemplItemLeft" align="right" valign="top">class&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#ab99e3564c18e97975c64a60d9e7cfab4">contiguous_device_iterator</a></td></tr>
-<tr class="separator:ab99e3564c18e97975c64a60d9e7cfab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0243b07e78ad8757bd5701b22b4bfd35"><td class="memTemplParams" colspan="2">template&lt;typename U &gt; </td></tr>
+<tr class="memitem:a0243b07e78ad8757bd5701b22b4bfd35"><td class="memTemplItemLeft" align="right" valign="top">class&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1device__iterator.html#a0243b07e78ad8757bd5701b22b4bfd35">device_contiguous_iterator</a></td></tr>
+<tr class="separator:a0243b07e78ad8757bd5701b22b4bfd35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt;<br/>
-class ecuda::device_iterator&lt; T, PointerType, Category &gt;</h3>
+<div class="textblock"><h3>template&lt;typename T, typename P, typename Category = device_iterator_tag&gt;<br/>
+class ecuda::device_iterator&lt; T, P, Category &gt;</h3>
 
-<p>Iterator template compatible with pointers to device memory. </p>
-<p>This general iterator definition builds on top of the standard STL iterator but is functional using device memory and within device code. All the capabilities of an STL bidirectional iterator are present. Specialized pointer-like classes (e.g. <a class="el" href="classecuda_1_1striding__ptr.html" title="A specialized pointer to memory holding a sequence of data with fixed-sized spacing between each valu...">striding_ptr</a> and <a class="el" href="classecuda_1_1padded__ptr.html" title="A specialized pointer to memory with padding after a fixed-size sequence of data. ...">padded_ptr</a>) are compatible with the bidirectional specification, so traversing elements oriented in memory non-contiguously are possible (<a class="el" href="classecuda_1_1contiguous__device__iterator.html" title="Iterator template for use with naked pointers to contiguous device memory. ">contiguous_device_iterator</a> enforces the use of a naked pointer and expands the capabilities to an STL random access iterator for cases where elements are oriented contiguously).</p>
-<p>The use of specialized pointers are important for traversing matrices and cubes in non-standard order (i.e. column-wise matrix traversal) and to deal with the fact that 2D device memory allocations often include padding to align the memory for optimal read/write operations. </p>
 
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00070">70</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00074">74</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a class="anchor" id="a99208a890c8e61a9decb7f9a7dc1157c"></a>
+<a class="anchor" id="aeba76a768d9d8a717ec81b68539558e3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef base_iterator_type::difference_type <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#a99208a890c8e61a9decb7f9a7dc1157c">difference_type</a></td>
+          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#aeba76a768d9d8a717ec81b68539558e3">difference_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>type to represent difference between two iterators </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00078">78</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00082">82</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a402f6f3090ae661a0c06e9607d50c26d"></a>
+<a class="anchor" id="ab74d18fe0aa208af4d83ea680c99c62f"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef base_iterator_type::iterator_category <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#a402f6f3090ae661a0c06e9607d50c26d">iterator_category</a></td>
+          <td class="memname">typedef Category <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#ab74d18fe0aa208af4d83ea680c99c62f">iterator_category</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>STL iterator category. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00076">76</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00080">80</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa07ec93330f11e08921ebb59066c0cb7"></a>
+<a class="anchor" id="adffbcbfc908286c1dc0144cae47290d4"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef base_iterator_type::pointer <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#aa07ec93330f11e08921ebb59066c0cb7">pointer</a></td>
+          <td class="memname">typedef P <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>type to represent a pointer to an element pointed by the iterator </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00079">79</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00083">83</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="adbee1c2547c41195daf09b6223066170"></a>
+<a class="anchor" id="a8593cc082467779e09497cbfd86fe672"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef base_iterator_type::reference <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#adbee1c2547c41195daf09b6223066170">reference</a></td>
+          <td class="memname">typedef ecuda::add_lvalue_reference&lt;T&gt;::type <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#a8593cc082467779e09497cbfd86fe672">reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>type to represent a reference to an element pointed by the iterator </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00080">80</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00084">84</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a3365916701bef37a22fd08844d871d1c"></a>
+<a class="anchor" id="a6ae9ff6d7b9aaa24cced6e0eb8d03634"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef base_iterator_type::value_type <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#a3365916701bef37a22fd08844d871d1c">value_type</a></td>
+          <td class="memname">typedef T <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html#a6ae9ff6d7b9aaa24cced6e0eb8d03634">value_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>type of elements pointed by the iterator </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00077">77</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00081">81</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a551773d19b87765395861d7dcd894a69"></a>
+<a class="anchor" id="a4334c94a8b2c013b589f547b7eca5e80"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
           <td>(</td>
-          <td class="paramtype">const PointerType &amp;&#160;</td>
-          <td class="paramname"><em>ptr</em> = <code>PointerType()</code></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a> &amp;&#160;</td>
+          <td class="paramname"><em>ptr</em> = <code><a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a>()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -315,31 +271,23 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Default constructor. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">ptr</td><td>Pointer to device memory location that holds the element to be pointed at. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00097">97</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00093">93</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa49e3a6c1829e416e9af11c037fba061"></a>
+<a class="anchor" id="abfb0111126861ec4bfb0cf94d26aca35"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, PointerType, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, P, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
@@ -351,33 +299,25 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Copy constructor. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">src</td><td>Another iterator whose contents are to be copied. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00104">104</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00094">94</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a8ce7b5038af407c8b74eec147924a2ea"></a>
+<a class="anchor" id="aeefe345921117ac417c5fec4811c2193"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <div class="memtemplate">
-template&lt;typename T2 , typename PointerType2 &gt; </div>
+template&lt;typename U , typename Q &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T2, PointerType2, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; U, Q, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
@@ -389,62 +329,24 @@ template&lt;typename T2 , typename PointerType2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Copy constructor. </p>
-<p>The element type and pointer type of the other iterator can be of a different types than this iterator, but they must be implicitly convertible to the type(s) in this iterator. This is currently utilized to allow an iterator pointing to non-const elements to be converted to one that does.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">src</td><td>Another iterator whose contents are to be copied. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00117">117</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="af072c33b7fec3bf0837bd812c21d6502"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::~<a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Destructor. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00122">122</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00095">95</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aa9c44f5e642ea2da75f2c16b7fe0e4d5"></a>
+<a class="anchor" id="ad2a102ed98cc19489e2eaf615e8e4d5a"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator!= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator!= </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, PointerType, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, P, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -456,56 +358,21 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Inequality comparison of this iterator with another. </p>
-<p>This ability is required of input STL iterators.</p>
-<dl class="section return"><dt>Returns</dt><dd>true if this iterator does not point to the same element as the other. </dd></dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00178">178</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00129">129</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a43f993bccca6d5a4ea29d84d31a0e21b"></a>
+<a class="anchor" id="a4c05dd7d8b311785a266a23638de8641"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1device__iterator.html#adbee1c2547c41195daf09b6223066170">reference</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator* </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets a reference to the element pointed at by this iterator. </p>
-<p>Since this is an lvalue (even though the type may be const) it satisfies the requirements of both an input and output STL iterator.</p>
-<dl class="section return"><dt>Returns</dt><dd>a reference to the element pointed at by this iterator </dd></dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00188">188</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="acdb0da57df0e838ffee667b613d6d544"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator++ </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html#a8593cc082467779e09497cbfd86fe672">reference</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator* </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -518,24 +385,48 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Prefix increments the position of the iterator. </p>
-<p>This ability is required of all STL iterators. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00129">129</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00131">131</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a27d76b6665d6bed2b963483468036364"></a>
+<a class="anchor" id="ae15667d182d5298c8a4c5c16e061ea17"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator++ </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00112">112</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a63e28ec12086374f242ca274b3a1bad7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator++ </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -549,24 +440,21 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Postfix increments the position of the iterator. </p>
-<p>This ability is required of all STL iterators. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00136">136</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00113">113</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ace82a52346a2130773fc6b917b2df431"></a>
+<a class="anchor" id="a8ba278c4dfa2feda2f5883ccb0e09fb9"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator-- </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator-- </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -579,28 +467,25 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Prefix decrements the position of the iterator. </p>
-<p>This ability is required of bidirectional STL iterators. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00148">148</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00120">120</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ab53c2bc657692a4099a492eab582ef01"></a>
+<a class="anchor" id="aac4d794745fbd0406945a2c2cebc4690"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator-- </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator-- </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -610,24 +495,21 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Postfix decrements the position of the iterator. </p>
-<p>This ability is required of bidirectional STL iterators. </p>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00155">155</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00121">121</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a13595f93926f88be04ae05346bd6bcac"></a>
+<a class="anchor" id="aab105eb9905b6cc41c4a85c45b2db949"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1device__iterator.html#aa07ec93330f11e08921ebb59066c0cb7">pointer</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator-&gt; </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html#adffbcbfc908286c1dc0144cae47290d4">pointer</a> <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator-&gt; </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -640,27 +522,23 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Gets a pointer to the element pointed at by this iterator. </p>
-<p>This ability is required of input STL iterators.</p>
-<dl class="section return"><dt>Returns</dt><dd>a pointer to the element pointed at by this iterator </dd></dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00197">197</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00132">132</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa29eaa3eb2b9fe5b1a518878dcc9c2ed"></a>
+<a class="anchor" id="a7e6b1719db70b0f532b49a59118b5b02"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator= </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, PointerType, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, P, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
           <td></td>
         </tr>
@@ -672,33 +550,25 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Assigns a copy of another iterators position to this iterator. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">other</td><td>another iterator whose position should be assigned to this iterator </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00204">204</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00097">97</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a04cf530c2fa58facdf9d2a946ae1ab5a"></a>
+<a class="anchor" id="ab1d222a268c5cc519559a58eb358ca5c"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <div class="memtemplate">
-template&lt;typename T2 , typename PointerType2 &gt; </div>
+template&lt;typename U , typename Q &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&amp; <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator= </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T2, PointerType2, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; U, Q, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
           <td></td>
         </tr>
@@ -710,32 +580,23 @@ template&lt;typename T2 , typename PointerType2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Assigns a copy of another iterators position to this iterator. </p>
-<p>The element type and pointer type of the other iterator can be of a different types than this iterator, but they must be implicitly convertible to the type(s) in this iterator. This is currently utilized to allow an iterator pointing to non-const elements to be converted to one that does.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">other</td><td>another iterator whose position should be assigned to this iterator </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00220">220</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00135">135</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac71b3971ec8b24161136bd57ad543ec4"></a>
+<a class="anchor" id="a16b27db0645b970d561356806efaea8c"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, PointerType, Category &gt;::operator== </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1device__iterator.html">ecuda::device_iterator</a>&lt; T, P, Category &gt;::operator== </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, PointerType, Category &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1device__iterator.html">device_iterator</a>&lt; T, P, Category &gt; &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -747,28 +608,24 @@ template&lt;typename T, typename PointerType, class Category = device_iterator_t
 </table>
 </div><div class="memdoc">
 
-<p>Equality comparison of this iterator with another. </p>
-<p>This ability is required of input STL iterators.</p>
-<dl class="section return"><dt>Returns</dt><dd>true if this iterator points to the same element as the other. </dd></dl>
-
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00169">169</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00128">128</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Friends And Related Function Documentation</h2>
-<a class="anchor" id="ab99e3564c18e97975c64a60d9e7cfab4"></a>
+<a class="anchor" id="a0243b07e78ad8757bd5701b22b4bfd35"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <div class="memtemplate">
-template&lt;typename T2 &gt; </div>
+template&lt;typename U &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">friend class <a class="el" href="classecuda_1_1contiguous__device__iterator.html">contiguous_device_iterator</a></td>
+          <td class="memname">friend class <a class="el" href="classecuda_1_1device__contiguous__iterator.html">device_contiguous_iterator</a></td>
         </tr>
       </table>
   </td>
@@ -778,7 +635,7 @@ template&lt;typename T2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00083">83</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00087">87</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
@@ -786,9 +643,9 @@ template&lt;typename T2 &gt; </div>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType, class Category = device_iterator_tag&gt; </div>
+template&lt;typename T, typename P, typename Category = device_iterator_tag&gt; </div>
 <div class="memtemplate">
-template&lt;typename T2 , typename PointerType2 , class Category2 &gt; </div>
+template&lt;typename U , typename Q , typename Category2 &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -804,18 +661,18 @@ template&lt;typename T2 , typename PointerType2 , class Category2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="iterators_8hpp_source.html#l00082">82</a> of file <a class="el" href="iterators_8hpp_source.html">iterators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00086">86</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/ecuda/<a class="el" href="iterators_8hpp_source.html">iterators.hpp</a></li>
+<li>include/ecuda/<a class="el" href="iterator_8hpp_source.html">iterator.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

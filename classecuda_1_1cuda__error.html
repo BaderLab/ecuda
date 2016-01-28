@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -74,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -100,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Exception for CUDA API cudaError_t errors.  
  <a href="classecuda_1_1cuda__error.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="global_8hpp_source.html">global.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for ecuda::cuda_error:</div>
 <div class="dyncontent">
@@ -112,18 +111,59 @@ Inheritance diagram for ecuda::cuda_error:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:ae7b323304531528148e24a24f20f7fd0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html#ae7b323304531528148e24a24f20f7fd0">cuda_error</a> (cudaError_t errorType)</td></tr>
+<tr class="memdesc:ae7b323304531528148e24a24f20f7fd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#ae7b323304531528148e24a24f20f7fd0">More...</a><br/></td></tr>
+<tr class="separator:ae7b323304531528148e24a24f20f7fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac35ef0c641440fc6a842deb53b3ddcda"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html#ac35ef0c641440fc6a842deb53b3ddcda">cuda_error</a> (cudaError_t errorType, const std::string &amp;what_arg)</td></tr>
+<tr class="memdesc:ac35ef0c641440fc6a842deb53b3ddcda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#ac35ef0c641440fc6a842deb53b3ddcda">More...</a><br/></td></tr>
 <tr class="separator:ac35ef0c641440fc6a842deb53b3ddcda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afdf83ddb31ee8a3cae5f20776f09428a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html#afdf83ddb31ee8a3cae5f20776f09428a">cuda_error</a> (cudaError_t errorType, const char *what_arg)</td></tr>
+<tr class="memdesc:afdf83ddb31ee8a3cae5f20776f09428a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#afdf83ddb31ee8a3cae5f20776f09428a">More...</a><br/></td></tr>
 <tr class="separator:afdf83ddb31ee8a3cae5f20776f09428a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa4b88c138c5e814a258088c88793a57"><td class="memItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html#aaa4b88c138c5e814a258088c88793a57">get_cuda_error_type</a> () const </td></tr>
-<tr class="separator:aaa4b88c138c5e814a258088c88793a57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1343dee5cde6ea44c14545f7a3b7cef8"><td class="memItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html#a1343dee5cde6ea44c14545f7a3b7cef8">get_error_code</a> () const </td></tr>
+<tr class="memdesc:a1343dee5cde6ea44c14545f7a3b7cef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the error code.  <a href="#a1343dee5cde6ea44c14545f7a3b7cef8">More...</a><br/></td></tr>
+<tr class="separator:a1343dee5cde6ea44c14545f7a3b7cef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Exception for CUDA API cudaError_t errors. </p>
+<p>See <a href="http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html">http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html</a> for a list of possible error codes and their meaning. </p>
 
-<p>Definition at line <a class="el" href="global_8hpp_source.html#l00054">54</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+<p>Definition at line <a class="el" href="cuda__error_8hpp_source.html#l00055">55</a> of file <a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="ae7b323304531528148e24a24f20f7fd0"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ecuda::cuda_error::cuda_error </td>
+          <td>(</td>
+          <td class="paramtype">cudaError_t&#160;</td>
+          <td class="paramname"><em>errorType</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">errorType</td><td>error code </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="cuda__error_8hpp_source.html#l00066">66</a> of file <a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ac35ef0c641440fc6a842deb53b3ddcda"></a>
 <div class="memitem">
 <div class="memproto">
@@ -156,7 +196,16 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="global_8hpp_source.html#l00058">58</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">errorType</td><td>error code </td></tr>
+    <tr><td class="paramname">what_arg</td><td>string describing the error </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="cuda__error_8hpp_source.html#l00073">73</a> of file <a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>.</p>
 
 </div>
 </div>
@@ -192,12 +241,21 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="global_8hpp_source.html#l00059">59</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">errorType</td><td>error code </td></tr>
+    <tr><td class="paramname">what_arg</td><td>string describing the error </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="cuda__error_8hpp_source.html#l00080">80</a> of file <a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aaa4b88c138c5e814a258088c88793a57"></a>
+<a class="anchor" id="a1343dee5cde6ea44c14545f7a3b7cef8"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -205,7 +263,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">cudaError_t ecuda::cuda_error::get_cuda_error_type </td>
+          <td class="memname">cudaError_t ecuda::cuda_error::get_error_code </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -218,18 +276,21 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="global_8hpp_source.html#l00060">60</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+<p>Gets the error code. </p>
+<dl class="section return"><dt>Returns</dt><dd>the CUDA error code </dd></dl>
+
+<p>Definition at line <a class="el" href="cuda__error_8hpp_source.html#l00086">86</a> of file <a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/ecuda/<a class="el" href="global_8hpp_source.html">global.hpp</a></li>
+<li>include/ecuda/<a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

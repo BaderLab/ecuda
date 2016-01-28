@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Extended CUDA Library (ecuda): ecuda::host_allocator&lt; T &gt; Class Template Reference</title>
+<title>Extended CUDA Library (ecuda): ecuda::host_allocator&lt; T, Flags &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -74,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -94,230 +93,235 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classecuda_1_1host__allocator-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ecuda::host_allocator&lt; T &gt; Class Template Reference</div>  </div>
+<div class="title">ecuda::host_allocator&lt; T, Flags &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>An STL allocator for page-locked host memory.  
+<p>Allocator for page-locked host memory.  
  <a href="classecuda_1_1host__allocator.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ac35484c7a5a2b7ec0b61623f6775cbca"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ac35484c7a5a2b7ec0b61623f6775cbca">value_type</a></td></tr>
-<tr class="memdesc:ac35484c7a5a2b7ec0b61623f6775cbca"><td class="mdescLeft">&#160;</td><td class="mdescRight">element type  <a href="#ac35484c7a5a2b7ec0b61623f6775cbca">More...</a><br/></td></tr>
-<tr class="separator:ac35484c7a5a2b7ec0b61623f6775cbca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfd85c902c7c39db582424a6b31e653f"><td class="memItemLeft" align="right" valign="top">typedef T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a></td></tr>
-<tr class="memdesc:abfd85c902c7c39db582424a6b31e653f"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to element  <a href="#abfd85c902c7c39db582424a6b31e653f">More...</a><br/></td></tr>
-<tr class="separator:abfd85c902c7c39db582424a6b31e653f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc533951a402895c9cfb77891cbaa080"><td class="memItemLeft" align="right" valign="top">typedef T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#acc533951a402895c9cfb77891cbaa080">reference</a></td></tr>
-<tr class="memdesc:acc533951a402895c9cfb77891cbaa080"><td class="mdescLeft">&#160;</td><td class="mdescRight">reference to element  <a href="#acc533951a402895c9cfb77891cbaa080">More...</a><br/></td></tr>
-<tr class="separator:acc533951a402895c9cfb77891cbaa080"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75742e576bf3f1133f248f93997b2a21"><td class="memItemLeft" align="right" valign="top">typedef const T *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a></td></tr>
-<tr class="memdesc:a75742e576bf3f1133f248f93997b2a21"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to constant element  <a href="#a75742e576bf3f1133f248f93997b2a21">More...</a><br/></td></tr>
-<tr class="separator:a75742e576bf3f1133f248f93997b2a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e26fa247e258c191135f862e8c2e00d"><td class="memItemLeft" align="right" valign="top">typedef const T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a></td></tr>
-<tr class="memdesc:a1e26fa247e258c191135f862e8c2e00d"><td class="mdescLeft">&#160;</td><td class="mdescRight">reference to constant element  <a href="#a1e26fa247e258c191135f862e8c2e00d">More...</a><br/></td></tr>
-<tr class="separator:a1e26fa247e258c191135f862e8c2e00d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa03a7b12119cce15169f14bf2521a7c2"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a></td></tr>
-<tr class="memdesc:aa03a7b12119cce15169f14bf2521a7c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">quantities of elements  <a href="#aa03a7b12119cce15169f14bf2521a7c2">More...</a><br/></td></tr>
-<tr class="separator:aa03a7b12119cce15169f14bf2521a7c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33e4aaa8d15d7a730225a1d948115da3"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a33e4aaa8d15d7a730225a1d948115da3">difference_type</a></td></tr>
-<tr class="separator:a33e4aaa8d15d7a730225a1d948115da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a296572fcd505b2402a3f17df31c31f43"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a296572fcd505b2402a3f17df31c31f43">value_type</a></td></tr>
+<tr class="memdesc:a296572fcd505b2402a3f17df31c31f43"><td class="mdescLeft">&#160;</td><td class="mdescRight">element type  <a href="#a296572fcd505b2402a3f17df31c31f43">More...</a><br/></td></tr>
+<tr class="separator:a296572fcd505b2402a3f17df31c31f43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94fb237ba50ce0fbaa57242bb55725d2"><td class="memItemLeft" align="right" valign="top">typedef ecuda::add_pointer&lt; T &gt;<br class="typebreak"/>
+::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a></td></tr>
+<tr class="memdesc:a94fb237ba50ce0fbaa57242bb55725d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to element  <a href="#a94fb237ba50ce0fbaa57242bb55725d2">More...</a><br/></td></tr>
+<tr class="separator:a94fb237ba50ce0fbaa57242bb55725d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5276c38a8e37809cc939380bcdedaaa1"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
+ecuda::add_lvalue_reference&lt; T &gt;<br class="typebreak"/>
+::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a5276c38a8e37809cc939380bcdedaaa1">reference</a></td></tr>
+<tr class="memdesc:a5276c38a8e37809cc939380bcdedaaa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">reference to element  <a href="#a5276c38a8e37809cc939380bcdedaaa1">More...</a><br/></td></tr>
+<tr class="separator:a5276c38a8e37809cc939380bcdedaaa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac36557f9292c4613294c5d602dc47282"><td class="memItemLeft" align="right" valign="top">typedef make_const&lt; <a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> &gt;::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a></td></tr>
+<tr class="memdesc:ac36557f9292c4613294c5d602dc47282"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to constant element  <a href="#ac36557f9292c4613294c5d602dc47282">More...</a><br/></td></tr>
+<tr class="separator:ac36557f9292c4613294c5d602dc47282"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78d791d01d3f1729418436816d45b573"><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
+ecuda::add_lvalue_reference<br class="typebreak"/>
+&lt; const T &gt;::type&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a></td></tr>
+<tr class="memdesc:a78d791d01d3f1729418436816d45b573"><td class="mdescLeft">&#160;</td><td class="mdescRight">reference to constant element  <a href="#a78d791d01d3f1729418436816d45b573">More...</a><br/></td></tr>
+<tr class="separator:a78d791d01d3f1729418436816d45b573"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a314d3bd9c0aa98f64ef51efca4bbb620"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a></td></tr>
+<tr class="memdesc:a314d3bd9c0aa98f64ef51efca4bbb620"><td class="mdescLeft">&#160;</td><td class="mdescRight">quantities of elements  <a href="#a314d3bd9c0aa98f64ef51efca4bbb620">More...</a><br/></td></tr>
+<tr class="separator:a314d3bd9c0aa98f64ef51efca4bbb620"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a352c33194e3378034c2d38b06f756e1e"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a352c33194e3378034c2d38b06f756e1e">difference_type</a></td></tr>
+<tr class="separator:a352c33194e3378034c2d38b06f756e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a912bf8037dac86e4bf0efe98de715323"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a912bf8037dac86e4bf0efe98de715323">host_allocator</a> ()  throw ()</td></tr>
-<tr class="memdesc:a912bf8037dac86e4bf0efe98de715323"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object.  <a href="#a912bf8037dac86e4bf0efe98de715323">More...</a><br/></td></tr>
-<tr class="separator:a912bf8037dac86e4bf0efe98de715323"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4dce3b8beac46b8aa6c195cda1bc1ddb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a4dce3b8beac46b8aa6c195cda1bc1ddb">host_allocator</a> (const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> &amp;alloc)  throw ()</td></tr>
-<tr class="memdesc:a4dce3b8beac46b8aa6c195cda1bc1ddb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object from another host allocator object.  <a href="#a4dce3b8beac46b8aa6c195cda1bc1ddb">More...</a><br/></td></tr>
-<tr class="separator:a4dce3b8beac46b8aa6c195cda1bc1ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76d3eec06ff705c39ac481a63e85bba9"><td class="memTemplParams" colspan="2">template&lt;typename U &gt; </td></tr>
-<tr class="memitem:a76d3eec06ff705c39ac481a63e85bba9"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a76d3eec06ff705c39ac481a63e85bba9">host_allocator</a> (const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a>&lt; U &gt; &amp;alloc)  throw ()</td></tr>
-<tr class="memdesc:a76d3eec06ff705c39ac481a63e85bba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object from another host allocator object with a different element type.  <a href="#a76d3eec06ff705c39ac481a63e85bba9">More...</a><br/></td></tr>
-<tr class="separator:a76d3eec06ff705c39ac481a63e85bba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6fd4c7824d95d698d74b2ddd022c789"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#aa6fd4c7824d95d698d74b2ddd022c789">~host_allocator</a> ()  throw ()</td></tr>
-<tr class="memdesc:aa6fd4c7824d95d698d74b2ddd022c789"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructs the host allocator object.  <a href="#aa6fd4c7824d95d698d74b2ddd022c789">More...</a><br/></td></tr>
-<tr class="separator:aa6fd4c7824d95d698d74b2ddd022c789"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3aec1742d37d1e0e3bbb6a2338d3bad3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a3aec1742d37d1e0e3bbb6a2338d3bad3">address</a> (<a class="el" href="classecuda_1_1host__allocator.html#acc533951a402895c9cfb77891cbaa080">reference</a> x)</td></tr>
-<tr class="memdesc:a3aec1742d37d1e0e3bbb6a2338d3bad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the address of x.  <a href="#a3aec1742d37d1e0e3bbb6a2338d3bad3">More...</a><br/></td></tr>
-<tr class="separator:a3aec1742d37d1e0e3bbb6a2338d3bad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75ad76b7fd0a832c07bed01b81ad7a6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a75ad76b7fd0a832c07bed01b81ad7a6a">address</a> (<a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a> x) const </td></tr>
-<tr class="memdesc:a75ad76b7fd0a832c07bed01b81ad7a6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the address of x.  <a href="#a75ad76b7fd0a832c07bed01b81ad7a6a">More...</a><br/></td></tr>
-<tr class="separator:a75ad76b7fd0a832c07bed01b81ad7a6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a733c8dd2b447ed83e1263510d59ee455"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a733c8dd2b447ed83e1263510d59ee455">allocate</a> (<a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a> n, std::allocator&lt; void &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a> hint=0)</td></tr>
-<tr class="memdesc:a733c8dd2b447ed83e1263510d59ee455"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate block of storage.  <a href="#a733c8dd2b447ed83e1263510d59ee455">More...</a><br/></td></tr>
-<tr class="separator:a733c8dd2b447ed83e1263510d59ee455"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad292fd2e6d078fcbe59be8317a339dba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ad292fd2e6d078fcbe59be8317a339dba">deallocate</a> (<a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a> ptr, <a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a>)</td></tr>
-<tr class="memdesc:ad292fd2e6d078fcbe59be8317a339dba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases a block of storage previously allocated with member allocate and not yet released.  <a href="#ad292fd2e6d078fcbe59be8317a339dba">More...</a><br/></td></tr>
-<tr class="separator:ad292fd2e6d078fcbe59be8317a339dba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4cdd6302ef94a3eacc67175181225c93"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a4cdd6302ef94a3eacc67175181225c93">max_size</a> () const   throw ()</td></tr>
-<tr class="memdesc:a4cdd6302ef94a3eacc67175181225c93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter) that could potentially be allocated by a call to member allocate.  <a href="#a4cdd6302ef94a3eacc67175181225c93">More...</a><br/></td></tr>
-<tr class="separator:a4cdd6302ef94a3eacc67175181225c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac552cca39af28119da7ee017f23d73ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ac552cca39af28119da7ee017f23d73ea">construct</a> (<a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a> ptr, <a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a> val)</td></tr>
-<tr class="memdesc:ac552cca39af28119da7ee017f23d73ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs an element object on the location pointed by ptr.  <a href="#ac552cca39af28119da7ee017f23d73ea">More...</a><br/></td></tr>
-<tr class="separator:ac552cca39af28119da7ee017f23d73ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1691841ed76b464d8dbf40409dff853"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ad1691841ed76b464d8dbf40409dff853">destroy</a> (<a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a> ptr)</td></tr>
-<tr class="memdesc:ad1691841ed76b464d8dbf40409dff853"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys in-place the object pointed by ptr. Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).  <a href="#ad1691841ed76b464d8dbf40409dff853">More...</a><br/></td></tr>
-<tr class="separator:ad1691841ed76b464d8dbf40409dff853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a642f1186ffbaa6315b7dc7e206febe4c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a642f1186ffbaa6315b7dc7e206febe4c">host_allocator</a> ()  throw ()</td></tr>
+<tr class="memdesc:a642f1186ffbaa6315b7dc7e206febe4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object.  <a href="#a642f1186ffbaa6315b7dc7e206febe4c">More...</a><br/></td></tr>
+<tr class="separator:a642f1186ffbaa6315b7dc7e206febe4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47c0daf2ffbced13d10d19fbb3b8215c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a47c0daf2ffbced13d10d19fbb3b8215c">host_allocator</a> (const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> &amp;alloc)  throw ()</td></tr>
+<tr class="memdesc:a47c0daf2ffbced13d10d19fbb3b8215c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object from another host allocator object.  <a href="#a47c0daf2ffbced13d10d19fbb3b8215c">More...</a><br/></td></tr>
+<tr class="separator:a47c0daf2ffbced13d10d19fbb3b8215c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6831f94c8791ff37d5a633e27b5ecc75"><td class="memTemplParams" colspan="2">template&lt;typename U &gt; </td></tr>
+<tr class="memitem:a6831f94c8791ff37d5a633e27b5ecc75"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a6831f94c8791ff37d5a633e27b5ecc75">host_allocator</a> (const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a>&lt; U &gt; &amp;alloc)  throw ()</td></tr>
+<tr class="memdesc:a6831f94c8791ff37d5a633e27b5ecc75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a host allocator object from another host allocator object with a different element type.  <a href="#a6831f94c8791ff37d5a633e27b5ecc75">More...</a><br/></td></tr>
+<tr class="separator:a6831f94c8791ff37d5a633e27b5ecc75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7f9745dcbfad1d33468e33388603e5f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ab7f9745dcbfad1d33468e33388603e5f">~host_allocator</a> ()  throw ()</td></tr>
+<tr class="memdesc:ab7f9745dcbfad1d33468e33388603e5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructs the host allocator object.  <a href="#ab7f9745dcbfad1d33468e33388603e5f">More...</a><br/></td></tr>
+<tr class="separator:ab7f9745dcbfad1d33468e33388603e5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9b67fe75de8b7555a2902943e5afa6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#ae9b67fe75de8b7555a2902943e5afa6e">address</a> (<a class="el" href="classecuda_1_1host__allocator.html#a5276c38a8e37809cc939380bcdedaaa1">reference</a> x)</td></tr>
+<tr class="memdesc:ae9b67fe75de8b7555a2902943e5afa6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the address of x.  <a href="#ae9b67fe75de8b7555a2902943e5afa6e">More...</a><br/></td></tr>
+<tr class="separator:ae9b67fe75de8b7555a2902943e5afa6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cd44f7896a467fe52135d5642ffa773"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a8cd44f7896a467fe52135d5642ffa773">address</a> (<a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a> x) const </td></tr>
+<tr class="memdesc:a8cd44f7896a467fe52135d5642ffa773"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the address of x.  <a href="#a8cd44f7896a467fe52135d5642ffa773">More...</a><br/></td></tr>
+<tr class="separator:a8cd44f7896a467fe52135d5642ffa773"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c3a200389a1c5ee873773b3d0b3269e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a2c3a200389a1c5ee873773b3d0b3269e">allocate</a> (<a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a> n, std::allocator&lt; void &gt;::<a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a> hint=0)</td></tr>
+<tr class="memdesc:a2c3a200389a1c5ee873773b3d0b3269e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate block of storage.  <a href="#a2c3a200389a1c5ee873773b3d0b3269e">More...</a><br/></td></tr>
+<tr class="separator:a2c3a200389a1c5ee873773b3d0b3269e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ba0a4136dcd017f2b9ceb987e0bd468"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#a6ba0a4136dcd017f2b9ceb987e0bd468">deallocate</a> (<a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> ptr, <a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a>)</td></tr>
+<tr class="memdesc:a6ba0a4136dcd017f2b9ceb987e0bd468"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases a block of storage previously allocated with member allocate and not yet released.  <a href="#a6ba0a4136dcd017f2b9ceb987e0bd468">More...</a><br/></td></tr>
+<tr class="separator:a6ba0a4136dcd017f2b9ceb987e0bd468"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa9ad8ca4f4dda3a5a1618b3afaa16e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#aaa9ad8ca4f4dda3a5a1618b3afaa16e9">max_size</a> () const   throw ()</td></tr>
+<tr class="memdesc:aaa9ad8ca4f4dda3a5a1618b3afaa16e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum number of elements, each of member type value_type (an alias of allocator's template parameter) that could potentially be allocated by a call to member allocate.  <a href="#aaa9ad8ca4f4dda3a5a1618b3afaa16e9">More...</a><br/></td></tr>
+<tr class="separator:aaa9ad8ca4f4dda3a5a1618b3afaa16e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adad04625a538a0b65f53069530c7b45f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#adad04625a538a0b65f53069530c7b45f">construct</a> (<a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> ptr, <a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a> val)</td></tr>
+<tr class="memdesc:adad04625a538a0b65f53069530c7b45f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs an element object on the location pointed by ptr.  <a href="#adad04625a538a0b65f53069530c7b45f">More...</a><br/></td></tr>
+<tr class="separator:adad04625a538a0b65f53069530c7b45f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa50b7e38339dc53463eee268608c71e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1host__allocator.html#aa50b7e38339dc53463eee268608c71e5">destroy</a> (<a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> ptr)</td></tr>
+<tr class="memdesc:aa50b7e38339dc53463eee268608c71e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys in-place the object pointed by ptr. Notice that this does not deallocate the storage for the element (see member deallocate to release storage space).  <a href="#aa50b7e38339dc53463eee268608c71e5">More...</a><br/></td></tr>
+<tr class="separator:aa50b7e38339dc53463eee268608c71e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T&gt;<br/>
-class ecuda::host_allocator&lt; T &gt;</h3>
+<div class="textblock"><h3>template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt;<br/>
+class ecuda::host_allocator&lt; T, Flags &gt;</h3>
 
-<p>An STL allocator for page-locked host memory. </p>
-<p>The implementation uses the CUDA API functions cudaMallocHost and cudaFreeHost.</p>
+<p>Allocator for page-locked host memory. </p>
+<p>Implementation follows the specification of an STL allocator. The main difference is that the CUDA API functions cudaHostAlloc and cudaFreeHost are used internally to allocate/deallocate memory.</p>
 <p>Page-locked or "pinned" memory makes copying memory from the GPU (device) to the CPU (host) faster. Using STL containers with this allocator makes them better at acting as "staging" points when moving data from the device memory to the host memory. This is used internally to optimize host &lt;=&gt; device transfers that involve any kind of temporary staging memory, but can be used effectively by an end-user of the library as well.</p>
 <p>For example: </p>
-<div class="fragment"><div class="line">std::vector&lt; int, host_allocator&lt;int&gt; &gt; v;</div>
+<div class="fragment"><div class="line">std::vector&lt; int, ecuda::host_allocator&lt;int&gt; &gt; v;</div>
 </div><!-- fragment --><p> This would instantiate a vector whose underlying contents would be stored in page-locked host memory. Then a call to, for example: </p>
 <div class="fragment"><div class="line"><a class="code" href="classecuda_1_1vector.html">ecuda::vector&lt;int&gt;</a> deviceVector(1000);</div>
 <div class="line"><span class="comment">// do work on device vector using the GPU...</span></div>
 <div class="line">std::vector&lt; int, ecuda::host_allocator&lt;int&gt; &gt; hostVector( 1000 );</div>
-<div class="line">deviceVector &gt;&gt; hostVector; <span class="comment">// copy results from device to host</span></div>
+<div class="line"><a class="code" href="namespaceecuda.html#ad79c20b551be33bea5f0b62fba14434d">ecuda::copy</a>( deviceVector.begin(), deviceVector.end(), hostVector.begin() ); <span class="comment">// copy results from device to host</span></div>
 </div><!-- fragment --><p> This would potentially be a faster transfer than one would get using a <code>std::vector</code> with the default STL allocator. </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00078">78</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00082">82</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a class="anchor" id="a75742e576bf3f1133f248f93997b2a21"></a>
+<a class="anchor" id="ac36557f9292c4613294c5d602dc47282"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef const T* <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a></td>
+          <td class="memname">typedef make_const&lt;<a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&gt;::type <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>pointer to constant element </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00084">84</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00089">89</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1e26fa247e258c191135f862e8c2e00d"></a>
+<a class="anchor" id="a78d791d01d3f1729418436816d45b573"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef const T&amp; <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a></td>
+          <td class="memname">typedef ecuda::add_lvalue_reference&lt;const T&gt;::type <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>reference to constant element </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00085">85</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00090">90</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a33e4aaa8d15d7a730225a1d948115da3"></a>
+<a class="anchor" id="a352c33194e3378034c2d38b06f756e1e"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a33e4aaa8d15d7a730225a1d948115da3">difference_type</a></td>
+          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a352c33194e3378034c2d38b06f756e1e">difference_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>difference between two pointers </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00087">87</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00092">92</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="abfd85c902c7c39db582424a6b31e653f"></a>
+<a class="anchor" id="a94fb237ba50ce0fbaa57242bb55725d2"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T* <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a></td>
+          <td class="memname">typedef ecuda::add_pointer&lt;T&gt;::type <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>pointer to element </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00082">82</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00087">87</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="acc533951a402895c9cfb77891cbaa080"></a>
+<a class="anchor" id="a5276c38a8e37809cc939380bcdedaaa1"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T&amp; <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#acc533951a402895c9cfb77891cbaa080">reference</a></td>
+          <td class="memname">typedef ecuda::add_lvalue_reference&lt;T&gt;::type <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a5276c38a8e37809cc939380bcdedaaa1">reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>reference to element </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00083">83</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00088">88</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa03a7b12119cce15169f14bf2521a7c2"></a>
+<a class="anchor" id="a314d3bd9c0aa98f64ef51efca4bbb620"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a></td>
+          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>quantities of elements </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00086">86</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00091">91</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac35484c7a5a2b7ec0b61623f6775cbca"></a>
+<a class="anchor" id="a296572fcd505b2402a3f17df31c31f43"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html#ac35484c7a5a2b7ec0b61623f6775cbca">value_type</a></td>
+          <td class="memname">typedef T <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a296572fcd505b2402a3f17df31c31f43">value_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>element type </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00081">81</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00086">86</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a912bf8037dac86e4bf0efe98de715323"></a>
+<a class="anchor" id="a642f1186ffbaa6315b7dc7e206febe4c"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -338,23 +342,23 @@ template&lt;typename T&gt; </div>
 
 <p>Constructs a host allocator object. </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00096">96</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00101">101</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a4dce3b8beac46b8aa6c195cda1bc1ddb"></a>
+<a class="anchor" id="a47c0daf2ffbced13d10d19fbb3b8215c"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a>&lt; T, Flags &gt; &amp;&#160;</td>
           <td class="paramname"><em>alloc</em></td><td>)</td>
           <td></td>
         </tr>
@@ -380,15 +384,15 @@ template&lt;typename T&gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00102">102</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00107">107</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a76d3eec06ff705c39ac481a63e85bba9"></a>
+<a class="anchor" id="a6831f94c8791ff37d5a633e27b5ecc75"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <div class="memtemplate">
 template&lt;typename U &gt; </div>
 <table class="mlabels">
@@ -396,7 +400,7 @@ template&lt;typename U &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a>&lt; U &gt; &amp;&#160;</td>
           <td class="paramname"><em>alloc</em></td><td>)</td>
@@ -424,21 +428,21 @@ template&lt;typename U &gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00109">109</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00114">114</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="aa6fd4c7824d95d698d74b2ddd022c789"></a>
+<a class="anchor" id="ab7f9745dcbfad1d33468e33388603e5f"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::~<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::~<a class="el" href="classecuda_1_1host__allocator.html">host_allocator</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -459,24 +463,24 @@ template&lt;typename T&gt; </div>
 
 <p>Destructs the host allocator object. </p>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00114">114</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00119">119</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a3aec1742d37d1e0e3bbb6a2338d3bad3"></a>
+<a class="anchor" id="ae9b67fe75de8b7555a2902943e5afa6e"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::address </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::address </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#acc533951a402895c9cfb77891cbaa080">reference</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a5276c38a8e37809cc939380bcdedaaa1">reference</a>&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
           <td></td>
         </tr>
@@ -498,23 +502,23 @@ template&lt;typename T&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the object. </dd></dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00124">124</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00129">129</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a75ad76b7fd0a832c07bed01b81ad7a6a"></a>
+<a class="anchor" id="a8cd44f7896a467fe52135d5642ffa773"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::address </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::address </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a>&#160;</td>
           <td class="paramname"><em>x</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -536,29 +540,29 @@ template&lt;typename T&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the object. </dd></dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00134">134</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00139">139</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a733c8dd2b447ed83e1263510d59ee455"></a>
+<a class="anchor" id="a2c3a200389a1c5ee873773b3d0b3269e"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::allocate </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::allocate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::allocator&lt; void &gt;::<a class="el" href="classecuda_1_1host__allocator.html#a75742e576bf3f1133f248f93997b2a21">const_pointer</a>&#160;</td>
+          <td class="paramtype">std::allocator&lt; void &gt;::<a class="el" href="classecuda_1_1host__allocator.html#ac36557f9292c4613294c5d602dc47282">const_pointer</a>&#160;</td>
           <td class="paramname"><em>hint</em> = <code>0</code>&#160;</td>
         </tr>
         <tr>
@@ -575,9 +579,9 @@ template&lt;typename T&gt; </div>
 </div><div class="memdoc">
 
 <p>Allocate block of storage. </p>
-<p>Attempts to allocate a block of storage with a size large enough to contain n elements of member type value_type (as alias of the allocator's template parameter), and returns a pointer to the first element.</p>
+<p>Attempts to allocate a block of storage with a size large enough to contain n elements of member type value_type, and returns a pointer to the first element.</p>
 <p>The storage is aligned appropriately for object of type value_type, but they are not constructed.</p>
-<p>The block of storage is allocated using cudaMallocHost and throws std::bad_alloc if it cannot allocate the total amount of storage requested.</p>
+<p>The block of storage is allocated using cudaHostAlloc and throws std::bad_alloc if it cannot allocate the total amount of storage requested.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">n</td><td>Number of elements (each of size sizeof(value_type)) to be allocated. </td></tr>
@@ -587,29 +591,29 @@ template&lt;typename T&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the initial element in the block of storage. </dd></dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00156">156</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00161">161</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac552cca39af28119da7ee017f23d73ea"></a>
+<a class="anchor" id="adad04625a538a0b65f53069530c7b45f"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::construct </td>
+          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::construct </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&#160;</td>
           <td class="paramname"><em>ptr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a1e26fa247e258c191135f862e8c2e00d">const_reference</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a78d791d01d3f1729418436816d45b573">const_reference</a>&#160;</td>
           <td class="paramname"><em>val</em>&#160;</td>
         </tr>
         <tr>
@@ -634,29 +638,29 @@ template&lt;typename T&gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00195">195</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00203">203</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ad292fd2e6d078fcbe59be8317a339dba"></a>
+<a class="anchor" id="a6ba0a4136dcd017f2b9ceb987e0bd468"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::deallocate </td>
+          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::deallocate </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&#160;</td>
           <td class="paramname"><em>ptr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a>&#160;</td>
           <td class="paramname">&#160;</td>
         </tr>
         <tr>
@@ -682,23 +686,23 @@ template&lt;typename T&gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00174">174</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00180">180</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ad1691841ed76b464d8dbf40409dff853"></a>
+<a class="anchor" id="aa50b7e38339dc53463eee268608c71e5"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::destroy </td>
+          <td class="memname">void <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::destroy </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#abfd85c902c7c39db582424a6b31e653f">pointer</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1host__allocator.html#a94fb237ba50ce0fbaa57242bb55725d2">pointer</a>&#160;</td>
           <td class="paramname"><em>ptr</em></td><td>)</td>
           <td></td>
         </tr>
@@ -718,21 +722,21 @@ template&lt;typename T&gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00202">202</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00210">210</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a4cdd6302ef94a3eacc67175181225c93"></a>
+<a class="anchor" id="aaa9ad8ca4f4dda3a5a1618b3afaa16e9"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T&gt; </div>
+template&lt;typename T, unsigned Flags = cudaHostAllocDefault&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#aa03a7b12119cce15169f14bf2521a7c2">size_type</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T &gt;::max_size </td>
+          <td class="memname"><a class="el" href="classecuda_1_1host__allocator.html#a314d3bd9c0aa98f64ef51efca4bbb620">size_type</a> <a class="el" href="classecuda_1_1host__allocator.html">ecuda::host_allocator</a>&lt; T, Flags &gt;::max_size </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -755,7 +759,7 @@ template&lt;typename T&gt; </div>
 <p>A call to member allocate with the value returned by this function can still fail to allocate the requested storage.</p>
 <dl class="section return"><dt>Returns</dt><dd>The nubmer of elements that might be allcoated as maximum by a call to member allocate. </dd></dl>
 
-<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00186">186</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
+<p>Definition at line <a class="el" href="allocators_8hpp_source.html#l00194">194</a> of file <a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>.</p>
 
 </div>
 </div>
@@ -766,7 +770,7 @@ template&lt;typename T&gt; </div>
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

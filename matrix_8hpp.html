@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -89,17 +89,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">matrix.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &lt;vector&gt;</code><br/>
+<code>#include &quot;<a class="el" href="global_8hpp_source.html">global.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="algorithm_8hpp_source.html">algorithm.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="apiwrappers_8hpp_source.html">apiwrappers.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="memory_8hpp_source.html">memory.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="type__traits_8hpp_source.html">type_traits.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="device__contiguous__row__matrix_8hpp_source.html">model/device_contiguous_row_matrix.hpp</a>&quot;</code><br/>
+</div>
 <p><a href="matrix_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1matrix.html">ecuda::matrix&lt; T, Alloc &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1matrix.html">ecuda::matrix&lt; T, Alloc, P &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A resizable matrix stored in device memory.  <a href="classecuda_1_1matrix.html#details">More...</a><br/></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -108,22 +117,45 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceecuda"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html">ecuda</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:aa8921e82dbe56bc81dc6afdcfcc790bc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="matrix_8hpp.html#aa8921e82dbe56bc81dc6afdcfcc790bc">ECUDA_MATRIX_HPP</a></td></tr>
+<tr class="separator:aa8921e82dbe56bc81dc6afdcfcc790bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a50623e27eaaced8cbae456582281dea1"><td class="memTemplParams" colspan="2">template&lt;typename T , class Alloc1 , class Alloc2 &gt; </td></tr>
-<tr class="memitem:a50623e27eaaced8cbae456582281dea1"><td class="memTemplItemLeft" align="right" valign="top">HOST void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a50623e27eaaced8cbae456582281dea1">ecuda::matrix_copy</a> (matrix&lt; T, Alloc1 &gt; &amp;dest, const matrix&lt; T, Alloc2 &gt; &amp;src, typename matrix&lt; T, Alloc2 &gt;::size_type offsetRow=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetColumn=0)</td></tr>
-<tr class="memdesc:a50623e27eaaced8cbae456582281dea1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies some or all of a source matrix to a destination matrix.  <a href="#a50623e27eaaced8cbae456582281dea1">More...</a><br/></td></tr>
-<tr class="separator:a50623e27eaaced8cbae456582281dea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fc7fc3619b9edb814ce39160af80b4e"><td class="memTemplParams" colspan="2">template&lt;typename T , class Alloc1 , class Alloc2 &gt; </td></tr>
-<tr class="memitem:a2fc7fc3619b9edb814ce39160af80b4e"><td class="memTemplItemLeft" align="right" valign="top">HOST void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a2fc7fc3619b9edb814ce39160af80b4e">ecuda::matrix_swap</a> (matrix&lt; T, Alloc1 &gt; &amp;mat1, matrix&lt; T, Alloc2 &gt; &amp;mat2, typename matrix&lt; T, Alloc1 &gt;::size_type numberRows=0, typename matrix&lt; T, Alloc1 &gt;::size_type numberColumns=0, typename matrix&lt; T, Alloc1 &gt;::size_type offsetRow1=0, typename matrix&lt; T, Alloc1 &gt;::size_type offsetColumn1=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetRow2=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetColumn2=0)</td></tr>
-<tr class="memdesc:a2fc7fc3619b9edb814ce39160af80b4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swaps some or all of a source matrix with a destination matrix.  <a href="#a2fc7fc3619b9edb814ce39160af80b4e">More...</a><br/></td></tr>
-<tr class="separator:a2fc7fc3619b9edb814ce39160af80b4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16c015146fc14b398e67605109b8396c"><td class="memTemplParams" colspan="2">template&lt;typename T , class Alloc1 , class Alloc2 &gt; </td></tr>
+<tr class="memitem:a16c015146fc14b398e67605109b8396c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a16c015146fc14b398e67605109b8396c">ecuda::matrix_copy</a> (matrix&lt; T, Alloc1 &gt; &amp;dest, const matrix&lt; T, Alloc2 &gt; &amp;src, typename matrix&lt; T, Alloc2 &gt;::size_type offsetRow=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetColumn=0)</td></tr>
+<tr class="memdesc:a16c015146fc14b398e67605109b8396c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies some or all of a source matrix to a destination matrix.  <a href="#a16c015146fc14b398e67605109b8396c">More...</a><br/></td></tr>
+<tr class="separator:a16c015146fc14b398e67605109b8396c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a363fad3b23be97d929aba4cca2b08c3e"><td class="memTemplParams" colspan="2">template&lt;typename T , class Alloc1 , class Alloc2 &gt; </td></tr>
+<tr class="memitem:a363fad3b23be97d929aba4cca2b08c3e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a363fad3b23be97d929aba4cca2b08c3e">ecuda::matrix_swap</a> (matrix&lt; T, Alloc1 &gt; &amp;mat1, matrix&lt; T, Alloc2 &gt; &amp;mat2, typename matrix&lt; T, Alloc1 &gt;::size_type numberRows=0, typename matrix&lt; T, Alloc1 &gt;::size_type numberColumns=0, typename matrix&lt; T, Alloc1 &gt;::size_type offsetRow1=0, typename matrix&lt; T, Alloc1 &gt;::size_type offsetColumn1=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetRow2=0, typename matrix&lt; T, Alloc2 &gt;::size_type offsetColumn2=0)</td></tr>
+<tr class="memdesc:a363fad3b23be97d929aba4cca2b08c3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swaps some or all of a source matrix with a destination matrix.  <a href="#a363fad3b23be97d929aba4cca2b08c3e">More...</a><br/></td></tr>
+<tr class="separator:a363fad3b23be97d929aba4cca2b08c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c01f1d13fa9b6dab1c44af4a011d577"><td class="memTemplParams" colspan="2">template&lt;typename T , class Alloc &gt; </td></tr>
+<tr class="memitem:a9c01f1d13fa9b6dab1c44af4a011d577"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a9c01f1d13fa9b6dab1c44af4a011d577">ecuda::matrix_transpose</a> (matrix&lt; T, Alloc &gt; &amp;src)</td></tr>
+<tr class="separator:a9c01f1d13fa9b6dab1c44af4a011d577"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="aa8921e82dbe56bc81dc6afdcfcc790bc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ECUDA_MATRIX_HPP</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="matrix_8hpp_source.html#l00039">39</a> of file <a class="el" href="matrix_8hpp_source.html">matrix.hpp</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

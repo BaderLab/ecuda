@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -88,12 +88,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">apiwrappers.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &quot;<a class="el" href="global_8hpp_source.html">global.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="allocators_8hpp_source.html">allocators.hpp</a>&quot;</code><br/>
+<code>#include &lt;vector&gt;</code><br/>
+</div>
 <p><a href="apiwrappers_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -101,30 +105,64 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceecuda"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html">ecuda</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a284cfa1e442ef308968785da985e0bfd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apiwrappers_8hpp.html#a284cfa1e442ef308968785da985e0bfd">ECUDA_APIWRAPPERS_HPP</a></td></tr>
+<tr class="separator:a284cfa1e442ef308968785da985e0bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a759c78a1e4125b3f4f3a60f13770c9df"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a759c78a1e4125b3f4f3a60f13770c9df"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a759c78a1e4125b3f4f3a60f13770c9df">ecuda::cudaMemcpy</a> (T *dest, const T *src, const std::size_t count, cudaMemcpyKind kind)</td></tr>
-<tr class="memdesc:a759c78a1e4125b3f4f3a60f13770c9df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper around CUDA API function cudaMemcpy.  <a href="#a759c78a1e4125b3f4f3a60f13770c9df">More...</a><br/></td></tr>
-<tr class="separator:a759c78a1e4125b3f4f3a60f13770c9df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6443f3fc662e4015397a140d906662a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:aa6443f3fc662e4015397a140d906662a"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#aa6443f3fc662e4015397a140d906662a">ecuda::cudaMemcpy2D</a> (T *dest, const std::size_t dpitch, const T *src, const std::size_t spitch, const std::size_t width, const std::size_t height, cudaMemcpyKind kind)</td></tr>
-<tr class="memdesc:aa6443f3fc662e4015397a140d906662a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper around CUDA API function cudaMemcpy2D.  <a href="#aa6443f3fc662e4015397a140d906662a">More...</a><br/></td></tr>
-<tr class="separator:aa6443f3fc662e4015397a140d906662a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a181bf4510a96777fcb4e32a35f309da3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a181bf4510a96777fcb4e32a35f309da3"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a181bf4510a96777fcb4e32a35f309da3">ecuda::cudaMemset</a> (T *devPtr, const T &amp;value, const std::size_t count)</td></tr>
-<tr class="memdesc:a181bf4510a96777fcb4e32a35f309da3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset that allows for any data type.  <a href="#a181bf4510a96777fcb4e32a35f309da3">More...</a><br/></td></tr>
-<tr class="separator:a181bf4510a96777fcb4e32a35f309da3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e2653ed7ec3a5a643b445754fe2085f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a8e2653ed7ec3a5a643b445754fe2085f"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a8e2653ed7ec3a5a643b445754fe2085f">ecuda::cudaMemset2D</a> (T *devPtr, const std::size_t pitch, const T &amp;value, const std::size_t width, const std::size_t height)</td></tr>
-<tr class="memdesc:a8e2653ed7ec3a5a643b445754fe2085f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset2D that allows for any data type.  <a href="#a8e2653ed7ec3a5a643b445754fe2085f">More...</a><br/></td></tr>
-<tr class="separator:a8e2653ed7ec3a5a643b445754fe2085f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9bd1e585fb42fdb1c4dfb0548529b3a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aa9bd1e585fb42fdb1c4dfb0548529b3a"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#aa9bd1e585fb42fdb1c4dfb0548529b3a">ecuda::cudaMemcpy</a> (T *dest, const T *src, const size_t count, cudaMemcpyKind kind)</td></tr>
+<tr class="memdesc:aa9bd1e585fb42fdb1c4dfb0548529b3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper around CUDA API function cudaMemcpy.  <a href="#aa9bd1e585fb42fdb1c4dfb0548529b3a">More...</a><br/></td></tr>
+<tr class="separator:aa9bd1e585fb42fdb1c4dfb0548529b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e659446682da379a4424c59a87d4956"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a7e659446682da379a4424c59a87d4956"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a7e659446682da379a4424c59a87d4956">ecuda::cudaMemcpy2D</a> (T *dest, const size_t dpitch, const T *src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind)</td></tr>
+<tr class="memdesc:a7e659446682da379a4424c59a87d4956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrapper around CUDA API function cudaMemcpy2D.  <a href="#a7e659446682da379a4424c59a87d4956">More...</a><br/></td></tr>
+<tr class="separator:a7e659446682da379a4424c59a87d4956"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad434d4d608702c94e707a00c84eef984"><td class="memItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#ad434d4d608702c94e707a00c84eef984">ecuda::cudaMemset</a> (char *devPtr, const char &amp;value, const size_t count)</td></tr>
+<tr class="memdesc:ad434d4d608702c94e707a00c84eef984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset that enforces a single-byte value.  <a href="#ad434d4d608702c94e707a00c84eef984">More...</a><br/></td></tr>
+<tr class="separator:ad434d4d608702c94e707a00c84eef984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28ae274259bfd1683e70148e21b25681"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a28ae274259bfd1683e70148e21b25681"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a28ae274259bfd1683e70148e21b25681">ecuda::cudaMemset</a> (T *devPtr, const T &amp;value, const size_t count)</td></tr>
+<tr class="memdesc:a28ae274259bfd1683e70148e21b25681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset that allows for any data type.  <a href="#a28ae274259bfd1683e70148e21b25681">More...</a><br/></td></tr>
+<tr class="separator:a28ae274259bfd1683e70148e21b25681"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cefd65379eeb181746c749d665e2289"><td class="memItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a3cefd65379eeb181746c749d665e2289">ecuda::cudaMemset2D</a> (char *devPtr, const size_t pitch, const char &amp;value, const size_t width, const size_t height)</td></tr>
+<tr class="memdesc:a3cefd65379eeb181746c749d665e2289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset2D that enforces a single-byte value.  <a href="#a3cefd65379eeb181746c749d665e2289">More...</a><br/></td></tr>
+<tr class="separator:a3cefd65379eeb181746c749d665e2289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab103e9d8b086f7d23a0a28861c571072"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ab103e9d8b086f7d23a0a28861c571072"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#ab103e9d8b086f7d23a0a28861c571072">ecuda::cudaMemset2D</a> (T *devPtr, const size_t pitch, const T &amp;value, const size_t width, const size_t height)</td></tr>
+<tr class="memdesc:ab103e9d8b086f7d23a0a28861c571072"><td class="mdescLeft">&#160;</td><td class="mdescRight">Re-implementation of CUDA API function cudaMemset2D that allows for any data type.  <a href="#ab103e9d8b086f7d23a0a28861c571072">More...</a><br/></td></tr>
+<tr class="separator:ab103e9d8b086f7d23a0a28861c571072"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea59a07fa63a11bdf5a5d2442972dfea"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aea59a07fa63a11bdf5a5d2442972dfea"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#aea59a07fa63a11bdf5a5d2442972dfea">ecuda::cudaMemcpyToSymbol</a> (T *dest, const T *src, size_t count=1, size_t offset=0, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice)</td></tr>
+<tr class="separator:aea59a07fa63a11bdf5a5d2442972dfea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f04181a584d9069d901ec8a4f0e9054"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a7f04181a584d9069d901ec8a4f0e9054"><td class="memTemplItemLeft" align="right" valign="top">cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a7f04181a584d9069d901ec8a4f0e9054">ecuda::cudaMemcpyToSymbol</a> (T &amp;dest, const T &amp;src, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice)</td></tr>
+<tr class="separator:a7f04181a584d9069d901ec8a4f0e9054"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a985c26070efac911941cd9e6408b93c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a985c26070efac911941cd9e6408b93c8">ecuda::threadfence</a> ()</td></tr>
+<tr class="separator:a985c26070efac911941cd9e6408b93c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a284cfa1e442ef308968785da985e0bfd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ECUDA_APIWRAPPERS_HPP</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="apiwrappers_8hpp_source.html#l00040">40</a> of file <a class="el" href="apiwrappers_8hpp_source.html">apiwrappers.hpp</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

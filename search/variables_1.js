@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ptr',['ptr',['../classecuda_1_1sequence__view.html#a043e45034f677f755aa7100bfb369221',1,'ecuda::sequence_view']]]
+  ['second',['second',['../structecuda_1_1pair.html#a74ac2a78f2242370de2451cf1a08f5bd',1,'ecuda::pair']]]
 ];

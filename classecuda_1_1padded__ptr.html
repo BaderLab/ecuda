@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.6"/>
-<title>Extended CUDA Library (ecuda): ecuda::padded_ptr&lt; T, PointerType, PaddingUnitBytes &gt; Class Template Reference</title>
+<title>Extended CUDA Library (ecuda): ecuda::padded_ptr&lt; T, P &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
@@ -74,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,238 +89,251 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classecuda_1_1padded__ptr-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ecuda::padded_ptr&lt; T, PointerType, PaddingUnitBytes &gt; Class Template Reference</div>  </div>
+<div class="title">ecuda::padded_ptr&lt; T, P &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>A specialized pointer to memory with padding after a fixed-size sequence of data.  
+<p>A specialized pointer to padded memory.  
  <a href="classecuda_1_1padded__ptr.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a61b202f7f552db1719dc024c3cd1c613"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a61b202f7f552db1719dc024c3cd1c613">element_type</a></td></tr>
-<tr class="memdesc:a61b202f7f552db1719dc024c3cd1c613"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type represented in allocated memory  <a href="#a61b202f7f552db1719dc024c3cd1c613">More...</a><br/></td></tr>
-<tr class="separator:a61b202f7f552db1719dc024c3cd1c613"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2be310e8092ab5388526f3654a4539d"><td class="memItemLeft" align="right" valign="top">typedef PointerType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a></td></tr>
-<tr class="memdesc:ae2be310e8092ab5388526f3654a4539d"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type pointer  <a href="#ae2be310e8092ab5388526f3654a4539d">More...</a><br/></td></tr>
-<tr class="separator:ae2be310e8092ab5388526f3654a4539d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48837c645065e628354fc723d822f7ca"><td class="memItemLeft" align="right" valign="top">typedef T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a48837c645065e628354fc723d822f7ca">reference</a></td></tr>
-<tr class="memdesc:a48837c645065e628354fc723d822f7ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">data type reference  <a href="#a48837c645065e628354fc723d822f7ca">More...</a><br/></td></tr>
-<tr class="separator:a48837c645065e628354fc723d822f7ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a8b7ba86e33ed632c8eef008b0e4440"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a></td></tr>
-<tr class="memdesc:a1a8b7ba86e33ed632c8eef008b0e4440"><td class="mdescLeft">&#160;</td><td class="mdescRight">size type for pointer arithmetic and reference counting  <a href="#a1a8b7ba86e33ed632c8eef008b0e4440">More...</a><br/></td></tr>
-<tr class="separator:a1a8b7ba86e33ed632c8eef008b0e4440"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e66a3b5e31dbe3efacfac3a2042b461"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1e66a3b5e31dbe3efacfac3a2042b461">difference_type</a></td></tr>
-<tr class="memdesc:a1e66a3b5e31dbe3efacfac3a2042b461"><td class="mdescLeft">&#160;</td><td class="mdescRight">signed integer type of the result of subtracting two pointers  <a href="#a1e66a3b5e31dbe3efacfac3a2042b461">More...</a><br/></td></tr>
-<tr class="separator:a1e66a3b5e31dbe3efacfac3a2042b461"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c21d02e3fbd14a1db506a3e9dd935bf"><td class="memItemLeft" align="right" valign="top">typedef T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a4c21d02e3fbd14a1db506a3e9dd935bf">element_type</a></td></tr>
+<tr class="separator:a4c21d02e3fbd14a1db506a3e9dd935bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abffb64e4ab6e4db3f55cc6bb9e645fa0"><td class="memItemLeft" align="right" valign="top">typedef P&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a></td></tr>
+<tr class="separator:abffb64e4ab6e4db3f55cc6bb9e645fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a426a299780597a5f2b214e950382b097"><td class="memItemLeft" align="right" valign="top">typedef T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a></td></tr>
+<tr class="separator:a426a299780597a5f2b214e950382b097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13aec35e40b58fd448a6ff0ef4d063da"><td class="memItemLeft" align="right" valign="top">typedef const T &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a></td></tr>
+<tr class="separator:a13aec35e40b58fd448a6ff0ef4d063da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0db35f5a0452a0929a256616a0278c1"><td class="memItemLeft" align="right" valign="top">typedef std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a></td></tr>
+<tr class="separator:aa0db35f5a0452a0929a256616a0278c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92c083f58453d1b83021322635764a9e"><td class="memItemLeft" align="right" valign="top">typedef std::ptrdiff_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a92c083f58453d1b83021322635764a9e">difference_type</a></td></tr>
+<tr class="separator:a92c083f58453d1b83021322635764a9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a785dc51daa8ceb24dbfba4162cfa4521"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a785dc51daa8ceb24dbfba4162cfa4521">padded_ptr</a> (<a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a> p=<a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a>(), const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> data_length=1, const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> padding_length=0, const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> pointer_position=0)</td></tr>
-<tr class="memdesc:a785dc51daa8ceb24dbfba4162cfa4521"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="#a785dc51daa8ceb24dbfba4162cfa4521">More...</a><br/></td></tr>
-<tr class="separator:a785dc51daa8ceb24dbfba4162cfa4521"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40389888fcf8f4e1c1d518b6ce3af768"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a40389888fcf8f4e1c1d518b6ce3af768">padded_ptr</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt; &amp;src)</td></tr>
-<tr class="memdesc:a40389888fcf8f4e1c1d518b6ce3af768"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy constructor.  <a href="#a40389888fcf8f4e1c1d518b6ce3af768">More...</a><br/></td></tr>
-<tr class="separator:a40389888fcf8f4e1c1d518b6ce3af768"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78e797b27d4f85138a66f01d933c0972"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename PointerType2 &gt; </td></tr>
-<tr class="memitem:a78e797b27d4f85138a66f01d933c0972"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a78e797b27d4f85138a66f01d933c0972">padded_ptr</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, PointerType2, PaddingUnitBytes &gt; &amp;src)</td></tr>
-<tr class="separator:a78e797b27d4f85138a66f01d933c0972"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21662234da1157084c05b9d5fb7212ba"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a21662234da1157084c05b9d5fb7212ba">get_data_length</a> () const </td></tr>
-<tr class="memdesc:a21662234da1157084c05b9d5fb7212ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the size of the contiguous data block in units of sizeof(T).  <a href="#a21662234da1157084c05b9d5fb7212ba">More...</a><br/></td></tr>
-<tr class="separator:a21662234da1157084c05b9d5fb7212ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fa4cd9f8ddfa4e34c3210070d6b8b5f"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1fa4cd9f8ddfa4e34c3210070d6b8b5f">get_padding_length</a> () const </td></tr>
-<tr class="memdesc:a1fa4cd9f8ddfa4e34c3210070d6b8b5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the the size of the contiguous padding block in units of size PaddingUnitBytes.  <a href="#a1fa4cd9f8ddfa4e34c3210070d6b8b5f">More...</a><br/></td></tr>
-<tr class="separator:a1fa4cd9f8ddfa4e34c3210070d6b8b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad846f615db19629842d0ff7076e7b437"><td class="memItemLeft" align="right" valign="top">HOST DEVICE __CONSTEXPR__ <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ad846f615db19629842d0ff7076e7b437">get_pad_length_units</a> () const </td></tr>
-<tr class="memdesc:ad846f615db19629842d0ff7076e7b437"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the size in bytes of the padding unit.  <a href="#ad846f615db19629842d0ff7076e7b437">More...</a><br/></td></tr>
-<tr class="separator:ad846f615db19629842d0ff7076e7b437"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3e1c16a51b3dcbf4b1d1ee83e392bef"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ac3e1c16a51b3dcbf4b1d1ee83e392bef">get_distance_to_padding</a> () const </td></tr>
-<tr class="memdesc:ac3e1c16a51b3dcbf4b1d1ee83e392bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the distance in units of sizeof(T) of the current pointer position from the next padding region.  <a href="#ac3e1c16a51b3dcbf4b1d1ee83e392bef">More...</a><br/></td></tr>
-<tr class="separator:ac3e1c16a51b3dcbf4b1d1ee83e392bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afac2e1fa61762dfc9d52bf7e08ba963b"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#afac2e1fa61762dfc9d52bf7e08ba963b">get</a> () const </td></tr>
-<tr class="separator:afac2e1fa61762dfc9d52bf7e08ba963b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0e70ea81742f2022903b205d0122af6"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#aa0e70ea81742f2022903b205d0122af6">operator bool</a> () const </td></tr>
-<tr class="separator:aa0e70ea81742f2022903b205d0122af6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c59fae6d59840388c134df19a996bc1"><td class="memItemLeft" align="right" valign="top">HOST DEVICE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a3c59fae6d59840388c134df19a996bc1">operator pointer</a> () const </td></tr>
-<tr class="separator:a3c59fae6d59840388c134df19a996bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addfce487b29e5bd143a897962b4c95e5"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#addfce487b29e5bd143a897962b4c95e5">operator++</a> ()</td></tr>
-<tr class="separator:addfce487b29e5bd143a897962b4c95e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa01b73df6db455e9a96b75c62a8b528c"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#aa01b73df6db455e9a96b75c62a8b528c">operator++</a> (int)</td></tr>
-<tr class="separator:aa01b73df6db455e9a96b75c62a8b528c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c12e604acffdd1d94dc4474744ac199"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a6c12e604acffdd1d94dc4474744ac199">operator--</a> ()</td></tr>
-<tr class="separator:a6c12e604acffdd1d94dc4474744ac199"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab00706f3fca4b92ac1cd381e0d07b38c"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ab00706f3fca4b92ac1cd381e0d07b38c">operator--</a> (int)</td></tr>
-<tr class="separator:ab00706f3fca4b92ac1cd381e0d07b38c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2772ca69c10436fef6aaa9231f52ff48"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a2772ca69c10436fef6aaa9231f52ff48">operator+=</a> (int units)</td></tr>
-<tr class="separator:a2772ca69c10436fef6aaa9231f52ff48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f1416dfc0ae5394c9d3ad2a479651c4"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1f1416dfc0ae5394c9d3ad2a479651c4">operator-=</a> (int units)</td></tr>
-<tr class="separator:a1f1416dfc0ae5394c9d3ad2a479651c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5dd67eeb18e2c14bc140d4d37184e914"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a5dd67eeb18e2c14bc140d4d37184e914">operator+</a> (const int units) const </td></tr>
-<tr class="separator:a5dd67eeb18e2c14bc140d4d37184e914"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99366ce61a180e08419dfe459a23908c"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a99366ce61a180e08419dfe459a23908c">operator-</a> (const int units) const </td></tr>
-<tr class="separator:a99366ce61a180e08419dfe459a23908c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b75e58431cece46a0472f8abba2681f"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a48837c645065e628354fc723d822f7ca">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1b75e58431cece46a0472f8abba2681f">operator*</a> () const </td></tr>
-<tr class="separator:a1b75e58431cece46a0472f8abba2681f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bb233bd543632c43334d5adbd386472"><td class="memItemLeft" align="right" valign="top">DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1bb233bd543632c43334d5adbd386472">operator-&gt;</a> () const </td></tr>
-<tr class="separator:a1bb233bd543632c43334d5adbd386472"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac60ab8e05028868d6764a649f32f091e"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:ac60ab8e05028868d6764a649f32f091e"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ac60ab8e05028868d6764a649f32f091e">operator==</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:ac60ab8e05028868d6764a649f32f091e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3cbdf59e04061801567bfd9b2ede90a1"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:a3cbdf59e04061801567bfd9b2ede90a1"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a3cbdf59e04061801567bfd9b2ede90a1">operator!=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:a3cbdf59e04061801567bfd9b2ede90a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39903ec7aab01482f2080658f84e6630"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:a39903ec7aab01482f2080658f84e6630"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a39903ec7aab01482f2080658f84e6630">operator&lt;</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:a39903ec7aab01482f2080658f84e6630"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe00bc446237660a683ec1812ca95956"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:abe00bc446237660a683ec1812ca95956"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#abe00bc446237660a683ec1812ca95956">operator&gt;</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:abe00bc446237660a683ec1812ca95956"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad85b57e337a6037f4e719b4480ca3637"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:ad85b57e337a6037f4e719b4480ca3637"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ad85b57e337a6037f4e719b4480ca3637">operator&lt;=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:ad85b57e337a6037f4e719b4480ca3637"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e4a03647e43d9c0909e16629371bf9b"><td class="memTemplParams" colspan="2">template&lt;std::size_t PaddingUnitBytes2&gt; </td></tr>
-<tr class="memitem:a5e4a03647e43d9c0909e16629371bf9b"><td class="memTemplItemLeft" align="right" valign="top">HOST DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a5e4a03647e43d9c0909e16629371bf9b">operator&gt;=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;other) const </td></tr>
-<tr class="separator:a5e4a03647e43d9c0909e16629371bf9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba5dfb6eb6b4d49884a2743d61eb1535"><td class="memItemLeft" align="right" valign="top">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#aba5dfb6eb6b4d49884a2743d61eb1535">operator=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt; &amp;other)</td></tr>
-<tr class="separator:aba5dfb6eb6b4d49884a2743d61eb1535"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b29c4927e61f76d2a72f63696c78ba3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a5b29c4927e61f76d2a72f63696c78ba3">padded_ptr</a> (<a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a> ptr=<a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a>(), <a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a> pitch=<a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a>())</td></tr>
+<tr class="separator:a5b29c4927e61f76d2a72f63696c78ba3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0613b10113adcc8d6b6e6c941a6b6c74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a0613b10113adcc8d6b6e6c941a6b6c74">padded_ptr</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;src)</td></tr>
+<tr class="separator:a0613b10113adcc8d6b6e6c941a6b6c74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52b494ded32626598cfacc4f4c35fa90"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a52b494ded32626598cfacc4f4c35fa90">operator=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;src)</td></tr>
+<tr class="separator:a52b494ded32626598cfacc4f4c35fa90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11aae853039d8480b62cdbab9174b415"><td class="memTemplParams" colspan="2">template&lt;typename T2 , class P2 &gt; </td></tr>
+<tr class="memitem:a11aae853039d8480b62cdbab9174b415"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a11aae853039d8480b62cdbab9174b415">padded_ptr</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;src)</td></tr>
+<tr class="separator:a11aae853039d8480b62cdbab9174b415"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f73bd636e4208b8840f9084057a00b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a6f73bd636e4208b8840f9084057a00b9">get_pitch</a> () const </td></tr>
+<tr class="separator:a6f73bd636e4208b8840f9084057a00b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c1f281bb96bed722d8d6f1bc642d87b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1c1f281bb96bed722d8d6f1bc642d87b">get</a> () const </td></tr>
+<tr class="separator:a1c1f281bb96bed722d8d6f1bc642d87b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82cddd43ea52765258f76ce629718392"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a82cddd43ea52765258f76ce629718392">operator*</a> ()</td></tr>
+<tr class="separator:a82cddd43ea52765258f76ce629718392"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad256448c0a4b2142fc02f12c5e5e8fdd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ad256448c0a4b2142fc02f12c5e5e8fdd">operator*</a> () const </td></tr>
+<tr class="separator:ad256448c0a4b2142fc02f12c5e5e8fdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a979302a80a82b8246ca92b48a6af0e47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a979302a80a82b8246ca92b48a6af0e47">operator-&gt;</a> () const </td></tr>
+<tr class="separator:a979302a80a82b8246ca92b48a6af0e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61779c1ccd495ce4677a60a8b0c9e71a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a61779c1ccd495ce4677a60a8b0c9e71a">operator[]</a> (std::size_t i)</td></tr>
+<tr class="separator:a61779c1ccd495ce4677a60a8b0c9e71a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6fcb6ee8ab0dba0a7f1acacbbc2f6c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ac6fcb6ee8ab0dba0a7f1acacbbc2f6c7">operator[]</a> (std::size_t i) const </td></tr>
+<tr class="separator:ac6fcb6ee8ab0dba0a7f1acacbbc2f6c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fbe34df4008d546c2494d4c435f1058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a6fbe34df4008d546c2494d4c435f1058">operator bool</a> () const <a class="el" href="global_8hpp.html#ac357af947bf0fb6c15fe2ac07aea5382">__NOEXCEPT__</a></td></tr>
+<tr class="memdesc:a6fbe34df4008d546c2494d4c435f1058"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if this stores a non-null pointer.  <a href="#a6fbe34df4008d546c2494d4c435f1058">More...</a><br/></td></tr>
+<tr class="separator:a6fbe34df4008d546c2494d4c435f1058"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c32de84006bfcbf10777e22654c4740"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a4c32de84006bfcbf10777e22654c4740">operator++</a> ()</td></tr>
+<tr class="separator:a4c32de84006bfcbf10777e22654c4740"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c383a5bb84f713d6e3ec9dc1160cdd7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a1c383a5bb84f713d6e3ec9dc1160cdd7">operator--</a> ()</td></tr>
+<tr class="separator:a1c383a5bb84f713d6e3ec9dc1160cdd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a4ec31a06f9fbf343a9993dd002fef2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a4a4ec31a06f9fbf343a9993dd002fef2">operator++</a> (int)</td></tr>
+<tr class="separator:a4a4ec31a06f9fbf343a9993dd002fef2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace4c66fd6dd14a6a55baf3434987e48a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ace4c66fd6dd14a6a55baf3434987e48a">operator--</a> (int)</td></tr>
+<tr class="separator:ace4c66fd6dd14a6a55baf3434987e48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2aabad31a485348c4e6985113f79b4d5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a2aabad31a485348c4e6985113f79b4d5">operator+=</a> (int x)</td></tr>
+<tr class="separator:a2aabad31a485348c4e6985113f79b4d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2059d5b1be91fd48b5d60dd601966c12"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a2059d5b1be91fd48b5d60dd601966c12">operator-=</a> (int x)</td></tr>
+<tr class="separator:a2059d5b1be91fd48b5d60dd601966c12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc6b03d3d5940c8ad5bc4125e8151947"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#acc6b03d3d5940c8ad5bc4125e8151947">operator+</a> (int x) const </td></tr>
+<tr class="separator:acc6b03d3d5940c8ad5bc4125e8151947"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e6b5059e18a5be2c3f77dc82066de9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a7e6b5059e18a5be2c3f77dc82066de9a">operator-</a> (int x) const </td></tr>
+<tr class="separator:a7e6b5059e18a5be2c3f77dc82066de9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54e9f98fe362a28318d82958bd6f2c31"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a54e9f98fe362a28318d82958bd6f2c31">operator+</a> (std::size_t x) const </td></tr>
+<tr class="separator:a54e9f98fe362a28318d82958bd6f2c31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c4b8c4357258c48f611afe3093e753d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a6c4b8c4357258c48f611afe3093e753d">operator-</a> (std::size_t x) const </td></tr>
+<tr class="separator:a6c4b8c4357258c48f611afe3093e753d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad691473a76f7cb8d6d46a58641140246"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:ad691473a76f7cb8d6d46a58641140246"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ad691473a76f7cb8d6d46a58641140246">operator==</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:ad691473a76f7cb8d6d46a58641140246"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9466e10bec70d1a3d2a5ad6cb4e4af46"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a9466e10bec70d1a3d2a5ad6cb4e4af46"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a9466e10bec70d1a3d2a5ad6cb4e4af46">operator!=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a9466e10bec70d1a3d2a5ad6cb4e4af46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac011a9d17c1390969a7ca84ff7bfbec1"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:ac011a9d17c1390969a7ca84ff7bfbec1"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#ac011a9d17c1390969a7ca84ff7bfbec1">operator&lt;</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:ac011a9d17c1390969a7ca84ff7bfbec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc936dc2f909fd89ec8f1cde76f6f37e"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:afc936dc2f909fd89ec8f1cde76f6f37e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#afc936dc2f909fd89ec8f1cde76f6f37e">operator&gt;</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:afc936dc2f909fd89ec8f1cde76f6f37e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a847ebd72e11e689e76e5402a83bcaa25"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a847ebd72e11e689e76e5402a83bcaa25"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a847ebd72e11e689e76e5402a83bcaa25">operator&lt;=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a847ebd72e11e689e76e5402a83bcaa25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89bf08859e4c9254b67c594b7b750e5d"><td class="memTemplParams" colspan="2">template&lt;typename T2 , typename P2 &gt; </td></tr>
+<tr class="memitem:a89bf08859e4c9254b67c594b7b750e5d"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a89bf08859e4c9254b67c594b7b750e5d">operator&gt;=</a> (const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;other) const </td></tr>
+<tr class="separator:a89bf08859e4c9254b67c594b7b750e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a652ccb4d6bbc715f27fbe9b5d2d3d372"><td class="memItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a652ccb4d6bbc715f27fbe9b5d2d3d372">skip_bytes</a> (<a class="el" href="classecuda_1_1padded__ptr.html#a92c083f58453d1b83021322635764a9e">difference_type</a> x)</td></tr>
+<tr class="memdesc:a652ccb4d6bbc715f27fbe9b5d2d3d372"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move the pointer some number of bytes.  <a href="#a652ccb4d6bbc715f27fbe9b5d2d3d372">More...</a><br/></td></tr>
+<tr class="separator:a652ccb4d6bbc715f27fbe9b5d2d3d372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a3fd83da2f06b52d4239dfe905334fffb"><td class="memTemplParams" colspan="2">template&lt;typename U , typename V &gt; </td></tr>
+<tr class="memitem:a3fd83da2f06b52d4239dfe905334fffb"><td class="memTemplItemLeft" align="right" valign="top">std::basic_ostream&lt; U, V &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classecuda_1_1padded__ptr.html#a3fd83da2f06b52d4239dfe905334fffb">operator&lt;&lt;</a> (std::basic_ostream&lt; U, V &gt; &amp;out, const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> &amp;ptr)</td></tr>
+<tr class="separator:a3fd83da2f06b52d4239dfe905334fffb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt;<br/>
-class ecuda::padded_ptr&lt; T, PointerType, PaddingUnitBytes &gt;</h3>
+<div class="textblock"><h3>template&lt;typename T, typename P&gt;<br/>
+class ecuda::padded_ptr&lt; T, P &gt;</h3>
 
-<p>A specialized pointer to memory with padding after a fixed-size sequence of data. </p>
+<p>A specialized pointer to padded memory. </p>
+<p>A specialized pointer to device memory which is aligned to a certain width. Although this class stores this width it is the responsibility of the user of the class to account for this padding when traversing the data.</p>
+<p>The specialization is used to both represent 2D memory allocations using cudaMallocPitch().</p>
+<p>Memory use can be conceptualized as: </p>
+<div class="fragment"><div class="line">|- width --|      <span class="comment">// in multiples of sizeof(T)</span></div>
+<div class="line">|---- pitch ----| <span class="comment">// in bytes</span></div>
+<div class="line">+----------+----+</div>
+<div class="line">|          |xxxx|</div>
+<div class="line">|          |xxxx| x = allocated but not used</div>
+<div class="line">|          |xxxx|</div>
+<div class="line">|          |xxxx|</div>
+<div class="line">|          |xxxx|</div>
+<div class="line">|          |xxxx| ... etc. (total size of the allocation is not known internally by <a class="code" href="classecuda_1_1padded__ptr.html#a5b29c4927e61f76d2a72f63696c78ba3">padded_ptr</a>)</div>
+<div class="line">+----------+----+</div>
+</div><!-- fragment --><p>This class stores the pitch, but not the width nor the position within the range that the current pointed to element resides. The caller should store the relative position within the padded region and utilize the <a class="el" href="classecuda_1_1padded__ptr.html#a6f73bd636e4208b8840f9084057a00b9">get_pitch()</a> and <a class="el" href="classecuda_1_1padded__ptr.html#a652ccb4d6bbc715f27fbe9b5d2d3d372" title="Move the pointer some number of bytes. ">skip_bytes()</a> methods to skip over the padded region when needed. </p>
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00068">68</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="iterator_8hpp_source.html#l00052">52</a> of file <a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a class="anchor" id="a1e66a3b5e31dbe3efacfac3a2042b461"></a>
+<a class="anchor" id="a13aec35e40b58fd448a6ff0ef4d063da"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a1e66a3b5e31dbe3efacfac3a2042b461">difference_type</a></td>
+          <td class="memname">typedef const T&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>signed integer type of the result of subtracting two pointers </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00075">75</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00085">85</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a61b202f7f552db1719dc024c3cd1c613"></a>
+<a class="anchor" id="a92c083f58453d1b83021322635764a9e"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a61b202f7f552db1719dc024c3cd1c613">element_type</a></td>
+          <td class="memname">typedef std::ptrdiff_t <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a92c083f58453d1b83021322635764a9e">difference_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type represented in allocated memory </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00071">71</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00087">87</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ae2be310e8092ab5388526f3654a4539d"></a>
+<a class="anchor" id="a4c21d02e3fbd14a1db506a3e9dd935bf"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef PointerType <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a></td>
+          <td class="memname">typedef T <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a4c21d02e3fbd14a1db506a3e9dd935bf">element_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type pointer </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00072">72</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00082">82</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a48837c645065e628354fc723d822f7ca"></a>
+<a class="anchor" id="abffb64e4ab6e4db3f55cc6bb9e645fa0"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef T&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a48837c645065e628354fc723d822f7ca">reference</a></td>
+          <td class="memname">typedef P <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>data type reference </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00073">73</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00083">83</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1a8b7ba86e33ed632c8eef008b0e4440"></a>
+<a class="anchor" id="a426a299780597a5f2b214e950382b097"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a></td>
+          <td class="memname">typedef T&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>size type for pointer arithmetic and reference counting </p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00084">84</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00074">74</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+</div>
+</div>
+<a class="anchor" id="aa0db35f5a0452a0929a256616a0278c1"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef std::size_t <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00086">86</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a785dc51daa8ceb24dbfba4162cfa4521"></a>
+<a class="anchor" id="a5b29c4927e61f76d2a72f63696c78ba3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a>&#160;</td>
-          <td class="paramname"><em>p</em> = <code><a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a>()</code>, </td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a>&#160;</td>
+          <td class="paramname"><em>ptr</em> = <code><a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a>()</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td>
-          <td class="paramname"><em>data_length</em> = <code>1</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td>
-          <td class="paramname"><em>padding_length</em> = <code>0</code>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a>&#160;</td>
-          <td class="paramname"><em>pointer_position</em> = <code>0</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a>&#160;</td>
+          <td class="paramname"><em>pitch</em> = <code><a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a>()</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -336,35 +348,23 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Default constructor. </p>
-<p>The pointer p points to a location within a block of padded memory where every data_length contiguous elements of type T are followed by a block of ignorable memory that is padding_length units of size PaddingUnitBytes. pointer_position specifies the current location of the pointer within a data block.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">p</td><td>a pointer to an element of type T </td></tr>
-    <tr><td class="paramname">data_length</td><td>the number of contiguous elements of type T that comprise the data block </td></tr>
-    <tr><td class="paramname">padding_length</td><td>the number of PaddingUnitBytes-sized elements of padding following each data block </td></tr>
-    <tr><td class="paramname">pointer_position</td><td>the index of the pointer within the current data block </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00131">131</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00101">101</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a40389888fcf8f4e1c1d518b6ce3af768"></a>
+<a class="anchor" id="a0613b10113adcc8d6b6e6c941a6b6c74"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, P &gt; &amp;&#160;</td>
           <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
@@ -376,27 +376,25 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Copy constructor. </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00142">142</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00103">103</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a78e797b27d4f85138a66f01d933c0972"></a>
+<a class="anchor" id="a11aae853039d8480b62cdbab9174b415"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <div class="memtemplate">
-template&lt;typename T2 , typename PointerType2 &gt; </div>
+template&lt;typename T2 , class P2 &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::<a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, PointerType2, PaddingUnitBytes &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
           <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
@@ -408,22 +406,22 @@ template&lt;typename T2 , typename PointerType2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00145">145</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00113">113</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="afac2e1fa61762dfc9d52bf7e08ba963b"></a>
+<a class="anchor" id="a1c1f281bb96bed722d8d6f1bc642d87b"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::get </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::get </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -436,21 +434,21 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00175">175</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00126">126</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a21662234da1157084c05b9d5fb7212ba"></a>
+<a class="anchor" id="a6f73bd636e4208b8840f9084057a00b9"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::get_data_length </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#aa0db35f5a0452a0929a256616a0278c1">size_type</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::get_pitch </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -463,23 +461,21 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Gets the size of the contiguous data block in units of sizeof(T). </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00157">157</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00125">125</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ac3e1c16a51b3dcbf4b1d1ee83e392bef"></a>
+<a class="anchor" id="a6fbe34df4008d546c2494d4c435f1058"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::get_distance_to_padding </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator bool </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -492,83 +488,29 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Gets the distance in units of sizeof(T) of the current pointer position from the next padding region. </p>
+<p>Checks if this stores a non-null pointer. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if *this stores a pointer, false otherwise. </dd></dl>
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00172">172</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00147">147</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="ad846f615db19629842d0ff7076e7b437"></a>
+<a class="anchor" id="a9466e10bec70d1a3d2a5ad6cb4e4af46"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE __CONSTEXPR__ <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::get_pad_length_units </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator!= </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the size in bytes of the padding unit. </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00167">167</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1fa4cd9f8ddfa4e34c3210070d6b8b5f"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a1a8b7ba86e33ed632c8eef008b0e4440">size_type</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::get_padding_length </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Gets the the size of the contiguous padding block in units of size PaddingUnitBytes. </p>
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00162">162</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aa0e70ea81742f2022903b205d0122af6"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator bool </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -583,19 +525,499 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 
 </div>
 </div>
-<a class="anchor" id="a3c59fae6d59840388c134df19a996bc1"></a>
+<a class="anchor" id="a82cddd43ea52765258f76ce629718392"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator <a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a> </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator* </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00128">128</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad256448c0a4b2142fc02f12c5e5e8fdd"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator* </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00129">129</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="acc6b03d3d5940c8ad5bc4125e8151947"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator+ </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00159">159</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a54e9f98fe362a28318d82958bd6f2c31"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator+ </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00173">173</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a4c32de84006bfcbf10777e22654c4740"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00150">150</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a4a4ec31a06f9fbf343a9993dd002fef2"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00153">153</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a2aabad31a485348c4e6985113f79b4d5"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator+= </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00156">156</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a7e6b5059e18a5be2c3f77dc82066de9a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator- </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00166">166</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6c4b8c4357258c48f611afe3093e753d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator- </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00174">174</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a1c383a5bb84f713d6e3ec9dc1160cdd7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator-- </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00151">151</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ace4c66fd6dd14a6a55baf3434987e48a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator-- </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00154">154</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a2059d5b1be91fd48b5d60dd601966c12"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator-= </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00157">157</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a979302a80a82b8246ca92b48a6af0e47"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#abffb64e4ab6e4db3f55cc6bb9e645fa0">pointer</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator-&gt; </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00130">130</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac011a9d17c1390969a7ca84ff7bfbec1"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00178">178</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a847ebd72e11e689e76e5402a83bcaa25"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator&lt;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00180">180</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a52b494ded32626598cfacc4f4c35fa90"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, P &gt; &amp;&#160;</td>
+          <td class="paramname"><em>src</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00105">105</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad691473a76f7cb8d6d46a58641140246"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00176">176</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="afc936dc2f909fd89ec8f1cde76f6f37e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator&gt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -610,105 +1032,23 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 
 </div>
 </div>
-<a class="anchor" id="a3cbdf59e04061801567bfd9b2ede90a1"></a>
+<a class="anchor" id="a89bf08859e4c9254b67c594b7b750e5d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
+template&lt;typename T2 , typename P2 &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator!= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator&gt;= </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T2, P2 &gt; &amp;&#160;</td>
           <td class="paramname"><em>other</em></td><td>)</td>
           <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00262">262</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1b75e58431cece46a0472f8abba2681f"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#a48837c645065e628354fc723d822f7ca">reference</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator* </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00258">258</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a5dd67eeb18e2c14bc140d4d37184e914"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator+ </td>
-          <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>units</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00238">238</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="addfce487b29e5bd143a897962b4c95e5"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator++ </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
         </tr>
       </table>
   </td>
@@ -722,20 +1062,20 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 
 </div>
 </div>
-<a class="anchor" id="aa01b73df6db455e9a96b75c62a8b528c"></a>
+<a class="anchor" id="a61779c1ccd495ce4677a60a8b0c9e71a"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator++ </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a426a299780597a5f2b214e950382b097">reference</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator[] </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -746,24 +1086,52 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00190">190</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00131">131</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a2772ca69c10436fef6aaa9231f52ff48"></a>
+<a class="anchor" id="ac6fcb6ee8ab0dba0a7f1acacbbc2f6c7"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator+= </td>
+          <td class="memname"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> <a class="el" href="classecuda_1_1padded__ptr.html#a13aec35e40b58fd448a6ff0ef4d063da">const_reference</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::operator[] </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>units</em></td><td>)</td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>i</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00132">132</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a652ccb4d6bbc715f27fbe9b5d2d3d372"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> void <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, P &gt;::skip_bytes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classecuda_1_1padded__ptr.html#a92c083f58453d1b83021322635764a9e">difference_type</a>&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -774,334 +1142,69 @@ template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00211">211</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Move the pointer some number of bytes. </p>
+<p>Remember the movement is always in bytes and doesn't consider sizeof(element_type).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>Number of bytes to move the pointer. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00191">191</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a99366ce61a180e08419dfe459a23908c"></a>
+<h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a class="anchor" id="a3fd83da2f06b52d4239dfe905334fffb"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
+template&lt;typename T , typename P &gt; </div>
+<div class="memtemplate">
+template&lt;typename U , typename V &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator- </td>
+          <td class="memname">std::basic_ostream&lt;U,V&gt;&amp; operator&lt;&lt; </td>
           <td>(</td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>units</em></td><td>)</td>
-          <td> const</td>
+          <td class="paramtype">std::basic_ostream&lt; U, V &gt; &amp;&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00239">239</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a6c12e604acffdd1d94dc4474744ac199"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator-- </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, P &gt; &amp;&#160;</td>
+          <td class="paramname"><em>ptr</em>&#160;</td>
         </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00196">196</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ab00706f3fca4b92ac1cd381e0d07b38c"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
         <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator-- </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"></td><td>)</td>
           <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00205">205</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
+<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00201">201</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
 
 </div>
 </div>
-<a class="anchor" id="a1f1416dfc0ae5394c9d3ad2a479651c4"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator-= </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>units</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00224">224</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a1bb233bd543632c43334d5adbd386472"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">DEVICE <a class="el" href="classecuda_1_1padded__ptr.html#ae2be310e8092ab5388526f3654a4539d">pointer</a> <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator-&gt; </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00259">259</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a39903ec7aab01482f2080658f84e6630"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator&lt; </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00263">263</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ad85b57e337a6037f4e719b4480ca3637"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator&lt;= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00265">265</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="aba5dfb6eb6b4d49884a2743d61eb1535"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&amp; <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00268">268</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="ac60ab8e05028868d6764a649f32f091e"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator== </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00261">261</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="abe00bc446237660a683ec1812ca95956"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator&gt; </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00264">264</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="a5e4a03647e43d9c0909e16629371bf9b"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, typename PointerType = typename ecuda::reference&lt;T&gt;::pointer_type, std::size_t PaddingUnitBytes = sizeof(T)&gt; </div>
-<div class="memtemplate">
-template&lt;std::size_t PaddingUnitBytes2&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">HOST DEVICE bool <a class="el" href="classecuda_1_1padded__ptr.html">ecuda::padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes &gt;::operator&gt;= </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="classecuda_1_1padded__ptr.html">padded_ptr</a>&lt; T, PointerType, PaddingUnitBytes2 &gt; &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Definition at line <a class="el" href="padded__ptr_8hpp_source.html#l00266">266</a> of file <a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a>.</p>
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>include/ecuda/<a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a></li>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>include/ecuda/<a class="el" href="iterator_8hpp_source.html">iterator.hpp</a></li>
+<li>include/ecuda/ptr/<a class="el" href="padded__ptr_8hpp_source.html">padded_ptr.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

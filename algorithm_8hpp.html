@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -93,7 +93,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">algorithm.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &lt;iterator&gt;</code><br/>
+<code>#include &lt;vector&gt;</code><br/>
+<code>#include &quot;<a class="el" href="global_8hpp_source.html">global.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="iterator_8hpp_source.html">iterator.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="type__traits_8hpp_source.html">type_traits.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="copy_8hpp_source.html">algo/copy.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="equal_8hpp_source.html">algo/equal.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="fill_8hpp_source.html">algo/fill.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="lexicographical__compare_8hpp_source.html">algo/lexicographical_compare.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="max__element_8hpp_source.html">algo/max_element.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="find_8hpp_source.html">algo/find.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="find__if_8hpp_source.html">algo/find_if.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="find__if__not_8hpp_source.html">algo/find_if_not.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="for__each_8hpp_source.html">algo/for_each.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="count_8hpp_source.html">algo/count.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="count__if_8hpp_source.html">algo/count_if.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="mismatch_8hpp_source.html">algo/mismatch.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="reverse_8hpp_source.html">algo/reverse.hpp</a>&quot;</code><br/>
+</div>
 <p><a href="algorithm_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -103,39 +121,35 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af413274e8e981ae6dc8c473e71361afd"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:af413274e8e981ae6dc8c473e71361afd"><td class="memTemplItemLeft" align="right" valign="top">DEVICE void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#af413274e8e981ae6dc8c473e71361afd">ecuda::swap</a> (T &amp;t1, T &amp;t2)</td></tr>
-<tr class="memdesc:af413274e8e981ae6dc8c473e71361afd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exchanges the given values.  <a href="#af413274e8e981ae6dc8c473e71361afd">More...</a><br/></td></tr>
-<tr class="separator:af413274e8e981ae6dc8c473e71361afd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae57793d373240b182789c79b54a368fa"><td class="memTemplParams" colspan="2">template&lt;class InputIterator1 , class InputIterator2 &gt; </td></tr>
-<tr class="memitem:ae57793d373240b182789c79b54a368fa"><td class="memTemplItemLeft" align="right" valign="top">DEVICE bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#ae57793d373240b182789c79b54a368fa">ecuda::lexicographical_compare</a> (InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, InputIterator2 end2)</td></tr>
-<tr class="memdesc:ae57793d373240b182789c79b54a368fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the first range [begin1,end1) is lexicographically less than the second range [begin2,end2).  <a href="#ae57793d373240b182789c79b54a368fa">More...</a><br/></td></tr>
-<tr class="separator:ae57793d373240b182789c79b54a368fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afd9317b1641ee857cd8dd5a5e46d98e1"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:afd9317b1641ee857cd8dd5a5e46d98e1"><td class="memTemplItemLeft" align="right" valign="top">DEVICE const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#afd9317b1641ee857cd8dd5a5e46d98e1">ecuda::min</a> (const T &amp;a, const T &amp;b)</td></tr>
-<tr class="separator:afd9317b1641ee857cd8dd5a5e46d98e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6195a30534df8e0dbfe2365dd8b28fa9"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a6195a30534df8e0dbfe2365dd8b28fa9"><td class="memTemplItemLeft" align="right" valign="top">DEVICE const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a6195a30534df8e0dbfe2365dd8b28fa9">ecuda::max</a> (const T &amp;a, const T &amp;b)</td></tr>
-<tr class="separator:a6195a30534df8e0dbfe2365dd8b28fa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac779eec0742c00c176d10afba7f6e028"><td class="memTemplParams" colspan="2">template&lt;class ForwardIterator &gt; </td></tr>
-<tr class="memitem:ac779eec0742c00c176d10afba7f6e028"><td class="memTemplItemLeft" align="right" valign="top">DEVICE ForwardIterator&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#ac779eec0742c00c176d10afba7f6e028">ecuda::max_element</a> (ForwardIterator first, ForwardIterator last)</td></tr>
-<tr class="separator:ac779eec0742c00c176d10afba7f6e028"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0d93ec43d889faab4877a64508c0083"><td class="memTemplParams" colspan="2">template&lt;class ForwardIterator &gt; </td></tr>
-<tr class="memitem:ae0d93ec43d889faab4877a64508c0083"><td class="memTemplItemLeft" align="right" valign="top">DEVICE ForwardIterator&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#ae0d93ec43d889faab4877a64508c0083">ecuda::min_element</a> (ForwardIterator first, ForwardIterator last)</td></tr>
-<tr class="separator:ae0d93ec43d889faab4877a64508c0083"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19534e773dcdaf729dd4cdde6330afa4"><td class="memTemplParams" colspan="2">template&lt;class InputIterator , typename T &gt; </td></tr>
-<tr class="memitem:a19534e773dcdaf729dd4cdde6330afa4"><td class="memTemplItemLeft" align="right" valign="top">DEVICE T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a19534e773dcdaf729dd4cdde6330afa4">ecuda::accumulate</a> (InputIterator first, InputIterator last, T init=0)</td></tr>
-<tr class="separator:a19534e773dcdaf729dd4cdde6330afa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a80e5f8f27e09d32181797366876fc1"><td class="memTemplParams" colspan="2">template&lt;class InputIterator , class OutputIterator &gt; </td></tr>
-<tr class="memitem:a9a80e5f8f27e09d32181797366876fc1"><td class="memTemplItemLeft" align="right" valign="top">HOST OutputIterator&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a9a80e5f8f27e09d32181797366876fc1">ecuda::copy</a> (InputIterator first, InputIterator last, OutputIterator result)</td></tr>
-<tr class="memdesc:a9a80e5f8f27e09d32181797366876fc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy range of elements.  <a href="#a9a80e5f8f27e09d32181797366876fc1">More...</a><br/></td></tr>
-<tr class="separator:a9a80e5f8f27e09d32181797366876fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a465833740bdd33baea8b71771599079f"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a465833740bdd33baea8b71771599079f"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a465833740bdd33baea8b71771599079f">ecuda::min</a> (const T &amp;a, const T &amp;b)</td></tr>
+<tr class="separator:a465833740bdd33baea8b71771599079f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2141ad90b1907878f8b7c4f4382ef92c"><td class="memTemplParams" colspan="2">template&lt;typename T , class Compare &gt; </td></tr>
+<tr class="memitem:a2141ad90b1907878f8b7c4f4382ef92c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a2141ad90b1907878f8b7c4f4382ef92c">ecuda::min</a> (const T &amp;a, const T &amp;b, Compare cmp)</td></tr>
+<tr class="separator:a2141ad90b1907878f8b7c4f4382ef92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ba4df69edbf067b8c2f22fd26545ed5"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a4ba4df69edbf067b8c2f22fd26545ed5"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a4ba4df69edbf067b8c2f22fd26545ed5">ecuda::max</a> (const T &amp;a, const T &amp;b)</td></tr>
+<tr class="separator:a4ba4df69edbf067b8c2f22fd26545ed5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1013e77b0f188878cdec3096b58076f4"><td class="memTemplParams" colspan="2">template&lt;typename T , class Compare &gt; </td></tr>
+<tr class="memitem:a1013e77b0f188878cdec3096b58076f4"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a1013e77b0f188878cdec3096b58076f4">ecuda::max</a> (const T &amp;a, const T &amp;b, Compare cmp)</td></tr>
+<tr class="separator:a1013e77b0f188878cdec3096b58076f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc2b93d379cadb08c39f2ae420afcf11"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:abc2b93d379cadb08c39f2ae420afcf11"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#abc2b93d379cadb08c39f2ae420afcf11">ecuda::swap</a> (T &amp;a, T &amp;b) <a class="el" href="global_8hpp.html#ac357af947bf0fb6c15fe2ac07aea5382">__NOEXCEPT__</a></td></tr>
+<tr class="separator:abc2b93d379cadb08c39f2ae420afcf11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32d5425545b1ea966a9d23e3d2321b6b"><td class="memTemplParams" colspan="2">template&lt;class InputIterator , class UnaryPredicate &gt; </td></tr>
+<tr class="memitem:a32d5425545b1ea966a9d23e3d2321b6b"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a67322a2b321e8da302bb530b9194fc1a">ECUDA_SUPPRESS_HD_WARNINGS</a> <br class="typebreak"/>
+<a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a32d5425545b1ea966a9d23e3d2321b6b">ecuda::any_of</a> (InputIterator first, InputIterator last, UnaryPredicate p)</td></tr>
+<tr class="separator:a32d5425545b1ea966a9d23e3d2321b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a719c3ee38cf70b471ceb7b529e1f9384"><td class="memTemplParams" colspan="2">template&lt;class InputIterator , class UnaryPredicate &gt; </td></tr>
+<tr class="memitem:a719c3ee38cf70b471ceb7b529e1f9384"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="global_8hpp.html#a67322a2b321e8da302bb530b9194fc1a">ECUDA_SUPPRESS_HD_WARNINGS</a> <br class="typebreak"/>
+<a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a> <a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a> bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceecuda.html#a719c3ee38cf70b471ceb7b529e1f9384">ecuda::none_of</a> (InputIterator first, InputIterator last, UnaryPredicate p)</td></tr>
+<tr class="separator:a719c3ee38cf70b471ceb7b529e1f9384"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

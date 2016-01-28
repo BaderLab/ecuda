@@ -24,7 +24,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">Extended CUDA Library (ecuda)
-   &#160;<span id="projectnumber">1.0</span>
+   &#160;<span id="projectnumber">2.0</span>
    </div>
   </td>
  </tr>
@@ -39,7 +39,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
@@ -64,6 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Macros</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -87,31 +87,335 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle">
 <div class="title">global.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &lt;stdexcept&gt;</code><br/>
+<code>#include &lt;sstream&gt;</code><br/>
+<code>#include &quot;<a class="el" href="host__emulation_8hpp_source.html">impl/host_emulation.hpp</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="cuda__error_8hpp_source.html">cuda_error.hpp</a>&quot;</code><br/>
+</div>
 <p><a href="global_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classecuda_1_1cuda__error.html">ecuda::cuda_error</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exception for CUDA API cudaError_t errors.  <a href="classecuda_1_1cuda__error.html#details">More...</a><br/></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
 <tr class="memitem:namespaceecuda"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceecuda.html">ecuda</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ad91a75c130f4c1958eb8b7f0e30e7c22"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#ad91a75c130f4c1958eb8b7f0e30e7c22">ECUDA_GLOBAL_HPP</a></td></tr>
+<tr class="separator:ad91a75c130f4c1958eb8b7f0e30e7c22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67322a2b321e8da302bb530b9194fc1a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a67322a2b321e8da302bb530b9194fc1a">ECUDA_SUPPRESS_HD_WARNINGS</a></td></tr>
+<tr class="separator:a67322a2b321e8da302bb530b9194fc1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6694bb1be0e7de8ed06a4bdc2ea374f1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a6694bb1be0e7de8ed06a4bdc2ea374f1">CUDA_CALL</a>(x)&#160;&#160;&#160;x</td></tr>
+<tr class="separator:a6694bb1be0e7de8ed06a4bdc2ea374f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4a3ed3432929804c708f7760fb79e28"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#ac4a3ed3432929804c708f7760fb79e28">S</a>(x)&#160;&#160;&#160;#x</td></tr>
+<tr class="separator:ac4a3ed3432929804c708f7760fb79e28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25ad9822364edeeff5053f4dcc55e8ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a25ad9822364edeeff5053f4dcc55e8ef">S_</a>(x)&#160;&#160;&#160;<a class="el" href="global_8hpp.html#ac4a3ed3432929804c708f7760fb79e28">S</a>(x)</td></tr>
+<tr class="separator:a25ad9822364edeeff5053f4dcc55e8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35cfb3c560ad6b3dd3b545386897e1e7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a35cfb3c560ad6b3dd3b545386897e1e7">S__LINE__</a>&#160;&#160;&#160;<a class="el" href="global_8hpp.html#a25ad9822364edeeff5053f4dcc55e8ef">S_</a>(__LINE__)</td></tr>
+<tr class="separator:a35cfb3c560ad6b3dd3b545386897e1e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6de0f009493426fd1ec968c0a1227ba7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a6de0f009493426fd1ec968c0a1227ba7">EXCEPTION_MSG</a>(x)&#160;&#160;&#160;&quot;&quot; __FILE__ &quot;:&quot; <a class="el" href="global_8hpp.html#a35cfb3c560ad6b3dd3b545386897e1e7">S__LINE__</a> &quot; &quot; x</td></tr>
+<tr class="separator:a6de0f009493426fd1ec968c0a1227ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a948ab4bf2c74fff2fd55935897aff2c6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a948ab4bf2c74fff2fd55935897aff2c6">CUDA_CHECK_ERRORS</a>()&#160;&#160;&#160;do {} while(0);</td></tr>
+<tr class="separator:a948ab4bf2c74fff2fd55935897aff2c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfbe9b5a1983c4b6158105608ec27852"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#acfbe9b5a1983c4b6158105608ec27852">CUDA_CALL_KERNEL_AND_WAIT</a>(...)</td></tr>
+<tr class="separator:acfbe9b5a1983c4b6158105608ec27852"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab979d9d4b4923f7c54d6caa6e1a61936"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#ab979d9d4b4923f7c54d6caa6e1a61936">nullptr</a>&#160;&#160;&#160;NULL</td></tr>
+<tr class="separator:ab979d9d4b4923f7c54d6caa6e1a61936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac357af947bf0fb6c15fe2ac07aea5382"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#ac357af947bf0fb6c15fe2ac07aea5382">__NOEXCEPT__</a></td></tr>
+<tr class="separator:ac357af947bf0fb6c15fe2ac07aea5382"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fec271a456e22bc9d8927abb3b8250d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a9fec271a456e22bc9d8927abb3b8250d">__CONSTEXPR__</a></td></tr>
+<tr class="separator:a9fec271a456e22bc9d8927abb3b8250d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf86e078e23f9420bb4ad628d2854ebd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#adf86e078e23f9420bb4ad628d2854ebd">__HOST__</a></td></tr>
+<tr class="separator:adf86e078e23f9420bb4ad628d2854ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a717730334071fc822cf698f433ca9205"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a717730334071fc822cf698f433ca9205">__DEVICE__</a></td></tr>
+<tr class="separator:a717730334071fc822cf698f433ca9205"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a697a6609f0503db7918bbedcf9f61cdc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a697a6609f0503db7918bbedcf9f61cdc">__CONSTANT__</a></td></tr>
+<tr class="separator:a697a6609f0503db7918bbedcf9f61cdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42948bc2f70084061c165678f7641c67"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="global_8hpp.html#a42948bc2f70084061c165678f7641c67">ECUDA_STATIC_ASSERT</a>(x, msg)&#160;&#160;&#160;if(ecuda::impl::static_assertion&lt;static_cast&lt;bool&gt;(x)&gt;::msg) {}</td></tr>
+<tr class="separator:a42948bc2f70084061c165678f7641c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="a697a6609f0503db7918bbedcf9f61cdc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __CONSTANT__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00152">152</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a9fec271a456e22bc9d8927abb3b8250d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __CONSTEXPR__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00141">141</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a717730334071fc822cf698f433ca9205"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __DEVICE__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00151">151</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="adf86e078e23f9420bb4ad628d2854ebd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __HOST__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00150">150</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac357af947bf0fb6c15fe2ac07aea5382"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __NOEXCEPT__</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Allow noexcept and constexpr if C++11 supported. </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00140">140</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6694bb1be0e7de8ed06a4bdc2ea374f1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CUDA_CALL</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;x</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Macro function that captures a CUDA error code and then does something with it. All calls to functions in the CUDA API that return an error code should use this. </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00083">83</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="acfbe9b5a1983c4b6158105608ec27852"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CUDA_CALL_KERNEL_AND_WAIT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {\</div>
+<div class="line">        __VA_ARGS__;\</div>
+<div class="line">    } <span class="keywordflow">while</span>( 0 );</div>
+</div><!-- fragment --><p>Macro that calls a CUDA kernel function, waits for completion, and throws an <a class="el" href="classecuda_1_1cuda__error.html" title="Exception for CUDA API cudaError_t errors. ">ecuda::cuda_error</a> exception if any errors are reported by cudaGetLastError(). </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00118">118</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a948ab4bf2c74fff2fd55935897aff2c6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CUDA_CHECK_ERRORS</td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td>&#160;&#160;&#160;do {} while(0);</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Macro that performs a check for any outstanding CUDA errors. This macro should be declared after any CUDA API calls that do not return an error code (e.g. after calling kernel functions). Calling this when a CUDA API call has not been made is safe. </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00103">103</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ad91a75c130f4c1958eb8b7f0e30e7c22"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ECUDA_GLOBAL_HPP</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00040">40</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a42948bc2f70084061c165678f7641c67"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ECUDA_STATIC_ASSERT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">msg&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;if(ecuda::impl::static_assertion&lt;static_cast&lt;bool&gt;(x)&gt;::msg) {}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00191">191</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a67322a2b321e8da302bb530b9194fc1a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ECUDA_SUPPRESS_HD_WARNINGS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00058">58</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a6de0f009493426fd1ec968c0a1227ba7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define EXCEPTION_MSG</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;&quot;&quot; __FILE__ &quot;:&quot; <a class="el" href="global_8hpp.html#a35cfb3c560ad6b3dd3b545386897e1e7">S__LINE__</a> &quot; &quot; x</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>String wrapper that adds the source file and line to a given error message. </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00092">92</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab979d9d4b4923f7c54d6caa6e1a61936"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define nullptr&#160;&#160;&#160;NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replace nullptr with NULL if nvcc still doesn't support C++11. </p>
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00125">125</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac4a3ed3432929804c708f7760fb79e28"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define S</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;#x</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00086">86</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a25ad9822364edeeff5053f4dcc55e8ef"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define S_</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="global_8hpp.html#ac4a3ed3432929804c708f7760fb79e28">S</a>(x)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00087">87</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a35cfb3c560ad6b3dd3b545386897e1e7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define S__LINE__&#160;&#160;&#160;<a class="el" href="global_8hpp.html#a25ad9822364edeeff5053f4dcc55e8ef">S_</a>(__LINE__)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="global_8hpp_source.html#l00088">88</a> of file <a class="el" href="global_8hpp_source.html">global.hpp</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.6-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 17 2015 00:25:39 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jan 28 2016 14:05:58 for Extended CUDA Library (ecuda) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
