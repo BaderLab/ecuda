@@ -174,13 +174,13 @@ public:
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline device_contiguous_iterator operator+( int x ) const { return device_contiguous_iterator( base_type::ptr + x ); }
-	__HOST__ __DEVICE__ inline device_contiguous_iterator operator-( int x ) const { return device_contiguous_iterator( base_type::ptr - x ); }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator operator+( difference_type x ) const { return device_contiguous_iterator( base_type::ptr + x ); }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator operator-( difference_type x ) const { return device_contiguous_iterator( base_type::ptr - x ); }
 
-	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator+=( int x ) { base_type::ptr += x; return *this; }
-	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator-=( int x ) { base_type::ptr -= x; return *this; }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator+=( difference_type x ) { base_type::ptr += x; return *this; }
+	__HOST__ __DEVICE__ inline device_contiguous_iterator& operator-=( difference_type x ) { base_type::ptr -= x; return *this; }
 
-	__DEVICE__ inline reference operator[]( int x ) const { return *(base_type::ptr+x); }
+	__DEVICE__ inline reference operator[]( difference_type x ) const { return *(base_type::ptr+x); }
 
 	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_iterator& other ) { return base_type::ptr - other.ptr; }
 
@@ -278,16 +278,16 @@ public:
 		return tmp;
 	}
 
-	__HOST__ __DEVICE__ device_contiguous_block_iterator operator+( int x ) const
+	__HOST__ __DEVICE__ device_contiguous_block_iterator operator+( difference_type x ) const
 	{
 		device_contiguous_block_iterator tmp( *this );
 		tmp += x;
 		return tmp;
 	}
 
-	__HOST__ __DEVICE__ inline device_contiguous_block_iterator operator-( int x ) const { return operator+(-x); }
+	__HOST__ __DEVICE__ inline device_contiguous_block_iterator operator-( difference_type x ) const { return operator+(-x); }
 
-	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator+=( int x )
+	__HOST__ __DEVICE__ device_contiguous_block_iterator& operator+=( difference_type x )
 	{
 		const int rows = x / width;
 		base_type::ptr.skip_bytes( rows * base_type::ptr.get_pitch() );
@@ -298,9 +298,9 @@ public:
 		if( offset < 0     ) { base_type::ptr.skip_bytes( width*sizeof(value_type) - base_type::ptr.get_pitch() ); offset += width; }
 		return *this;
 	}
-	__HOST__ __DEVICE__ inline device_contiguous_block_iterator& operator-=( int x ) { operator+=(-x); return *this; }
+	__HOST__ __DEVICE__ inline device_contiguous_block_iterator& operator-=( difference_type x ) { operator+=(-x); return *this; }
 
-	__DEVICE__ inline reference operator[]( int x ) const { return *operator+(x); }
+	__DEVICE__ inline reference operator[]( difference_type x ) const { return *operator+(x); }
 
 	__HOST__ __DEVICE__ inline difference_type operator-( const device_contiguous_block_iterator& other ) const
 	{
@@ -399,18 +399,18 @@ public:
 
 	__HOST__ __DEVICE__ inline difference_type operator-( const reverse_device_iterator& other ) { return parentIterator - other.parentIterator; }
 
-	__HOST__ __DEVICE__ inline reverse_device_iterator operator+( int x ) const { return reverse_device_iterator( parentIterator-x ); }
-	__HOST__ __DEVICE__ inline reverse_device_iterator operator-( int x ) const { return reverse_device_iterator( parentIterator+x ); }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator+( difference_type x ) const { return reverse_device_iterator( parentIterator-x ); }
+	__HOST__ __DEVICE__ inline reverse_device_iterator operator-( difference_type x ) const { return reverse_device_iterator( parentIterator+x ); }
 
 	__HOST__ __DEVICE__ inline bool operator<( const reverse_device_iterator& other ) const { return parentIterator < other.parentIterator; }
 	__HOST__ __DEVICE__ inline bool operator>( const reverse_device_iterator& other ) const { return parentIterator > other.parentIterator; }
 	__HOST__ __DEVICE__ inline bool operator<=( const reverse_device_iterator& other ) const { return operator<(other) || operator==(other); }
 	__HOST__ __DEVICE__ inline bool operator>=( const reverse_device_iterator& other ) const { return operator>(other) || operator==(other); }
 
-	__HOST__ __DEVICE__ inline reverse_device_iterator& operator+=( int x ) { parentIterator -= x; return *this; }
-	__HOST__ __DEVICE__ inline reverse_device_iterator& operator-=( int x ) { parentIterator += x; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator+=( difference_type x ) { parentIterator -= x; return *this; }
+	__HOST__ __DEVICE__ inline reverse_device_iterator& operator-=( difference_type x ) { parentIterator += x; return *this; }
 
-	__DEVICE__ reference operator[]( int x ) const { return parentIterator.operator[]( -x-1 ); }
+	__DEVICE__ reference operator[]( difference_type x ) const { return parentIterator.operator[]( -x-1 ); }
 
 	__HOST__ __DEVICE__ reverse_device_iterator& operator=( const reverse_device_iterator& other )
 	{

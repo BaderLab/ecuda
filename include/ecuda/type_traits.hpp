@@ -199,6 +199,7 @@ template<typename T,typename P> class striding_padded_ptr; // forward declaratio
 /// so that a cast to a naked pointer T* is achieved by reinterpret_cast<T*>(ptr.get().get()).
 ///
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( U* ptr )                       { return reinterpret_cast<T>(ptr); }
+template<typename T>                       __HOST__ __DEVICE__ T naked_cast( T* ptr ) { return ptr; }
 //template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const naked_ptr<U>& ptr )      { return naked_cast<T>(ptr.get()); }
 template<typename T,typename U,typename V> __HOST__ __DEVICE__ T naked_cast( const unique_ptr<U,V>& ptr )   { return naked_cast<T>(ptr.get()); }
 template<typename T,typename U>            __HOST__ __DEVICE__ T naked_cast( const shared_ptr<U>& ptr )     { return naked_cast<T>(ptr.get()); }

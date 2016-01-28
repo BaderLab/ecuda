@@ -667,7 +667,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy(
 	{
 		// memory is now guaranteed to be regularly aligned so we can use cudaMemcpy2D
 		typedef typename ecuda::add_pointer<value_type>::type pointer;
-		pointer dest = naked_cast<pointer>( result.operator->() );
+		pointer dest = get_iterator_pointer( result );
 		typedef typename ecuda::add_pointer<const value_type>::type const_pointer;
 		const_pointer src = naked_cast<const_pointer>( first.operator->() );
 
@@ -804,6 +804,7 @@ __HOST__ __DEVICE__ inline OutputIterator copy( InputIterator first, InputIterat
 	typedef typename ecuda::iterator_traits<OutputIterator>::is_device_iterator output_memory_type;
 	return impl::copy( first, last, result, ecuda::pair<input_memory_type,output_memory_type>() );
 }
+
 
 } // namespace ecuda
 

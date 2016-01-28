@@ -9,8 +9,6 @@
 #include "../include/ecuda/matrix.hpp"
 #include "../include/ecuda/vector.hpp"
 
-#include <estd/matrix.hpp>
-
 #ifdef __CUDACC__
 template<typename T>
 __global__ void testIterators( const typename ecuda::matrix<T>::kernel src, typename ecuda::matrix<T>::kernel dest ) {
@@ -89,11 +87,11 @@ void dummyFunction( typename ecuda::matrix<T,Alloc>::kernel_argument arg )
 int main( int argc, char* argv[] ) {
 
 	{
-		estd::matrix<int> hostMatrix(5,5);
+		int hostMatrix[5][5];
 		ecuda::matrix<int> deviceMatrix(5,5);
-		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix.begin() );
-		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix.begin() );
-		ecuda::copy( hostMatrix.begin(), hostMatrix.end(), hostMatrix.begin() );
+		ecuda::copy( hostMatrix[0], hostMatrix[0]+5, deviceMatrix.begin() );
+		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), hostMatrix[0] );
+		ecuda::copy( hostMatrix[0], hostMatrix[0]+5, hostMatrix[0] );
 		ecuda::copy( deviceMatrix.begin(), deviceMatrix.end(), deviceMatrix.begin() );
 	}
 	{

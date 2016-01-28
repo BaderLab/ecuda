@@ -70,16 +70,17 @@ either expressed or implied, of the FreeBSD Project.
 #define ECUDA_CPP11_AVAILABLE
 #endif
 
+#ifdef __CUDACC__
+// Macro function currently throws an ecuda::cuda_error exception containing a
+// description of the problem error code.
+#define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
+#else
 ///
 /// Macro function that captures a CUDA error code and then does something
 /// with it.  All calls to functions in the CUDA API that return an error code
 /// should use this.
 ///
 #define CUDA_CALL(x) x // cannot do CUDA calls when emulating with host only
-#ifdef __CUDACC__
-// Macro function currently throws an ecuda::cuda_error exception containing a
-// description of the problem error code.
-#define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
 #endif
 
 #define S(x) #x
@@ -90,6 +91,9 @@ either expressed or implied, of the FreeBSD Project.
 ///
 #define EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
 
+#ifdef __CUDACC__
+#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+#else
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
 /// should be declared after any CUDA API calls that do not return an error code
@@ -97,17 +101,8 @@ either expressed or implied, of the FreeBSD Project.
 /// has not been made is safe.
 ///
 #define CUDA_CHECK_ERRORS() do {} while(0); // cannot check CUDA errors when emulating with host only
-#ifdef __CUDACC__
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
 #endif
 
-///
-/// Macro that calls a CUDA kernel function, waits for completion, and throws
-/// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
-///
-#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
-		__VA_ARGS__;\
-	} while( 0 ); // cannot do CUDA calls when emulating with host only
 #ifdef __CUDACC__
 #define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
 		__VA_ARGS__;\
@@ -115,6 +110,14 @@ either expressed or implied, of the FreeBSD Project.
 		cudaDeviceSynchronize();\
 		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
 	} while(0);
+#else
+///
+/// Macro that calls a CUDA kernel function, waits for completion, and throws
+/// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
+///
+#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
+		__VA_ARGS__;\
+	} while( 0 ); // cannot do CUDA calls when emulating with host only
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
