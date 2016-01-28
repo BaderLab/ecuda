@@ -61,7 +61,7 @@ INSTALLATION:
   Linux/MacOS:
 
    - As long as the include/ subdirectory is visible to the compiler, the API
-     can be installed anywhere. A default install using cmake can be done by
+     can be installed anywhere. A default install using CMake can be done by
      running:
 
      \code{.sh}
@@ -92,16 +92,16 @@ INSTALLATION:
        successful configuration, only the following items in the CUDA
        installer's custom installation were left checked:
 
-         CUDA Toolkit 7.5
-         CUDA Visual Studio Integration 7.5
+         - CUDA Toolkit 7.5
+         - CUDA Visual Studio Integration 7.5
 
        The following items were already installed on the test system with equal
        or greater version numbers:
 
-         Graphics Driver
-         HD Audio Driver
-         NVIDIA GeForce Experience
-         PhysX System Software
+         - Graphics Driver
+         - HD Audio Driver
+         - NVIDIA GeForce Experience
+         - PhysX System Software
 
        Do whatever makes the most sense for your situation.
 
@@ -177,11 +177,11 @@ FILE DESCRIPTIONS:
 
 </BLOCKQUOTE>
 
-\section quick_ref Key Concepts
+\section quick_ref A Few Things You Should Know
 
 ecuda was written to be light-weight, intuitive and to follow the STL specification. Code should naturally follow modern C++ programming paradigms (e.g. RAII/SBRM, smart pointers). This can prevent many issues that arise from using the CUDA C API. That said, there are a few key, non-obvious concepts that you should know before using ecuda.
 
-\subsection quick_ref_kernels Containers as Kernels Arguments
+\subsection quick_ref_kernels Containers as Kernel Arguments
 
 When passing base containers to a kernel function, declare the type as <tt>Container::kernel_argument</tt> or <tt>Container::const_kernel_argument</tt>.
 
@@ -195,7 +195,7 @@ This is not necessary for other container constructs.
 __global__ void kernelFunction( typename ecuda::matrix<double>::const_row_type src, typename ecuda::matrix<double>::row_type dest );
 \endcode
 
-This should be done even in later versions of CUDA that support pass-by-reference, since the <tt>kernel_argument</tt> subclass strips away the reference-counting smart pointer from the container, sparing some registers.
+This should be done even in later versions of CUDA that support pass-by-reference, since one of the features of the <tt>kernel_argument</tt> subclass is that it strips away the reference-counting smart pointer from the container, sparing some registers.
 
 \code{.cpp}
 __global__ void kernelFunction( const ecuda::vector<double>& src, ecuda::vector<double>& dest ); // NO!
@@ -314,11 +314,13 @@ int main( int argc, char* argv[] )
 
 If compiled with just the C++ compiler (e.g. g++), the resulting program will run as expected without the GPU.
 
-\section example Examples
+\section example Core Concepts and Examples
 
 \subsection example_array Arrays
 
-This requires CUDA >= 7.0 and C++11 support since it uses <array>.
+Specification is identical to the C++11 std::array. More efficient when a sequence size is known at compile time. However, ecuda::array doesn't require C++11.
+
+This example requires CUDA >= 7.0 and C++11 support since it uses &lt;array&gt;.
 
 \code{.cpp}
 #include <array>
@@ -362,6 +364,8 @@ int main( int argc, char* argv[] )
 
 \subsection example_vector Vectors
 
+Specification is identical to std::vector. Will automatically grow in size to accomodate new data (e.g. ecuda::vector::insert, ecuda::vector::assign, ecuda::vector:resize).
+
 \code{.cpp}
 #include <vector>
 #include <ecuda/ecuda.hpp>
@@ -401,6 +405,8 @@ int main( int argc, char* argv[] )
 \endcode
 
 \subsection example_matrix Matrices
+
+A logical extension of an STL container to two dimensions. Memory is column-wise contiguous (i.e. (0,1) is followed by (0,2)). Separate threads should ideally access different columns for best memory coalescing. Utilizes memory allocation that is hardware aligned, so memory coalescing is more consistent. Rows and columns can be accessed and will have the same functionality as ecuda::vector.
 
 \code{.cpp}
 #include <algorithm>
@@ -449,6 +455,8 @@ int main( int argc, char* argv[] )
 \endcode
 
 \subsection example_cube Cubes
+
+A logical extension of the ecuda::matrix to to three dimensions. Memory is depth-wise contiguous (i.e. (0,1,2) is followed by (0,1,3)). Separate threads should ideally access different depths (and then different columns) for best memory coalescing. Utilizes memory allocation that is hardware aligned, so memory coalescing is more consistent. XY, XZ, and YZ slices can be accessed and will have the same functionality as ecuda::matrix. Individual rows, columns, and depths can be accessed and will have the same functionality as ecuda::vector.
 
 \code{.cpp}
 #include <algorithm>
@@ -553,7 +561,7 @@ At this point, this section is really an "anticipated" FAQ.
 
 The <a href="http://docs.nvidia.com/cuda/thrust/">Thrust library</a> is officially supported by NVidia and is similar in that it makes CUDA more C++ friendly. However, the emphasis is quite different in that it aims to parallelize common algorithms like <tt>sort</tt>. It also features only two containers: <tt>thrust::host_vector</tt> and <tt>thrust::device_vector</tt>.
 
-ecuda is focused more on the data structures themselves, making them easier to manipulate in device code and providing an intuitive relationship between device and host memory.
+ecuda is focused more on the data structures themselves, making them easier to manipulate in device code and providing an intuitive relationship between device and host memory (and code).
 
 Whether you use ecuda or Thrust (or both) depends on the focus of your project.
 
@@ -589,6 +597,70 @@ __global__void runStatistics( const ecuda::matrix<double>::kernel_argument data,
 }
 \endcode
 
+\subsection faq_overhead How much overhead?
+
+Ideally none. ecuda does pray that the compiler will help in this. In some cases, additional overhead is not easily avoidable. For example:
+
+\code{.cpp}
+__global__ void kernelFunction( typename ecuda::matrix<int64_t>::kernel_argument mat1, typename ecuda::matrix<double>::kernel_argument mat2 );
+\endcode
+
+will never beat:
+
+\code{.cpp}
+__global__ void kernelFunction( int64_t* mat1, double* mat2, const size_t pitch, const size_t nr, const size_t nc );
+\endcode
+
+in the case where it is known that both matrices have the same dimension. This has never been an issue for me in practice.
+
+\subsection faq_performance How much of a performance penalty?
+
+None where it matters, some where it shouldn't. In cases where ecuda code takes longer to execute, it is probably worth it in terms of safety and consistency. For example:
+
+\code{.cpp}
+ecuda::matrix<double> mat( 100, 100 );
+/// ... set values
+\endcode
+
+is slower than:
+
+\code{.cpp}
+const size_t rows = 100;
+const size_t cols = 100;
+double* mat;
+size_t pitch;
+CUDA_CALL( cudaMalloc2D( &mat, &pitch, cols*sizeof(double), rows ) );
+/// ... set values
+\endcode
+
+but only because the former will always initialize the contents (e.g. with a cudaMemset() call where it makes sense).
+
+Within a kernel function, typical data access and manipulation will run identically. For example:
+
+\code{.cpp}
+__global__ void reverseSequence( typename ecuda::vector<double>::kernel_argument v )
+{
+  const size_t t = threadIdx.x;
+  if( t < (v.size()/2) ) ecuda::swap( v[t], v[vec.size()-t-1] );
+}
+\endcode
+
+will run just as fast as:
+
+\code{.cpp}
+__global__ void reverseSequence( double* seq, const size_t len )
+{
+  const size_t t = threadIdx.x;
+  if( t < (len/2) ) {
+    double tmp = seq[t];
+    seq[t] = seq[len-t-1];
+    seq[u] = tmp;
+  }
+}
+\endcode
+
+
+
 \section compatibility Compatibility
 
 The library has been tested and compiles successfully with CUDA versions 5.0, 5.5, 6.0, and 7.0 in combination with GCC 4.8.1 and 4.8.4.  CUDA 6.0 and 7.0 with GCC 4.8.2 or Clang 3.5 and CUDA 7.5 with GCC 4.8.4 also compiled successfully but no example programs were tested.  CUDA <5.0 is not supported (specifically, CUDA 3.2, 4.0, 4.1, and 4.2 were tested and did not respect the preprocessor directives in \_\_host__/__device__ methods that create a host-specific and device-specific implementation).
@@ -599,6 +671,8 @@ Some very cursory tests with Windows 10, Visual Studio 2013, and CUDA 7.5 were a
 
 I've been developing and using ecuda in a production setting performing scientific computing that is heavily focused on statistics and information theory. All of the problems with version 1.0 have been addressed in this release and I'm fairly confident in its robustness at this point.
 
+A fixed-size matrix and cube (like std::vector is to std::array) could potentially be useful. I'll likely add it when I actually need it.
+
 Hopefully, any future work will be confined to bug fixes or addressing user difficulties.
 
 \section changes Changes from v.1.0
@@ -606,7 +680,7 @@ Hopefully, any future work will be confined to bug fixes or addressing user diff
 The entire API was refined based on lessons learned. Broadly, the changes were:
 
 \li Removal of container operator<< and operator>> to transfer between host and device memory. The ecuda::copy function (equivalent to std::copy) should now be used.
-\li Any container passed to a kernel function as an argument should be declared as [container class name]::kernel_argument.
+\li Any container passed to a kernel function as an argument should be declared as Container::kernel_argument.
 \li Copy constructors now work as expected (memory is allocated and the contents copied).
 \li Container at() method now performs bounds-checking (which is more consistent with the STL specification), and direct access to a particular container element is now done using operator().
 

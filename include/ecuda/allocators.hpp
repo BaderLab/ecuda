@@ -322,7 +322,7 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_allocator<T>).
 	///
-	__HOST__ inline void deallocate( pointer ptr, size_type n )
+	__HOST__ inline void deallocate( pointer ptr, size_type )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
@@ -481,7 +481,7 @@ public:
 	/// \param ptr Pointer to a block of storage previously allocated with allocate. pointer is a member type
 	///            (defined as an alias of T* in ecuda::device_pitch_allocator<T>).
 	///
-	__HOST__ inline void deallocate( pointer ptr, size_type n )
+	__HOST__ inline void deallocate( pointer ptr, size_type )
 	{
 		typedef typename ecuda::add_pointer<value_type>::type raw_pointer_type;
 		default_device_delete<value_type>()( naked_cast<raw_pointer_type>(ptr) );
