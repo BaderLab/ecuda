@@ -55,4 +55,6 @@ either expressed or implied, of the FreeBSD Project.
 #include "utility.hpp"
 #include "vector.hpp"
 
+#include "model/device_contiguous_matrix.hpp"
+
 #endif

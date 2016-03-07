@@ -19,6 +19,7 @@ include/ecuda/model/device_matrix.hpp
 include/ecuda/model/device_sequence.hpp
 include/ecuda/model/device_contiguous_sequence.hpp
 include/ecuda/model/device_fixed_sequence.hpp
+include/ecuda/model/device_contiguous_matrix.hpp
 include/ecuda/memory.hpp
 include/ecuda/config.hpp
 include/ecuda/cube.hpp
