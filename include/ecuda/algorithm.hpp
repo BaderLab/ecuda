@@ -51,7 +51,7 @@ template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& min( cons
 template<typename T>               __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b )              { return b > a ? b : a; }
 template<typename T,class Compare> __HOST__ __DEVICE__ inline const T& max( const T& a, const T& b, Compare cmp ) { return cmp(a,b) ? b : a; }
 
-template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) __NOEXCEPT__ { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
+template<typename T> __HOST__ __DEVICE__ inline void swap( T& a, T& b ) ECUDA__NOEXCEPT { T tmp = a; a = b; b = tmp; } // equivalent to std::swap
 
 } // namespace ecuda
 

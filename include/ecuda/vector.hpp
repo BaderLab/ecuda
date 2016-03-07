@@ -274,7 +274,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline iterator begin() ECUDA__NOEXCEPT { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -283,7 +283,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline iterator end() __NOEXCEPT__ { return base_type::begin()+size(); }
+	__HOST__ __DEVICE__ inline iterator end() ECUDA__NOEXCEPT { return base_type::begin()+size(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -292,7 +292,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const ECUDA__NOEXCEPT { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -301,7 +301,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator end() const __NOEXCEPT__ { return base_type::begin()+size(); }
+	__HOST__ __DEVICE__ inline const_iterator end() const ECUDA__NOEXCEPT { return base_type::begin()+size(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -310,7 +310,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline reverse_iterator rbegin() __NOEXCEPT__ { return reverse_iterator(end()); }
+	__HOST__ __DEVICE__ inline reverse_iterator rbegin() ECUDA__NOEXCEPT { return reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -320,7 +320,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline reverse_iterator rend() __NOEXCEPT__ { return reverse_iterator(begin()); }
+	__HOST__ __DEVICE__ inline reverse_iterator rend() ECUDA__NOEXCEPT { return reverse_iterator(begin()); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -329,7 +329,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -339,7 +339,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return const_reverse_iterator(begin()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator         cbegin() const __NOEXCEPT__ { return base_type::cbegin();         }
@@ -353,7 +353,7 @@ public:
 	///
 	/// \returns The number of elements in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return n; }
+	__HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return n; }
 
 	///
 	/// \brief Returns the maximum number of elements the container is able to hold due to system
@@ -361,7 +361,7 @@ public:
 	///
 	/// \returns Maximum number of elements.
 	///
-	__HOST__ __DEVICE__ __CONSTEXPR__ inline size_type max_size() const __NOEXCEPT__ { return std::numeric_limits<size_type>::max(); }
+	__HOST__ __DEVICE__ ECUDA__CONSTEXPR inline size_type max_size() const ECUDA__NOEXCEPT { return std::numeric_limits<size_type>::max(); }
 
 	///
 	/// \brief Resizes the container to contain newSize elements.
@@ -386,14 +386,14 @@ public:
 	/// \brief Returns the number of elements that the container has currently allocated space for.
 	/// \return Capacity of the currently allocated storage.
 	///
-	__HOST__ __DEVICE__ inline size_type capacity() const __NOEXCEPT__ { return base_type::size(); }
+	__HOST__ __DEVICE__ inline size_type capacity() const ECUDA__NOEXCEPT { return base_type::size(); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
 	///
-	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !n; }
+	__HOST__ __DEVICE__ inline bool empty() const ECUDA__NOEXCEPT { return !n; }
 
 	///
 	/// \brief Increase the capacity of the container to a value that's greater or equal to newCapacity.
@@ -538,7 +538,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline pointer data() ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns pointer to the underlying array serving as element storage.
@@ -548,7 +548,7 @@ public:
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline const_pointer data() const ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
 	///
 	/// \brief Replaces the contents of the container.

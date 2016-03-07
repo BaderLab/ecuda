@@ -109,9 +109,9 @@ private:
 	__HOST__ __DEVICE__ unique_ptr( const unique_ptr& ); // disabled
 
 public:
-	__HOST__ __DEVICE__ __CONSTEXPR__ unique_ptr() __NOEXCEPT__ : current_ptr(NULL) {}
-	__HOST__ __DEVICE__ explicit unique_ptr( T* ptr ) __NOEXCEPT__ : current_ptr(ptr) {}
-	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) __NOEXCEPT__ : current_ptr(ptr), deleter(deleter) {}
+	__HOST__ __DEVICE__ ECUDA__CONSTEXPR unique_ptr() ECUDA__NOEXCEPT : current_ptr(NULL) {}
+	__HOST__ __DEVICE__ explicit unique_ptr( T* ptr ) ECUDA__NOEXCEPT : current_ptr(ptr) {}
+	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) ECUDA__NOEXCEPT : current_ptr(ptr), deleter(deleter) {}
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
@@ -141,19 +141,19 @@ public:
 	//	return *this;
 	//}
 
-	__HOST__ __DEVICE__ inline pointer release() __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline pointer release() ECUDA__NOEXCEPT {
 		pointer old_ptr = current_ptr;
 		current_ptr = NULL;
 		return old_ptr;
 	}
 
-	__HOST__ __DEVICE__ inline void reset( pointer ptr = pointer() ) __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline void reset( pointer ptr = pointer() ) ECUDA__NOEXCEPT {
 		pointer old_ptr = current_ptr;
 		current_ptr = ptr;
 		if( old_ptr ) get_deleter()( old_ptr );
 	}
 
-	__HOST__ __DEVICE__ inline void swap( unique_ptr& other ) __NOEXCEPT__ { ::ecuda::swap( current_ptr, other.current_ptr ); }
+	__HOST__ __DEVICE__ inline void swap( unique_ptr& other ) ECUDA__NOEXCEPT { ::ecuda::swap( current_ptr, other.current_ptr ); }
 
 	__HOST__ __DEVICE__ inline pointer get() const { return current_ptr; }
 
@@ -166,9 +166,9 @@ public:
 	__HOST__ __DEVICE__ operator bool() const { return get() != NULL; }
 	#endif
 
-	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *current_ptr; }
+	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const ECUDA__NOEXCEPT { return *current_ptr; }
 
-	__HOST__ __DEVICE__ inline pointer operator->() const __NOEXCEPT__ { return current_ptr; }
+	__HOST__ __DEVICE__ inline pointer operator->() const ECUDA__NOEXCEPT { return current_ptr; }
 
 	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator[]( std::size_t i ) const {
 		//return *pointer_traits<pointer>().increment( current_ptr, i );

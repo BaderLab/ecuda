@@ -292,21 +292,21 @@ public:
 	///
 	/// \returns The number of rows in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type number_rows() const __NOEXCEPT__ { return numberRows; }
+	__HOST__ __DEVICE__ inline size_type number_rows() const ECUDA__NOEXCEPT { return numberRows; }
 
 	///
 	/// \brief Returns the number of columns in the container.
 	///
 	/// \returns The number of columns in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::number_rows()/numberRows; } //TODO: this costs a register in kernel code
+	__HOST__ __DEVICE__ inline size_type number_columns() const ECUDA__NOEXCEPT { return base_type::number_rows()/numberRows; } //TODO: this costs a register in kernel code
 
 	///
 	/// \brief Returns the number of depths in the container.
 	///
 	/// \returns The number of depths in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type number_depths() const __NOEXCEPT__ { return base_type::number_columns(); }
+	__HOST__ __DEVICE__ inline size_type number_depths() const ECUDA__NOEXCEPT { return base_type::number_columns(); }
 
 	///
 	/// \brief Returns the number of elements in the container.
@@ -315,27 +315,27 @@ public:
 	///
 	/// \returns The number of elements in the container.
 	///
-	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return base_type::size(); }
+	__HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return base_type::size(); }
 
 	///
 	/// \brief Checks if the container has no elements.
 	///
 	/// \returns true if the container is empty, false otherwise.
-	__HOST__ __DEVICE__ inline bool empty() const __NOEXCEPT__ { return !size(); }
+	__HOST__ __DEVICE__ inline bool empty() const ECUDA__NOEXCEPT { return !size(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	__HOST__ __DEVICE__ inline pointer data() __NOEXCEPT__ { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline pointer data() ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns pointer to the underlying 2D memory serving as element storage.
 	///
 	/// \returns Pointer to the underlying element storage.
 	///
-	__HOST__ __DEVICE__ inline const_pointer data() const __NOEXCEPT__ { return base_type::get_pointer(); }
+	__HOST__ __DEVICE__ inline const_pointer data() const ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -344,7 +344,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline iterator begin() __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline iterator begin() ECUDA__NOEXCEPT { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -353,7 +353,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline iterator end() __NOEXCEPT__ { return base_type::end(); }
+	__HOST__ __DEVICE__ inline iterator end() ECUDA__NOEXCEPT { return base_type::end(); }
 
 	///
 	/// \brief Returns an iterator to the first element of the container.
@@ -362,7 +362,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator begin() const __NOEXCEPT__ { return base_type::begin(); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const ECUDA__NOEXCEPT { return base_type::begin(); }
 
 	///
 	/// \brief Returns an iterator to the element following the last element of the container.
@@ -371,7 +371,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator end() const __NOEXCEPT__ { return base_type::end(); }
+	__HOST__ __DEVICE__ inline const_iterator end() const ECUDA__NOEXCEPT { return base_type::end(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -380,7 +380,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline reverse_iterator rbegin() __NOEXCEPT__ { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rbegin() ECUDA__NOEXCEPT { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -390,7 +390,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline reverse_iterator rend() __NOEXCEPT__ { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline reverse_iterator rend() ECUDA__NOEXCEPT { return base_type::rend(); }
 
 	///
 	/// \brief Returns a reverse iterator to the first element of the reversed container.
@@ -399,7 +399,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const __NOEXCEPT__ { return base_type::rbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const ECUDA__NOEXCEPT { return base_type::rbegin(); }
 
 	///
 	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
@@ -409,7 +409,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const __NOEXCEPT__ { return base_type::rend(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return base_type::rend(); }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const    __NOEXCEPT__ { return base_type::cbegin();  }

@@ -101,8 +101,8 @@ public:
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline size_type number_rows() const    __NOEXCEPT__ { return rows; }
-	__HOST__ __DEVICE__ inline size_type number_columns() const __NOEXCEPT__ { return base_type::size()/rows; }
+	__HOST__ __DEVICE__ inline size_type number_rows() const    ECUDA__NOEXCEPT { return rows; }
+	__HOST__ __DEVICE__ inline size_type number_columns() const ECUDA__NOEXCEPT { return base_type::size()/rows; }
 
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
 	{

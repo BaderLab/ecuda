@@ -136,7 +136,7 @@ public:
 	///
 	/// \brief Default constructor constructs a shared_ptr with no managed object.
 	///
-	__HOST__ __DEVICE__ __CONSTEXPR__ shared_ptr() __NOEXCEPT__ : current_ptr(NULL), counter(NULL) {}
+	__HOST__ __DEVICE__ ECUDA__CONSTEXPR shared_ptr() ECUDA__NOEXCEPT : current_ptr(NULL), counter(NULL) {}
 
 	///
 	/// \brief Constructs a shared_ptr with a pointer to the managed object.
@@ -187,7 +187,7 @@ public:
 	/// \param ptr a pointer to an object to manage
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src, T* ptr ) __NOEXCEPT__ : current_ptr(ptr), counter(src.counter)
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src, T* ptr ) ECUDA__NOEXCEPT : current_ptr(ptr), counter(src.counter)
 	{
 		#ifndef __CUDA_ARCH__
 		++(counter->owner_count);
@@ -202,7 +202,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr& src ) ECUDA__NOEXCEPT : current_ptr(src.current_ptr), counter(src.counter)
 	{
 		#ifndef __CUDA_ARCH__
 		if( counter ) ++(counter->owner_count);
@@ -220,7 +220,7 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src ) __NOEXCEPT__ : current_ptr(src.current_ptr), counter(src.counter)
+	__HOST__ __DEVICE__ shared_ptr( const shared_ptr<U>& src ) ECUDA__NOEXCEPT : current_ptr(src.current_ptr), counter(src.counter)
 	{
 		#ifndef __CUDA_ARCH__
 		if( counter ) ++(counter->owner_count);
@@ -304,7 +304,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr& src ) __NOEXCEPT__
+	__HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr& src ) ECUDA__NOEXCEPT
 	{
 		shared_ptr(src).swap(*this);
 		return *this;
@@ -319,7 +319,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	template<typename U> __HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr<U>& src ) __NOEXCEPT__ { shared_ptr(src).swap(*this); return *this; }
+	template<typename U> __HOST__ __DEVICE__ inline shared_ptr& operator=( const shared_ptr<U>& src ) ECUDA__NOEXCEPT { shared_ptr(src).swap(*this); return *this; }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	///
@@ -360,7 +360,7 @@ public:
 	///
 	/// After the call, *this manages no object.
 	///
-	__HOST__ __DEVICE__ inline void reset() __NOEXCEPT__ { shared_ptr().swap( *this ); }
+	__HOST__ __DEVICE__ inline void reset() ECUDA__NOEXCEPT { shared_ptr().swap( *this ); }
 
 	///
 	/// \brief Replaces the managed object with another.
@@ -390,7 +390,7 @@ public:
 	///
 	/// \param other smart pointer to exchange the contents with
 	///
-	__HOST__ __DEVICE__ inline void swap( shared_ptr& other ) __NOEXCEPT__
+	__HOST__ __DEVICE__ inline void swap( shared_ptr& other ) ECUDA__NOEXCEPT
 	{
 		::ecuda::swap( current_ptr, other.current_ptr );
 		::ecuda::swap( counter, other.counter );
@@ -403,7 +403,7 @@ public:
 	///
 	/// \return a pointer to the managed object
 	///
-	__HOST__ __DEVICE__ inline T* get() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
+	__HOST__ __DEVICE__ inline T* get() const ECUDA__NOEXCEPT { return reinterpret_cast<T*>(current_ptr); }
 
 	///
 	/// \brief Dereferences pointer to the managed object.
@@ -413,14 +413,14 @@ public:
 	///
 	/// \return reference to the managed object
 	///
-	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const __NOEXCEPT__ { return *reinterpret_cast<T*>(current_ptr); }
+	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const ECUDA__NOEXCEPT { return *reinterpret_cast<T*>(current_ptr); }
 
 	///
 	/// \brief Dereferences pointer to the managed object.
 	///
 	/// \return pointer to the managed object
 	///
-	__HOST__ __DEVICE__ inline T* operator->() const __NOEXCEPT__ { return reinterpret_cast<T*>(current_ptr); }
+	__HOST__ __DEVICE__ inline T* operator->() const ECUDA__NOEXCEPT { return reinterpret_cast<T*>(current_ptr); }
 
 	///
 	/// \brief Returns the number of smart pointers managing the current object.
@@ -430,7 +430,7 @@ public:
 	///
 	/// \return the number of shared_ptr instances managing the current object or 0 if there is no managed object
 	///
-	__HOST__ __DEVICE__ inline std::size_t use_count() const __NOEXCEPT__ { return counter ? counter->owner_count : 0; }
+	__HOST__ __DEVICE__ inline std::size_t use_count() const ECUDA__NOEXCEPT { return counter ? counter->owner_count : 0; }
 
 	///
 	/// \brief Checks if this is the only shared_ptr instance managing the current object.
@@ -439,7 +439,7 @@ public:
 	///
 	/// \return true if *this is the only shared_ptr instance managing the current object, false otherwise
 	///
-	__HOST__ __DEVICE__ inline bool unique() const __NOEXCEPT__ { return use_count() == 1; }
+	__HOST__ __DEVICE__ inline bool unique() const ECUDA__NOEXCEPT { return use_count() == 1; }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	///
@@ -454,7 +454,7 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ { return get() != NULL; }
+	__HOST__ __DEVICE__ operator bool() const ECUDA__NOEXCEPT { return get() != NULL; }
 	#endif
 
 	///
@@ -472,12 +472,12 @@ public:
 	template<typename U>
 	__HOST__ __DEVICE__ inline bool owner_before( const shared_ptr<U>& other ) const { return counter < other.counter; }
 
-	template<typename T2> __HOST__ __DEVICE__ bool operator==( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() == other.get(); }
-	template<typename T2> __HOST__ __DEVICE__ bool operator!=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() != other.get(); }
-	template<typename T2> __HOST__ __DEVICE__ bool operator< ( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() <  other.get(); }
-	template<typename T2> __HOST__ __DEVICE__ bool operator> ( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() >  other.get(); }
-	template<typename T2> __HOST__ __DEVICE__ bool operator<=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() <= other.get(); }
-	template<typename T2> __HOST__ __DEVICE__ bool operator>=( const shared_ptr<T2>& other ) const __NOEXCEPT__ { return get() >= other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator==( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() == other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator!=( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() != other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator< ( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() <  other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator> ( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() >  other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator<=( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() <= other.get(); }
+	template<typename T2> __HOST__ __DEVICE__ bool operator>=( const shared_ptr<T2>& other ) const ECUDA__NOEXCEPT { return get() >= other.get(); }
 
 	///
 	/// \brief Inserts a shared_ptr into a std::basic_ostream.

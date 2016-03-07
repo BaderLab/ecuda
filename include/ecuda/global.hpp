@@ -128,17 +128,17 @@ either expressed or implied, of the FreeBSD Project.
 /** Allow noexcept and constexpr if C++11 supported. */
 #ifdef ECUDA_CPP11_AVAILABLE
 #if defined(_MSC_VER) && _MSC_VER == 1800 // Visual Studio 2013 has only partial C++11 support and doesn't know these
-#define __NOEXCEPT__
-#define __CONSTEXPR__
+#define ECUDA__NOEXCEPT
+#define ECUDA__CONSTEXPR
 #else
-#define __NOEXCEPT__ noexcept
+#define ECUDA__NOEXCEPT noexcept
 #define ECUDA_NOEXCEPT_KEYWORD_ENABLED
-#define __CONSTEXPR__ constexpr
+#define ECUDA__CONSTEXPR constexpr
 #define ECUDA_CONSTEXPR_KEYWORD_ENABLED
 #endif
 #else
-#define __NOEXCEPT__
-#define __CONSTEXPR__
+#define ECUDA__NOEXCEPT
+#define ECUDA__CONSTEXPR
 #endif
 
 #ifdef __CUDACC__

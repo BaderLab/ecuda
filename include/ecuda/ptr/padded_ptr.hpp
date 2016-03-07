@@ -144,7 +144,7 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ operator bool() const __NOEXCEPT__ { return naked_cast<typename ecuda::add_pointer<const element_type>::type>( ptr ) != NULL; }
+	__HOST__ __DEVICE__ operator bool() const ECUDA__NOEXCEPT { return naked_cast<typename ecuda::add_pointer<const element_type>::type>( ptr ) != NULL; }
 	#endif
 
 	__HOST__ __DEVICE__ inline padded_ptr& operator++() { ++ptr; return *this; }

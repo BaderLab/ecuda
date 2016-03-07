@@ -87,8 +87,8 @@ private:
 	template<typename U,class Q> friend class device_sequence;
 
 protected:
-	__HOST__ __DEVICE__ inline pointer&       get_pointer()       __NOEXCEPT__ { return ptr; }
-	__HOST__ __DEVICE__ inline const pointer& get_pointer() const __NOEXCEPT__ { return ptr; }
+	__HOST__ __DEVICE__ inline pointer&       get_pointer()       ECUDA__NOEXCEPT { return ptr; }
+	__HOST__ __DEVICE__ inline const pointer& get_pointer() const ECUDA__NOEXCEPT { return ptr; }
 
 public:
 	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
@@ -114,24 +114,24 @@ public:
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline size_type size() const __NOEXCEPT__ { return length; }
+	__HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return length; }
 
 	__DEVICE__ inline reference       operator[]( const size_type x )       { return *(unmanaged_cast( ptr ) + x); }
 	__DEVICE__ inline const_reference operator[]( const size_type x ) const { return *(unmanaged_cast( ptr ) + x); }
 
-	__HOST__ __DEVICE__ inline iterator       begin()        __NOEXCEPT__ { return iterator( unmanaged_cast(ptr) ); }
-	__HOST__ __DEVICE__ inline iterator       end()          __NOEXCEPT__ { return iterator( unmanaged_cast(ptr) + size() ); }
-	__HOST__ __DEVICE__ inline const_iterator begin() const  __NOEXCEPT__ { return const_iterator( unmanaged_cast(ptr) ); }
-	__HOST__ __DEVICE__ inline const_iterator end() const    __NOEXCEPT__ { return const_iterator( unmanaged_cast(ptr) + size() ); }
+	__HOST__ __DEVICE__ inline iterator       begin()        ECUDA__NOEXCEPT { return iterator( unmanaged_cast(ptr) ); }
+	__HOST__ __DEVICE__ inline iterator       end()          ECUDA__NOEXCEPT { return iterator( unmanaged_cast(ptr) + size() ); }
+	__HOST__ __DEVICE__ inline const_iterator begin() const  ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) ); }
+	__HOST__ __DEVICE__ inline const_iterator end() const    ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) + size() ); }
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( unmanaged_cast(ptr) ); }
 	__HOST__ __DEVICE__ inline const_iterator cend() const   __NOEXCEPT__ { return const_iterator( unmanaged_cast(ptr) + size() ); }
 	#endif
 
-	__HOST__ __DEVICE__ inline reverse_iterator       rbegin()        __NOEXCEPT__ { return reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline reverse_iterator       rend()          __NOEXCEPT__ { return reverse_iterator(begin()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const  __NOEXCEPT__ { return const_reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const    __NOEXCEPT__ { return const_reverse_iterator(begin()); }
+	__HOST__ __DEVICE__ inline reverse_iterator       rbegin()        ECUDA__NOEXCEPT { return reverse_iterator(end()); }
+	__HOST__ __DEVICE__ inline reverse_iterator       rend()          ECUDA__NOEXCEPT { return reverse_iterator(begin()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const  ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const    ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
 	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return const_reverse_iterator(begin()); }

@@ -66,7 +66,7 @@ struct default_device_delete {
 	///
 	/// \brief Constructs an ecuda::default_device_delete object.
 	///
-	__HOST__ __DEVICE__ default_device_delete() __NOEXCEPT__ {}
+	__HOST__ __DEVICE__ default_device_delete() ECUDA__NOEXCEPT {}
 
 	///
 	/// \brief Constructs an ecuda::default_device_delete object from another one.
@@ -74,7 +74,7 @@ struct default_device_delete {
 	/// This constructor will only participate in overload resolution
 	/// if U* is implicitly convertible to T*.
 	///
-	template<typename U> __HOST__ __DEVICE__ default_device_delete( const default_device_delete<U>& src ) __NOEXCEPT__ {}
+	template<typename U> __HOST__ __DEVICE__ default_device_delete( const default_device_delete<U>& src ) ECUDA__NOEXCEPT {}
 
 	///
 	/// \brief Calls cudaFree() on a pointer.
@@ -102,8 +102,8 @@ struct default_device_delete {
 ///
 template<typename T>
 struct default_host_delete {
-	__HOST__ __DEVICE__ __CONSTEXPR__ default_host_delete() __NOEXCEPT__ {}
-	template<typename U> __HOST__ __DEVICE__ default_host_delete( const default_host_delete<U>& src ) __NOEXCEPT__ {}
+	__HOST__ __DEVICE__ ECUDA__CONSTEXPR default_host_delete() ECUDA__NOEXCEPT {}
+	template<typename U> __HOST__ __DEVICE__ default_host_delete( const default_host_delete<U>& src ) ECUDA__NOEXCEPT {}
 	__HOST__ __DEVICE__ inline void operator()( T* ptr ) const {
 		#ifdef __CUDA_ARCH__
 		#else

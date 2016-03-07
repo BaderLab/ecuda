@@ -97,7 +97,7 @@ public:
 	}
 	#endif
 
-	__HOST__ __DEVICE__ inline __CONSTEXPR__ size_type size() const { return N; }
+	__HOST__ __DEVICE__ inline ECUDA__CONSTEXPR size_type size() const { return N; }
 
 	__DEVICE__ inline reference       operator[]( const size_type x )       { return *(unmanaged_cast( ptr ) + x); }
 	__DEVICE__ inline const_reference operator[]( const size_type x ) const { return *(unmanaged_cast( ptr ) + x); }
