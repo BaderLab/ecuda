@@ -6,7 +6,26 @@ WHAT IS ECUDA?
 
   ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and
   be functionally equivalent to the C++ Standard Template Library (STL).
-  Specifically: algorithms, containers, and iterators.
+  Specifically: algorithms, containers, and iterators. These elements play nice
+  with host containers and can be used in device code.
+
+EXAMPLE
+
+  This is a simple example of how some elements of ecuda look in practice.
+
+  std::vector<double> hostVector( 1000 );
+  ecuda::vector<double> deviceVector( hostVector.begin(), hostVector.end() );
+  CUDA_CALL_KERNEL_AND_WAIT( squareRoot<<<1,1000>>>( deviceVector ) );
+  ecuda::copy( deviceVector.begin(), deviceVector.end(), hostVector.begin() );
+
+  __global__
+  void squareRoot( typename ecuda::vector<double>::kernel_argument vec )
+  {
+    const int t = threadIdx.x;
+    vec[t] = sqrt(vec[t]);
+  }
+
+  More detailed examples can be found in the full documentation.
 
 REQUIREMENTS
 
