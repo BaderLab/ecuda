@@ -116,9 +116,9 @@ cudaError_t cudaMemcpy2D( void* dst, size_t dpitch, const void* src, size_t spit
 	return cudaSuccess;
 }
 
-cudaError_t cudaMemcpyToSymbol( const char* dest, const void* src, size_t count, size_t offset = 0, cudaMemcpyKind = cudaMemcpyHostToDevice )
+cudaError_t cudaMemcpyToSymbol( const void* dest, const void* src, size_t count, size_t offset = 0, cudaMemcpyKind = cudaMemcpyHostToDevice )
 {
-	char* pDst = const_cast<char*>(dest);
+	char* pDst = const_cast<char*>(reinterpret_cast<const char*>(dest));
 	pDst += offset;
 	const char* pSrc = reinterpret_cast<const char*>(src);
 	std::copy( pSrc, pSrc+count, pDst );
