@@ -343,10 +343,10 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return base_type::rend(); }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const __NOEXCEPT__ { return base_type::cbegin();  }
-	__HOST__ __DEVICE__ inline const_iterator         cend()    const __NOEXCEPT__ { return base_type::cend();    }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       __NOEXCEPT__ { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend()         __NOEXCEPT__ { return base_type::crend();   }
+	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const ECUDA__NOEXCEPT { return base_type::cbegin();  }
+	__HOST__ __DEVICE__ inline const_iterator         cend()    const ECUDA__NOEXCEPT { return base_type::cend();    }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       ECUDA__NOEXCEPT { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend()         ECUDA__NOEXCEPT { return base_type::crend();   }
 	#endif
 
 	///
@@ -467,21 +467,7 @@ public:
 	/// \param columnIndex position of the column to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex )
-	{
-		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::at( rowIndex, columnIndex );
-	}
+	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex ) { return base_type::at(rowIndex,columnIndex); }
 
 	///
 	/// \brief Returns a constant reference to the element at specified row and column index, with bounds checking.
@@ -493,21 +479,7 @@ public:
 	/// \param columnIndex position of the column to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const
-	{
-		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix::at() row and/or column index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::at( rowIndex, columnIndex );
-	}
+	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return base_type::at(rowIndex,columnIndex); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -518,7 +490,7 @@ public:
 	/// \param columnIndex column of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex ) { return base_type::at(rowIndex,columnIndex); }
+	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex ) { return base_type::operator()(rowIndex,columnIndex); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -529,7 +501,7 @@ public:
 	/// \param columnIndex column of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex ) const { return base_type::at(rowIndex,columnIndex); }
+	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex ) const { return base_type::operator()(rowIndex,columnIndex); }
 
 	///
 	/// \brief operator[](rowIndex) alias for get_row(rowIndex)

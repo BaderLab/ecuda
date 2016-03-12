@@ -236,7 +236,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) __NOEXCEPT__ : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr&& src ) ECUDA__NOEXCEPT : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
 	{
 		//src.current_ptr = NULL;
 		//src.counter = NULL;
@@ -252,7 +252,7 @@ public:
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
 	template<typename U>
-	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) __NOEXCEPT__ : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
+	__HOST__ __DEVICE__ shared_ptr( shared_ptr<U>&& src ) ECUDA__NOEXCEPT : current_ptr(std::move(src.current_ptr)), counter(std::move(src.counter))
 	{
 		//src.current_ptr = NULL;
 		//src.counter = NULL;
@@ -330,7 +330,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	__HOST__ __DEVICE__ inline shared_ptr& operator=( shared_ptr&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+	__HOST__ __DEVICE__ inline shared_ptr& operator=( shared_ptr&& src ) ECUDA__NOEXCEPT { shared_ptr(move(src)).swap(*this); return *this; }
 
 	///
 	/// \brief Replaces the managed object.
@@ -341,7 +341,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	template<typename U> __HOST__ __DEVICE__ inline shared_ptr& operator=( shared_ptr<U>&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+	template<typename U> __HOST__ __DEVICE__ inline shared_ptr& operator=( shared_ptr<U>&& src ) ECUDA__NOEXCEPT { shared_ptr(move(src)).swap(*this); return *this; }
 
 	///
 	/// \brief Transfers management of object owned by a unique_ptr.
@@ -352,7 +352,7 @@ public:
 	///
 	/// \param src another smart pointer to share ownership to or acquire the ownership from
 	///
-	template<typename U,class Deleter> __HOST__ __DEVICE__ inline shared_ptr& operator=( unique_ptr<U,Deleter>&& src ) __NOEXCEPT__ { shared_ptr(move(src)).swap(*this); return *this; }
+	template<typename U,class Deleter> __HOST__ __DEVICE__ inline shared_ptr& operator=( unique_ptr<U,Deleter>&& src ) ECUDA__NOEXCEPT { shared_ptr(move(src)).swap(*this); return *this; }
 	#endif
 
 	///
@@ -447,7 +447,7 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ { return get() != NULL; }
+	__HOST__ __DEVICE__ explicit operator bool() const ECUDA__NOEXCEPT { return get() != NULL; }
 	#else
 	///
 	/// \brief Checks if this stores a non-null pointer.

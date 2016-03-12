@@ -123,8 +123,8 @@ public:
 		return const_iterator( p, base_type::number_columns() );
 	}
 	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const __NOEXCEPT__ { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
-	__HOST__ __DEVICE__ const_iterator cend() const   __NOEXCEPT__
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(base_type::get_pointer()) ); }
+	__HOST__ __DEVICE__ const_iterator cend() const   ECUDA__NOEXCEPT
 	{
 		typedef typename ecuda::make_unmanaged_const<pointer>::type unmanaged_pointer_type;
 		unmanaged_pointer_type p = unmanaged_cast(base_type::get_pointer());
@@ -139,8 +139,8 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const  ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const    ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
 	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const __NOEXCEPT__ { return const_reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return const_reverse_iterator(begin()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
 	#endif
 
 	__HOST__ __DEVICE__ inline row_type get_row( const size_type row )
@@ -176,21 +176,52 @@ public:
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
 
-	__DEVICE__ inline reference at( const size_type row, const size_type column )
+	__DEVICE__ inline reference operator()( const size_type row, const size_type column )
 	{
 		typename make_unmanaged<pointer>::type up = unmanaged_cast(base_type::get_pointer());
 		up.skip_bytes( up.get_pitch()*row );
 		up.operator+=( column );
+		//return *up;
 		return *naked_cast<typename ecuda::add_pointer<value_type>::type>(up);
 	}
 
-	__DEVICE__ inline const_reference at( const size_type row, const size_type column ) const
+	__DEVICE__ inline const_reference operator()( const size_type row, const size_type column ) const
 	{
 		typename make_unmanaged_const<pointer>::type up = unmanaged_cast(base_type::get_pointer());
 		up.skip_bytes( up.get_pitch()*row );
 		up.operator+=( column );
-		return *up;
-		//return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(up);
+		//return *up;
+		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(up);
+	}
+
+	__DEVICE__ inline reference at( const size_type rowIndex, const size_type columnIndex )
+	{
+		if( rowIndex >= base_type::number_rows() || columnIndex >= base_type::number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_row_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
+	}
+
+	__DEVICE__ inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const
+	{
+		if( rowIndex >= base_type::number_rows() || columnIndex >= base_type::number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_row_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
 	}
 
 };

@@ -199,21 +199,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference at( size_type index )
-	{
-		if( !(index < size()) ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::operator[](index);
-	}
+	__DEVICE__ inline reference at( size_type index ) { return base_type::at(index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index, with bounds checking.
@@ -224,21 +210,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference at( size_type index ) const
-	{
-		if( !(index < size()) ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::array::at() index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::operator[](index);
-	}
+	__DEVICE__ inline const_reference at( size_type index ) const { return base_type::at(index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -264,7 +236,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference operator()( const size_type index ) { return base_type::operator[](index); }
+	__DEVICE__ inline reference operator()( const size_type index ) { return base_type::operator()(index); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
@@ -274,7 +246,7 @@ public:
 	/// \param index position of the element to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference operator()( const size_type index ) const { return base_type::operator[](index); }
+	__DEVICE__ inline const_reference operator()( const size_type index ) const { return base_type::operator()(index); }
 
 	///
 	/// \brief Returns a reference to the first element in the container.
@@ -414,7 +386,7 @@ public:
 	///
 	/// \returns Iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const __NOEXCEPT__ { return base_type::cbegin();  }
+	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const ECUDA__NOEXCEPT { return base_type::cbegin();  }
 
 	///
 	/// \brief Returns a const_iterator to the element following the last element of the container.
@@ -423,7 +395,7 @@ public:
 	///
 	/// \returns Iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_iterator         cend()    const __NOEXCEPT__ { return base_type::cend();    }
+	__HOST__ __DEVICE__ inline const_iterator         cend()    const ECUDA__NOEXCEPT { return base_type::cend();    }
 
 	///
 	/// \brief Returns a const_reverse_iterator to the first element of the reversed container.
@@ -432,7 +404,7 @@ public:
 	///
 	/// \returns Reverse iterator to the first element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const __NOEXCEPT__ { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const ECUDA__NOEXCEPT { return base_type::crbegin(); }
 
 	///
 	/// \brief Returns a const_reverse_iterator to the element following the last element of the reversed container.
@@ -442,7 +414,7 @@ public:
 	///
 	/// \returns Reverse iterator to the element following the last element.
 	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   __NOEXCEPT__ { return base_type::crend();   }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   ECUDA__NOEXCEPT { return base_type::crend();   }
 
 	#endif
 

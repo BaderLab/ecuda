@@ -97,7 +97,7 @@ public:
 	}
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_contiguous_matrix( device_contiguous_matrix&& src ) : base_type(std::move(src)), rows(std::move(src.rows)) {}
-	__HOST__ device_contiguous_sequence& operator=( device_contiguous_sequence&& src )
+	__HOST__ device_contiguous_matrix& operator=( device_contiguous_matrix&& src )
 	{
 		base_type::operator=(std::move(src));
 		rows = std::move(src.rows);
@@ -159,6 +159,36 @@ public:
 	__DEVICE__ inline const_reference operator()( const size_type row, const size_type column ) const
 	{
 		return *naked_cast<typename ecuda::add_pointer<const value_type>::type>(base_type::get_pointer()+(row*number_columns())+column);
+	}
+
+	__DEVICE__ inline reference at( const size_type rowIndex, const size_type columnIndex )
+	{
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
+	}
+
+	__DEVICE__ inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const
+	{
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
 	}
 
 };

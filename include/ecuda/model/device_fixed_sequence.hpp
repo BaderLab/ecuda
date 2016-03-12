@@ -99,8 +99,41 @@ public:
 
 	__HOST__ __DEVICE__ inline ECUDA__CONSTEXPR size_type size() const { return N; }
 
+	__DEVICE__ inline reference       operator()( const size_type x )       { return operator[](x); }
+	__DEVICE__ inline const_reference operator()( const size_type x ) const { return operator[](x); }
+
 	__DEVICE__ inline reference       operator[]( const size_type x )       { return *(unmanaged_cast( ptr ) + x); }
 	__DEVICE__ inline const_reference operator[]( const size_type x ) const { return *(unmanaged_cast( ptr ) + x); }
+
+	__DEVICE__ inline reference at( const size_type x )
+	{
+		if( x >= size() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(x);
+	}
+
+	__DEVICE__ inline const_reference at( const size_type x ) const
+	{
+		if( x >= size() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(x);
+	}
 
 	__HOST__ __DEVICE__ inline iterator       begin()        { return iterator( unmanaged_cast(ptr) ); }
 	__HOST__ __DEVICE__ inline iterator       end()          { return iterator( unmanaged_cast(ptr) + N ); }

@@ -412,10 +412,10 @@ public:
 	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return base_type::rend(); }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const    __NOEXCEPT__ { return base_type::cbegin();  }
-	__HOST__ __DEVICE__ inline const_iterator cend() const      __NOEXCEPT__ { return base_type::cend();    }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() __NOEXCEPT__ { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend()   __NOEXCEPT__ { return base_type::crend();   }
+	__HOST__ __DEVICE__ inline const_iterator cbegin() const    ECUDA__NOEXCEPT { return base_type::cbegin();  }
+	__HOST__ __DEVICE__ inline const_iterator cend() const      ECUDA__NOEXCEPT { return base_type::cend();    }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() ECUDA__NOEXCEPT { return base_type::crbegin(); }
+	__HOST__ __DEVICE__ inline const_reverse_iterator crend()   ECUDA__NOEXCEPT { return base_type::crend();   }
 	#endif
 
 	///
@@ -615,21 +615,7 @@ public:
 	/// \param depthIndex position of the depth to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex )
-	{
-		if( rowIndex >= number_rows() || columnIndex >= number_columns() || depthIndex >= number_depths() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
-	}
+	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) { return base_type::at(rowIndex*number_columns()+columnIndex,depthIndex); }
 
 	///
 	/// \brief Returns a constant reference to the element at specified row, column, and depth index, with bounds checking.
@@ -642,21 +628,7 @@ public:
 	/// \param depthIndex position of the depth to return
 	/// \returns Reference to the requested element.
 	///
-	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) const
-	{
-		if( rowIndex >= number_rows() || columnIndex >= number_columns() || depthIndex >= number_depths() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::cube::at() row, column and/or depth index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			//__threadfence();
-			asm("trap;");
-			#endif
-		}
-		return base_type::at( rowIndex*number_columns()+columnIndex, depthIndex );
-	}
+	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex, size_type depthIndex ) const { return base_type::at(rowIndex*number_columns()+columnIndex,depthIndex); }
 
 	///
 	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.

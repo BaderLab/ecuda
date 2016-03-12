@@ -137,7 +137,7 @@ public:
 	///
 	/// \return true if *this stores a pointer, false otherwise.
 	///
-	__HOST__ __DEVICE__ explicit operator bool() const __NOEXCEPT__ { return naked_cast<typename ecuda::add_pointer<const element_type>::type>( ptr ) != NULL; }
+	__HOST__ __DEVICE__ explicit operator bool() const ECUDA__NOEXCEPT { return naked_cast<typename ecuda::add_pointer<const element_type>::type>( ptr ) != NULL; }
 	#else
 	///
 	/// \brief Checks if this stores a non-null pointer.

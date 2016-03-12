@@ -114,20 +114,20 @@ public:
 	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) ECUDA__NOEXCEPT : current_ptr(ptr), deleter(deleter) {}
 
 	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) __NOEXCEPT__ : current_ptr(src.release()) {}
-	template<typename U,class E> __HOST__ __DEVICE__ unique_ptr( unique_ptr<U,E>&& src ) __NOEXCEPT__ : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
+	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) ECUDA__NOEXCEPT : current_ptr(src.release()) {}
+	template<typename U,class E> __HOST__ __DEVICE__ unique_ptr( unique_ptr<U,E>&& src ) ECUDA__NOEXCEPT : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
 	#endif
 
 	__HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
 
 	#ifdef ECUDA_CPP11_AVAILABLE
 	//TODO: review this block
-	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) __NOEXCEPT__ {
+	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) ECUDA__NOEXCEPT {
 		current_ptr = std::move(src.ptr);
 		deleter = std::move(src.deleter);
 		return *this;
 	}
-	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) __NOEXCEPT__ {
+	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) ECUDA__NOEXCEPT {
 		current_ptr = std::move(src.ptr);
 		deleter = std::move(src.deleter);
 		return *this;
