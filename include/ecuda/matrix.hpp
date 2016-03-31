@@ -792,10 +792,10 @@ __HOST__ void matrix_swap(
 	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0
 )
 {
-	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat1 is out of bounds") );
-	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat2 is out of bounds" ) );
-	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat1 is out of bounds") );
-	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat2 is out of bounds") );
+	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat1 is out of bounds") );
+	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat2 is out of bounds" ) );
+	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat1 is out of bounds") );
+	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat2 is out of bounds") );
 	std::vector< T, host_allocator<T> > stagingMemory( numberColumns );
 	typedef typename matrix<T,Alloc1>::size_type size_type;
 	for( size_type i = 0; i < numberRows; ++i ) {

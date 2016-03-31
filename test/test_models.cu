@@ -36,50 +36,50 @@ int main( int argc, char* argv[] ) {
 	std::vector<int> host_sequence_contiguous1( 100 ); for( std::size_t i = 0; i < host_sequence_contiguous1.size(); ++i ) host_sequence_contiguous1[i] = i;
 	std::list<int> host_sequence_noncontiguous1( 100 );
 
-	//if( !testCopy( host_sequence_contiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_contiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_contiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( host_sequence_contiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( host_sequence_contiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_contiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_contiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( host_sequence_contiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( host_sequence_noncontiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( host_sequence_noncontiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( device_sequence_contiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( device_sequence_contiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( device_sequence_contiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( device_sequence_contiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_contiguous1, device_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( device_sequence_contiguous1, device_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( device_sequence_contiguous1, host_sequence_contiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( device_sequence_contiguous1, host_sequence_noncontiguous1 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
 	ecuda::model::device_sequence< double, ecuda::shared_ptr<double> > device_sequence_noncontiguous2( ecuda::shared_ptr<double>( ecuda::device_allocator<double>().allocate( 100 ) ), 100 );
 	ecuda::model::device_contiguous_sequence< double, ecuda::shared_ptr<double> > device_sequence_contiguous2( ecuda::shared_ptr<double>( ecuda::device_allocator<double>().allocate( 100 ) ), 100 );
 	std::vector<double> host_sequence_contiguous2( 100 );
 	std::list<double> host_sequence_noncontiguous2( 100 );
 
-	//if( !testCopy( host_sequence_contiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_contiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_contiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_contiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( host_sequence_contiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_contiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_contiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_contiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( host_sequence_noncontiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( host_sequence_noncontiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( host_sequence_noncontiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( host_sequence_noncontiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_noncontiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
-	//if( !testCopy( device_sequence_contiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	//if( !testCopy( device_sequence_contiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( device_sequence_contiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
-	if( !testCopy( device_sequence_contiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_contiguous1, device_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	//if( !testCopy( device_sequence_contiguous1, device_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( device_sequence_contiguous1, host_sequence_contiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
+	if( !testCopy( device_sequence_contiguous1, host_sequence_noncontiguous2 ) ) throw std::runtime_error( ECUDA_EXCEPTION_MSG("") );
 
 	{
 		//std::size_t pitch;

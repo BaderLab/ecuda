@@ -165,7 +165,7 @@ public:
 	{
 		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
 			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -180,7 +180,7 @@ public:
 	{
 		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
 			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_contiguous_matrix::at() row and/or column index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully

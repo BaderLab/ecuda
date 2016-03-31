@@ -109,7 +109,7 @@ public:
 	{
 		if( x >= size() ) {
 			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
@@ -124,7 +124,7 @@ public:
 	{
 		if( x >= size() ) {
 			#ifndef __CUDACC__
-			throw std::out_of_range( EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_fixed_sequence::at() index parameter is out of range") );
 			#else
 			// this strategy is taken from:
 			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully

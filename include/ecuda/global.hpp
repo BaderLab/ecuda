@@ -89,7 +89,7 @@ either expressed or implied, of the FreeBSD Project.
 ///
 /// String wrapper that adds the source file and line to a given error message.
 ///
-#define EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
+#define ECUDA_EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
 
 #ifdef __CUDACC__
 #define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
