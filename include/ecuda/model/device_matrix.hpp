@@ -80,12 +80,15 @@ public:
 	typedef device_sequence< value_type,       striding_ptr<value_type,typename make_unmanaged<pointer>::type>             > column_type;
 	typedef device_sequence< const value_type, striding_ptr<const value_type,typename make_unmanaged_const<pointer>::type> > const_column_type;
 
+	template<typename U,typename Q> friend class device_matrix;
+
 private:
 	size_type rows;
 
 public:
 	__HOST__ __DEVICE__ device_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
 	__HOST__ __DEVICE__ device_matrix( const device_matrix& src ) : base_type(src), rows(src.rows) {}
+	template<typename U,typename Q> __HOST__ __DEVICE__ device_matrix( const device_matrix<U,Q>& src ) : base_type(src), rows(src.rows) {}
 	__HOST__ device_matrix& operator=( const device_matrix& src ) {
 		base_type::operator=(src);
 		rows = src.rows;
