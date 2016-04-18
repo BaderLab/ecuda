@@ -87,14 +87,18 @@ private:
 
 public:
 	__HOST__ __DEVICE__ device_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
+
 	__HOST__ __DEVICE__ device_matrix( const device_matrix& src ) : base_type(src), rows(src.rows) {}
+
 	template<typename U,typename Q> __HOST__ __DEVICE__ device_matrix( const device_matrix<U,Q>& src ) : base_type(src), rows(src.rows) {}
+
 	__HOST__ device_matrix& operator=( const device_matrix& src ) {
 		base_type::operator=(src);
 		rows = src.rows;
 		return *this;
 	}
-	#ifdef ECUDA_CPP11_AVAILABLE
+
+#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_matrix( device_matrix&& src ) : base_type(src), rows(std::move(src.rows)) {}
 	__HOST__ device_matrix& operator=( device_matrix&& src )
 	{
@@ -146,6 +150,52 @@ public:
 
 	__HOST__ __DEVICE__ inline row_type       operator[]( const size_type row )       { return get_row(row); }
 	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type row ) const { return get_row(row); }
+
+	__DEVICE__ inline reference operator()( const size_type row, const size_type column )
+	{
+		typename make_unmanaged<P>::type p = unmanaged_cast(base_type::get_pointer());
+		p += row*number_columns();
+		p += column;
+		return *p;
+	}
+
+	__DEVICE__ inline const_reference operator()( const size_type row, const size_type column ) const
+	{
+		typename make_unmanaged_const<P>::type p = unmanaged_cast(base_type::get_pointer());
+		p += row*number_columns();
+		p += column;
+		return *p;
+	}
+
+	__DEVICE__ inline reference at( const size_type rowIndex, const size_type columnIndex )
+	{
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
+	}
+
+	__DEVICE__ inline const_reference at( const size_type rowIndex, const size_type columnIndex ) const
+	{
+		if( rowIndex >= number_rows() || columnIndex >= number_columns() ) {
+			#ifndef __CUDACC__
+			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_matrix::at() row and/or column index parameter is out of range") );
+			#else
+			// this strategy is taken from:
+			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+			ecuda::threadfence();
+			asm("trap;");
+			#endif
+		}
+		return operator()(rowIndex,columnIndex);
+	}
 
 	__HOST__ __DEVICE__ void swap( device_matrix& other )
 	{

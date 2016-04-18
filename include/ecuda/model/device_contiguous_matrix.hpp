@@ -87,14 +87,18 @@ private:
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_matrix( pointer ptr = pointer(), size_type rows = 0, size_type columns = 0 ) : base_type(ptr,rows*columns), rows(rows) {}
+
 	__HOST__ __DEVICE__ device_contiguous_matrix( const device_contiguous_matrix& src ) : base_type(src), rows(src.rows) {}
+
 	template<typename U,class Q>	__HOST__ __DEVICE__ device_contiguous_matrix( const device_contiguous_matrix<U,Q>& src ) : base_type(src), rows(src.rows) {}
+
 	__HOST__ device_contiguous_matrix& operator=( const device_contiguous_matrix& src )
 	{
 		base_type::operator=(src);
 		rows = src.rows;
 		return *this;
 	}
+
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_contiguous_matrix( device_contiguous_matrix&& src ) : base_type(std::move(src)), rows(std::move(src.rows)) {}
 	__HOST__ device_contiguous_matrix& operator=( device_contiguous_matrix&& src )

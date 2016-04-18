@@ -73,6 +73,8 @@ public:
 	typedef reverse_device_iterator<iterator      > reverse_iterator;
 	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
+	template<typename U,std::size_t M,typename Q> friend class device_fixed_sequence;
+
 private:
 	pointer ptr;
 
@@ -82,7 +84,11 @@ protected:
 
 public:
 	__HOST__ __DEVICE__ device_fixed_sequence( pointer ptr = pointer() ) : ptr(ptr) {}
+
 	__HOST__ __DEVICE__ device_fixed_sequence( const device_fixed_sequence& src ) : ptr(src.ptr) {}
+
+	template<typename U,typename Q> __HOST__ __DEVICE__ device_fixed_sequence( const device_fixed_sequence<U,N,Q>& src ) : ptr(src.ptr) {}
+
 	__HOST__ device_fixed_sequence& operator=( const device_fixed_sequence& src )
 	{
 		ptr = src.ptr;

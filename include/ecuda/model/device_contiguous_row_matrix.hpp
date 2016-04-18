@@ -89,7 +89,7 @@ public:
 
 	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix& src ) : base_type(src) {}
 
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix<U,PointerType2>& src ) : base_type(src) {}
+	template<typename U,class Q>	__HOST__ __DEVICE__ device_contiguous_row_matrix( const device_contiguous_row_matrix<U,Q>& src ) : base_type(src) {}
 
 	__HOST__ device_contiguous_row_matrix& operator=( const device_contiguous_row_matrix& src )
 	{

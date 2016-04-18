@@ -78,13 +78,17 @@ public:
 
 public:
 	__HOST__ __DEVICE__ device_contiguous_sequence( pointer ptr = pointer(), size_type length = 0 ) : base_type(ptr,length) {}
+
 	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence& src ) : base_type(src) {}
-	template<typename U,class PointerType2>	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence<U,PointerType2>& src ) : base_type(src) {}
+
+	template<typename U,class Q>	__HOST__ __DEVICE__ device_contiguous_sequence( const device_contiguous_sequence<U,Q>& src ) : base_type(src) {}
+
 	__HOST__ device_contiguous_sequence& operator=( const device_contiguous_sequence& src )
 	{
 		base_type::operator=(src);
 		return *this;
 	}
+
 	#ifdef ECUDA_CPP11_AVAILABLE
 	__HOST__ device_contiguous_sequence( device_contiguous_sequence&& src ) : base_type(src) {}
 	__HOST__ device_contiguous_sequence& operator=( device_contiguous_sequence&& src )
