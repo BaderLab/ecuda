@@ -57,7 +57,7 @@ int main( int argc, char* argv[] )
 		std::cout << "Other      :: Registers Per Block: " << prop.regsPerBlock << " Maximum Memory Pitch: " << create_memory_string(prop.memPitch) << std::endl;
 		std::cout << "              Concurrent kernels: " << prop.concurrentKernels << std::endl;
 		std::cout << "              Maximum Threads Per Multiprocessor: " << prop.maxThreadsPerMultiProcessor << std::endl;
-		std::cout << "Clock Rate :: GPU: " << create_frequency_string(prop.clockRate*1000) << " Memory: " << create_frequency_string(prop.memoryClockRate) << std::endl;
+		std::cout << "Clock Rate :: GPU: " << create_frequency_string(prop.clockRate*1000) << " Memory: " << create_frequency_string(prop.memoryClockRate*1000) << std::endl;
 		std::cout << "Features   :: Concurrent copy and execution            [" << (prop.deviceOverlap?'Y':'N')            << "]" << std::endl;
 		std::cout << "              Run time limit on kernels                [" << (prop.kernelExecTimeoutEnabled?'Y':'N') << "]" << std::endl;
 		std::cout << "              Integrated                               [" << (prop.integrated?'Y':'N')               << "]" << std::endl;
