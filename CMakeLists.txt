@@ -5,3 +5,4 @@ install( DIRECTORY include/
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include
   PATTERN "*vcxproj*" EXCLUDE
 )
+
