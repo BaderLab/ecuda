@@ -158,7 +158,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
+	pointer allocate( size_type n, const std::allocator<void>::value_type* hint = 0 )
 	{
 		pointer ptr = NULL;
 		const cudaError_t result = cudaHostAlloc( reinterpret_cast<void**>(&ptr), n*sizeof(T), Flags );
@@ -303,7 +303,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__HOST__ pointer allocate( size_type n, std::allocator<void>::const_pointer hint = 0 )
+	__HOST__ pointer allocate( size_type n, const std::allocator<void>::value_type* hint = 0 )
 	{
 		pointer ptr = NULL;
 		const cudaError_t result = cudaMalloc( reinterpret_cast<void**>(&ptr), n*sizeof(T) );
@@ -461,7 +461,7 @@ public:
 	///             cannot take advantage of it.
 	/// \return A pointer to the initial element in the block of storage.
 	///
-	__HOST__ pointer allocate( size_type w, size_type h, std::allocator<void>::const_pointer hint = 0 )
+	__HOST__ pointer allocate( size_type w, size_type h, const std::allocator<void>::value_type* hint = 0 )
 	{
 		typename ecuda::add_pointer<value_type>::type ptr = NULL;
 		size_type pitch;
