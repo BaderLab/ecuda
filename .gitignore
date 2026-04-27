@@ -1,6 +1,7 @@
 docs/html/
 ecuda.creator.user
 bin/
+bin.OLD/
 obj/
 local-config.cmake
 ecuda.v12.suo

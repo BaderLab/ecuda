@@ -458,7 +458,8 @@ public:
 	///
 	__HOST__ __DEVICE__ inline void swap( array& other )
 	#if defined(ECUDA_CPP11_AVAILABLE) && defined(ECUDA_NOEXCEPT_KEYWORD_ENABLED)
-	noexcept(noexcept(swap(std::declval<T&>(),std::declval<T&>())))
+	noexcept(noexcept(base_type::swap(other)))
+	// noexcept(noexcept(swap(std::declval<T&>(),std::declval<T&>())))
 	#endif
 	{
 		base_type::swap( other );

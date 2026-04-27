@@ -123,12 +123,12 @@ public:
 	#ifdef ECUDA_CPP11_AVAILABLE
 	//TODO: review this block
 	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) ECUDA__NOEXCEPT {
-		current_ptr = std::move(src.ptr);
+		current_ptr = std::move(src.current_ptr);
 		deleter = std::move(src.deleter);
 		return *this;
 	}
 	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) ECUDA__NOEXCEPT {
-		current_ptr = std::move(src.ptr);
+		current_ptr = std::move(src.current_ptr);
 		deleter = std::move(src.deleter);
 		return *this;
 	}

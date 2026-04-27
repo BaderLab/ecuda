@@ -6,7 +6,7 @@
 #include "../include/ecuda/ecuda.hpp"
 
 // https://github.com/philsquared/Catch
-#include <catch.hpp>
+// #include <catch.hpp>
 
 //const std::size_t N = 1000;
 const std::size_t R = 5;

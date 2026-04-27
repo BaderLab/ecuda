@@ -1,19 +1,21 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(ecuda)
+file( GLOB ECUDA_TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/test_*.cu" )
 
-FIND_PACKAGE(CUDA REQUIRED)
-INCLUDE(FindCUDA)
+foreach( test_src IN LISTS ECUDA_TEST_SOURCES )
+	get_filename_component( test_name "${test_src}" NAME_WE )
+	add_executable( "${test_name}" "${test_src}" )
 
-#LIST(APPEND CUDA_NVCC_FLAGS -arch=sm_21 -O3 -Xptxas -v)
-#LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wall -pedantic -flto")
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+	target_link_libraries( "${test_name}" PRIVATE ecuda::ecuda )
 
-INCLUDE( ../local-config.cmake OPTIONAL )
+	target_compile_options(
+		"${test_name}"
+		PRIVATE
+		$<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-declarations>
+		$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
+	)
 
-INCLUDE_DIRECTORIES(../../Catch/include)
+	add_test(
+		NAME "${test_name}"
+		COMMAND "${test_name}"
+	)
 
-FILE( GLOB CUDA_SOURCES "*.cu" )
-FOREACH( cudasrcfile ${CUDA_SOURCES} )
-  GET_FILENAME_COMPONENT( cudaprogname ${cudasrcfile} NAME_WE )
-  CUDA_ADD_EXECUTABLE( ${cudaprogname} ${cudasrcfile} )
-ENDFOREACH( cudasrcfile ${CUDA_SOURCES} )
+endforeach()
