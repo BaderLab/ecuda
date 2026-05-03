@@ -1,18 +1,31 @@
-                  ecuda Extended CUDA C++ API release 2.x
+<p align="center">
+  <img src="./docs/ecuda-logo.svg" width="110" alt="ecuda logo">
+</p>
 
-These are the release notes for ecuda version 2.
+<h1 align="center">ecuda</h1>
 
-WHAT IS ECUDA?
+<p align="center">
+  <em></em>
+  <em>STL-style abstractions for CUDA.</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-active-6B7280">
+  <img src="https://img.shields.io/badge/language-C%2B%2B14-6B7280">
+</p>
+
+### WHAT IS ECUDA?
 
   ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and
   be functionally equivalent to the C++ Standard Template Library (STL).
   Specifically: algorithms, containers, and iterators. These elements play nice
   with host containers and can be used in device code.
 
-EXAMPLE
+### EXAMPLE
 
   This is a simple example of how some elements of ecuda look in practice.
 
+  ```
   std::vector<double> hostVector( 1000 );
   ecuda::vector<double> deviceVector( hostVector.begin(), hostVector.end() );
   CUDA_CALL_KERNEL_AND_WAIT( squareRoot<<<1,1000>>>( deviceVector ) );
@@ -24,10 +37,11 @@ EXAMPLE
     const int t = threadIdx.x;
     vec[t] = sqrt(vec[t]);
   }
+  ```
 
   More detailed examples can be found in the full documentation.
 
-REQUIREMENTS
+### REQUIREMENTS
 
   ecuda is a header only API, and the only pre-requisite library is the CUDA API
   version 5 or later. It should work with any C++ compiler, but has been
@@ -47,7 +61,7 @@ REQUIREMENTS
   to identify any issues. When run, the program prints out a pretty summary of
   the current system's GPU hardware and capabilities.
 
-DOCUMENTATION:
+### DOCUMENTATION:
 
  - Documentation can be viewed online:
 
@@ -60,7 +74,7 @@ DOCUMENTATION:
 
      $ doxygen doxygen.cfg
 
-INSTALLATION:
+### INSTALLATION:
 
   Linux/MacOS:
 
@@ -128,7 +142,7 @@ INSTALLATION:
    - Since ecuda is not actively developed on Windows, please report any issues
      or workarounds!
 
-BENCHMARKS AND EXAMPLES:
+### BENCHMARKS AND EXAMPLES:
 
   - The benchmarks/, test/ and t/ directories contain programs that were useful
     for development. They might be useful examples to see how ecuda can be used.
@@ -148,26 +162,3 @@ BENCHMARKS AND EXAMPLES:
     root directory that contains any system-specific CMake directives (e.g.
     nvcc compiler flags). The local-config.cmake.example file is an example of
     how this file might look.
-
-FILE DESCRIPTIONS:
-
-  benchmarks/                Programs that compare cuda and ecuda performance.
-  docs/                      Additional elements for building docs with doxygen.
-  include/                   The ecuda API header files.
-  t/                         Catch unit tests.
-  test/                      Programs to loosely test elements of the API.
-  tools/                     Utilities that utilize ecuda.
-  CMakeLists.txt             CMake configuration file
-  doxygen.cfg                doxygen configuration file
-  ecuda.config               Qt Creator project file
-  ecuda.creator              Qt Creator project file
-  ecuda.files                Qt Creator project file
-  ecuda.includes             Qt Creator project file
-  ecuda.sln                  Visual Studio 2013 Solution file
-  local-config.cmake.example Example file with additional CMake directives
-  .gitignore                 local files to omit from version control
-  LICENSE.txt                release license
-  MANIFEST                   list of files under version control
-  README                     this file
-  VERSION                    current version of the API
-

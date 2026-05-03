@@ -32,6 +32,12 @@ target_include_directories(
 	$<INSTALL_INTERFACE:include>
 )
 
+option( ECUDA_BUILD_BENCHMARKS "Build ecuda benchmarks" OFF )
+
+if( ECUDA_BUILD_BENCHMARKS AND ECUDA_ENABLE_CUDA )
+	add_subdirectory(benchmarks)
+endif()
+
 option( ECUDA_BUILD_TESTS "Build ecuda tests" OFF )
 
 if( ECUDA_BUILD_TESTS )

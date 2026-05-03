@@ -1,14 +1,37 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(ecuda)
+file( GLOB ECUDA_BENCHMARK_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cu" )
 
-FIND_PACKAGE(CUDA REQUIRED)
-INCLUDE(FindCUDA)
+find_package( CUDAToolkit REQUIRED )
 
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-INCLUDE( ../local-config.cmake OPTIONAL )
+set( ECUDA_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" )
+if( NOT ECUDA_CUDA_ARCHITECTURES )
+	set( ECUDA_CUDA_ARCHITECTURES native )
+endif()
 
-FILE( GLOB CUDA_SOURCES "*.cu" )
-FOREACH( cudasrcfile ${CUDA_SOURCES} )
-  GET_FILENAME_COMPONENT( cudaprogname ${cudasrcfile} NAME_WE )
-  CUDA_ADD_EXECUTABLE( ${cudaprogname} ${cudasrcfile} )
-ENDFOREACH( cudasrcfile ${CUDA_SOURCES} )
+foreach( benchmark_src IN LISTS ECUDA_BENCHMARK_SOURCES )
+	get_filename_component( benchmark_name ${benchmark_src} NAME_WE )
+	add_executable( "${benchmark_name}" "${benchmark_src}" )
+
+	target_link_libraries( "${benchmark_name}" PRIVATE ecuda::ecuda )
+
+	set_target_properties(
+		"${benchmark_name}" PROPERTIES
+		CUDA_ARCHITECTURES ${ECUDA_CUDA_ARCHITECTURES}
+		CUDA_STANDARD 14
+		CUDA_STANDARD_REQUIRED ON
+		CUDA_SEPARABLE_COMPILATION ON
+		POSITION_INDEPENDENT_CODE ON
+	)
+
+	target_compile_options(
+		"${benchmark_name}"
+		PRIVATE
+		$<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-declarations>
+		$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
+	)
+
+	set_target_properties(
+		"${benchmark_name}" PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/benchmarks"
+	)
+
+endforeach()
