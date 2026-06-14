@@ -9,7 +9,7 @@
 
 <br/>
 <div align="center">
-  <a href="https://github.com/BaderLab/estd">
+  <a href="https://github.com/BaderLab/ecuda">
     <img src="./docs/ecuda-logo.svg" width="110" alt="ecuda logo">
   </a>
 
@@ -95,7 +95,7 @@ git clone https://github.com/BaderLab/ecuda
 ```
 2. Compile and run the tests (optional)
 ```sh
-cd estd
+cd ecuda
 mkdir build
 cmake -DECUDA_BUILD_TESTS=ON
 make
