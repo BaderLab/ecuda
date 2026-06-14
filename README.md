@@ -1,164 +1,255 @@
-<p align="center">
-  <img src="./docs/ecuda-logo.svg" width="110" alt="ecuda logo">
-</p>
+<a id="readme-top"></a>
 
-<h1 align="center">ecuda</h1>
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![Apache 2.0][license-shield]][license-url]
+<!-- [![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-<p align="center">
-  <em></em>
-  <em>STL-style abstractions for CUDA.</em>
-</p>
+<br/>
+<div align="center">
+  <a href="https://github.com/BaderLab/estd">
+    <img src="./docs/ecuda-logo.svg" width="110" alt="ecuda logo">
+  </a>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/status-active-6B7280">
-  <img src="https://img.shields.io/badge/language-C%2B%2B14-6B7280">
-</p>
+  <h3 align="center">ecuda</h3>
+  <!-- <h1 align="center">ecuda</h1> -->
 
-### WHAT IS ECUDA?
+  <p align="center">
+    STL-style abstractions for CUDA.
+	<br/>
+	<a href="https://github.com/BaderLab/ecuda"><strong>Explore the docs »</strong></a>
+	<br/>
+	<br/>
+	<a href="https://github.com/BaderLab/ecuda">View Demo</a>
+	&middot;
+	<a href="https://github.com/BaderLab/ecuda/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+	&middot;
+	<a href="https://github.com/BaderLab/ecuda/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
 
-  ecuda is a C++ wrapper around the CUDA C API designed to closely resemble and
-  be functionally equivalent to the C++ Standard Template Library (STL).
-  Specifically: algorithms, containers, and iterators. These elements play nice
-  with host containers and can be used in device code.
+</div>
 
-### EXAMPLE
+<!-- TABLE OF CONTENTS -->
 
-  This is a simple example of how some elements of ecuda look in practice.
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+	  <a href="#about-the-project">About The Project</a>
+	</li>
+	<li>
+	  <a href="#getting-started">Getting Started</a>
+	  <ul>
+	    <li><a href="#prerequistes">Prerequisites</a></li>
+		<li><a href="#installation">Installation</a></li>
+	  </ul>
+	</li>
+	<li>
+	  <a href="#usage">Usage</a>
+	</li>
+	<li><a href="#roadmap">Roadmap</a></li>
+	<li><a href="#contributing">Contributing</a></li>
+	<li><a href="#license">License</a></li>
+	<li><a href="#contact">Contant</a></li>
+	<li><a href="#acknowledgements">Acknowledgements</a></li>
+  </ol>
+</details>
 
+<!-- ABOUT THE PROJECT -->
+## About The Project
+
+**ecuda** is a C++ wrapper around the CUDA C API designed to closely resemble and
+be functionally equivalent to the C++ Standard Template Library (STL).
+Specifically: algorithms, containers, and iterators. These elements play nice
+with host containers and can be used in device code.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Built With
+
+* [![C++][C++]][C++-url]
+* [![CUDA][CUDA]][CUDA-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+### Prerequisites
+
+* CUDA
+  ```sh
+  sudo apt-get -y install cuda # Debian
+  sudo pacman -S cuda # Arch
   ```
-  std::vector<double> hostVector( 1000 );
-  ecuda::vector<double> deviceVector( hostVector.begin(), hostVector.end() );
-  CUDA_CALL_KERNEL_AND_WAIT( squareRoot<<<1,1000>>>( deviceVector ) );
-  ecuda::copy( deviceVector.begin(), deviceVector.end(), hostVector.begin() );
 
-  __global__
-  void squareRoot( typename ecuda::vector<double>::kernel_argument vec )
-  {
-    const int t = threadIdx.x;
-    vec[t] = sqrt(vec[t]);
+### Installation
+
+#### Option 1
+
+1. Clone the repo
+```sh
+git clone https://github.com/BaderLab/ecuda
+```
+2. Compile and run the tests (optional)
+```sh
+cd estd
+mkdir build
+cmake -DECUDA_BUILD_TESTS=ON
+make
+ctest --output-on-failure
+```
+
+#### Option 2
+
+Use FetchContent to add to your own project's `CMakeLists.txt`.
+
+```cmake
+# the start of your CMakeLists.txt...
+
+include( FetchContent )
+
+FetchContent_Declare(
+    ecuda
+    GIT_REPOSITORY https://github.com/BaderLab/ecuda
+    GIT_TAG        "master"
+    SOURCE_DIR     "${CMAKE_BINARY_DIR}/_deps/ecuda-src"
+    BINARY_DIR     "${CMAKE_BINARY_DIR}/_deps/ecuda-build"
+)
+
+FetchContent_MakeAvailable( ecuda )
+
+find_package( CUDAToolkit REQUIRED )
+
+# ... the rest of your CMakeLists.txt
+
+target_link_libraries( YourExecutable PUBLIC ecuda::ecuda PRIVATE CUDA::cudart )
+```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+
+```cpp
+#include <ecuda.hpp>
+```
+
+```cpp
+template<class Container>
+__global__
+void
+reverse_order(
+  typename Container::const_kernel_argument in,
+  typename Container::kernel_argument out
+)
+{
+  const int t = threadIdx.x;
+  if( t < in.size() ) {
+    auto value = *(in.begin()+t);
+	*(out.begin()+(out.size()-t-1)) = value;
   }
-  ```
+}
+```
 
-  More detailed examples can be found in the full documentation.
+```cpp
+std::vector<double> hostVector( 1000 );
+// ... fill hostVector with data
+ecuda::vector<double> deviceVector1( hostVector.begin(), hostVector.end() );
+ecuda::vector<double> deviceVector2( 1000 );
+CUDA_CALL_KERNEL_AND_WAIT( reverse_order<<<1,1000>>>( deviceVector1, deviceVector2 ) );
+ecuda::copy( deviceVector2.begin(), deviceVector2.end(), hostVector.begin() );
+```
 
-### REQUIREMENTS
+```cpp
+std::vector<double> hostMatrix( 10*10 );
+// ... fill hostMatrix with data
+ecuda::matrix<double> deviceMatrix1( 10, 10 );
+ecuda::matrix<double> deviceMatrix2( 10, 10 );
+ecuda::copy( hostMatrix.begin(), hostMatrix.end(), deviceMatrix1.begin() );
+CUDA_CALL_KERNEL_AND_WAIT( reverse_order<<<1,10*10>>>( deviceMatrix1, deviceMatrix2 ) );
+ecuda::copy( deviceMatrix2.begin(), deviceMatrix2.end(), hostVector.begin() );
+```
 
-  ecuda is a header only API, and the only pre-requisite library is the CUDA API
-  version 5 or later. It should work with any C++ compiler, but has been
-  developed and tested with several versions of gcc (most recently 4.8.4) and
-  clang 3.6. The C++11 standard is optional, but is utilized if enabled. Visual
-  Studio 2013 on Windows 10 was also successfully tested (see the INSTALLATION
-  section below).
+```cpp
+std::vector<double> hostCube( 10*10*10 );
+// ... fill hostCube with data
+ecuda::cube<double> deviceCube1( 10, 10, 10 );
+ecuda::cube<double> deviceCube2( 10, 10, 10 );
+ecuda::copy( hostCube.begin(), hostCube.end(), deviceCube1.begin() );
+CUDA_CALL_KERNEL_AND_WAIT( reverse_order<<<1,10*10>>>( deviceCube1, deviceCube2 ) );
+ecuda::copy( deviceCube2.begin(), deviceCube2.end(), hostVector.begin() );
+```
 
-  A correct setup should be able to compile the tools/print_device_info.cu
-  program without issue. You can try:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-    $ mkdir bin
-    $ cd bin
-    $ cmake ../tools
-    $ make
+<!-- ROADMAP -->
+## Roadmap
 
-  to identify any issues. When run, the program prints out a pretty summary of
-  the current system's GPU hardware and capabilities.
+No additional features are planned.
 
-### DOCUMENTATION:
+See the [open issues](https://github.com/BaderLab/ecuda/issues) for a full list of proposed features (and known issues).
 
- - Documentation can be viewed online:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-     https://baderlab.github.io/ecuda/
+<!-- CONTRIBUTING -->
+## Contributing
 
- - This is generated from the source files themselves using doxygen. The base
-   directory contains a default doxygen.cfg file that will build a local copy of
-   the documentation in the docs/html subdirectory. Make sure you have doxygen
-   installed and run:
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-     $ doxygen doxygen.cfg
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
 
-### INSTALLATION:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-  Linux/MacOS:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-  - As long as the include/ subdirectory is visible to the compiler, the API
-    can be installed anywhere. A default install using cmake can be done by
-    running:
+### Top contributors:
 
-      $ cmake .
-      $ sudo make install
+<a href="https://github.com/BaderLab/ecuda/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=BaderLab/ecuda" alt="contrib.rocks image"/>
+</a>
 
-    This will copy the contents of the include/ subdirectory to
-    ${CMAKE_INSTALL_PREFIX}/include (usually /usr/local/include).
+<!-- LICENSE -->
+## License
 
-  Windows/Visual Studio:
+Distributed under the Apache 2.0 license. See `LICENSE.txt` for more information.
 
-   - The latest free Visual Studio at the time of last update was Visual
-     Studio Community 2015, but it is confirmed that CUDA 7.5 is not supported
-     at this time. I managed to get everything working with Visual Studio
-     Community 2013 on Windows 10. Here is my story:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-   - Download and install Visual Studio Community 2013 from:
+<!-- CONTACT -->
+## Contact
 
-       https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
+Scott D. Zuyderduyn - scott.zuyderduyn@utoronto.ca
 
-   - Download and install the Nvidia CUDA Toolkit from:
+Project Link: [https://github.com/BaderLab/ecuda](https://github.com/BaderLab/ecuda)
 
-       http://developer.nvidia.com/cuda-downloads
+<!-- ACKNOWLEDGEMENTS -->
+## Acknowledgements
 
-     - The order is important since the CUDA installer integrates with any
-       installed Visual Studio versions that it supports. Also note that in the
-       successful configuration, only the following items in the CUDA
-       installer's custom installation were left checked:
+* README based on the [othneildrew/Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 
-         CUDA Toolkit 7.5
-         CUDA Visual Studio Integration 7.5
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-       The following items were already installed on the test system with equal
-       or greater version numbers:
-
-         Graphics Driver
-         HD Audio Driver
-         NVIDIA GeForce Experience
-         PhysX System Software
-
-       Do whatever makes the most sense for your situation.
-
-   - Start Visual Studio and load the ecuda.sln solution file.
-
-   - The print_device_info project contains a source file that should build
-     successfully at this point. Build the Release target with the x64
-     platform, and bin/x64/Release/print_device_info.exe should appear. Running
-     this from the Windows command line should display a pretty summary of the
-     current system's GPU hardware and capabilities.
-
-   - When building a Debug target, Visual Studio's C++ Standard Library
-     implementation does some kind of "iterator checking" that doesn't play
-     nice with ecuda's custom iterators, causing erroneous assertion failures
-     to get raised at runtime. Placing this at the beginning of a program will
-     turn this off (and suppresses a warning about macro redefinition):
-
-       #pragma warning(disable:4005)
-       #undef _HAS_ITERATOR_DEBUGGING
-       #pragma warning(default:4005)
-
-   - Since ecuda is not actively developed on Windows, please report any issues
-     or workarounds!
-
-### BENCHMARKS AND EXAMPLES:
-
-  - The benchmarks/, test/ and t/ directories contain programs that were useful
-    for development. They might be useful examples to see how ecuda can be used.
-    Again, these were used during API development so they can be quite ugly and
-    full of hacks.
-
-  - Each subdirectory contains a CMakeList.txt file so building them should be
-    easy if your system is properly set up. For example, to build the
-    benchmarks/ folder, the following could be used:
-
-      $ mkdir -p bin/benchmarks
-      $ cd bin/benchmarks
-      $ cmake ../../benchmarks
-      $ make
-
-  - Note that a file called local-config.cmake can be created in the release
-    root directory that contains any system-specific CMake directives (e.g.
-    nvcc compiler flags). The local-config.cmake.example file is an example of
-    how this file might look.
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/BaderLab/ecuda.svg?style=for-the-badge
+[contributors-url]: https://github.com/BaderLab/ecuda/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/BaderLab/ecuda.svg?style=for-the-badge
+[forks-url]: https://github.com/BaderLab/ecuda/network/members
+[stars-shield]: https://img.shields.io/github/stars/BaderLab/ecuda.svg?style=for-the-badge
+[stars-url]: https://github.com/BaderLab/ecuda/stargazers
+[issues-shield]: https://img.shields.io/github/issues/BaderLab/ecuda.svg?style=for-the-badge
+[issues-url]: https://github.com/BaderLab/ecuda/issues
+[license-shield]: https://img.shields.io/github/license/BaderLab/ecuda.svg?style=for-the-badge
+[license-url]: https://github.com/BaderLab/ecuda/blob/master/LICENSE.txt
+[product-screenshot]: images/screenshot.png
+<!-- Shields.io badges. You can a comprehensive list with many more badges at: https://github.com/inttter/md-badges -->
+[C++]: https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white
+[C++-url]: https://isocpp.org/
+[CUDA]: https://img.shields.io/badge/CUDA-76B900?logo=nvidia&logoColor=fff
+[CUDA-url]: https://developer.nvidia.com/cuda-downloads
