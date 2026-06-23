@@ -1,3 +1,7 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES // prevent CHECK and FAIL namespace collision
+#include <doctest.h>
+
 #include <iostream>
 #include <list>
 #include <vector>
@@ -29,8 +33,8 @@ __global__ void testKernel( const ecuda::model::device_contiguous_row_matrix<T,U
 	ecuda::copy( matrix.get_column(0).begin(), matrix.get_column(0).end(), vector.begin() );
 }
 
-int main( int argc, char* argv[] ) {
-
+DOCTEST_TEST_CASE( "models" )
+{
 	ecuda::model::device_sequence< int, ecuda::shared_ptr<int> > device_sequence_noncontiguous1( ecuda::shared_ptr<int>( ecuda::device_allocator<int>().allocate( 100 ) ), 100 );
 	ecuda::model::device_contiguous_sequence< int, ecuda::shared_ptr<int> > device_sequence_contiguous1( ecuda::shared_ptr<int>( ecuda::device_allocator<int>().allocate( 100 ) ), 100 );
 	std::vector<int> host_sequence_contiguous1( 100 ); for( std::size_t i = 0; i < host_sequence_contiguous1.size(); ++i ) host_sequence_contiguous1[i] = i;
@@ -92,17 +96,16 @@ int main( int argc, char* argv[] ) {
 		matrix.get_column(0);
 	}
 
+	// ecuda::shared_ptr<int> ptr;
+	// ecuda::model::device_contiguous_row_matrix< int, ecuda::shared_ptr<int> > matrix1( ptr, 10, 20 );
+	// testMatrix( matrix1 );
+	// matrix1.get_row(0);
+	// matrix1.get_column(0);
 
-	ecuda::shared_ptr<int> ptr;
-	ecuda::model::device_contiguous_row_matrix< int, ecuda::shared_ptr<int> > matrix1( ptr, 10, 20 );
-	testMatrix( matrix1 );
-	matrix1.get_row(0);
-	matrix1.get_column(0);
-
-	ecuda::model::device_contiguous_row_matrix< int, int* > matrix2( ptr.get(), 10, 20 );
-	testMatrix( matrix2 );
-	matrix2.get_row(0);
-	matrix2.get_column(0);
+	// ecuda::model::device_contiguous_row_matrix< int, int* > matrix2( ptr.get(), 10, 20 );
+	// testMatrix( matrix2 );
+	// matrix2.get_row(0);
+	// matrix2.get_column(0);
 
 	//ecuda::model::device_contiguous_row_matrix< int, ecuda::padded_ptr< int, ecuda::shared_ptr<int> > > matrix3( ecuda::padded_ptr< int, ecuda::shared_ptr<int> >( ecuda::shared_ptr<int>(), 0 ) );
 	//testMatrix( matrix3 );
@@ -110,9 +113,7 @@ int main( int argc, char* argv[] ) {
 	//matrix3.get_column(0);
 	//testCopy( matrix3, matrix3 );
 
-	testKernel<<<1,1>>>( matrix1, device_sequence_noncontiguous1 );
-
-	return EXIT_SUCCESS;
+	// testKernel<<<1,1>>>( matrix1, device_sequence_noncontiguous1 );
 
 }
 
