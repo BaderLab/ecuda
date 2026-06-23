@@ -1,3 +1,7 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES // prevent CHECK and FAIL namespace collision
+#include <doctest.h>
+
 #include <iostream>
 #include <list>
 #include <vector>
@@ -15,8 +19,8 @@ __global__ void testIterators( const typename ecuda::array<T,N>::kernel_argument
 }
 #endif
 
-int main( int argc, char* argv[] ) {
-
+DOCTEST_TEST_CASE( "vector" )
+{
 	std::vector<int> hostVector( 100 );
 	for( unsigned i = 0; i < 100; ++i ) hostVector[i] = i;
 
@@ -31,9 +35,6 @@ int main( int argc, char* argv[] ) {
 		CUDA_CALL( cudaDeviceSynchronize() );
 	}
 	#endif
-
-
-	return EXIT_SUCCESS;
 
 }
 

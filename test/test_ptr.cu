@@ -1,3 +1,7 @@
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define DOCTEST_CONFIG_NO_SHORT_MACRO_NAMES // prevent CHECK and FAIL namespace collision
+#include <doctest.h>
+
 #include <iostream>
 
 //#include "../include/ecuda/device_ptr.hpp"
@@ -6,8 +10,8 @@
 //#include "../include/ecuda/models.hpp"
 #include "../include/ecuda/algorithm.hpp"
 
-int main( int argc, char* argv[] ) {
-
+DOCTEST_TEST_CASE( "ptr" )
+{
 	ecuda::unique_ptr<int> p0( new int );
 
 	ecuda::shared_ptr<int> p1( new int );
@@ -24,12 +28,13 @@ int main( int argc, char* argv[] ) {
 	pp += 2;
 	std::cout << pp << " DIFF " << ( reinterpret_cast<char*>(pp.get())-reinterpret_cast<char*>(ptr) ) << std::endl;
 
+	DOCTEST_REQUIRE( p1.owner_before(p2) );
 
-	if( p1.owner_before( p2 ) ) {
-		return 1;
-	}
+	// if( p1.owner_before( p2 ) ) {
+	// 	return 1;
+	// }
 
-	return 0;
+	// return 0;
 
 }
 
