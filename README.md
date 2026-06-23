@@ -187,7 +187,11 @@ ecuda::copy( deviceCube2.begin(), deviceCube2.end(), hostVector.begin() );
 <!-- ROADMAP -->
 ## Roadmap
 
-No additional features are planned.
+A quick conversion to [doctest](https://github.com/doctest/doctest) for unit testing was performed
+but it was extremely quick and dirty.  A more comprehensive testing regime is needed.
+
+A modernization review is needed.  So far only the parts of the API needed for other projects has
+been reviewed and tested.
 
 See the [open issues](https://github.com/BaderLab/ecuda/issues) for a full list of proposed features (and known issues).
 
