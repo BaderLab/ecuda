@@ -1,0 +1,6 @@
+---
+BasedOnStyle: Mozilla
+AccessModifierOffset: -4
+AllowShortIfStatementsOnASingleLine: WithoutElse
+ColumnLimit: 120
+IndentWidth: 4
