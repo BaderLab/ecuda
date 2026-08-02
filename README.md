@@ -191,7 +191,10 @@ A quick conversion to [doctest](https://github.com/doctest/doctest) for unit tes
 but it was extremely quick and dirty.  A more comprehensive testing regime is needed.
 
 A modernization review is needed.  So far only the parts of the API needed for other projects has
-been reviewed and tested.
+been reviewed and tested.  The likely strategy will be to retire the `ecuda::vector` container
+and then re-engineer `ecuda::matrix` and `ecuda::cube` to build on top of NVIDIA's Core Compute
+Libraries (CCCL) (i.e. `thrust::device_vector`).  The performance gain of using device pitched
+memory may be in question with modern hardware as well.
 
 See the [open issues](https://github.com/BaderLab/ecuda/issues) for a full list of proposed features (and known issues).
 

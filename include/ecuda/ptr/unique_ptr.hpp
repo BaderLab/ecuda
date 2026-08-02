@@ -12,9 +12,9 @@
 #include <iostream>
 
 #include "../global.hpp"
-#include "common.hpp"
 #include "../type_traits.hpp"
-//#include "../algorithm.hpp"
+#include "common.hpp"
+// #include "../algorithm.hpp"
 
 namespace ecuda {
 
@@ -51,108 +51,152 @@ namespace ecuda {
 /// lvalue reference to function, callable with an argument of type
 /// unique_ptr<T,Deleter>::pointer.
 ///
-template< typename T, class Deleter=default_device_delete<T> >
+template<typename T, class Deleter = default_device_delete<T>>
 class unique_ptr
 {
 
-	/* SFINAE strat used in c++ stdlib to get T::pointer if it exists - unfortunately
-	 * relies on decltype which we don't have prior to C++11 but we can do without
-	 * this for now.
-	class _Pointer {
-		template<typename U> static typename U::pointer test(typename U::pointer*);
-		template<typename U> static T* test(...);
-		typedef typename std::remove_reference<Deleter>::type _Del;
-	public:
-		typedef decltype(test<Deleter>(0)) type;
-	};
-	*/
+    /* SFINAE strat used in c++ stdlib to get T::pointer if it exists - unfortunately
+     * relies on decltype which we don't have prior to C++11 but we can do without
+     * this for now.
+    class _Pointer {
+            template<typename U> static typename U::pointer test(typename U::pointer*);
+            template<typename U> static T* test(...);
+            typedef typename std::remove_reference<Deleter>::type _Del;
+    public:
+            typedef decltype(test<Deleter>(0)) type;
+    };
+    */
 
 public:
-	typedef T element_type;
-	typedef typename ecuda::add_pointer<T>::type pointer;
-	typedef Deleter deleter_type;
+    typedef T element_type;
+    typedef typename ecuda::add_pointer<T>::type pointer;
+    typedef Deleter deleter_type;
 
 private:
-	pointer current_ptr;
-	deleter_type deleter;
+    pointer current_ptr;
+    deleter_type deleter;
 
 private:
-	__HOST__ __DEVICE__ unique_ptr( const unique_ptr& ); // disabled
+    __HOST__ __DEVICE__ unique_ptr(const unique_ptr&); // disabled
 
 public:
-	__HOST__ __DEVICE__ ECUDA__CONSTEXPR unique_ptr() ECUDA__NOEXCEPT : current_ptr(NULL) {}
-	__HOST__ __DEVICE__ explicit unique_ptr( T* ptr ) ECUDA__NOEXCEPT : current_ptr(ptr) {}
-	__HOST__ __DEVICE__ unique_ptr( T* ptr, Deleter deleter ) ECUDA__NOEXCEPT : current_ptr(ptr), deleter(deleter) {}
+    __HOST__ __DEVICE__ ECUDA__CONSTEXPR unique_ptr() ECUDA__NOEXCEPT : current_ptr(NULL) {}
+    __HOST__ __DEVICE__ explicit unique_ptr(T* ptr) ECUDA__NOEXCEPT : current_ptr(ptr) {}
+    __HOST__ __DEVICE__ unique_ptr(T* ptr, Deleter deleter) ECUDA__NOEXCEPT
+      : current_ptr(ptr)
+      , deleter(deleter)
+    {
+    }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ unique_ptr( unique_ptr&& src ) ECUDA__NOEXCEPT : current_ptr(src.release()) {}
-	template<typename U,class E> __HOST__ __DEVICE__ unique_ptr( unique_ptr<U,E>&& src ) ECUDA__NOEXCEPT : current_ptr(src.release()), deleter_type(src.get_deleter()) {}
-	#endif
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ __DEVICE__ unique_ptr(unique_ptr&& src) ECUDA__NOEXCEPT : current_ptr(src.release()) {}
+    template<typename U, class E>
+    __HOST__ __DEVICE__ unique_ptr(unique_ptr<U, E>&& src) ECUDA__NOEXCEPT
+      : current_ptr(src.release())
+      , deleter_type(src.get_deleter())
+    {
+    }
+#endif
 
-	__HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
+    __HOST__ __DEVICE__ ~unique_ptr() { deleter(current_ptr); }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	//TODO: review this block
-	__HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr&& src ) ECUDA__NOEXCEPT {
-		current_ptr = std::move(src.current_ptr);
-		deleter = std::move(src.deleter);
-		return *this;
-	}
-	template<typename U,class E> __HOST__ __DEVICE__ inline unique_ptr& operator=( unique_ptr<U,E>&& src ) ECUDA__NOEXCEPT {
-		current_ptr = std::move(src.current_ptr);
-		deleter = std::move(src.deleter);
-		return *this;
-	}
-	#endif
+#ifdef ECUDA_CPP11_AVAILABLE
+    // TODO: review this block
+    __HOST__ __DEVICE__ inline unique_ptr& operator=(unique_ptr&& src) ECUDA__NOEXCEPT
+    {
+        current_ptr = std::move(src.current_ptr);
+        deleter = std::move(src.deleter);
+        return *this;
+    }
+    template<typename U, class E>
+    __HOST__ __DEVICE__ inline unique_ptr& operator=(unique_ptr<U, E>&& src) ECUDA__NOEXCEPT
+    {
+        current_ptr = std::move(src.current_ptr);
+        deleter = std::move(src.deleter);
+        return *this;
+    }
+#endif
 
-	//template<typename U>
-	//__HOST__ __DEVICE__ inline unique_ptr& operator=( U* ptr ) {
-	//	reset(release());
-	//	current_ptr = ptr;
-	//	return *this;
-	//}
+    // template<typename U>
+    //__HOST__ __DEVICE__ inline unique_ptr& operator=( U* ptr ) {
+    //	reset(release());
+    //	current_ptr = ptr;
+    //	return *this;
+    // }
 
-	__HOST__ __DEVICE__ inline pointer release() ECUDA__NOEXCEPT {
-		pointer old_ptr = current_ptr;
-		current_ptr = NULL;
-		return old_ptr;
-	}
+    __HOST__ __DEVICE__ inline pointer release() ECUDA__NOEXCEPT
+    {
+        pointer old_ptr = current_ptr;
+        current_ptr = NULL;
+        return old_ptr;
+    }
 
-	__HOST__ __DEVICE__ inline void reset( pointer ptr = pointer() ) ECUDA__NOEXCEPT {
-		pointer old_ptr = current_ptr;
-		current_ptr = ptr;
-		if( old_ptr ) get_deleter()( old_ptr );
-	}
+    __HOST__ __DEVICE__ inline void reset(pointer ptr = pointer()) ECUDA__NOEXCEPT
+    {
+        pointer old_ptr = current_ptr;
+        current_ptr = ptr;
+        if (old_ptr) get_deleter()(old_ptr);
+    }
 
-	__HOST__ __DEVICE__ inline void swap( unique_ptr& other ) ECUDA__NOEXCEPT { ::ecuda::swap( current_ptr, other.current_ptr ); }
+    __HOST__ __DEVICE__ inline void swap(unique_ptr& other) ECUDA__NOEXCEPT
+    {
+        ::ecuda::swap(current_ptr, other.current_ptr);
+    }
 
-	__HOST__ __DEVICE__ inline pointer get() const { return current_ptr; }
+    __HOST__ __DEVICE__ inline pointer get() const { return current_ptr; }
 
-	__HOST__ __DEVICE__ inline deleter_type& get_deleter() { return deleter; }
-	__HOST__ __DEVICE__ inline const deleter_type& get_deleter() const { return deleter; }
+    __HOST__ __DEVICE__ inline deleter_type& get_deleter() { return deleter; }
+    __HOST__ __DEVICE__ inline const deleter_type& get_deleter() const { return deleter; }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ explicit operator bool() const { return get() != NULL; }
-	#else
-	__HOST__ __DEVICE__ operator bool() const { return get() != NULL; }
-	#endif
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ __DEVICE__ explicit operator bool() const { return get() != NULL; }
+#else
+    __HOST__ __DEVICE__ operator bool() const { return get() != NULL; }
+#endif
 
-	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const ECUDA__NOEXCEPT { return *current_ptr; }
+    __DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator*() const ECUDA__NOEXCEPT
+    {
+        return *current_ptr;
+    }
 
-	__HOST__ __DEVICE__ inline pointer operator->() const ECUDA__NOEXCEPT { return current_ptr; }
+    __HOST__ __DEVICE__ inline pointer operator->() const ECUDA__NOEXCEPT { return current_ptr; }
 
-	__DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator[]( std::size_t i ) const {
-		//return *pointer_traits<pointer>().increment( current_ptr, i );
-		return *(current_ptr+i);
-	}
+    __DEVICE__ inline typename ecuda::add_lvalue_reference<T>::type operator[](std::size_t i) const
+    {
+        // return *pointer_traits<pointer>().increment( current_ptr, i );
+        return *(current_ptr + i);
+    }
 
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator==( const unique_ptr<T2,D2>& other ) const { return get() == other.get(); }
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator!=( const unique_ptr<T2,D2>& other ) const { return get() != other.get(); }
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator< ( const unique_ptr<T2,D2>& other ) const { return get() <  other.get(); }
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator> ( const unique_ptr<T2,D2>& other ) const { return get() >  other.get(); }
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator<=( const unique_ptr<T2,D2>& other ) const { return get() <= other.get(); }
-	template<typename T2,class D2> __HOST__ __DEVICE__ bool operator>=( const unique_ptr<T2,D2>& other ) const { return get() >= other.get(); }
-
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator==(const unique_ptr<T2, D2>& other) const
+    {
+        return get() == other.get();
+    }
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator!=(const unique_ptr<T2, D2>& other) const
+    {
+        return get() != other.get();
+    }
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator<(const unique_ptr<T2, D2>& other) const
+    {
+        return get() < other.get();
+    }
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator>(const unique_ptr<T2, D2>& other) const
+    {
+        return get() > other.get();
+    }
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator<=(const unique_ptr<T2, D2>& other) const
+    {
+        return get() <= other.get();
+    }
+    template<typename T2, class D2>
+    __HOST__ __DEVICE__ bool operator>=(const unique_ptr<T2, D2>& other) const
+    {
+        return get() >= other.get();
+    }
 };
 
 } // namespace ecuda

@@ -11,10 +11,10 @@
 
 #include <vector>
 
-#include "global.hpp"
 #include "algorithm.hpp"
 #include "allocators.hpp"
 #include "apiwrappers.hpp"
+#include "global.hpp"
 #include "memory.hpp"
 #include "type_traits.hpp"
 
@@ -25,7 +25,8 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
-template<typename T,class Alloc> class matrix_kernel_argument; // forward declaration
+template<typename T, class Alloc>
+class matrix_kernel_argument; // forward declaration
 
 } // namespace impl
 /// \endcond
@@ -93,565 +94,619 @@ template<typename T,class Alloc> class matrix_kernel_argument; // forward declar
 /// linearly in row-major fashion (i.e. each column of the first row is traversed, then each column of the
 /// next row, and so on...).
 ///
-template< typename T, class Alloc=device_pitch_allocator<T>, class P=shared_ptr<T> >
-class matrix : private model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ >
+template<typename T, class Alloc = device_pitch_allocator<T>, class P = shared_ptr<T>>
+class matrix : private model::device_contiguous_row_matrix<T, /*padded_ptr< T,*/ P /* >*/>
 {
 
 private:
-	typedef model::device_contiguous_row_matrix< T, /*padded_ptr< T,*/P/* >*/ > base_type;
+    typedef model::device_contiguous_row_matrix<T, /*padded_ptr< T,*/ P /* >*/> base_type;
 
 public:
-	typedef typename base_type::value_type      value_type;      //!< cell data type
-	typedef Alloc                               allocator_type;  //!< allocator type
-	typedef typename base_type::size_type       size_type;       //!< unsigned integral type
-	typedef typename base_type::difference_type difference_type; //!< signed integral type
-	typedef typename base_type::reference       reference;       //!< cell reference type
-	typedef typename base_type::const_reference const_reference; //!< cell const reference type
-	typedef typename base_type::pointer         pointer;         //!< cell pointer type
-	typedef typename make_const<pointer>::type  const_pointer;   //!< cell const pointer type
+    typedef typename base_type::value_type value_type;           //!< cell data type
+    typedef Alloc allocator_type;                                //!< allocator type
+    typedef typename base_type::size_type size_type;             //!< unsigned integral type
+    typedef typename base_type::difference_type difference_type; //!< signed integral type
+    typedef typename base_type::reference reference;             //!< cell reference type
+    typedef typename base_type::const_reference const_reference; //!< cell const reference type
+    typedef typename base_type::pointer pointer;                 //!< cell pointer type
+    typedef typename make_const<pointer>::type const_pointer;    //!< cell const pointer type
 
-	typedef typename base_type::row_type          row_type;          //!< matrix row container type
-	typedef typename base_type::column_type       column_type;       //!< matrix column container type
-	typedef typename base_type::const_row_type    const_row_type;    //!< matrix const row container type
-	typedef typename base_type::const_column_type const_column_type; //!< matrix const column container type
+    typedef typename base_type::row_type row_type;                   //!< matrix row container type
+    typedef typename base_type::column_type column_type;             //!< matrix column container type
+    typedef typename base_type::const_row_type const_row_type;       //!< matrix const row container type
+    typedef typename base_type::const_column_type const_column_type; //!< matrix const column container type
 
-	typedef typename base_type::iterator               iterator;               //!< iterator type
-	typedef typename base_type::const_iterator         const_iterator;         //!< const iterator type
-	typedef typename base_type::reverse_iterator       reverse_iterator;       //!< reverse iterator type
-	typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
+    typedef typename base_type::iterator iterator;                             //!< iterator type
+    typedef typename base_type::const_iterator const_iterator;                 //!< const iterator type
+    typedef typename base_type::reverse_iterator reverse_iterator;             //!< reverse iterator type
+    typedef typename base_type::const_reverse_iterator const_reverse_iterator; //!< const reverse iterator type
 
-	typedef       impl::matrix_kernel_argument<T,Alloc> kernel_argument;       //!< kernel argument type
-	typedef const impl::matrix_kernel_argument<T,Alloc> const_kernel_argument; //!< const kernel argument type
+    typedef impl::matrix_kernel_argument<T, Alloc> kernel_argument;             //!< kernel argument type
+    typedef const impl::matrix_kernel_argument<T, Alloc> const_kernel_argument; //!< const kernel argument type
 
 private:
-	allocator_type allocator;
-	//template<typename U,class Alloc2> class device_matrix;
-	template<typename U,class Alloc2,class Q> friend class matrix;
+    allocator_type allocator;
+    // template<typename U,class Alloc2> class device_matrix;
+    template<typename U, class Alloc2, class Q>
+    friend class matrix;
 
 protected:
+    ///
+    /// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+    ///
+    template<typename U>
+    __HOST__ __DEVICE__ matrix(const matrix<T, Alloc, U>& src, ecuda::true_type)
+      : base_type(unmanaged_cast(src.get_pointer()), src.number_rows(), src.number_columns())
+      , allocator(src.allocator)
+    {
+    }
 
-	///
-	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
-	///
-	template<typename U>
-	__HOST__ __DEVICE__ matrix( const matrix<T,Alloc,U>& src, ecuda::true_type ) : base_type( unmanaged_cast(src.get_pointer()), src.number_rows(), src.number_columns() ), allocator(src.allocator) {}
-
-	///
-	/// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
-	///
-	template<typename U>
-	__HOST__ __DEVICE__ matrix& shallow_assign( const matrix<T,Alloc,U>& other )
-	{
-		base_type::get_pointer() = unmanaged_cast(other.get_pointer());
-		allocator = other.allocator;
-		return *this;
-	}
+    ///
+    /// \brief Used by the kernel_argument subclass to create a shallow copy using an unmanaged pointer.
+    ///
+    template<typename U>
+    __HOST__ __DEVICE__ matrix& shallow_assign(const matrix<T, Alloc, U>& other)
+    {
+        base_type::get_pointer() = unmanaged_cast(other.get_pointer());
+        allocator = other.allocator;
+        return *this;
+    }
 
 private:
-	__HOST__ void init()
-	{
-		if( number_rows() && number_columns() ) {
-			// TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
-			//       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
-			//       as the original - the device_contiguous_row_matrix second template parameter which
-			//       enforces a padded_ptr of some type is the reason
-			typename Alloc::pointer p = get_allocator().allocate( number_columns(), number_rows() );
-			shared_ptr<value_type> sp( naked_cast<typename ecuda::add_pointer<value_type>::type>(p) );
-			padded_ptr< value_type, shared_ptr<value_type> > pp( sp, p.get_pitch() ); //, p.get_width(), sp );
-			base_type base( pp, number_rows(), number_columns() );
-			base_type::swap( base );
-		}
-	}
+    __HOST__ void init()
+    {
+        if (number_rows() && number_columns()) {
+            // TODO: this is unfortunate - have to get a padded_ptr from the allocator, unwrap it and
+            //       give it to shared_ptr, and then rewrap it in a padded_ptr with the same attributes
+            //       as the original - the device_contiguous_row_matrix second template parameter which
+            //       enforces a padded_ptr of some type is the reason
+            typename Alloc::pointer p = get_allocator().allocate(number_columns(), number_rows());
+            shared_ptr<value_type> sp(naked_cast<typename ecuda::add_pointer<value_type>::type>(p));
+            padded_ptr<value_type, shared_ptr<value_type>> pp(sp, p.get_pitch()); //, p.get_width(), sp );
+            base_type base(pp, number_rows(), number_columns());
+            base_type::swap(base);
+        }
+    }
 
 public:
-	///
-	/// \brief Constructs a matrix with dimensions numberRows x numberColumns filled with copies of elements with value value.
-	/// \param numberRows number of rows (default: 0)
-	/// \param numberColumns number of columns (default: 0)
-	/// \param value the value to initialize elements of the matrix with (default: T())
-	/// \param allocator allocator to use for all memory allocations of this container
-	///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
-	///
-	__HOST__ matrix( const size_type numberRows=0, const size_type numberColumns=0, const value_type& value = value_type(), const allocator_type& allocator = allocator_type() ) :
-		base_type( pointer(), numberRows, numberColumns ),
-		allocator(allocator)
-	{
-		init();
-		if( size() ) ecuda::fill( begin(), end(), value );
-	}
+    ///
+    /// \brief Constructs a matrix with dimensions numberRows x numberColumns filled with copies of elements with value
+    /// value.
+    /// \param numberRows number of rows (default: 0)
+    /// \param numberColumns number of columns (default: 0)
+    /// \param value the value to initialize elements of the matrix with (default: T())
+    /// \param allocator allocator to use for all memory allocations of this container
+    ///        (does not normally need to be specified, by default the internal ecuda pitched memory allocator)
+    ///
+    __HOST__ matrix(const size_type numberRows = 0,
+                    const size_type numberColumns = 0,
+                    const value_type& value = value_type(),
+                    const allocator_type& allocator = allocator_type())
+      : base_type(pointer(), numberRows, numberColumns)
+      , allocator(allocator)
+    {
+        init();
+        if (size()) ecuda::fill(begin(), end(), value);
+    }
 
-	///
-	/// \brief Copy constructor.
-	///
-	/// Constructs the matrix with a copy of the contents of src.
-	///
-	/// \param src Another matrix object of the same type, whose contents are copied.
-	///
-	__HOST__ matrix( const matrix& src ) :
-		base_type( pointer(), src.number_rows(), src.number_columns() ),
-		allocator(src.get_allocator())
-// TODO: this is broken due to some complaints from stdlib about making an iterator to a void pointer
-//		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
-	{
-		init();
-		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
-	}
+    ///
+    /// \brief Copy constructor.
+    ///
+    /// Constructs the matrix with a copy of the contents of src.
+    ///
+    /// \param src Another matrix object of the same type, whose contents are copied.
+    ///
+    __HOST__ matrix(const matrix& src)
+      : base_type(pointer(), src.number_rows(), src.number_columns())
+      , allocator(src.get_allocator())
+    // TODO: this is broken due to some complaints from stdlib about making an iterator to a void pointer
+    //		allocator(std::allocator_traits<allocator_type>::select_on_container_copy_construction(src.get_allocator()))
+    {
+        init();
+        if (size()) ecuda::copy(src.begin(), src.end(), begin());
+    }
 
-	///
-	/// \brief Copy constructor.
-	///
-	/// Constructs the matrix with a copy of the contents of src.
-	///
-	/// \param src Another matrix object of the same type, whose contents are copied.
-	/// \param alloc Allocator to use for all memory allocations of this container.
-	///
-	__HOST__ matrix( const matrix& src, const allocator_type& alloc ) :
-		base_type( pointer(), src.number_rows(), src.number_columns() ),
-		allocator(alloc)
-	{
-		init();
-		if( size() ) ecuda::copy( src.begin(), src.end(), begin() );
-	}
+    ///
+    /// \brief Copy constructor.
+    ///
+    /// Constructs the matrix with a copy of the contents of src.
+    ///
+    /// \param src Another matrix object of the same type, whose contents are copied.
+    /// \param alloc Allocator to use for all memory allocations of this container.
+    ///
+    __HOST__ matrix(const matrix& src, const allocator_type& alloc)
+      : base_type(pointer(), src.number_rows(), src.number_columns())
+      , allocator(alloc)
+    {
+        init();
+        if (size()) ecuda::copy(src.begin(), src.end(), begin());
+    }
 
-	__HOST__ matrix& operator=( const matrix& other )
-	{
-		allocator = other.allocator;
-		if( number_rows() != other.number_rows() || number_columns() != other.number_columns() )
-			resize( other.number_rows(), other.number_columns() );
-		if( size() ) ecuda::copy( other.begin(), other.end(), begin() );
-		return *this;
-	}
+    __HOST__ matrix& operator=(const matrix& other)
+    {
+        allocator = other.allocator;
+        if (number_rows() != other.number_rows() || number_columns() != other.number_columns())
+            resize(other.number_rows(), other.number_columns());
+        if (size()) ecuda::copy(other.begin(), other.end(), begin());
+        return *this;
+    }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	///
-	/// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
-	///
-	/// This operator is only available if the compiler is configured to allow C++11.
-	///
-	/// \param src another container to be used as source to initialize the elements of the container with
-	///
-	__HOST__ matrix( matrix&& src ) : base_type() { swap(src); }
+#ifdef ECUDA_CPP11_AVAILABLE
+    ///
+    /// \brief Move constructor. Constructs the container with the contents of the other using move semantics.
+    ///
+    /// This operator is only available if the compiler is configured to allow C++11.
+    ///
+    /// \param src another container to be used as source to initialize the elements of the container with
+    ///
+    __HOST__ matrix(matrix&& src)
+      : base_type()
+    {
+        swap(src);
+    }
 
-	__HOST__ matrix& operator=( matrix&& src )
-	{
-		swap(src);
-		return *this;
-	}
-	#endif
+    __HOST__ matrix& operator=(matrix&& src)
+    {
+        swap(src);
+        return *this;
+    }
+#endif
 
-	///
-	/// \brief Returns an iterator to the first element of the container.
-	///
-	/// If the container is empty, the returned iterator will be equal to end().
-	///
-	/// \returns Iterator to the first element.
-	///
-	__HOST__ __DEVICE__ inline iterator begin() ECUDA__NOEXCEPT { return base_type::begin(); }
+    ///
+    /// \brief Returns an iterator to the first element of the container.
+    ///
+    /// If the container is empty, the returned iterator will be equal to end().
+    ///
+    /// \returns Iterator to the first element.
+    ///
+    __HOST__ __DEVICE__ inline iterator begin() ECUDA__NOEXCEPT { return base_type::begin(); }
 
-	///
-	/// \brief Returns an iterator to the element following the last element of the container.
-	///
-	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
-	///
-	/// \returns Iterator to the element following the last element.
-	///
-	__HOST__ __DEVICE__ inline iterator end() ECUDA__NOEXCEPT { return base_type::end(); }
+    ///
+    /// \brief Returns an iterator to the element following the last element of the container.
+    ///
+    /// The element acts as a placeholder; attempting to access it results in undefined behaviour.
+    ///
+    /// \returns Iterator to the element following the last element.
+    ///
+    __HOST__ __DEVICE__ inline iterator end() ECUDA__NOEXCEPT { return base_type::end(); }
 
-	///
-	/// \brief Returns an iterator to the first element of the container.
-	///
-	/// If the container is empty, the returned iterator will be equal to end().
-	///
-	/// \returns Iterator to the first element.
-	///
-	__HOST__ __DEVICE__ inline const_iterator begin() const ECUDA__NOEXCEPT { return base_type::begin(); }
+    ///
+    /// \brief Returns an iterator to the first element of the container.
+    ///
+    /// If the container is empty, the returned iterator will be equal to end().
+    ///
+    /// \returns Iterator to the first element.
+    ///
+    __HOST__ __DEVICE__ inline const_iterator begin() const ECUDA__NOEXCEPT { return base_type::begin(); }
 
-	///
-	/// \brief Returns an iterator to the element following the last element of the container.
-	///
-	/// The element acts as a placeholder; attempting to access it results in undefined behaviour.
-	///
-	/// \returns Iterator to the element following the last element.
-	///
-	__HOST__ __DEVICE__ inline const_iterator end() const ECUDA__NOEXCEPT { return base_type::end(); }
+    ///
+    /// \brief Returns an iterator to the element following the last element of the container.
+    ///
+    /// The element acts as a placeholder; attempting to access it results in undefined behaviour.
+    ///
+    /// \returns Iterator to the element following the last element.
+    ///
+    __HOST__ __DEVICE__ inline const_iterator end() const ECUDA__NOEXCEPT { return base_type::end(); }
 
-	///
-	/// \brief Returns a reverse iterator to the first element of the reversed container.
-	///
-	/// It corresponds to the last element of the non-reversed container.
-	///
-	/// \returns Reverse iterator to the first element.
-	///
-	__HOST__ __DEVICE__ inline reverse_iterator rbegin() ECUDA__NOEXCEPT { return base_type::rbegin(); }
+    ///
+    /// \brief Returns a reverse iterator to the first element of the reversed container.
+    ///
+    /// It corresponds to the last element of the non-reversed container.
+    ///
+    /// \returns Reverse iterator to the first element.
+    ///
+    __HOST__ __DEVICE__ inline reverse_iterator rbegin() ECUDA__NOEXCEPT { return base_type::rbegin(); }
 
-	///
-	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
-	///
-	/// It corresponds to the element preceding the first element of the non-reversed container. This element
-	/// acts as a placeholder, attempting to access it results in undefined behaviour.
-	///
-	/// \returns Reverse iterator to the element following the last element.
-	///
-	__HOST__ __DEVICE__ inline reverse_iterator rend() ECUDA__NOEXCEPT { return base_type::rend(); }
+    ///
+    /// \brief Returns a reverse iterator to the element following the last element of the reversed container.
+    ///
+    /// It corresponds to the element preceding the first element of the non-reversed container. This element
+    /// acts as a placeholder, attempting to access it results in undefined behaviour.
+    ///
+    /// \returns Reverse iterator to the element following the last element.
+    ///
+    __HOST__ __DEVICE__ inline reverse_iterator rend() ECUDA__NOEXCEPT { return base_type::rend(); }
 
-	///
-	/// \brief Returns a reverse iterator to the first element of the reversed container.
-	///
-	/// It corresponds to the last element of the non-reversed container.
-	///
-	/// \returns Reverse iterator to the first element.
-	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const ECUDA__NOEXCEPT { return base_type::rbegin(); }
+    ///
+    /// \brief Returns a reverse iterator to the first element of the reversed container.
+    ///
+    /// It corresponds to the last element of the non-reversed container.
+    ///
+    /// \returns Reverse iterator to the first element.
+    ///
+    __HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const ECUDA__NOEXCEPT { return base_type::rbegin(); }
 
-	///
-	/// \brief Returns a reverse iterator to the element following the last element of the reversed container.
-	///
-	/// It corresponds to the element preceding the first element of the non-reversed container. This element
-	/// acts as a placeholder, attempting to access it results in undefined behaviour.
-	///
-	/// \returns Reverse iterator to the element following the last element.
-	///
-	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return base_type::rend(); }
+    ///
+    /// \brief Returns a reverse iterator to the element following the last element of the reversed container.
+    ///
+    /// It corresponds to the element preceding the first element of the non-reversed container. This element
+    /// acts as a placeholder, attempting to access it results in undefined behaviour.
+    ///
+    /// \returns Reverse iterator to the element following the last element.
+    ///
+    __HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT { return base_type::rend(); }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_iterator         cbegin()  const ECUDA__NOEXCEPT { return base_type::cbegin();  }
-	__HOST__ __DEVICE__ inline const_iterator         cend()    const ECUDA__NOEXCEPT { return base_type::cend();    }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin()       ECUDA__NOEXCEPT { return base_type::crbegin(); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend()         ECUDA__NOEXCEPT { return base_type::crend();   }
-	#endif
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ __DEVICE__ inline const_iterator cbegin() const ECUDA__NOEXCEPT { return base_type::cbegin(); }
+    __HOST__ __DEVICE__ inline const_iterator cend() const ECUDA__NOEXCEPT { return base_type::cend(); }
+    __HOST__ __DEVICE__ inline const_reverse_iterator crbegin() ECUDA__NOEXCEPT { return base_type::crbegin(); }
+    __HOST__ __DEVICE__ inline const_reverse_iterator crend() ECUDA__NOEXCEPT { return base_type::crend(); }
+#endif
 
-	///
-	/// \brief Returns the number of elements in the container (numberRows*numberColumns).
-	///
-	/// \returns The number of elements in the container.
-	///
-	__HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return base_type::size(); }
+    ///
+    /// \brief Returns the number of elements in the container (numberRows*numberColumns).
+    ///
+    /// \returns The number of elements in the container.
+    ///
+    __HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return base_type::size(); }
 
-	///
-	/// \brief Returns the maximum number of elements the container is able to hold due to system
-	///        or library implementation limitations.
-	///
-	/// \returns Maximum number of elements.
-	///
-	__HOST__ __DEVICE__ ECUDA__CONSTEXPR inline size_type max_size() const ECUDA__NOEXCEPT { return std::numeric_limits<size_type>::max(); }
+    ///
+    /// \brief Returns the maximum number of elements the container is able to hold due to system
+    ///        or library implementation limitations.
+    ///
+    /// \returns Maximum number of elements.
+    ///
+    __HOST__ __DEVICE__ ECUDA__CONSTEXPR inline size_type max_size() const ECUDA__NOEXCEPT
+    {
+        return std::numeric_limits<size_type>::max();
+    }
 
-	///
-	/// \brief Returns the number of rows in the container.
-	///
-	/// \returns The number of rows in the container.
-	///
-	__HOST__ __DEVICE__ inline size_type number_rows() const ECUDA__NOEXCEPT { return base_type::number_rows(); }
+    ///
+    /// \brief Returns the number of rows in the container.
+    ///
+    /// \returns The number of rows in the container.
+    ///
+    __HOST__ __DEVICE__ inline size_type number_rows() const ECUDA__NOEXCEPT { return base_type::number_rows(); }
 
-	///
-	/// \brief Returns the number of columns in the container.
-	///
-	/// \returns The number of columns in the container.
-	///
-	__HOST__ __DEVICE__ inline size_type number_columns() const ECUDA__NOEXCEPT { return base_type::number_columns(); }
+    ///
+    /// \brief Returns the number of columns in the container.
+    ///
+    /// \returns The number of columns in the container.
+    ///
+    __HOST__ __DEVICE__ inline size_type number_columns() const ECUDA__NOEXCEPT { return base_type::number_columns(); }
 
-	///
-	/// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns.
-	///
-	/// If the current size is greater in either or both dimensions, the existing elements are truncated.
-	///
-	/// \param newNumberRows new number of rows
-	/// \param newNumberColumns new number of columns
-	/// \param value the value to initialize the new elements with (default constructed if not specified)
-	///
-	__HOST__ void resize( const size_type newNumberRows, const size_type newNumberColumns, const value_type& value = value_type() )
-	{
-		if( number_rows() == newNumberRows && number_columns() == newNumberColumns ) return; // no resize needed
-		// create new model
-		matrix newMatrix( newNumberRows, newNumberColumns, value, get_allocator() );
-		for( size_type i = 0; i < std::min(number_rows(),newNumberRows); ++i ) {
-			const_row_type oldRow = get_row(i);
-			row_type newRow = newMatrix.get_row(i);
-			ecuda::copy( oldRow.begin(), oldRow.begin()+std::min(number_columns(),newNumberColumns), newRow.begin() );
-		}
-		swap( newMatrix );
-	}
+    ///
+    /// \brief Resizes the container to have dimensions newNumberRows x newNumberColumns.
+    ///
+    /// If the current size is greater in either or both dimensions, the existing elements are truncated.
+    ///
+    /// \param newNumberRows new number of rows
+    /// \param newNumberColumns new number of columns
+    /// \param value the value to initialize the new elements with (default constructed if not specified)
+    ///
+    __HOST__ void resize(const size_type newNumberRows,
+                         const size_type newNumberColumns,
+                         const value_type& value = value_type())
+    {
+        if (number_rows() == newNumberRows && number_columns() == newNumberColumns) return; // no resize needed
+        // create new model
+        matrix newMatrix(newNumberRows, newNumberColumns, value, get_allocator());
+        for (size_type i = 0; i < std::min(number_rows(), newNumberRows); ++i) {
+            const_row_type oldRow = get_row(i);
+            row_type newRow = newMatrix.get_row(i);
+            ecuda::copy(oldRow.begin(), oldRow.begin() + std::min(number_columns(), newNumberColumns), newRow.begin());
+        }
+        swap(newMatrix);
+    }
 
-	///
-	/// \brief Checks if the container has no elements.
-	///
-	/// \returns true if the container is empty, false otherwise.
-	///
-	__HOST__ __DEVICE__ inline bool empty() const ECUDA__NOEXCEPT { return !number_rows() || !number_columns(); }
+    ///
+    /// \brief Checks if the container has no elements.
+    ///
+    /// \returns true if the container is empty, false otherwise.
+    ///
+    __HOST__ __DEVICE__ inline bool empty() const ECUDA__NOEXCEPT { return !number_rows() || !number_columns(); }
 
-	///
-	/// \brief Gets a view object of a single row of the matrix.
-	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
-	/// the underlying data.
-	///
-	/// \param rowIndex of the row to isolate
-	/// \returns view object for the specified row
-	///
-	__HOST__ __DEVICE__ inline row_type get_row( const size_type rowIndex ) { return base_type::get_row(rowIndex); }
+    ///
+    /// \brief Gets a view object of a single row of the matrix.
+    ///
+    /// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+    /// holds a pointer to the start of the row and provides methods to traverse, access, and alter
+    /// the underlying data.
+    ///
+    /// \param rowIndex of the row to isolate
+    /// \returns view object for the specified row
+    ///
+    __HOST__ __DEVICE__ inline row_type get_row(const size_type rowIndex) { return base_type::get_row(rowIndex); }
 
-	///
-	/// \brief Gets a view object of a single row of the matrix.
-	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
-	/// allow any alterations to the underlying data.
-	///
-	/// \param rowIndex of the row to isolate
-	/// \returns view object for the specified row
-	///
-	__HOST__ __DEVICE__ inline const_row_type get_row( const size_type rowIndex ) const { return base_type::get_row(rowIndex); }
+    ///
+    /// \brief Gets a view object of a single row of the matrix.
+    ///
+    /// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+    /// holds a pointer to the start of the row and provides methods to traverse and access the
+    /// underlying data.  In addition, the constness of this matrix is enforced so the view will not
+    /// allow any alterations to the underlying data.
+    ///
+    /// \param rowIndex of the row to isolate
+    /// \returns view object for the specified row
+    ///
+    __HOST__ __DEVICE__ inline const_row_type get_row(const size_type rowIndex) const
+    {
+        return base_type::get_row(rowIndex);
+    }
 
-	///
-	/// \brief Gets a view object of a single column of the matrix.
-	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse, access, and alter
-	/// the underlying data.
-	///
-	/// \param columnIndex index of the column to isolate
-	/// \returns view object for the specified column
-	///
-	__HOST__ __DEVICE__ inline column_type get_column( const size_type columnIndex ) { return base_type::get_column(columnIndex); }
+    ///
+    /// \brief Gets a view object of a single column of the matrix.
+    ///
+    /// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+    /// holds a pointer to the start of the row and provides methods to traverse, access, and alter
+    /// the underlying data.
+    ///
+    /// \param columnIndex index of the column to isolate
+    /// \returns view object for the specified column
+    ///
+    __HOST__ __DEVICE__ inline column_type get_column(const size_type columnIndex)
+    {
+        return base_type::get_column(columnIndex);
+    }
 
-	///
-	/// \brief Gets a view object of a single column of the matrix.
-	///
-	/// The view object is guaranteed to perform no memory allocations or deallocation, and merely
-	/// holds a pointer to the start of the row and provides methods to traverse and access the
-	/// underlying data.  In addition, the constness of this matrix is enforced so the view will not
-	/// allow any alterations to the underlying data.
-	///
-	/// \param columnIndex index of the column to isolate
-	/// \returns view object for the specified column
-	///
-	__HOST__ __DEVICE__ inline const_column_type get_column( const size_type columnIndex ) const { return base_type::get_column(columnIndex); }
+    ///
+    /// \brief Gets a view object of a single column of the matrix.
+    ///
+    /// The view object is guaranteed to perform no memory allocations or deallocation, and merely
+    /// holds a pointer to the start of the row and provides methods to traverse and access the
+    /// underlying data.  In addition, the constness of this matrix is enforced so the view will not
+    /// allow any alterations to the underlying data.
+    ///
+    /// \param columnIndex index of the column to isolate
+    /// \returns view object for the specified column
+    ///
+    __HOST__ __DEVICE__ inline const_column_type get_column(const size_type columnIndex) const
+    {
+        return base_type::get_column(columnIndex);
+    }
 
-	///
-	/// \brief Returns a reference to the element at specified row and column index, with bounds checking.
-	///
-	/// If the row and column are not within the range of the container, the current kernel will exit and
-	/// cudaGetLastError will return cudaErrorUnknown.
-	///
-	/// \param rowIndex position of the row to return
-	/// \param columnIndex position of the column to return
-	/// \returns Reference to the requested element.
-	///
-	__DEVICE__ inline reference at( size_type rowIndex, size_type columnIndex ) { return base_type::at(rowIndex,columnIndex); }
+    ///
+    /// \brief Returns a reference to the element at specified row and column index, with bounds checking.
+    ///
+    /// If the row and column are not within the range of the container, the current kernel will exit and
+    /// cudaGetLastError will return cudaErrorUnknown.
+    ///
+    /// \param rowIndex position of the row to return
+    /// \param columnIndex position of the column to return
+    /// \returns Reference to the requested element.
+    ///
+    __DEVICE__ inline reference at(size_type rowIndex, size_type columnIndex)
+    {
+        return base_type::at(rowIndex, columnIndex);
+    }
 
-	///
-	/// \brief Returns a constant reference to the element at specified row and column index, with bounds checking.
-	///
-	/// If the row and column are not within the range of the container, the current kernel will exit and
-	/// cudaGetLastError will return cudaErrorUnknown.
-	///
-	/// \param rowIndex position of the row to return
-	/// \param columnIndex position of the column to return
-	/// \returns Reference to the requested element.
-	///
-	__DEVICE__ inline const_reference at( size_type rowIndex, size_type columnIndex ) const { return base_type::at(rowIndex,columnIndex); }
+    ///
+    /// \brief Returns a constant reference to the element at specified row and column index, with bounds checking.
+    ///
+    /// If the row and column are not within the range of the container, the current kernel will exit and
+    /// cudaGetLastError will return cudaErrorUnknown.
+    ///
+    /// \param rowIndex position of the row to return
+    /// \param columnIndex position of the column to return
+    /// \returns Reference to the requested element.
+    ///
+    __DEVICE__ inline const_reference at(size_type rowIndex, size_type columnIndex) const
+    {
+        return base_type::at(rowIndex, columnIndex);
+    }
 
-	///
-	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
-	///
-	/// This is identical to at() but no bounds checking is performed.
-	///
-	/// \param rowIndex row of the element to return
-	/// \param columnIndex column of the element to return
-	/// \returns Reference to the requested element.
-	///
-	__DEVICE__ inline reference operator()( const size_type rowIndex, const size_type columnIndex ) { return base_type::operator()(rowIndex,columnIndex); }
+    ///
+    /// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+    ///
+    /// This is identical to at() but no bounds checking is performed.
+    ///
+    /// \param rowIndex row of the element to return
+    /// \param columnIndex column of the element to return
+    /// \returns Reference to the requested element.
+    ///
+    __DEVICE__ inline reference operator()(const size_type rowIndex, const size_type columnIndex)
+    {
+        return base_type::operator()(rowIndex, columnIndex);
+    }
 
-	///
-	/// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
-	///
-	/// This is identical to at() but no bounds checking is performed.
-	///
-	/// \param rowIndex row of the element to return
-	/// \param columnIndex column of the element to return
-	/// \returns Reference to the requested element.
-	///
-	__DEVICE__ inline const_reference operator()( const size_type rowIndex, const size_type columnIndex ) const { return base_type::operator()(rowIndex,columnIndex); }
+    ///
+    /// \brief Returns a reference to the element at specified location index. No bounds checking is performed.
+    ///
+    /// This is identical to at() but no bounds checking is performed.
+    ///
+    /// \param rowIndex row of the element to return
+    /// \param columnIndex column of the element to return
+    /// \returns Reference to the requested element.
+    ///
+    __DEVICE__ inline const_reference operator()(const size_type rowIndex, const size_type columnIndex) const
+    {
+        return base_type::operator()(rowIndex, columnIndex);
+    }
 
-	///
-	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
-	/// \param rowIndex index of the row to isolate
-	/// \returns view object for the specified row
-	///
-	__HOST__ __DEVICE__ inline row_type operator[]( const size_type rowIndex ) { return get_row(rowIndex); }
+    ///
+    /// \brief operator[](rowIndex) alias for get_row(rowIndex)
+    /// \param rowIndex index of the row to isolate
+    /// \returns view object for the specified row
+    ///
+    __HOST__ __DEVICE__ inline row_type operator[](const size_type rowIndex) { return get_row(rowIndex); }
 
-	///
-	/// \brief operator[](rowIndex) alias for get_row(rowIndex)
-	/// \param rowIndex index of the row to isolate
-	/// \returns view object for the specified row
-	///
-	__HOST__ __DEVICE__ inline const_row_type operator[]( const size_type rowIndex ) const { return get_row(rowIndex); }
+    ///
+    /// \brief operator[](rowIndex) alias for get_row(rowIndex)
+    /// \param rowIndex index of the row to isolate
+    /// \returns view object for the specified row
+    ///
+    __HOST__ __DEVICE__ inline const_row_type operator[](const size_type rowIndex) const { return get_row(rowIndex); }
 
-	///
-	/// \brief Returns a reference to the first element in the container.
-	///
-	/// This is effectively the element at position (0,0). Calling front on an empty container is undefined.
-	///
-	/// \returns Reference to the first element.
-	///
-	__DEVICE__ inline reference front() { return base_type::at(0,0); }
+    ///
+    /// \brief Returns a reference to the first element in the container.
+    ///
+    /// This is effectively the element at position (0,0). Calling front on an empty container is undefined.
+    ///
+    /// \returns Reference to the first element.
+    ///
+    __DEVICE__ inline reference front() { return base_type::at(0, 0); }
 
-	///
-	/// \brief Returns a reference to the last element in the container.
-	///
-	/// This is effectively the element at position (numberRows-1,numberColumns-1). Calling back on an empty container is undefined.
-	///
-	/// \returns Reference to the last element.
-	///
-	__DEVICE__ inline reference back() { return base_type::at(number_rows()-1,number_columns()-1); }
+    ///
+    /// \brief Returns a reference to the last element in the container.
+    ///
+    /// This is effectively the element at position (numberRows-1,numberColumns-1). Calling back on an empty container
+    /// is undefined.
+    ///
+    /// \returns Reference to the last element.
+    ///
+    __DEVICE__ inline reference back() { return base_type::at(number_rows() - 1, number_columns() - 1); }
 
-	///
-	/// \brief Returns a reference to the first element in the container.
-	///
-	/// This is effectively the element at position (0,0). Calling front on an empty container is undefined.
-	///
-	/// \returns Reference to the first element.
-	///
-	__DEVICE__ inline const_reference front() const { return base_type::at(0,0); }
+    ///
+    /// \brief Returns a reference to the first element in the container.
+    ///
+    /// This is effectively the element at position (0,0). Calling front on an empty container is undefined.
+    ///
+    /// \returns Reference to the first element.
+    ///
+    __DEVICE__ inline const_reference front() const { return base_type::at(0, 0); }
 
-	///
-	/// \brief Returns a reference to the last element in the container.
-	///
-	/// This is effectively the element at position (numberRows-1,numberColumns-1). Calling back on an empty container is undefined.
-	///
-	/// \returns Reference to the last element.
-	///
-	__DEVICE__ inline const_reference back() const { return base_type::at(number_rows()-1,number_columns()-1); }
+    ///
+    /// \brief Returns a reference to the last element in the container.
+    ///
+    /// This is effectively the element at position (numberRows-1,numberColumns-1). Calling back on an empty container
+    /// is undefined.
+    ///
+    /// \returns Reference to the last element.
+    ///
+    __DEVICE__ inline const_reference back() const { return base_type::at(number_rows() - 1, number_columns() - 1); }
 
-	///
-	/// \brief Returns pointer to the underlying array serving as element storage.
-	///
-	/// The pointer is such that range [data(),data()+size()) is always a valid
-	/// range, even if the container is empty.
-	///
-	/// \returns Pointer to the underlying element storage.
-	///
-	__HOST__ __DEVICE__ inline pointer data() ECUDA__NOEXCEPT { return base_type::get_pointer(); }
+    ///
+    /// \brief Returns pointer to the underlying array serving as element storage.
+    ///
+    /// The pointer is such that range [data(),data()+size()) is always a valid
+    /// range, even if the container is empty.
+    ///
+    /// \returns Pointer to the underlying element storage.
+    ///
+    __HOST__ __DEVICE__ inline pointer data() ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
-	///
-	/// \brief Returns pointer to the underlying array serving as element storage.
-	///
-	/// The pointer is such that range [data(),data()+size()) is always a valid
-	/// range, even if the container is empty.
-	///
-	/// \returns Pointer to the underlying element storage.
-	///
-	__HOST__ __DEVICE__ inline const_pointer data() const ECUDA__NOEXCEPT { return base_type::get_pointer(); }
+    ///
+    /// \brief Returns pointer to the underlying array serving as element storage.
+    ///
+    /// The pointer is such that range [data(),data()+size()) is always a valid
+    /// range, even if the container is empty.
+    ///
+    /// \returns Pointer to the underlying element storage.
+    ///
+    __HOST__ __DEVICE__ inline const_pointer data() const ECUDA__NOEXCEPT { return base_type::get_pointer(); }
 
-	///
-	/// \brief Assigns a given value to all elements in the container.
-	///
-	/// \param value the value to assign to the elements
-	///
-	__HOST__ __DEVICE__ inline void fill( const value_type& value ) { if( !empty() ) ecuda::fill( begin(), end(), value ); }
+    ///
+    /// \brief Assigns a given value to all elements in the container.
+    ///
+    /// \param value the value to assign to the elements
+    ///
+    __HOST__ __DEVICE__ inline void fill(const value_type& value)
+    {
+        if (!empty()) ecuda::fill(begin(), end(), value);
+    }
 
-	///
-	/// \brief Exchanges the contents of the container with those of the other.
-	///
-	/// Does not invoke any move, copy, or swap operations on individual elements. All iterators
-	/// and references remain valid. The past-the-end iterator is invalidated.
-	///
-	/// Although this can be called from both the host and device, a call from the
-	/// device only swaps the contents of the containers in the calling thread only.
-	///
-	/// \param other container to exchange the contents with
-	///
-	__HOST__ __DEVICE__ inline void swap( matrix& other ) { base_type::swap( other ); }
+    ///
+    /// \brief Exchanges the contents of the container with those of the other.
+    ///
+    /// Does not invoke any move, copy, or swap operations on individual elements. All iterators
+    /// and references remain valid. The past-the-end iterator is invalidated.
+    ///
+    /// Although this can be called from both the host and device, a call from the
+    /// device only swaps the contents of the containers in the calling thread only.
+    ///
+    /// \param other container to exchange the contents with
+    ///
+    __HOST__ __DEVICE__ inline void swap(matrix& other) { base_type::swap(other); }
 
-	///
-	/// \brief Returns the allocator associated with the container.
-	/// \returns The associated allocator.
-	///
-	__HOST__ inline allocator_type get_allocator() const { return allocator; }
+    ///
+    /// \brief Returns the allocator associated with the container.
+    /// \returns The associated allocator.
+    ///
+    __HOST__ inline allocator_type get_allocator() const { return allocator; }
 
-	///
-	/// \brief Checks if the contents of two matrices are equal.
-	///
-	/// That is, whether number_rows() == other.number_rows(), number_columns() == other.number_columns()
-	/// and each element in the this matrix compares equal to the other matrix at the same position.
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents are equal, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator==( const matrix<value_type,Alloc2>& other ) const
-	{
-		return ecuda::equal( begin(), end(), other.begin() );
-	}
+    ///
+    /// \brief Checks if the contents of two matrices are equal.
+    ///
+    /// That is, whether number_rows() == other.number_rows(), number_columns() == other.number_columns()
+    /// and each element in the this matrix compares equal to the other matrix at the same position.
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents are equal, false otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator==(const matrix<value_type, Alloc2>& other) const
+    {
+        return ecuda::equal(begin(), end(), other.begin());
+    }
 
-	///
-	/// \brief Checks if the contents of two matrices are not equal.
-	///
-	/// That is, whether number_rows() != other.number_rows(), number_columns() != other.number_columns(),
-	/// or whether any element in the this matrix does not compare equal to the element in the other matrix
-	/// at the same position.
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents are not equal, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator!=( const matrix<value_type,Alloc2>& other ) const { return !operator==(other); }
+    ///
+    /// \brief Checks if the contents of two matrices are not equal.
+    ///
+    /// That is, whether number_rows() != other.number_rows(), number_columns() != other.number_columns(),
+    /// or whether any element in the this matrix does not compare equal to the element in the other matrix
+    /// at the same position.
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents are not equal, false otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator!=(const matrix<value_type, Alloc2>& other) const
+    {
+        return !operator==(other);
+    }
 
-	///
-	/// \brief Compares the contents of two matrices lexicographically.
-	///
-	/// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
-	/// is compared, then each column of the next row, and so on...).
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents of this matrix are lexicographically less than the other matrix, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator<( const matrix<value_type,Alloc2>& other ) const
-	{
-		return ecuda::lexicographical_compare( begin(), end(), other.begin(), other.end() );
-	}
+    ///
+    /// \brief Compares the contents of two matrices lexicographically.
+    ///
+    /// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
+    /// is compared, then each column of the next row, and so on...).
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents of this matrix are lexicographically less than the other matrix, false otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator<(const matrix<value_type, Alloc2>& other) const
+    {
+        return ecuda::lexicographical_compare(begin(), end(), other.begin(), other.end());
+    }
 
-	///
-	/// \brief Compares the contents of two matrices lexicographically.
-	///
-	/// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
-	/// is compared, then each column of the next row, and so on...).
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents of this matrix are lexicographically greater than the other matrix, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator>( const matrix<value_type,Alloc2>& other ) const
-	{
-		return ecuda::lexicographical_compare( other.begin(), other.end(), begin(), end() );
-	}
+    ///
+    /// \brief Compares the contents of two matrices lexicographically.
+    ///
+    /// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
+    /// is compared, then each column of the next row, and so on...).
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents of this matrix are lexicographically greater than the other matrix, false
+    /// otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator>(const matrix<value_type, Alloc2>& other) const
+    {
+        return ecuda::lexicographical_compare(other.begin(), other.end(), begin(), end());
+    }
 
-	///
-	/// \brief Compares the contents of two matrices lexicographically.
-	///
-	/// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
-	/// is compared, then each column of the next row, and so on...).
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents of this matrix are lexicographically less than or equal to the other matrix, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator<=( const matrix<value_type,Alloc2>& other ) const { return !operator>(other); }
+    ///
+    /// \brief Compares the contents of two matrices lexicographically.
+    ///
+    /// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
+    /// is compared, then each column of the next row, and so on...).
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents of this matrix are lexicographically less than or equal to the other matrix, false
+    /// otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator<=(const matrix<value_type, Alloc2>& other) const
+    {
+        return !operator>(other);
+    }
 
-	///
-	/// \brief Compares the contents of two matrices lexicographically.
-	///
-	/// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
-	/// is compared, then each column of the next row, and so on...).
-	///
-	/// \param other container to compare contents with
-	/// \returns true if the contents of this matrix are lexicographically greater than or equal to the other matrix, false otherwise
-	///
-	template<class Alloc2>
-	__HOST__ __DEVICE__ inline bool operator>=( const matrix<value_type,Alloc2>& other ) const { return !operator<(other); }
-
+    ///
+    /// \brief Compares the contents of two matrices lexicographically.
+    ///
+    /// The order that elements are compared corresponds to their linearized layout (i.e. each column of the first row
+    /// is compared, then each column of the next row, and so on...).
+    ///
+    /// \param other container to compare contents with
+    /// \returns true if the contents of this matrix are lexicographically greater than or equal to the other matrix,
+    /// false otherwise
+    ///
+    template<class Alloc2>
+    __HOST__ __DEVICE__ inline bool operator>=(const matrix<value_type, Alloc2>& other) const
+    {
+        return !operator<(other);
+    }
 };
 
 /// \cond DEVELOPER_DOCUMENTATION
@@ -666,36 +721,44 @@ namespace impl {
 /// unnecessary data that will be useless to the kernel thus reducing register usage (in this
 /// case by removing the unneeded reference-counting introduced by the internal shared_ptr).
 ///
-template< typename T, class Alloc> //=device_pitch_allocator<T> >
-class matrix_kernel_argument : public matrix<T,Alloc,typename ecuda::add_pointer<T>::type>
+template<typename T, class Alloc> //=device_pitch_allocator<T> >
+class matrix_kernel_argument : public matrix<T, Alloc, typename ecuda::add_pointer<T>::type>
 {
 
 private:
-	typedef matrix<T,Alloc,typename ecuda::add_pointer<T>::type> base_type;
+    typedef matrix<T, Alloc, typename ecuda::add_pointer<T>::type> base_type;
 
 public:
-	template<class P>
-	__HOST__ matrix_kernel_argument( const matrix<T,Alloc,P>& src ) : base_type( src, ecuda::true_type() ) {}
+    template<class P>
+    __HOST__ matrix_kernel_argument(const matrix<T, Alloc, P>& src)
+      : base_type(src, ecuda::true_type())
+    {
+    }
 
-	__HOST__ __DEVICE__ matrix_kernel_argument( const matrix_kernel_argument& src ) : base_type( src, ecuda::true_type() ) {}
+    __HOST__ __DEVICE__ matrix_kernel_argument(const matrix_kernel_argument& src)
+      : base_type(src, ecuda::true_type())
+    {
+    }
 
-	template<class P>
-	__HOST__ matrix_kernel_argument& operator=( const matrix<T,Alloc,P>& src )
-	{
-		base_type::shallow_assign( src );
-		return *this;
-	}
+    template<class P>
+    __HOST__ matrix_kernel_argument& operator=(const matrix<T, Alloc, P>& src)
+    {
+        base_type::shallow_assign(src);
+        return *this;
+    }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	matrix_kernel_argument( matrix_kernel_argument&& src ) : base_type(std::move(src)) {}
+#ifdef ECUDA_CPP11_AVAILABLE
+    matrix_kernel_argument(matrix_kernel_argument&& src)
+      : base_type(std::move(src))
+    {
+    }
 
-	matrix_kernel_argument& operator=( matrix_kernel_argument&& src )
-	{
-		base_type::operator=(std::move(src));
-		return *this;
-	}
-	#endif
-
+    matrix_kernel_argument& operator=(matrix_kernel_argument&& src)
+    {
+        base_type::operator=(std::move(src));
+        return *this;
+    }
+#endif
 };
 
 } // namespace impl
@@ -722,16 +785,21 @@ public:
 /// \param offsetRow offset in the starting row of the source matrix (default: 0)
 /// \param offsetColumn offset in the starting column of the destination matrix (default: 0)
 ///
-template<typename T,class Alloc1,class Alloc2>
-__HOST__ void matrix_copy( matrix<T,Alloc1>& dest, const matrix<T,Alloc2>& src, typename matrix<T,Alloc2>::size_type offsetRow=0, typename matrix<T,Alloc2>::size_type offsetColumn=0 ) {
-	typedef typename matrix<T,Alloc2>::size_type size_type;
-	const size_type nr = std::min( dest.number_rows()   , src.number_rows()-offsetRow       );
-	const size_type nc = std::min( dest.number_columns(), src.number_columns()-offsetColumn );
-	for( size_type i = 0; i < nr; ++i ) {
-		typename matrix<T,Alloc1>::row_type destRow = dest[i];
-		typename matrix<T,Alloc2>::const_row_type srcRow = src[i+offsetRow];
-		::ecuda::copy( src.begin(), src.end(), dest.begin() );
-	}
+template<typename T, class Alloc1, class Alloc2>
+__HOST__ void
+matrix_copy(matrix<T, Alloc1>& dest,
+            const matrix<T, Alloc2>& src,
+            typename matrix<T, Alloc2>::size_type offsetRow = 0,
+            typename matrix<T, Alloc2>::size_type offsetColumn = 0)
+{
+    typedef typename matrix<T, Alloc2>::size_type size_type;
+    const size_type nr = std::min(dest.number_rows(), src.number_rows() - offsetRow);
+    const size_type nc = std::min(dest.number_columns(), src.number_columns() - offsetColumn);
+    for (size_type i = 0; i < nr; ++i) {
+        typename matrix<T, Alloc1>::row_type destRow = dest[i];
+        typename matrix<T, Alloc2>::const_row_type srcRow = src[i + offsetRow];
+        ::ecuda::copy(src.begin(), src.end(), dest.begin());
+    }
 }
 
 ///
@@ -754,49 +822,60 @@ __HOST__ void matrix_copy( matrix<T,Alloc1>& dest, const matrix<T,Alloc2>& src, 
 /// \param offsetColumn2 the starting column in mat2 that will be swapped (default:0)
 /// \throws std::out_of_range thrown if the specified bounds of either matrix exceeds its actual dimensions
 ///
-template<typename T,class Alloc1,class Alloc2>
-__HOST__ void matrix_swap(
-	matrix<T,Alloc1>& mat1,
-	matrix<T,Alloc2>& mat2,
-	typename matrix<T,Alloc1>::size_type numberRows=0, typename matrix<T,Alloc1>::size_type numberColumns=0,
-	typename matrix<T,Alloc1>::size_type offsetRow1=0, typename matrix<T,Alloc1>::size_type offsetColumn1=0,
-	typename matrix<T,Alloc2>::size_type offsetRow2=0, typename matrix<T,Alloc2>::size_type offsetColumn2=0
-)
+template<typename T, class Alloc1, class Alloc2>
+__HOST__ void
+matrix_swap(matrix<T, Alloc1>& mat1,
+            matrix<T, Alloc2>& mat2,
+            typename matrix<T, Alloc1>::size_type numberRows = 0,
+            typename matrix<T, Alloc1>::size_type numberColumns = 0,
+            typename matrix<T, Alloc1>::size_type offsetRow1 = 0,
+            typename matrix<T, Alloc1>::size_type offsetColumn1 = 0,
+            typename matrix<T, Alloc2>::size_type offsetRow2 = 0,
+            typename matrix<T, Alloc2>::size_type offsetColumn2 = 0)
 {
-	if( (offsetRow1+numberRows) > mat1.number_rows() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat1 is out of bounds") );
-	if( (offsetRow2+numberRows) > mat2.number_rows() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat2 is out of bounds" ) );
-	if( (offsetColumn1+numberColumns) > mat1.number_columns() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat1 is out of bounds") );
-	if( (offsetColumn2+numberColumns) > mat2.number_columns() ) throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat2 is out of bounds") );
-	std::vector< T, host_allocator<T> > stagingMemory( numberColumns );
-	typedef typename matrix<T,Alloc1>::size_type size_type;
-	for( size_type i = 0; i < numberRows; ++i ) {
-		typename matrix<T,Alloc1>::row_type row1 = mat1[offsetRow1+i];
-		typename matrix<T,Alloc2>::row_type row2 = mat1[offsetRow2+i];
-		stagingMemory.assign( row1.begin()+offsetColumn1, row1.begin()+(offsetColumn1+numberColumns) );
-		ecuda::copy( row2.begin()+offsetColumn2, row2.begin()+(offsetColumn2+numberColumns), row1.begin()+offsetColumn1 );
-		ecuda::copy( stagingMemory.begin(), stagingMemory.end(), row2.begin()+offsetColumn2 );
-	}
+    if ((offsetRow1 + numberRows) > mat1.number_rows())
+        throw std::out_of_range(
+          ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat1 is out of bounds"));
+    if ((offsetRow2 + numberRows) > mat2.number_rows())
+        throw std::out_of_range(
+          ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified row subset of mat2 is out of bounds"));
+    if ((offsetColumn1 + numberColumns) > mat1.number_columns())
+        throw std::out_of_range(
+          ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat1 is out of bounds"));
+    if ((offsetColumn2 + numberColumns) > mat2.number_columns())
+        throw std::out_of_range(
+          ECUDA_EXCEPTION_MSG("ecuda::matrix_swap() specified column subset of mat2 is out of bounds"));
+    std::vector<T, host_allocator<T>> stagingMemory(numberColumns);
+    typedef typename matrix<T, Alloc1>::size_type size_type;
+    for (size_type i = 0; i < numberRows; ++i) {
+        typename matrix<T, Alloc1>::row_type row1 = mat1[offsetRow1 + i];
+        typename matrix<T, Alloc2>::row_type row2 = mat1[offsetRow2 + i];
+        stagingMemory.assign(row1.begin() + offsetColumn1, row1.begin() + (offsetColumn1 + numberColumns));
+        ecuda::copy(
+          row2.begin() + offsetColumn2, row2.begin() + (offsetColumn2 + numberColumns), row1.begin() + offsetColumn1);
+        ecuda::copy(stagingMemory.begin(), stagingMemory.end(), row2.begin() + offsetColumn2);
+    }
 }
 
-template<typename T,class Alloc>
-__HOST__ void matrix_transpose(
-	matrix<T,Alloc>& src
-)
+template<typename T, class Alloc>
+__HOST__ void
+matrix_transpose(matrix<T, Alloc>& src)
 {
-	if( src.empty() ) return;
-	std::vector< T, host_allocator<T> > stagingMemory( src.number_columns() ); // stage a single row
-	std::vector<T> hostMatrix( src.size() );
-	for( typename matrix<T,Alloc>::size_type i = 0; i < src.number_rows(); ++i ) {
-		ecuda::copy( src[i].begin(), src[i].end(), stagingMemory.begin() ); // copy row
-		typename std::vector< T, host_allocator<T> >::const_iterator srcElement = stagingMemory.begin();
-		for( std::size_t j = 0; j < src.number_columns(); ++j, ++srcElement ) hostMatrix[j*src.number_rows()+i] = *srcElement; // transpose
-	}
-	src.resize( src.number_columns(), src.number_rows() ); // resize destination matrix
-	ecuda::copy( hostMatrix.begin(), hostMatrix.end(), src.begin() );
-	//typename std::vector<T>::const_iterator srcRow = hostMatrix.begin();
-	//for( typename matrix<T,Alloc>::size_type i = 0; i < src.number_rows(); ++i, srcRow += src.number_columns() ) {
-	//	ecuda::copy( srcRow, srcRow+src.number_columns(), src[i].begin() );
-	//}
+    if (src.empty()) return;
+    std::vector<T, host_allocator<T>> stagingMemory(src.number_columns()); // stage a single row
+    std::vector<T> hostMatrix(src.size());
+    for (typename matrix<T, Alloc>::size_type i = 0; i < src.number_rows(); ++i) {
+        ecuda::copy(src[i].begin(), src[i].end(), stagingMemory.begin()); // copy row
+        typename std::vector<T, host_allocator<T>>::const_iterator srcElement = stagingMemory.begin();
+        for (std::size_t j = 0; j < src.number_columns(); ++j, ++srcElement)
+            hostMatrix[j * src.number_rows() + i] = *srcElement; // transpose
+    }
+    src.resize(src.number_columns(), src.number_rows()); // resize destination matrix
+    ecuda::copy(hostMatrix.begin(), hostMatrix.end(), src.begin());
+    // typename std::vector<T>::const_iterator srcRow = hostMatrix.begin();
+    // for( typename matrix<T,Alloc>::size_type i = 0; i < src.number_rows(); ++i, srcRow += src.number_columns() ) {
+    //	ecuda::copy( srcRow, srcRow+src.number_columns(), src[i].begin() );
+    // }
 }
 
 } // namespace ecuda

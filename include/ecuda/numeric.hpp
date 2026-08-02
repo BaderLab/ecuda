@@ -21,60 +21,72 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
-template<class InputIterator,typename T,class BinaryOperation>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, BinaryOperation op, ecuda::true_type )
+template<class InputIterator, typename T, class BinaryOperation>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init, BinaryOperation op, ecuda::true_type)
 {
-	// is an iterator to device memory
-	#ifdef __CUDA_ARCH__
-	while( first != last ) { init = op(init,*first); ++first; }
-	return init;
-	#else
-	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
-	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
-	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
-	ecuda::copy( first, last, hostVector.begin() );
-	return std::accumulate( hostVector.begin(), hostVector.end(), init, op );
-	#endif
+// is an iterator to device memory
+#ifdef __CUDA_ARCH__
+    while (first != last) {
+        init = op(init, *first);
+        ++first;
+    }
+    return init;
+#else
+    const bool isIteratorContiguous =
+      ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous, ecuda::true_type>::value;
+    ECUDA_STATIC_ASSERT(isIteratorContiguous, CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
+    typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance(first, last);
+    std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector(n);
+    ecuda::copy(first, last, hostVector.begin());
+    return std::accumulate(hostVector.begin(), hostVector.end(), init, op);
+#endif
 }
 
-template<class InputIterator,typename T>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, ecuda::true_type )
+template<class InputIterator, typename T>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init, ecuda::true_type)
 {
-	// is an iterator to device memory
-	#ifdef __CUDA_ARCH__
-	while( first != last ) { init += *first; ++first; }
-	return init;
-	#else
-	const bool isIteratorContiguous = ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous,ecuda::true_type>::value;
-	ECUDA_STATIC_ASSERT(isIteratorContiguous,CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
-	typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance( first, last );
-	std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector( n );
-	ecuda::copy( first, last, hostVector.begin() );
-	return std::accumulate( hostVector.begin(), hostVector.end(), init );
-	#endif
+// is an iterator to device memory
+#ifdef __CUDA_ARCH__
+    while (first != last) {
+        init += *first;
+        ++first;
+    }
+    return init;
+#else
+    const bool isIteratorContiguous =
+      ecuda::is_same<typename ecuda::iterator_traits<InputIterator>::is_contiguous, ecuda::true_type>::value;
+    ECUDA_STATIC_ASSERT(isIteratorContiguous, CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY);
+    typename ecuda::iterator_traits<InputIterator>::difference_type n = ecuda::distance(first, last);
+    std::vector<typename ecuda::iterator_traits<InputIterator>::value_type> hostVector(n);
+    ecuda::copy(first, last, hostVector.begin());
+    return std::accumulate(hostVector.begin(), hostVector.end(), init);
+#endif
 }
 
-template<class InputIterator,typename T,class BinaryOperation>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, BinaryOperation op, ecuda::false_type )
+template<class InputIterator, typename T, class BinaryOperation>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init, BinaryOperation op, ecuda::false_type)
 {
-	// not an iterator to device memory, delegate to STL
-	#ifdef __CUDA_ARCH__
-	return last; // can never be called from device code, dummy return to satisfy nvcc
-	#else
-	return std::accumulate( first, last, init, op );
-	#endif
+// not an iterator to device memory, delegate to STL
+#ifdef __CUDA_ARCH__
+    return last; // can never be called from device code, dummy return to satisfy nvcc
+#else
+    return std::accumulate(first, last, init, op);
+#endif
 }
 
-template<class InputIterator,typename T>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, ecuda::false_type )
+template<class InputIterator, typename T>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init, ecuda::false_type)
 {
-	// not an iterator to device memory, delegate to STL
-	#ifdef __CUDA_ARCH__
-	return last; // can never be called from device code, dummy return to satisfy nvcc
-	#else
-	return std::accumulate( first, last, init );
-	#endif
+// not an iterator to device memory, delegate to STL
+#ifdef __CUDA_ARCH__
+    return last; // can never be called from device code, dummy return to satisfy nvcc
+#else
+    return std::accumulate(first, last, init);
+#endif
 }
 
 } // namespace impl
@@ -89,10 +101,11 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 /// \param init initial value of the sum
 /// \returns the sum of the given value and elements in the given range
 ///
-template<class InputIterator,typename T>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init )
+template<class InputIterator, typename T>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init)
 {
-	return impl::accumulate( first, last, init, ecuda::iterator_traits<InputIterator>::is_device_iterator() );
+    return impl::accumulate(first, last, init, ecuda::iterator_traits<InputIterator>::is_device_iterator());
 }
 
 ///
@@ -110,10 +123,11 @@ __HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last
 /// \param op binary operation function object that will be applied
 /// \returns the sum of the given value and elements in the given range
 ///
-template<class InputIterator,typename T,class BinaryOperation>
-__HOST__ __DEVICE__ inline T accumulate( InputIterator first, InputIterator last, T init, BinaryOperation op )
+template<class InputIterator, typename T, class BinaryOperation>
+__HOST__ __DEVICE__ inline T
+accumulate(InputIterator first, InputIterator last, T init, BinaryOperation op)
 {
-	return impl::accumulate( first, last, init, op, ecuda::iterator_traits<InputIterator>::is_device_iterator() );
+    return impl::accumulate(first, last, init, op, ecuda::iterator_traits<InputIterator>::is_device_iterator());
 }
 
 } // namespace ecuda

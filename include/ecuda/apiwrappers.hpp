@@ -10,8 +10,8 @@
 #ifndef ECUDA_APIWRAPPERS_HPP
 #define ECUDA_APIWRAPPERS_HPP
 
-#include "global.hpp"
 #include "allocators.hpp" // for host_allocator
+#include "global.hpp"
 
 #include <vector>
 
@@ -30,9 +30,10 @@ namespace ecuda {
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMemcpyKind kind )
+inline cudaError_t
+cudaMemcpy(T* dest, const T* src, const size_t count, cudaMemcpyKind kind)
 {
-	return ::cudaMemcpy( reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T)*count, kind );
+    return ::cudaMemcpy(reinterpret_cast<void*>(dest), reinterpret_cast<const void*>(src), sizeof(T) * count, kind);
 }
 
 ///
@@ -49,12 +50,26 @@ inline cudaError_t cudaMemcpy( T* dest, const T* src, const size_t count, cudaMe
 /// \param width Width of matrix.
 /// \param height Height of matrix.
 /// \param kind Type of transfer (cudaMemcpyDeviceToHost, cudaMemcpyDeviceToDevice, cudaMemcpyHostToDevice)
-/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidPitchValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
+/// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidPitchValue, cudaErrorInvalidDevicePointer,
+/// cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemcpy2D( T* dest, const size_t dpitch, const T* src, const size_t spitch, const size_t width, const size_t height, cudaMemcpyKind kind )
+inline cudaError_t
+cudaMemcpy2D(T* dest,
+             const size_t dpitch,
+             const T* src,
+             const size_t spitch,
+             const size_t width,
+             const size_t height,
+             cudaMemcpyKind kind)
 {
-	return ::cudaMemcpy2D( reinterpret_cast<void*>(dest), dpitch, reinterpret_cast<const void*>(src), spitch, width*sizeof(T), height, kind );
+    return ::cudaMemcpy2D(reinterpret_cast<void*>(dest),
+                          dpitch,
+                          reinterpret_cast<const void*>(src),
+                          spitch,
+                          width * sizeof(T),
+                          height,
+                          kind);
 }
 
 /// \cond DEVELOPER_DOCUMENTATION
@@ -70,12 +85,15 @@ namespace impl {
 /// \return true if each byte in the value is equal
 ///
 template<typename T>
-bool is_equal_bytes( const T& value )
+bool
+is_equal_bytes(const T& value)
 {
-	const char* p = reinterpret_cast<const char*>(&value);
-	const char* q = p; ++q;
-	for( int i = 1; i < sizeof(T); ++i, ++q ) if( *p != *q ) return false;
-	return true;
+    const char* p = reinterpret_cast<const char*>(&value);
+    const char* q = p;
+    ++q;
+    for (int i = 1; i < sizeof(T); ++i, ++q)
+        if (*p != *q) return false;
+    return true;
 }
 
 } // namespace impl
@@ -92,9 +110,10 @@ bool is_equal_bytes( const T& value )
 /// \param count The number of elements to set.
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
-inline cudaError_t cudaMemset( char* devPtr, const char& value, const size_t count )
+inline cudaError_t
+cudaMemset(char* devPtr, const char& value, const size_t count)
 {
-	return ::cudaMemset( static_cast<void*>(devPtr), static_cast<int>(value), count );
+    return ::cudaMemset(static_cast<void*>(devPtr), static_cast<int>(value), count);
 }
 
 ///
@@ -115,14 +134,16 @@ inline cudaError_t cudaMemset( char* devPtr, const char& value, const size_t cou
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count )
+inline cudaError_t
+cudaMemset(T* devPtr, const T& value, const size_t count)
 {
-	//TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is too large
-	if( impl::is_equal_bytes(value) ) {
-		return cudaMemset( reinterpret_cast<char*>(devPtr), *reinterpret_cast<const char*>(&value), count*sizeof(T) );
-	}
-	std::vector< T, host_allocator<T> > v( count, value );
-	return cudaMemcpy<T>( devPtr, &v.front(), count, cudaMemcpyHostToDevice );
+    // TODO: may want to implement logic to limit the size of the staging memory, and do the fill in chunks if count is
+    // too large
+    if (impl::is_equal_bytes(value)) {
+        return cudaMemset(reinterpret_cast<char*>(devPtr), *reinterpret_cast<const char*>(&value), count * sizeof(T));
+    }
+    std::vector<T, host_allocator<T>> v(count, value);
+    return cudaMemcpy<T>(devPtr, &v.front(), count, cudaMemcpyHostToDevice);
 }
 
 ///
@@ -138,9 +159,10 @@ inline cudaError_t cudaMemset( T* devPtr, const T& value, const size_t count )
 /// \param height Height of matrix.
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
-inline cudaError_t cudaMemset2D( char* devPtr, const size_t pitch, const char& value, const size_t width, const size_t height )
+inline cudaError_t
+cudaMemset2D(char* devPtr, const size_t pitch, const char& value, const size_t width, const size_t height)
 {
-	return ::cudaMemset2D( static_cast<void*>(devPtr), pitch, static_cast<int>(value), width, height );
+    return ::cudaMemset2D(static_cast<void*>(devPtr), pitch, static_cast<int>(value), width, height);
 }
 
 ///
@@ -163,30 +185,39 @@ inline cudaError_t cudaMemset2D( char* devPtr, const size_t pitch, const char& v
 /// \return cudaSuccess, cudaErrorInvalidValue, cudaErrorInvalidDevicePointer, cudaErrorInvalidMemcpyDirection
 ///
 template<typename T>
-cudaError_t cudaMemset2D( T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height )
+cudaError_t
+cudaMemset2D(T* devPtr, const size_t pitch, const T& value, const size_t width, const size_t height)
 {
-	if( impl::is_equal_bytes(value) ) {
-		return cudaMemset2D( reinterpret_cast<char*>(devPtr), pitch, *reinterpret_cast<const char*>(&value), width*sizeof(T), height );
-	}
-	std::vector< T, host_allocator<T> > v( width, value );
-	char* charPtr = reinterpret_cast<char*>(devPtr);
-	for( std::size_t i = 0; i < height; ++i, charPtr += pitch ) {
-		const cudaError_t rc = cudaMemcpy<T>( reinterpret_cast<T*>(charPtr), &v.front(), width, cudaMemcpyHostToDevice );
-		if( rc != cudaSuccess ) return rc;
-	}
-	return cudaSuccess;
+    if (impl::is_equal_bytes(value)) {
+        return cudaMemset2D(
+          reinterpret_cast<char*>(devPtr), pitch, *reinterpret_cast<const char*>(&value), width * sizeof(T), height);
+    }
+    std::vector<T, host_allocator<T>> v(width, value);
+    char* charPtr = reinterpret_cast<char*>(devPtr);
+    for (std::size_t i = 0; i < height; ++i, charPtr += pitch) {
+        const cudaError_t rc = cudaMemcpy<T>(reinterpret_cast<T*>(charPtr), &v.front(), width, cudaMemcpyHostToDevice);
+        if (rc != cudaSuccess) return rc;
+    }
+    return cudaSuccess;
 }
 
 template<typename T>
-inline cudaError_t cudaMemcpyToSymbol( T* dest, const T* src, size_t count=1, size_t offset=0, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice )
+inline cudaError_t
+cudaMemcpyToSymbol(T* dest,
+                   const T* src,
+                   size_t count = 1,
+                   size_t offset = 0,
+                   enum cudaMemcpyKind kind = cudaMemcpyHostToDevice)
 {
-	return ::cudaMemcpyToSymbol( reinterpret_cast<const char*>(dest), reinterpret_cast<const void*>(src), count*sizeof(T), offset, kind );
+    return ::cudaMemcpyToSymbol(
+      reinterpret_cast<const char*>(dest), reinterpret_cast<const void*>(src), count * sizeof(T), offset, kind);
 }
 
 template<typename T>
-inline cudaError_t cudaMemcpyToSymbol( T& dest, const T& src, enum cudaMemcpyKind kind=cudaMemcpyHostToDevice )
+inline cudaError_t
+cudaMemcpyToSymbol(T& dest, const T& src, enum cudaMemcpyKind kind = cudaMemcpyHostToDevice)
 {
-	return ::ecuda::cudaMemcpyToSymbol( &dest, &src, 1, 0, kind );
+    return ::ecuda::cudaMemcpyToSymbol(&dest, &src, 1, 0, kind);
 }
 
 /*
@@ -194,16 +225,18 @@ inline cudaError_t cudaMemcpyToSymbol( T& dest, const T& src, enum cudaMemcpyKin
  * If __threadfence() is called inline (i.e. the at() methods of
  * each container), then nvcc complains about not knowing about it.
  *
- * Example compiler message: error: there are no arguments to ‘__threadfence’ that depend on a template parameter, so a declaration of ‘__threadfence’ must be available
+ * Example compiler message: error: there are no arguments to ‘__threadfence’ that depend on a template parameter, so a
+ * declaration of ‘__threadfence’ must be available
  *
  * In CUDA >=6.0 the same code compiles fine. If we do below and just wrap the __threadfence()
  * call in it's own function then it works in all versions.
  */
-inline __DEVICE__ void threadfence()
+inline __DEVICE__ void
+threadfence()
 {
-	#ifdef __CUDACC__
-	__threadfence();
-	#endif
+#ifdef __CUDACC__
+    __threadfence();
+#endif
 }
 
 } // namespace ecuda

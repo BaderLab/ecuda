@@ -22,17 +22,18 @@ namespace std {
 
 template<class Alloc>
 struct allocator_traits {
-	typedef Alloc allocator_type;
-	typedef typename Alloc::value_type      value_type;
-	typedef typename Alloc::pointer         pointer;
-	typedef typename Alloc::const_pointer   const_pointer;
-	typedef void*                           void_pointer;
-	typedef const void*                     const_void_pointer;
-	typedef typename Alloc::difference_type difference_type;
-	typedef typename Alloc::size_type       size_type;
-	//propagate_on_container_copy_assignment
-	//TODO: finish this
-	static __HOST__ __DEVICE__ allocator_type select_on_container_copy_construction( const allocator_type& alloc ) { return alloc; }
+        typedef Alloc allocator_type;
+        typedef typename Alloc::value_type      value_type;
+        typedef typename Alloc::pointer         pointer;
+        typedef typename Alloc::const_pointer   const_pointer;
+        typedef void*                           void_pointer;
+        typedef const void*                     const_void_pointer;
+        typedef typename Alloc::difference_type difference_type;
+        typedef typename Alloc::size_type       size_type;
+        //propagate_on_container_copy_assignment
+        //TODO: finish this
+        static __HOST__ __DEVICE__ allocator_type select_on_container_copy_construction( const allocator_type& alloc ) {
+return alloc; }
 };
 
 } // namespace std
@@ -62,13 +63,14 @@ struct allocator_traits {
 // #include "ptr/naked_ptr.hpp" // deprecated
 #include "ptr/padded_ptr.hpp"
 #include "ptr/shared_ptr.hpp"
+#include "ptr/striding_padded_ptr.hpp"
 #include "ptr/striding_ptr.hpp"
 #include "ptr/unique_ptr.hpp"
-#include "ptr/striding_padded_ptr.hpp"
 
 namespace ecuda {
 
-template<typename T> struct owner_less;
+template<typename T>
+struct owner_less;
 
 ///
 /// This function object provides owner-based (as opposed to value-based) mixed-type
@@ -83,21 +85,23 @@ template<typename T> struct owner_less;
 ///
 ///
 template<typename T>
-struct owner_less< shared_ptr<T> >
+struct owner_less<shared_ptr<T>>
 {
-	typedef bool result_type;
-	typedef shared_ptr<T> first_argument_type;
-	typedef shared_ptr<T> second_argument_type;
-	///
-	/// \brief Compares lhs and rhs using owner-based semantics.
-	///
-	/// \param lhs,rhs shared-ownership pointers to compare
-	/// \return true if lhs is less than rhs as determined by the owner-based ordering
-	///
-	__HOST__ __DEVICE__ inline bool operator()( const shared_ptr<T>& lhs, const shared_ptr<T>& rhs ) const { return lhs.owner_before(rhs); }
+    typedef bool result_type;
+    typedef shared_ptr<T> first_argument_type;
+    typedef shared_ptr<T> second_argument_type;
+    ///
+    /// \brief Compares lhs and rhs using owner-based semantics.
+    ///
+    /// \param lhs,rhs shared-ownership pointers to compare
+    /// \return true if lhs is less than rhs as determined by the owner-based ordering
+    ///
+    __HOST__ __DEVICE__ inline bool operator()(const shared_ptr<T>& lhs, const shared_ptr<T>& rhs) const
+    {
+        return lhs.owner_before(rhs);
+    }
 };
 
 } // namespace ecuda
-
 
 #endif

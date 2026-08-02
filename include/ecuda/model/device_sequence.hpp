@@ -11,8 +11,8 @@
 #define ECUDA_MODEL_DEVICE_SEQUENCE_HPP
 
 #include "../global.hpp"
-#include "../memory.hpp"
 #include "../iterator.hpp"
+#include "../memory.hpp"
 
 namespace ecuda {
 
@@ -33,124 +33,168 @@ namespace model {
 /// is delegated to the pointer specialization. This allows higher-level classes to
 /// re-use this structure to represent arrays, matrix rows and columns, and so on.
 ///
-template<typename T,class P>
+template<typename T, class P>
 class device_sequence
 {
 
 public:
-	typedef T                                                   value_type;
-	typedef P                                                   pointer;
-	typedef typename ecuda::add_lvalue_reference<T>::type       reference;
-	typedef typename ecuda::add_lvalue_reference<const T>::type const_reference;
-	typedef std::size_t                                         size_type;
-	typedef std::ptrdiff_t                                      difference_type;
+    typedef T value_type;
+    typedef P pointer;
+    typedef typename ecuda::add_lvalue_reference<T>::type reference;
+    typedef typename ecuda::add_lvalue_reference<const T>::type const_reference;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
 
-	typedef device_iterator<      value_type,typename make_unmanaged<pointer>::type      > iterator;
-	typedef device_iterator<const value_type,typename make_unmanaged_const<pointer>::type> const_iterator;
+    typedef device_iterator<value_type, typename make_unmanaged<pointer>::type> iterator;
+    typedef device_iterator<const value_type, typename make_unmanaged_const<pointer>::type> const_iterator;
 
-	typedef reverse_device_iterator<iterator      > reverse_iterator;
-	typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_device_iterator<iterator> reverse_iterator;
+    typedef reverse_device_iterator<const_iterator> const_reverse_iterator;
 
 private:
-	pointer ptr;
-	size_type length;
+    pointer ptr;
+    size_type length;
 
-	template<typename U,class Q> friend class device_sequence;
+    template<typename U, class Q>
+    friend class device_sequence;
 
 protected:
-	__HOST__ __DEVICE__ inline pointer&       get_pointer()       ECUDA__NOEXCEPT { return ptr; }
-	__HOST__ __DEVICE__ inline const pointer& get_pointer() const ECUDA__NOEXCEPT { return ptr; }
+    __HOST__ __DEVICE__ inline pointer& get_pointer() ECUDA__NOEXCEPT { return ptr; }
+    __HOST__ __DEVICE__ inline const pointer& get_pointer() const ECUDA__NOEXCEPT { return ptr; }
 
 public:
-	__HOST__ __DEVICE__ device_sequence( pointer ptr = pointer(), size_type length = 0 ) : ptr(ptr), length(length) {}
+    __HOST__ __DEVICE__ device_sequence(pointer ptr = pointer(), size_type length = 0)
+      : ptr(ptr)
+      , length(length)
+    {
+    }
 
-	__HOST__ __DEVICE__ device_sequence( const device_sequence& src ) : ptr(src.ptr), length(src.length) {}
+    __HOST__ __DEVICE__ device_sequence(const device_sequence& src)
+      : ptr(src.ptr)
+      , length(src.length)
+    {
+    }
 
-	template<typename U,class Q> __HOST__ __DEVICE__ device_sequence( const device_sequence<U,Q>& src ) : ptr(src.ptr), length(src.length) {}
+    template<typename U, class Q>
+    __HOST__ __DEVICE__ device_sequence(const device_sequence<U, Q>& src)
+      : ptr(src.ptr)
+      , length(src.length)
+    {
+    }
 
-	__HOST__ device_sequence& operator=( const device_sequence& src )
-	{
-		ptr = src.ptr;
-		length = src.length;
-		return *this;
-	}
+    __HOST__ device_sequence& operator=(const device_sequence& src)
+    {
+        ptr = src.ptr;
+        length = src.length;
+        return *this;
+    }
 
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ device_sequence( device_sequence&& src ) : ptr(std::move(src.ptr)), length(std::move(src.length)) {}
-	__HOST__ device_sequence& operator=( device_sequence&& src )
-	{
-		ptr = std::move(src.ptr);
-		length = std::move(src.length);
-		return *this;
-	}
-	#endif
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ device_sequence(device_sequence&& src)
+      : ptr(std::move(src.ptr))
+      , length(std::move(src.length))
+    {
+    }
+    __HOST__ device_sequence& operator=(device_sequence&& src)
+    {
+        ptr = std::move(src.ptr);
+        length = std::move(src.length);
+        return *this;
+    }
+#endif
 
-	__HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return length; }
+    __HOST__ __DEVICE__ inline size_type size() const ECUDA__NOEXCEPT { return length; }
 
-	__DEVICE__ inline reference       operator()( const size_type x )       { return operator[](x); }
-	__DEVICE__ inline const_reference operator()( const size_type x ) const { return operator[](x); }
+    __DEVICE__ inline reference operator()(const size_type x) { return operator[](x); }
+    __DEVICE__ inline const_reference operator()(const size_type x) const { return operator[](x); }
 
-	__DEVICE__ inline reference       operator[]( const size_type x )       { return *(unmanaged_cast( ptr ) + x); }
-	__DEVICE__ inline const_reference operator[]( const size_type x ) const { return *(unmanaged_cast( ptr ) + x); }
+    __DEVICE__ inline reference operator[](const size_type x) { return *(unmanaged_cast(ptr) + x); }
+    __DEVICE__ inline const_reference operator[](const size_type x) const { return *(unmanaged_cast(ptr) + x); }
 
-	__DEVICE__ inline reference at( const size_type x )
-	{
-		if( x >= size() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_sequence::at() index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			asm("trap;");
-			#endif
-		}
-		return operator()(x);
-	}
+    __DEVICE__ inline reference at(const size_type x)
+    {
+        if (x >= size()) {
+#ifndef __CUDACC__
+            throw std::out_of_range(
+              ECUDA_EXCEPTION_MSG("ecuda::model::device_sequence::at() index parameter is out of range"));
+#else
+            // this strategy is taken from:
+            // http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+            ecuda::threadfence();
+            asm("trap;");
+#endif
+        }
+        return operator()(x);
+    }
 
-	__DEVICE__ inline const_reference at( const size_type x ) const
-	{
-		if( x >= size() ) {
-			#ifndef __CUDACC__
-			throw std::out_of_range( ECUDA_EXCEPTION_MSG("ecuda::model::device_sequence::at() index parameter is out of range") );
-			#else
-			// this strategy is taken from:
-			// http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
-			ecuda::threadfence();
-			asm("trap;");
-			#endif
-		}
-		return operator()(x);
-	}
+    __DEVICE__ inline const_reference at(const size_type x) const
+    {
+        if (x >= size()) {
+#ifndef __CUDACC__
+            throw std::out_of_range(
+              ECUDA_EXCEPTION_MSG("ecuda::model::device_sequence::at() index parameter is out of range"));
+#else
+            // this strategy is taken from:
+            // http://stackoverflow.com/questions/12521721/crashing-a-kernel-gracefully
+            ecuda::threadfence();
+            asm("trap;");
+#endif
+        }
+        return operator()(x);
+    }
 
-	__HOST__ __DEVICE__ inline iterator       begin()        ECUDA__NOEXCEPT { return iterator( unmanaged_cast(ptr) ); }
-	__HOST__ __DEVICE__ inline iterator       end()          ECUDA__NOEXCEPT { return iterator( unmanaged_cast(ptr) + size() ); }
-	__HOST__ __DEVICE__ inline const_iterator begin() const  ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) ); }
-	__HOST__ __DEVICE__ inline const_iterator end() const    ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) + size() ); }
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_iterator cbegin() const ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) ); }
-	__HOST__ __DEVICE__ inline const_iterator cend() const   ECUDA__NOEXCEPT { return const_iterator( unmanaged_cast(ptr) + size() ); }
-	#endif
+    __HOST__ __DEVICE__ inline iterator begin() ECUDA__NOEXCEPT { return iterator(unmanaged_cast(ptr)); }
+    __HOST__ __DEVICE__ inline iterator end() ECUDA__NOEXCEPT { return iterator(unmanaged_cast(ptr) + size()); }
+    __HOST__ __DEVICE__ inline const_iterator begin() const ECUDA__NOEXCEPT
+    {
+        return const_iterator(unmanaged_cast(ptr));
+    }
+    __HOST__ __DEVICE__ inline const_iterator end() const ECUDA__NOEXCEPT
+    {
+        return const_iterator(unmanaged_cast(ptr) + size());
+    }
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ __DEVICE__ inline const_iterator cbegin() const ECUDA__NOEXCEPT
+    {
+        return const_iterator(unmanaged_cast(ptr));
+    }
+    __HOST__ __DEVICE__ inline const_iterator cend() const ECUDA__NOEXCEPT
+    {
+        return const_iterator(unmanaged_cast(ptr) + size());
+    }
+#endif
 
-	__HOST__ __DEVICE__ inline reverse_iterator       rbegin()        ECUDA__NOEXCEPT { return reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline reverse_iterator       rend()          ECUDA__NOEXCEPT { return reverse_iterator(begin()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const  ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator rend() const    ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
-	#ifdef ECUDA_CPP11_AVAILABLE
-	__HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const ECUDA__NOEXCEPT { return const_reverse_iterator(end()); }
-	__HOST__ __DEVICE__ inline const_reverse_iterator crend() const   ECUDA__NOEXCEPT { return const_reverse_iterator(begin()); }
-	#endif
+    __HOST__ __DEVICE__ inline reverse_iterator rbegin() ECUDA__NOEXCEPT { return reverse_iterator(end()); }
+    __HOST__ __DEVICE__ inline reverse_iterator rend() ECUDA__NOEXCEPT { return reverse_iterator(begin()); }
+    __HOST__ __DEVICE__ inline const_reverse_iterator rbegin() const ECUDA__NOEXCEPT
+    {
+        return const_reverse_iterator(end());
+    }
+    __HOST__ __DEVICE__ inline const_reverse_iterator rend() const ECUDA__NOEXCEPT
+    {
+        return const_reverse_iterator(begin());
+    }
+#ifdef ECUDA_CPP11_AVAILABLE
+    __HOST__ __DEVICE__ inline const_reverse_iterator crbegin() const ECUDA__NOEXCEPT
+    {
+        return const_reverse_iterator(end());
+    }
+    __HOST__ __DEVICE__ inline const_reverse_iterator crend() const ECUDA__NOEXCEPT
+    {
+        return const_reverse_iterator(begin());
+    }
+#endif
 
-	//TODO: think about this - worth considering for user access
-	//__HOST__ __DEVICE__ inline typename ecuda::add_pointer<value_type>::type data() const { return naked_cast<typename ecuda::add_pointer<value_type>::type>( ptr ); }
-	//__HOST__ __DEVICE__ inline pointer data() const { return ptr; }
+    // TODO: think about this - worth considering for user access
+    //__HOST__ __DEVICE__ inline typename ecuda::add_pointer<value_type>::type data() const { return naked_cast<typename
+    // ecuda::add_pointer<value_type>::type>( ptr ); }
+    //__HOST__ __DEVICE__ inline pointer data() const { return ptr; }
 
-	__HOST__ __DEVICE__ void swap( device_sequence& other )
-	{
-		::ecuda::swap( ptr, other.ptr );
-		::ecuda::swap( length, other.length );
-	}
-
+    __HOST__ __DEVICE__ void swap(device_sequence& other)
+    {
+        ::ecuda::swap(ptr, other.ptr);
+        ::ecuda::swap(length, other.length);
+    }
 };
 
 } // namespace model

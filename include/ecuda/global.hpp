@@ -10,8 +10,8 @@
 #ifndef ECUDA_GLOBAL_HPP
 #define ECUDA_GLOBAL_HPP
 
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 ///
 /// \cond DEVELOPER_DOCUMENTATION
@@ -23,17 +23,17 @@
 // to suppress annoying warnings from the compiler about calling __host__
 // code from a __host__ __device__ function
 #ifdef __CUDACC__
-#define ECUDA_SUPPRESS_HD_WARNINGS \
-	#pragma hd_warning_disable
+#define ECUDA_SUPPRESS_HD_WARNINGS #pragma hd_warning_disable
 #else
 #define ECUDA_SUPPRESS_HD_WARNINGS
 #endif
 
-#include "impl/host_emulation.hpp" // host-only replacements of CUDA C API functions
 #include "cuda_error.hpp"          // specialized std::exception for ecuda/CUDA runtime errors
+#include "impl/host_emulation.hpp" // host-only replacements of CUDA C API functions
 
 // Generic check for C++11 support
-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) // latter check works for GCC 4.6 because it has a bad __cplusplus flag
+#if __cplusplus >= 201103L ||                                                                                          \
+  defined(__GXX_EXPERIMENTAL_CXX0X__) // latter check works for GCC 4.6 because it has a bad __cplusplus flag
 #define ECUDA_CPP11_AVAILABLE
 #endif
 // Windows check for C++11 support (Visual Studio 2013 and greater)
@@ -44,7 +44,18 @@
 #ifdef __CUDACC__
 // Macro function currently throws an ecuda::cuda_error exception containing a
 // description of the problem error code.
-#define CUDA_CALL(x) do { if((x)!=cudaSuccess) { std::ostringstream oss; oss << __FILE__; oss << ":"; oss << __LINE__; oss << " "; oss << cudaGetErrorString(cudaGetLastError()); throw ::ecuda::cuda_error(x,oss.str()); /*std::runtime_error(oss.str());*/ }} while(0);
+#define CUDA_CALL(x)                                                                                                   \
+    do {                                                                                                               \
+        if ((x) != cudaSuccess) {                                                                                      \
+            std::ostringstream oss;                                                                                    \
+            oss << __FILE__;                                                                                           \
+            oss << ":";                                                                                                \
+            oss << __LINE__;                                                                                           \
+            oss << " ";                                                                                                \
+            oss << cudaGetErrorString(cudaGetLastError());                                                             \
+            throw ::ecuda::cuda_error(x, oss.str()); /*std::runtime_error(oss.str());*/                                \
+        }                                                                                                              \
+    } while (0);
 #else
 ///
 /// Macro function that captures a CUDA error code and then does something
@@ -63,7 +74,11 @@
 #define ECUDA_EXCEPTION_MSG(x) "" __FILE__ ":" S__LINE__ " " x
 
 #ifdef __CUDACC__
-#define CUDA_CHECK_ERRORS() do { cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); } while(0);
+#define CUDA_CHECK_ERRORS()                                                                                            \
+    do {                                                                                                               \
+        cudaError_t error = cudaGetLastError();                                                                        \
+        if (error != cudaSuccess) throw ::ecuda::cuda_error(error, std::string(cudaGetErrorString(error)));            \
+    } while (0);
 #else
 ///
 /// Macro that performs a check for any outstanding CUDA errors.  This macro
@@ -71,24 +86,34 @@
 /// (e.g. after calling kernel functions). Calling this when a CUDA API call
 /// has not been made is safe.
 ///
-#define CUDA_CHECK_ERRORS() do {} while(0); // cannot check CUDA errors when emulating with host only
+#define CUDA_CHECK_ERRORS()                                                                                            \
+    do {                                                                                                               \
+    } while (0); // cannot check CUDA errors when emulating with host only
 #endif
 
 #ifdef __CUDACC__
-#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
-		__VA_ARGS__;\
-		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
-		cudaDeviceSynchronize();\
-		{ cudaError_t error = cudaGetLastError(); if( error != cudaSuccess ) throw ::ecuda::cuda_error(error,std::string(cudaGetErrorString(error))); }\
-	} while(0);
+#define CUDA_CALL_KERNEL_AND_WAIT(...)                                                                                 \
+    do {                                                                                                               \
+        __VA_ARGS__;                                                                                                   \
+        {                                                                                                              \
+            cudaError_t error = cudaGetLastError();                                                                    \
+            if (error != cudaSuccess) throw ::ecuda::cuda_error(error, std::string(cudaGetErrorString(error)));        \
+        }                                                                                                              \
+        cudaDeviceSynchronize();                                                                                       \
+        {                                                                                                              \
+            cudaError_t error = cudaGetLastError();                                                                    \
+            if (error != cudaSuccess) throw ::ecuda::cuda_error(error, std::string(cudaGetErrorString(error)));        \
+        }                                                                                                              \
+    } while (0);
 #else
 ///
 /// Macro that calls a CUDA kernel function, waits for completion, and throws
 /// an ecuda::cuda_error exception if any errors are reported by cudaGetLastError().
 ///
-#define CUDA_CALL_KERNEL_AND_WAIT(...) do {\
-		__VA_ARGS__;\
-	} while( 0 ); // cannot do CUDA calls when emulating with host only
+#define CUDA_CALL_KERNEL_AND_WAIT(...)                                                                                 \
+    do {                                                                                                               \
+        __VA_ARGS__;                                                                                                   \
+    } while (0); // cannot do CUDA calls when emulating with host only
 #endif
 
 /** Replace nullptr with NULL if nvcc still doesn't support C++11. */
@@ -131,7 +156,7 @@
 // (http://eigen.tuxfamily.org).
 //
 #ifdef ECUDA_CPP11_AVAILABLE
-#define ECUDA_STATIC_ASSERT(x,msg) static_assert(x,#msg)
+#define ECUDA_STATIC_ASSERT(x, msg) static_assert(x, #msg)
 #else
 
 namespace ecuda {
@@ -139,19 +164,23 @@ namespace ecuda {
 /// \cond DEVELOPER_DOCUMENTATION
 namespace impl {
 
-template<bool condition> struct static_assertion {};
-template<> struct static_assertion<true>
+template<bool condition>
+struct static_assertion
+{};
+template<>
+struct static_assertion<true>
 {
-	enum {
-		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY,
-		CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY,
-		CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR,
-		CANNOT_LEXICOGRAPHICALLY_COMPARE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
-		CANNOT_FIND_MAX_ELEMENT_IN_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
-		CANNOT_REVERSE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
-		CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
-		CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE
-	};
+    enum
+    {
+        CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_SOURCE_FOR_COPY,
+        CANNOT_USE_NONCONTIGUOUS_DEVICE_ITERATOR_AS_DESTINATION_FOR_COPY,
+        CANNOT_FILL_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_ITERATOR,
+        CANNOT_LEXICOGRAPHICALLY_COMPARE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
+        CANNOT_FIND_MAX_ELEMENT_IN_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
+        CANNOT_REVERSE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
+        CANNOT_ACCUMULATE_RANGE_REPRESENTED_BY_NONCONTIGUOUS_DEVICE_MEMORY,
+        CANNOT_CALCULATE_DISTANCE_OF_NONCONTIGUOUS_DEVICE_ITERATOR_FROM_HOST_CODE
+    };
 };
 
 } // namespace impl
@@ -159,7 +188,9 @@ template<> struct static_assertion<true>
 
 } // namespace ecuda
 
-#define ECUDA_STATIC_ASSERT(x,msg) if(ecuda::impl::static_assertion<static_cast<bool>(x)>::msg) {}
+#define ECUDA_STATIC_ASSERT(x, msg)                                                                                    \
+    if (ecuda::impl::static_assertion<static_cast<bool>(x)>::msg) {                                                    \
+    }
 
 #endif // ECUDA_CPP11_AVAILABLE
 

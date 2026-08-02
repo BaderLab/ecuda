@@ -42,123 +42,125 @@ namespace ecuda {
 /// std::cout << "EXECUTION TIME: " << ( stop - start ) << "ms" << std::endl;
 /// \endcode
 ///
-class event {
+class event
+{
 
 private:
-	cudaEvent_t _event;
+    cudaEvent_t _event;
 
 public:
-	///
-	/// \brief Default constructor.
-	///
-	/// Creates a default event object.
-	///
-	event() { cudaEventCreate(&_event); }
+    ///
+    /// \brief Default constructor.
+    ///
+    /// Creates a default event object.
+    ///
+    event() { cudaEventCreate(&_event); }
 
-	///
-	/// \brief Constructs an event with the given flags.
-	///
-	/// As of now, valid flags specified by the CUDA API are:
-	///   - cudaEventDefault: Default event creation flag.
-	///   - cudaEventBlockingSync: Specifies that event should use blocking synchronization.\n
-	///     A host thread that uses synchronize() to wait on an event created with this flag will block until the event actually completes.
-	///   - cudaEventDisableTiming: Specifies that the created event does not need to record timing data.\n
-	///     Events created with this flag specified and the cudaEventBlockingSync flag not specified will provide the best performance when used
-	///     with cudaStreamWaitEvent() and query().
-	///
-	/// \param flags A valid event flag.
-	///
-	event( unsigned flags ) { cudaEventCreateWithFlags(&_event,flags); }
+    ///
+    /// \brief Constructs an event with the given flags.
+    ///
+    /// As of now, valid flags specified by the CUDA API are:
+    ///   - cudaEventDefault: Default event creation flag.
+    ///   - cudaEventBlockingSync: Specifies that event should use blocking synchronization.\n
+    ///     A host thread that uses synchronize() to wait on an event created with this flag will block until the event
+    ///     actually completes.
+    ///   - cudaEventDisableTiming: Specifies that the created event does not need to record timing data.\n
+    ///     Events created with this flag specified and the cudaEventBlockingSync flag not specified will provide the
+    ///     best performance when used with cudaStreamWaitEvent() and query().
+    ///
+    /// \param flags A valid event flag.
+    ///
+    event(unsigned flags) { cudaEventCreateWithFlags(&_event, flags); }
 
-	///
-	/// \brief Destructor.
-	///
-	/// Deallocates the underlying CUDA event and destroys this object.
-	///
-	~event() { cudaEventDestroy(_event); }
+    ///
+    /// \brief Destructor.
+    ///
+    /// Deallocates the underlying CUDA event and destroys this object.
+    ///
+    ~event() { cudaEventDestroy(_event); }
 
-	///
-	/// \brief Records an event.
-	///
-	/// If stream is non-zero, the event is recorded after all preceding operations in stream have been completed;
-	/// otherwise, it is recorded after all preceding operations in the CUDA context have been completed. Since
-	/// operation is asynchronous, query() and/or synchronize() must be used to determine when the event has actually
-	/// been recorded.
-	///
-	/// If record() has previously been called on event, then this call will overwrite any existing state
-	/// in event. Any subsequent calls which examine the status of event will only examine the completion of this
-	/// most recent call to record().
-	///
-	/// \param stream Stream in which to record event.
-	///
-	inline void record( cudaStream_t stream = 0 ) { cudaEventRecord( _event, stream ); }
+    ///
+    /// \brief Records an event.
+    ///
+    /// If stream is non-zero, the event is recorded after all preceding operations in stream have been completed;
+    /// otherwise, it is recorded after all preceding operations in the CUDA context have been completed. Since
+    /// operation is asynchronous, query() and/or synchronize() must be used to determine when the event has actually
+    /// been recorded.
+    ///
+    /// If record() has previously been called on event, then this call will overwrite any existing state
+    /// in event. Any subsequent calls which examine the status of event will only examine the completion of this
+    /// most recent call to record().
+    ///
+    /// \param stream Stream in which to record event.
+    ///
+    inline void record(cudaStream_t stream = 0) { cudaEventRecord(_event, stream); }
 
-	///
-	/// \brief Wait until the completion of all device work preceding the most recent call to record().
-	///
-	/// This applies to the appropriate compute streams, as specified by the arguments to record().
-	/// If record() has not been called on event, cudaSuccess is returned immediately.
-	///
-	///	Waiting for an event that was created with the cudaEventBlockingSync flag will cause the calling
-	/// CPU thread to block until the event has been completed by the device. If the cudaEventBlockingSync
-	/// flag has not been set, then the CPU thread will busy-wait until the event has been completed by the
-	/// device.
-	///
-	/// \returns cudaSuccess, cudaErrorInitializationError, cudaErrorInvalidValue, cudaErrorInvalidResourceHandle,
-	///          cudaErrorLaunchFailure
-	///
-	inline cudaError_t synchronize() { return cudaEventSynchronize( _event ); }
+    ///
+    /// \brief Wait until the completion of all device work preceding the most recent call to record().
+    ///
+    /// This applies to the appropriate compute streams, as specified by the arguments to record().
+    /// If record() has not been called on event, cudaSuccess is returned immediately.
+    ///
+    ///	Waiting for an event that was created with the cudaEventBlockingSync flag will cause the calling
+    /// CPU thread to block until the event has been completed by the device. If the cudaEventBlockingSync
+    /// flag has not been set, then the CPU thread will busy-wait until the event has been completed by the
+    /// device.
+    ///
+    /// \returns cudaSuccess, cudaErrorInitializationError, cudaErrorInvalidValue, cudaErrorInvalidResourceHandle,
+    ///          cudaErrorLaunchFailure
+    ///
+    inline cudaError_t synchronize() { return cudaEventSynchronize(_event); }
 
-	///
-	/// \brief Query the status of all device work preceding the most recent call to record().
-	///
-	/// This applies to the appropriate compute streams, as specified by the arguments to record().
-	///
-	/// If this work has successfully been completed by the device, or if record() has not been called on event,
-	/// then cudaSuccess is returned. If this work has not yet been completed by the device then cudaErrorNotReady
-	/// is returned.
-	///
-	/// \return cudaSuccess, cudaErrorNotReady, cudaErrorInitializationError, cudaErrorInvalidValue,
-	///         cudaErrorInvalidResourceHandle, cudaErrorLaunchFailure
-	///
-	inline cudaError_t query() { return cudaEventQuery( _event ); }
+    ///
+    /// \brief Query the status of all device work preceding the most recent call to record().
+    ///
+    /// This applies to the appropriate compute streams, as specified by the arguments to record().
+    ///
+    /// If this work has successfully been completed by the device, or if record() has not been called on event,
+    /// then cudaSuccess is returned. If this work has not yet been completed by the device then cudaErrorNotReady
+    /// is returned.
+    ///
+    /// \return cudaSuccess, cudaErrorNotReady, cudaErrorInitializationError, cudaErrorInvalidValue,
+    ///         cudaErrorInvalidResourceHandle, cudaErrorLaunchFailure
+    ///
+    inline cudaError_t query() { return cudaEventQuery(_event); }
 
-	///
-	/// \brief Computes the elapsed time between two events (in milliseconds with a resolution of around 0.5 microseconds).
-	///
-	/// If either event was last recorded in a non-NULL stream, the resulting time may be greater than expected (even
-	/// if both used the same stream handle). This happens because the record() operation takes place asynchronously
-	/// and there is no guarantee that the measured latency is actually just between the two events. Any number of
-	/// other different stream operations could execute in between the two measured events, thus altering the timing
-	/// in a significant way.
-	///
-	/// If record() has not been called on either event, then cudaErrorInvalidResourceHandle is returned. If record()
-	/// has been called on both events but one or both of them has not yet been completed (that is, query() would return
-	/// cudaErrorNotReady on at least one of the events), cudaErrorNotReady is returned. If either event was created
-	/// with the cudaEventDisableTiming flag, then this function will return cudaErrorInvalidResourceHandle.
-	///
-	/// \param start Starting event.
-	/// \param end Ending event.
-	/// \return The elapsed time between the two events in milliseconds.
-	///
-	static float elapsed_time( event& start, event& end ) {
-		float t;
-		cudaEventElapsedTime( &t, start._event, end._event );
-		return t;
-	}
+    ///
+    /// \brief Computes the elapsed time between two events (in milliseconds with a resolution of around 0.5
+    /// microseconds).
+    ///
+    /// If either event was last recorded in a non-NULL stream, the resulting time may be greater than expected (even
+    /// if both used the same stream handle). This happens because the record() operation takes place asynchronously
+    /// and there is no guarantee that the measured latency is actually just between the two events. Any number of
+    /// other different stream operations could execute in between the two measured events, thus altering the timing
+    /// in a significant way.
+    ///
+    /// If record() has not been called on either event, then cudaErrorInvalidResourceHandle is returned. If record()
+    /// has been called on both events but one or both of them has not yet been completed (that is, query() would return
+    /// cudaErrorNotReady on at least one of the events), cudaErrorNotReady is returned. If either event was created
+    /// with the cudaEventDisableTiming flag, then this function will return cudaErrorInvalidResourceHandle.
+    ///
+    /// \param start Starting event.
+    /// \param end Ending event.
+    /// \return The elapsed time between the two events in milliseconds.
+    ///
+    static float elapsed_time(event& start, event& end)
+    {
+        float t;
+        cudaEventElapsedTime(&t, start._event, end._event);
+        return t;
+    }
 
-	///
-	/// \brief Computes the elapsed time between another event and this event.
-	///
-	/// This is equivalent to elapsed_time( other, *this ).
-	///
-	/// \param other The other event with which to compute the elapsed time.
-	/// \return The elapsed time between the two events in milliseconds.
-	///
-	inline float operator-( event& other ) { return event::elapsed_time( other, *this ); }
-
+    ///
+    /// \brief Computes the elapsed time between another event and this event.
+    ///
+    /// This is equivalent to elapsed_time( other, *this ).
+    ///
+    /// \param other The other event with which to compute the elapsed time.
+    /// \return The elapsed time between the two events in milliseconds.
+    ///
+    inline float operator-(event& other) { return event::elapsed_time(other, *this); }
 };
-
 
 } // namespace ecuda
 

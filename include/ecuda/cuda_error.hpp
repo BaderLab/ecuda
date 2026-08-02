@@ -27,35 +27,46 @@ class cuda_error : public std::runtime_error
 {
 
 private:
-	cudaError_t errorType;
+    cudaError_t errorType;
 
 public:
-	///
-	/// \brief Constructor.
-	/// \param errorType error code
-	///
-	explicit cuda_error( cudaError_t errorType ) : std::runtime_error(""), errorType(errorType) {}
+    ///
+    /// \brief Constructor.
+    /// \param errorType error code
+    ///
+    explicit cuda_error(cudaError_t errorType)
+      : std::runtime_error("")
+      , errorType(errorType)
+    {
+    }
 
-	///
-	/// \brief Constructor.
-	/// \param errorType error code
-	/// \param what_arg string describing the error
-	///
-	explicit cuda_error( cudaError_t errorType, const std::string& what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
+    ///
+    /// \brief Constructor.
+    /// \param errorType error code
+    /// \param what_arg string describing the error
+    ///
+    explicit cuda_error(cudaError_t errorType, const std::string& what_arg)
+      : std::runtime_error(what_arg)
+      , errorType(errorType)
+    {
+    }
 
-	///
-	/// \brief Constructor.
-	/// \param errorType error code
-	/// \param what_arg string describing the error
-	///
-	explicit cuda_error( cudaError_t errorType, const char* what_arg ) : std::runtime_error( what_arg ), errorType(errorType) {}
+    ///
+    /// \brief Constructor.
+    /// \param errorType error code
+    /// \param what_arg string describing the error
+    ///
+    explicit cuda_error(cudaError_t errorType, const char* what_arg)
+      : std::runtime_error(what_arg)
+      , errorType(errorType)
+    {
+    }
 
-	///
-	/// \brief Gets the error code.
-	/// \return the CUDA error code
-	///
-	inline cudaError_t get_error_code() const { return errorType; }
-
+    ///
+    /// \brief Gets the error code.
+    /// \return the CUDA error code
+    ///
+    inline cudaError_t get_error_code() const { return errorType; }
 };
 
 } // namespace ecuda
