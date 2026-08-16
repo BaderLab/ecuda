@@ -13,7 +13,9 @@
 #include <stdexcept>
 #include <string>
 
+#if !ECUDA_USE_CUDA_RUNTIME
 #include "impl/host_emulation.hpp" // gets data structure definitions when compiling host-only without nvcc
+#endif
 
 namespace ecuda {
 

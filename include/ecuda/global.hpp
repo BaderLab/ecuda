@@ -28,8 +28,11 @@
 #define ECUDA_SUPPRESS_HD_WARNINGS
 #endif
 
-#include "cuda_error.hpp"          // specialized std::exception for ecuda/CUDA runtime errors
+#include "cuda_error.hpp" // specialized std::exception for ecuda/CUDA runtime errors
+
+#if !ECUDA_USE_CUDA_RUNTIME
 #include "impl/host_emulation.hpp" // host-only replacements of CUDA C API functions
+#endif
 
 // Generic check for C++11 support
 #if __cplusplus >= 201103L ||                                                                                          \

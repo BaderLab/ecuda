@@ -53,6 +53,15 @@ endif()
 
 foreach( test_src IN LISTS ECUDA_TEST_SOURCES )
 	get_filename_component( test_name "${test_src}" NAME_WE )
+
+	if( NOT ECUDA_HAVE_CUDA )
+		set_source_files_properties(
+			"${test_src}"
+			PROPERTIES
+				LANGUAGE CXX
+		)
+	endif()
+
 	add_executable( "${test_name}" "${test_src}" )
 
 	set_target_properties(

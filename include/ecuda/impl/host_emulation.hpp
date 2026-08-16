@@ -16,7 +16,8 @@
 /// only. If code isn't compiled by nvcc then these functions are called
 /// instead.
 ///
-#ifndef __CUDACC__
+#if !ECUDA_USE_CUDA_RUNTIME
+// #ifndef __CUDACC__
 
 #include <algorithm>
 #include <ctime>
