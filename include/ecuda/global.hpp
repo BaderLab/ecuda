@@ -115,7 +115,7 @@
 ///
 #define CUDA_CALL_KERNEL_AND_WAIT(...)                                                                                 \
     do {                                                                                                               \
-        __VA_ARGS__;                                                                                                   \
+        /*__VA_ARGS__;*/                                                                                               \
     } while (0); // cannot do CUDA calls when emulating with host only
 #endif
 
